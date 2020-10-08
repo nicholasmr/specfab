@@ -10,7 +10,7 @@ SPECFAB=specfab
 MOMENTS=moments
 TENPROD=tensorproducts
 
-demo: $(SPECFAB).o $(MOMENTS).o
+demo: $(MOMENTS).o $(SPECFAB).o
 	$(COMPILER) demo.f90 $(SPECFAB).o $(TENPROD).o $(MOMENTS).o $(FLAGS) -o demo
 	@echo "--------------------------\nTo get going, try running (instructions on how to plot the results will follow):"
 	@echo "'./demo 3 uc_zz' for uniaxial compression (uc) in the vertical (z) with a nprime=3 grian rheology"
@@ -26,8 +26,8 @@ $(MOMENTS).o:
 	$(COMPILER) -c $(MOMENTS).f90 $(FLAGS)
 
 clean:
-	rm -f demo $(TENPROD).o $(MOMENTS).o $(SPECFAB).o
+	rm -f demo *.o *.mod
 	
 clear:
-	rm -f demo $(SPECFAB).o
+	rm -f demo $(SPECFAB).o $(SPECFAB).mod
 
