@@ -123,7 +123,7 @@ function f_nu(eps)
     implicit none
     
     real(kind=dp), intent(in) :: eps(3,3)
-    real(kind=dp), parameter :: L0=10, nu0=6e-2 ! nu0>=10e-2 seems "too safe"
+    real(kind=dp), parameter :: L0=10, nu0=8e-2 ! nu0>=10e-2 seems "too safe"
     real(kind=dp) :: f_nu, T
 
     T = sqrt( sum([( [( eps(ii,jj)**2, jj=1,3)], ii=1,3)]) ) ! norm_2(eps)
