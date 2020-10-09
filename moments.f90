@@ -6,6 +6,7 @@ module moments
 
     integer, parameter, private :: dp = 8 ! Default precision
     real, parameter, private    :: Pi = 3.1415927
+!    integer, private :: ii
 
 contains      
 

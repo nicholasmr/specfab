@@ -118,23 +118,21 @@ end
 
 function f_nu(eps)
     
-    ! Optimal nu as a function of L and norm_2(eps)
+    ! Optimal nu as a function of L and norm2(eps)
     
     implicit none
     
     real(kind=dp), intent(in) :: eps(3,3)
     real(kind=dp), parameter :: L0=10, nu0=8e-2 ! nu0>=10e-2 seems "too safe"
-    real(kind=dp) :: f_nu, T
+    real(kind=dp) :: f_nu
 
-    T = sqrt( sum([( [( eps(ii,jj)**2, jj=1,3)], ii=1,3)]) ) ! norm_2(eps)
-    
     if (nu .ge. 1.0d-20) then 
         f_nu = nu 
     else 
         f_nu = nu0*(Lcap/L0)**(-1.1)
     end if
     
-    f_nu = f_nu*T
+    f_nu = f_nu * norm2( reshape(eps, [size(eps)]) )
 end
 
 !---------------------------------

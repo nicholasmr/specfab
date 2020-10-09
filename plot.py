@@ -64,7 +64,7 @@ import matplotlib.ticker as mticker
 import matplotlib.gridspec as gridspec
 import cartopy.crs as ccrs
 
-FS = 12
+FS = 13
 rc('font',**{'family':'serif','sans-serif':['Times'],'size':FS})
 rc('text', usetex=True)
 rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb} \usepackage{physics} \usepackage{txfonts}'
@@ -80,7 +80,7 @@ for tt in plot_tsteps:
     #----------------------
 
     dpi, scale = 200, 3.3
-    fig = plt.figure(figsize=(2.1*scale,2.2*scale))
+    fig = plt.figure(figsize=(2.1*scale,2.3*scale))
     gs = gridspec.GridSpec(2,2, height_ratios=[1,1.2], width_ratios=[1,1.2])
     a = 0.09
     gs.update(left=a, right=1-a/3, top=0.98, bottom=0.22, wspace=0.015*18, hspace=0.25)
@@ -116,14 +116,14 @@ for tt in plot_tsteps:
 
     lw = 2
     axeigvals.plot([tt,tt],[0,1],':k',lw=lw)
-    axeigvals.plot(steps,eigvals[:,0],'-r',label='$\lambda_{1}$',lw=lw0)
-    axeigvals.plot(steps,eigvals[:,1],'-g',label='$\lambda_{2}$',lw=lw1)
-    axeigvals.plot(steps,eigvals[:,2],'-b',label='$\lambda_{3}$',lw=lw2)
+    axeigvals.plot(steps,eigvals[:,0],'-r',label='$a_{1}$',lw=lw0)
+    axeigvals.plot(steps,eigvals[:,1],'-g',label='$a_{2}$',lw=lw1)
+    axeigvals.plot(steps,eigvals[:,2],'-b',label='$a_{3}$',lw=lw2)
     axeigvals.plot([0,1],[-tt,-tt],':k',lw=lw) 
     axeigvals.set_ylim([0,1])
     axeigvals.set_xlim([0, Nt+1])
     axeigvals.set_xlabel('time step')
-    axeigvals.set_ylabel('$\lambda_i$')
+    axeigvals.set_ylabel('$a_{i}$')
     axeigvals.grid()              
     axeigvals.legend(handlelength=1, ncol=1, labelspacing=0.3, fancybox=False, loc=2)
             
@@ -135,13 +135,13 @@ for tt in plot_tsteps:
     axei.set_xlabel('$x$'); axei.set_xlim([-1,1])
     axei.set_ylabel('$y$'); axei.set_ylim([-1,1])
     axei.set_zlabel('$z$'); axei.set_zlim([0,1])
-    plot_vec(axei,e1[tt,:],'$e_1$','r')
-    plot_vec(axei,e2[tt,:],'$e_2$','g')
-    plot_vec(axei,e3[tt,:],'$e_3$','b')
+    plot_vec(axei,e1[tt,:],r'$\vb{e}_1$','r')
+    plot_vec(axei,e2[tt,:],r'$\vb{e}_2$','g')
+    plot_vec(axei,e3[tt,:],r'$\vb{e}_3$','b')
     lwpq=1
-    plot_vec(axei,p13[tt,:],'$p_{13}$','y', lw=lwpq)
-    plot_vec(axei,q13[tt,:],'$q_{13}$','y', ls='--', lw=lwpq)
-    axei.legend(handlelength=1, loc=1, fancybox=False)
+    plot_vec(axei,p13[tt,:],r'$\vb{p}_{13}$','y', lw=lwpq)
+    plot_vec(axei,q13[tt,:],r'$\vb{q}_{13}$','y', ls='--', lw=lwpq)
+    axei.legend(handlelength=1, loc=1, bbox_to_anchor=(1.17,1), fancybox=False)
 
     #----------------------
     # Enhancement factors
@@ -169,7 +169,7 @@ for tt in plot_tsteps:
     lw=1
     axEvw.semilogy(xlims,[2.5,2.5],'--k',lw=lw) 
     axEvw.semilogy(xlims,[4.375,4.375],'--k',lw=lw) 
-    axEvw.legend(loc=4, ncol=4, handlelength=2, columnspacing=1.2, labelspacing=0.3, fancybox=False, bbox_to_anchor=(0.99,-0.55))
+    axEvw.legend(loc=4, ncol=4, handlelength=2, columnspacing=1.2, labelspacing=0.3, fancybox=False, bbox_to_anchor=(1.05,-0.55))
     axEvw.set_xlim(xlims)
     axEvw.set_ylim([np.amin([1e-1, np.amin(Eeiej[:]), np.amin(Epijqij[:])]), np.amax([1e+1, np.amax(Eeiej[:]), np.amax(Epijqij[:])])])
     axEvw.set_xlabel('time step')
