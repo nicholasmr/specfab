@@ -5,6 +5,10 @@ import scipy.special as sp
 from netCDF4 import Dataset
 import sys, os, copy, code # code.interact(local=locals())
 
+#------------------
+# Input arguments
+#------------------
+
 if len(sys.argv) != 3: 
     print('usage: %s nprime ugrad'%(sys.argv[0]))
     sys.exit(0)
@@ -21,7 +25,7 @@ rot = -90*1.4 # view angle
 # Load solution
 #------------------
 
-fh = Dataset('solution_n%i_%s.nc'%(L, exprref), mode='r')
+fh = Dataset('solutions/solution_n%i_%s.nc'%(L, exprref), mode='r')
 loadvar = lambda field: np.array(fh.variables[field][:])
 
 # Grain rheology
@@ -34,8 +38,8 @@ Nt, dt, nu, L = fh.getncattr('tsteps'), fh.getncattr('dt'), fh.getncattr('nu'), 
 lm, c = loadvar('lm'), loadvar('c_re') + 1j*loadvar('c_im') 
 eigvals  = loadvar('eigvals')
 Eeiej    = loadvar('Eeiej')
-e1,e2,e3 = loadvar('e1'),loadvar('e2'),loadvar('e3')
-Epijqij     = loadvar('Epijqij')
+Epijqij  = loadvar('Epijqij')
+e1,e2,e3    = loadvar('e1'), loadvar('e2'), loadvar('e3')
 p23,p12,p13 = loadvar('p23'),loadvar('p12'),loadvar('p13') 
 q23,q12,q13 = loadvar('q23'),loadvar('q12'),loadvar('q13') 
 
@@ -163,7 +167,8 @@ for tt in plot_tsteps:
     axEvw.semilogy(steps, Eeiej[:,2,2], 'b-',  label=lblmk(2,2), lw=lw2)    
 
     axEvw.semilogy(steps, Epijqij[:,2],  'y-', label=lblmk_pq(0,2), lw=lw1) 
-    axEvw.semilogy(steps, np.divide(Eeiej[:,0,2],Epijqij[:,2]), 'm-', label=lblmk(0,2)+'/'+lblmk_pq(0,2), lw=lw1)
+    Eratio = np.divide(Eeiej[:,0,2],Epijqij[:,2])
+    axEvw.semilogy(steps, Eratio, 'm-', label=lblmk(0,2)+'/'+lblmk_pq(0,2), lw=lw1)
 
     xlims=[0, Nt+1]
     lw=1
@@ -171,7 +176,7 @@ for tt in plot_tsteps:
     axEvw.semilogy(xlims,[4.375,4.375],'--k',lw=lw) 
     axEvw.legend(loc=4, ncol=4, handlelength=2, columnspacing=1.2, labelspacing=0.3, fancybox=False, bbox_to_anchor=(1.05,-0.55))
     axEvw.set_xlim(xlims)
-    axEvw.set_ylim([np.amin([1e-1, np.amin(Eeiej[:]), np.amin(Epijqij[:])]), np.amax([1e+1, np.amax(Eeiej[:]), np.amax(Epijqij[:])])])
+    axEvw.set_ylim([np.amin([1e-1, np.amin(Eeiej[:]), np.amin(Epijqij[:])]), np.amax([1e+1, np.amax(Eeiej[:]), np.amax(Epijqij[:]), np.amax(Eratio)])])
     axEvw.set_xlabel('time step')
     axEvw.set_ylabel('$E_{vw}$')
     axEvw.grid()
@@ -187,6 +192,7 @@ for tt in plot_tsteps:
     #----------------------
     # Save figure
     #----------------------
-    
-    plt.savefig('solution_n%i_%s__%i.png'%(nprime,exprref, tt+1),dpi=dpi)
+    fout = 'solutions/solution_n%i_%s__%i.png'%(nprime,exprref, tt+1)
+    print('Saving %s'%(fout))
+    plt.savefig(fout,dpi=dpi)
 

@@ -1,6 +1,6 @@
 ! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2020
 
-PROGRAM demo
+program demo
 
     use specfab    
     use netcdf
@@ -29,7 +29,7 @@ PROGRAM demo
     complex(kind=dp) :: nlm_save(nlm_len,Nt)
     real(kind=dp)    :: eigvals_save(3,Nt), Eeiej_save(3,3,Nt), Epijqij_save(3,Nt)
     real(kind=dp), dimension(3,Nt) :: e1_save,e2_save,e3_save, p23_save,p12_save,p13_save, q23_save,q12_save,q13_save
-    character(len=20) :: fname_sol
+    character(len=30) :: fname_sol
     integer :: ncid, c_did, time_did, eig_did, dim_did, pair_did ! Dimension IDs
     integer :: id_cre,id_cim,id_lm, id_eig, id_Eeiej,id_Epijqij, id_e1,id_e2,id_e3, id_p23,id_p12,id_p13, id_q23,id_q12,id_q13 ! Var IDs
 
@@ -115,7 +115,7 @@ PROGRAM demo
     ! Initialize
     !-------------------------------------------------------------------
 
-    call initspecfab() ! Load gaunt matrix for time-evolution
+    call initspecfab() 
 
     ! Expansion coefs "n_l^m" are saved in the 1D array "nlm". Corresponding (l,m) values for the i'th coef (i.e. nlm(i)) are (l,m) = (lm(1,i),lm(2,i))
     nlm = [(0,ii=1,nlm_len)] ! nlm_len = #DOFs
@@ -130,6 +130,8 @@ PROGRAM demo
             nlm(1) = (1,0)
             nlm(1) = nlm(1)/f_ev_c0(nlm(1)) ! Normalize
     end select
+    
+    write(*,"(A13,I4,A5,F12.10,A4,I2)") 'Numerics: Nt=', Nt, ', dt=', dt, ', L=', Lcap
 
     !-------------------------------------------------------------------
     ! Integrate
@@ -139,7 +141,7 @@ PROGRAM demo
     dndt = dndt_ij(eps,omg) ! Assume constant strain-rate and spin
    
     do tt = 2, Nt
-        write(*,"(A9,I3)") '*** Step ', tt
+!        write(*,"(A9,I3)") '*** Step ', tt
         nlm = nlm + dt * matmul(dndt,nlm) 
         call savestate(nlm, tt)
     end do
@@ -148,7 +150,7 @@ PROGRAM demo
     ! Dump solution to netCDF
     !-------------------------------------------------------------------
     
-    write (fname_sol,"('solution_n',I1.1,'_',A5,'.nc')") nprime, arg_exp
+    write (fname_sol,"('solutions/solution_n',I1.1,'_',A5,'.nc')") nprime, arg_exp
     call check( nf90_create(fname_sol, NF90_CLOBBER, ncid) )
     
     call check(nf90_put_att(ncid,NF90_GLOBAL, "tsteps", Nt))
@@ -205,7 +207,8 @@ PROGRAM demo
     call check( nf90_close(ncid) )
 
     print *, 'Solution dumped in ', fname_sol
-    print *, 'Plot result: python3 plot.py ',nprime,' ', arg_exp
+    print *, "Plot result:"
+    write(*,"(A15,I2,A1,A5)") "python3 plot.py ",nprime,' ', arg_exp
 
 contains
 
@@ -225,6 +228,15 @@ contains
         Epijqij_save(:,tt) = Epijqij(nlm, Ecc,Eca,nprime)
 
     end
+    
+    subroutine check(status)
+        implicit none
+        integer, intent (in) :: status
+        if(status /= nf90_noerr) then 
+            print *, trim(nf90_strerror(status))
+            stop "Stopped"
+        end if
+    end subroutine check  
     
 end program
 

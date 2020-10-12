@@ -4,11 +4,12 @@ module specfab
 
     use tensorproducts
     use moments
+    use gaunt
 
     implicit none 
 
     ! Free model parameters
-    integer, parameter :: Lcap = 10 ! Truncation "L" of expansion series --- please choose 10 <= Lcap <= 60 (regularization calibrated for this range).
+    integer, parameter :: Lcap = 10 ! Truncation "L" of expansion series --- Valid range is 10 <= Lcap <= 60 (regularization calibrated for this range).
     real, parameter    :: nu = 0.0e-0 ! Regularization diffusion coefficient --- if nu>0, then this value is used as opposed to a value calibrated for "L" (Lcap).
     
     !----------------------------------
@@ -31,9 +32,28 @@ module specfab
     real(kind=dp), parameter, private :: identity(3,3) = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
         
     ! Precalculated tensors stored in netCDF file. 
-    real(kind=dp), dimension(lmdyn_len, nlm_len, nlm_len), private :: GC, GCm, GC_p1, GC_m1 ! Triple overlap integrals of Y_l^m
+!    real(kind=dp), dimension(lmdyn_len, nlm_len, nlm_len), private :: GC, GCm, GC_p1, GC_m1 ! Triple overlap integrals of Y_l^m
     
 contains      
+
+
+!---------------------------------
+! INIT
+!---------------------------------
+       
+subroutine initspecfab()
+
+    implicit none    
+
+    complex(kind=dp) :: nlm_iso(nlm_len) = [(0, ii=1,nlm_len)]
+
+    ! Set gaunt coefficients
+    call set_gaunts()
+    
+    ! Set isotropic structure tensors
+    nlm_iso(1) = 1
+    call ck_moments(nlm_iso, ev_c2_iso,ev_c4_iso,ev_c6_iso,ev_c8_iso)
+end
 
 !---------------------------------
 ! FABRIC TIME-EVOLUTION
@@ -146,9 +166,9 @@ subroutine eigenframe(nlm, e1,e2,e3, eigvals)
     
     implicit none
     
-    integer, parameter :: n=3, l=3*3-1 
+    integer, parameter :: n=3, l=3*3-1
     complex(kind=dp), intent(in)  :: nlm(nlm_len)
-    real(kind=dp), intent(out) :: e1(n),e2(n),e3(n), eigvals(n)
+    real(kind=dp), dimension(n), intent(out) :: e1,e2,e3, eigvals
     integer inf
     real(kind=dp) :: e_ij(n,n), work(l)
     
@@ -236,7 +256,7 @@ function Epijqij(nlm, Ecc,Eca,nprime)
     complex(kind=dp), intent(in) :: nlm(nlm_len)
     real(kind=dp), intent(in) :: Ecc, Eca
     integer, intent(in) :: nprime    
-    real(kind=dp), dimension(3) :: Epijqij(3), p23,p12,p13, q23,q12,q13
+    real(kind=dp), dimension(3) :: Epijqij, p23,p12,p13, q23,q12,q13
     
     call pqframe(nlm, p23,p12,p13, q23,q12,q13)
     
@@ -324,54 +344,5 @@ function tau_vw(v,w)
     real(kind=dp) :: tau_vw(3,3)
     tau_vw = outerprod(v,w) + outerprod(w,v)
 end
-
-!---------------------------------
-! NETCDF ROUTINES
-!---------------------------------
-       
-subroutine initspecfab()
-
-    ! 1) Load precalculated Gaunt coef (GC) matrices
-    ! 2) Calculate isotropic structure tensors through order 8
-
-    use netcdf
-    implicit none
-    
-    integer :: ncid, varid
-    complex(kind=dp) :: nlm_iso(nlm_len) = [(0, ii=1,nlm_len)]
-    character (len=17) :: fname_gauntcoefs 
-    
-    write (fname_gauntcoefs,"('gauntcoefs_L',I2.2,'.nc')") Lcap
-    print *,"Loading ",trim(fname_gauntcoefs)
-
-    call check( nf90_open(fname_gauntcoefs, NF90_NOWRITE, ncid) )
-
-    call check( nf90_inq_varid(ncid, "GC", varid) )
-    call check( nf90_get_var(ncid, varid, GC) )
-    call check( nf90_inq_varid(ncid, "GCm", varid) )
-    call check( nf90_get_var(ncid, varid, GCm) )
-    call check( nf90_inq_varid(ncid, "GC_p1", varid) )
-    call check( nf90_get_var(ncid, varid, GC_p1) )
-    call check( nf90_inq_varid(ncid, "GC_m1", varid) )
-    call check( nf90_get_var(ncid, varid, GC_m1) )
-    call check( nf90_close(ncid) )
-    
-    ! Set isotropic structure tensors
-    nlm_iso(1) = 1
-    call ck_moments(nlm_iso, ev_c2_iso,ev_c4_iso,ev_c6_iso,ev_c8_iso)
-end
-
-subroutine check(status)
-
-    use netcdf
-    implicit none
-
-    integer, intent ( in) :: status
-
-    if(status /= nf90_noerr) then 
-        print *, trim(nf90_strerror(status))
-        stop "Stopped"
-    end if
-end subroutine check  
 
 end module specfab 

@@ -23,7 +23,7 @@ contains
         implicit none
         complex(kind=dp), intent(in) :: n00, n2m(-2:2)
         real(kind=dp) :: k, ev(3,3)
-        include "ev_c2__body.f90"
+        include "include/ev_c2__body.f90"
         ev = ev * k/f_ev_c0(n00)
     end
     
@@ -31,7 +31,7 @@ contains
         implicit none
         complex(kind=dp), intent(in) :: n00, n2m(-2:2), n4m(-4:4)
         real(kind=dp) :: k, ev(3,3, 3,3)
-        include "ev_c4__body.f90"
+        include "include/ev_c4__body.f90"
         ev = ev * k/f_ev_c0(n00)
     end
     
@@ -41,7 +41,7 @@ contains
         real(kind=dp) :: k, ev(3,3, 3,3, 3,3)
 !        k = 0
 !        ev = reshape([(0, ii=1,3**6)], [3,3, 3,3, 3,3])
-        include "ev_c6__body.f90"
+        include "include/ev_c6__body.f90"
         ev = ev * k/f_ev_c0(n00)
     end
     
@@ -51,7 +51,7 @@ contains
         real(kind=dp) :: k, ev(3,3, 3,3, 3,3, 3,3)
 !        k = 0
 !        ev = reshape([(0, ii=1,3**8)], [3,3, 3,3, 3,3, 3,3])
-        include "ev_c8__body.f90"
+        include "include/ev_c8__body.f90"
         ev = ev * k/f_ev_c0(n00)
     end
 
