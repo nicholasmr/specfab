@@ -13,6 +13,7 @@ TENPROD=tensorproducts
 ALLOBJS=$(SPECFAB).o $(TENPROD).o $(MOMENTS).o $(GAUNT).o
 
 demopy: $(SPECFAB)py
+	mkdir -p solutions
 	@echo "-----------------------------------------------"
 	@echo "To get going, try running (instructions on how to plot the results will follow):"
 	@echo "python3 demo.py 3 uc_zz ::: for uniaxial compression (uc) in the vertical (z) with a nprime=3 grian rheology"
