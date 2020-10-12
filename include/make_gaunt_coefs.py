@@ -58,12 +58,12 @@ def savecoef(f, f90var, gaunt):
                 if np.abs(gaunt[ii,jj,kk])>1e-20:
                     f.write("%s(%i,%i,%i) = %f\n" % (f90var,kk+1,jj+1,ii+1,np.real(gaunt[ii,jj,kk])) )
 
-f = open("gaunt__head.f90", "w")
+f = open("gaunt__head_L%i.f90"%(L), "w")
 f.write('! L = %i \n'%(L))
 f.write('real(kind=dp), dimension(%i,%i,%i) :: GC=0.0, GCm=0.0, GC_m1=0.0, GC_p1=0.0 \n'%(len(lm_dyn),Nc,Nc))
 f.close()
 
-f = open("gaunt__body.f90", "w")
+f = open("gaunt__body_L%i.f90"%(L), "w")
 savecoef(f, 'GC', GC)
 savecoef(f, 'GCm', GCm)
 savecoef(f, 'GC_m1', GC_m1)
