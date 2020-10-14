@@ -9,8 +9,8 @@ module specfab
     implicit none 
 
     ! Free model parameters
-    integer, parameter :: Lcap = 10 ! Truncation "L" of expansion series --- Valid range is 10 <= Lcap <= 60 (regularization calibrated for this range).
-    real, parameter    :: nu = 0.0e-0 ! Regularization diffusion coefficient --- if nu>0, then this value is used as opposed to a value calibrated for "L" (Lcap).
+    integer, parameter :: Lcap = 8 ! Truncation "L" of expansion series --- Valid range is 8 <= Lcap <= 60 (regularization calibrated for this range).
+    real, parameter    :: nu = 0.0e-2 ! Regularization diffusion coefficient --- if nu>0, then this value is used as opposed to a value calibrated for "L" (Lcap).
     
     !----------------------------------
     
@@ -66,7 +66,7 @@ function dndt_ij(eps,omg)
     implicit none
 
     real(kind=dp), intent(in) :: eps(3,3), omg(3,3) ! strain-rate (eps) and spin (omg)
-    complex(kind=dp) :: dndt_ij(nlm_len,nlm_len), reg_ij(nlm_len,nlm_len), qe(-2:2), qo(-1:1)
+    complex(kind=dp) :: dndt_ij(nlm_len,nlm_len), reg_ij(nlm_len,nlm_len) = 0.0, qe(-2:2), qo(-1:1)
     complex(kind=dp), dimension(lmdyn_len) :: w, wm, w_m1, w_p1
     real(kind=dp) :: nu_eff
 
@@ -96,7 +96,7 @@ function dndt_ij(eps,omg)
     do ii = 1, nlm_len    
         do jj = 1, nlm_len    
             if (ii.eq.jj) then
-                reg_ij(ii,ii) = -nu_eff*lm(1,ii)*(lm(1,ii)+1) 
+                reg_ij(ii,ii) = -nu_eff * lm(1,ii)*(lm(1,ii)+1) 
             end if
         end do
     end do
