@@ -11,6 +11,12 @@ GAUNT=gaunt
 TENPROD=tensorproducts
 
 ALLOBJS=$(SPECFAB).o $(TENPROD).o $(MOMENTS).o $(GAUNT).o
+ALLSRCS=$(ALLOBJS:.o=.f90)
+
+all: libspecfab.so demo
+
+libspecfab.so: $(ALLSRCS) $(ALLOBJS)
+	$(COMPILER) $(OPTS) -shared $(ALLSRCS) -o $@
 
 demopy: $(SPECFAB)py
 	mkdir -p solutions
@@ -20,8 +26,8 @@ demopy: $(SPECFAB)py
 	@echo "python3 demo.py 1 ue_zz ::: for uniaxial extension (ue) in the vertical (z) with a nprime=1 grian rheology"
 	@echo "python3 demo.py 3 ss_xz ::: for simple shear (ss) along the x--z plane with a nprime=3 grian rheology"
 
-demo: $(SPECFAB).o
-	$(COMPILER) demo.f90 $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o demo
+demo: libspecfab.so
+	$(COMPILER) demo.f90 -L./ -lspecfab $(OPTS) $(OPTSNETCDF) -o demo
 	mkdir -p solutions
 	@echo "-----------------------------------------------"
 	@echo "To get going, try running (instructions on how to plot the results will follow):"
