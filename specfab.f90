@@ -9,39 +9,35 @@ module specfab
     implicit none 
 
     ! Free model parameters
-    integer, parameter :: Lcap = 8 ! Truncation "L" of expansion series --- Valid range is 8 <= Lcap <= 60 (regularization calibrated for this range).
+    integer, parameter :: Lcap = 40 ! Truncation "L" of expansion series --- Valid range is 8 <= Lcap <= 60 (regularization calibrated for this range).
     real, parameter    :: nu = 0.0e-2 ! Regularization diffusion coefficient --- if nu>0, then this value is used as opposed to a value calibrated for "L" (Lcap).
-    
-    !----------------------------------
-    
-    ! Constants
+
+    ! Aux
     integer, parameter, private :: dp = 8 ! Default precision
     real, parameter, private    :: Pi = 3.1415927
     integer, parameter, private :: x=1, y=2, z=3 ! Matrix indices
     complex(kind=dp), parameter, private :: r = (1, 0), i = (0, 1) ! shortcuts for real and imag units
-    
-    ! Aux
-    integer, private   :: ii,jj,kk,ll,mm ! Loop indicies
-    integer, parameter :: lmdyn_len = 6 ! Scope of harmonic interactions is local in wave space (this is NOT a free parameter)
-    integer, parameter :: nlm_len = sum([(1+ll*2, ll=0,  Lcap,2)]) ! Number of coefficients (DOFs)
-    integer, parameter :: lm(2,nlm_len) = reshape([( (ll,mm, mm=-ll,ll), ll=0,  Lcap,2)], [2,nlm_len])
-    integer, parameter :: I_l0=1, I_l2=I_l0+1, I_l4=I_l2+(2*2+1), I_l6=I_l4+(2*4+1), I_l8=I_l6+(2*6+1), I_l10=I_l8+(2*8+1)
-    
+    integer, private :: ii,jj,kk,ll,mm ! Loop indicies
+
+    ! Expansion series
+    !   n(theta,phi) = sum_{l,m} n_l^m Y_l^m(theta,phi) where nlm (= n_l^m) = (n_0^0, n_2^-2, n_2^-1, n_2^0, n_2^1, n_2^2, n_4^-4, ... ) 
+    integer, parameter :: nlm_len = sum([(1+ll*2, ll=0,  Lcap,2)]) ! Total number of expansion coefficients (i.e. DOFs)
+    integer, parameter :: lm(2,nlm_len) = reshape([( (ll,mm, mm=-ll,ll), ll=0,  Lcap,2)], [2,nlm_len]) ! These are the (l,m) values corresponding to the coefficients in "nlm".
+    integer, parameter :: I_l0=1, I_l2=I_l0+1, I_l4=I_l2+(2*2+1), I_l6=I_l4+(2*4+1), I_l8=I_l6+(2*6+1), I_l10=I_l8+(2*8+1) ! Indices for extracting l=0,2,4,6,8 coefs of nlm
+
     ! Ehancement-factor related
-    real(kind=dp), private :: ev_c2_iso(3,3), ev_c4_iso(3,3,3,3), ev_c6_iso(3,3,3,3, 3,3), ev_c8_iso(3,3,3,3, 3,3,3,3)
+    real(kind=dp), private :: ev_c2_iso(3,3), ev_c4_iso(3,3,3,3), ev_c6_iso(3,3,3,3, 3,3), ev_c8_iso(3,3,3,3, 3,3,3,3) ! <c^k> for isotropic n(theta,phi)
     real(kind=dp), parameter, private :: identity(3,3) = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
-        
-    ! Precalculated tensors stored in netCDF file. 
-!    real(kind=dp), dimension(lmdyn_len, nlm_len, nlm_len), private :: GC, GCm, GC_p1, GC_m1 ! Triple overlap integrals of Y_l^m
     
 contains      
-
 
 !---------------------------------
 ! INIT
 !---------------------------------
        
 subroutine initspecfab()
+
+    ! Needs to be called before using the below methods, but only *once*.
 
     implicit none    
 
@@ -67,6 +63,7 @@ function dndt_ij(eps,omg)
 
     real(kind=dp), intent(in) :: eps(3,3), omg(3,3) ! strain-rate (eps) and spin (omg)
     complex(kind=dp) :: dndt_ij(nlm_len,nlm_len), reg_ij(nlm_len,nlm_len) = 0.0, qe(-2:2), qo(-1:1)
+    integer, parameter :: lmdyn_len = 6 ! Scope of harmonic interactions is local in wave space (this is NOT a free parameter)
     complex(kind=dp), dimension(lmdyn_len) :: w, wm, w_m1, w_p1
     real(kind=dp) :: nu_eff
 
@@ -124,7 +121,7 @@ end
    
 function tpquad(M) result (q1m)
     
-    ! Expansion coefs of "M : tp" assuming M is anti-ymmetric and (t,p) are the (theta,phi) unit vectors.
+    ! Expansion coefs of "M : tp" assuming M is anti-symmetric and (t,p) are the (theta,phi) unit vectors.
     
     implicit none
     
@@ -310,6 +307,8 @@ function epsprime_mean(tau, ev_c2,ev_c4,ev_c6,ev_c8, Ecc,Eca,nprime)
 end
 
 subroutine ck_moments(nlm, ev_c2,ev_c4,ev_c6,ev_c8)
+    
+    ! "ev_ck" are the tensors <c^k> for a given n(theta,phi) in terms of the expansion coefficients "nlm"
     
     implicit none
     
