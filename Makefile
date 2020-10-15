@@ -13,6 +13,8 @@ TENPROD=tensorproducts
 ALLOBJS=$(SPECFAB).o $(TENPROD).o $(MOMENTS).o $(GAUNT).o
 ALLSRCS=$(ALLOBJS:.o=.f90)
 
+all: libspecfab.so demo
+
 libspecfab.so: $(ALLSRCS) $(ALLOBJS)
 	$(COMPILER) $(OPTS) -shared $(ALLSRCS) -o $@
 
