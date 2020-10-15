@@ -9,7 +9,7 @@ module specfab
     implicit none 
 
     ! Free model parameters
-    integer, parameter :: Lcap = 40 ! Truncation "L" of expansion series --- Valid range is 8 <= Lcap <= 60 (regularization calibrated for this range).
+    integer, parameter :: Lcap = 10 ! Truncation "L" of expansion series --- Valid range is 8 <= Lcap <= 40 (regularization calibrated for this range).
     real, parameter    :: nu = 0.0e-2 ! Regularization diffusion coefficient --- if nu>0, then this value is used as opposed to a value calibrated for "L" (Lcap).
 
     ! Aux
