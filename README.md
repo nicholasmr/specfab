@@ -8,8 +8,6 @@ Model by Rathmann et al. (2020)
 - `plot.py` script for plotting solutions of the demos (netCDF dumps).
 
 ## Q&A
-- **Q**: How do I change the expansion-series truncation *L*? 
-  - **A**: Change `Lcap` in `specfab.f90` and re-make the modules by running `make clear && make specfab.o`
 - **Q** What *L* are possible?
   - **A** 8<=*L*<=40 are allowed. If higher *L* are required:
     1. `cd include && python3 make_gaunt_coefs.py L` (replacing *L*)
