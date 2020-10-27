@@ -4,7 +4,11 @@ import sys, os, copy, code # code.interact(local=locals())
 import numpy as np
 import scipy.special as sp
 from netCDF4 import Dataset
-from specfabpy import specfabpy as sf # Requires running "make demopy" (makes the F2PY wrapper for "specfab.f90")
+from specfabpy import specfabpy as sf 
+
+#### NOTICE ####
+# To use "specfabpy", you must first compile the Python module by running "make demopy" (compiles the F2PY wrapper for "specfab.f90")
+################
 
 #----------------------
 # Input arguments
@@ -14,18 +18,21 @@ if len(sys.argv) != 4:
     print('usage: python3 %s L nprime ugrad'%(sys.argv[0]))
     sys.exit(0)
     
+# Arguments
 arg_L      = int(sys.argv[1])   # Series truncation
 arg_nprime = int(sys.argv[2])   # Grain rheology exponent
 arg_exp    =     sys.argv[3]    # Velocity gradient experiment
 
 L = arg_L
-if not(2 <= L <= 60):
-    print('L must be 2 <= L <= 60')
+if not(2 <= L <= 40):
+    print('L must be 2 <= L <= 40')
     sys.exit(0)
 
 #----------------------
 # Grain rheology
 #----------------------
+
+# Relevant only for calculating the enhancement-factors resulting from the fabric.
 
 if arg_nprime == 1: nprime, Ecc, Eca = 1, 1, 1e4
 if arg_nprime == 3: nprime, Ecc, Eca = 3, 1, 1e2
@@ -34,14 +41,16 @@ if arg_nprime == 3: nprime, Ecc, Eca = 3, 1, 1e2
 # Numerics
 #----------------------
 
-Nt = 300
-dt = 0.02
+Nt = 300  # Number of integration points
+dt = 0.02 # Time-step size
 
 #----------------------
 # Velocity gradient
 #----------------------
 
-ugrad = np.diag([0.5, 0.5, -1.0])
+# "ugrad" is the specified (constant) velocity gradient.
+
+ugrad = np.diag([0.5, 0.5, -1.0]) 
 
 if arg_exp == 'uc_xx': ugrad = np.diag([-1, .5, .5])
 if arg_exp == 'uc_yy': ugrad = np.diag([.5, -1, .5])
@@ -63,19 +72,19 @@ if arg_exp == 'rr_xz': ugrad = np.array([[0,0,+1], [0,0,0], [-1,0,0]])
 if arg_exp == 'rr_xy': ugrad = np.array([[0,+1,0], [-1,0,0], [0,0,0]])
 if arg_exp == 'rr_yz': ugrad = np.array([[0,0,0], [0,0,+1], [0,-1,0]])
 
-eps = (ugrad+np.transpose(ugrad))/2
-omg = (ugrad-np.transpose(ugrad))/2
+eps = (ugrad+np.transpose(ugrad))/2 # Symmetric part (strain-rate)
+omg = (ugrad-np.transpose(ugrad))/2 # Anti-symmetric part (spin)
 
 #----------------------
 # Initialize model
 #----------------------
 
-nlm_len = sf.init(L)
-lm = sf.get_lm(nlm_len)
-nu = sf.get_nu(eps)
+nlm_len = sf.init(L) # nlm_len is the number of fabric expansion coefficients (degrees of freedom).
+nlm = np.zeros((Nt,nlm_len), dtype=np.complex128) # The expansion coefficients
+lm = sf.get_lm(nlm_len) # The (l,m) values corresponding to the coefficients in "nlm".
+nu = sf.get_nu(eps) # Diffusion coefficient used for regularization.
 
-nlm = np.zeros((Nt,nlm_len), dtype=np.complex128)
-
+# Initial fabric state
 if arg_exp[0:2] == 'rr':
     # Init with some anisotropy
     nlm[0,0] = np.sqrt(1/2 + 0j)
@@ -84,18 +93,21 @@ else:
     # Init with isotropy
     nlm[0,0] = 1/np.sqrt(4*np.pi) # Normalized such that N(t=0) = 1
 
-print('Numerics: Nt=%i, dt=%f, L=%i (nlm_len=%i)'%(Nt,dt,L,nlm_len))
-
 #----------------------
 # Integrate
 #----------------------
 
+print('Numerics: Nt=%i, dt=%f, L=%i (nlm_len=%i)'%(Nt,dt,L,nlm_len))
+
+# Euler scheme
 for tt in np.arange(1,Nt):
     nlm[tt,:] = nlm[tt-1,:] + dt*np.tensordot(sf.get_dndt_ij(nlm_len, eps, omg), nlm[tt-1,:], axes=(-1,0))
 
 #----------------------
 # Aux state vars
 #----------------------
+
+# Calculate eigenvalues, principal directions, and enhancement-factors
 
 vecdim = (Nt,3)
 eigvals = np.zeros(vecdim, dtype=np.float64)
@@ -117,6 +129,9 @@ for tt in np.arange(0,Nt):
 #----------------------
 # Save
 #----------------------
+
+# Save the solution to a netCDF file.
+# You can plot the results stored in the netCDF file using "plot.py".
 
 fname = 'solutions/solution_n%i_%s.nc'%(nprime, arg_exp)
 ncfile = Dataset(fname,mode='w',format='NETCDF3_CLASSIC') 
