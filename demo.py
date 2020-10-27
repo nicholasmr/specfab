@@ -4,21 +4,24 @@ import sys, os, copy, code # code.interact(local=locals())
 import numpy as np
 import scipy.special as sp
 from netCDF4 import Dataset
-from specfabpy import specfabpy as sf
-
-# The module "specfabpy" is a wrapper to the Fortran module "specfab.f90" using F2PY. 
-# As a consequence, the module method names and call-structure might seem slightly odd.
+from specfabpy import specfabpy as sf # Requires running "make demopy" (makes the F2PY wrapper for "specfab.f90")
 
 #----------------------
 # Input arguments
 #----------------------
 
-if len(sys.argv) != 3:
-    print('usage: python3 %s nprime ugrad'%(sys.argv[0]))
+if len(sys.argv) != 4:
+    print('usage: python3 %s L nprime ugrad'%(sys.argv[0]))
     sys.exit(0)
     
-arg_nprime = int(sys.argv[1])
-arg_exp    = sys.argv[2]
+arg_L      = int(sys.argv[1])   # Series truncation
+arg_nprime = int(sys.argv[2])   # Grain rheology exponent
+arg_exp    =     sys.argv[3]    # Velocity gradient experiment
+
+L = arg_L
+if not(2 <= L <= 60):
+    print('L must be 2 <= L <= 60')
+    sys.exit(0)
 
 #----------------------
 # Grain rheology
@@ -67,9 +70,8 @@ omg = (ugrad-np.transpose(ugrad))/2
 # Initialize model
 #----------------------
 
-nlm_len = sf.num_dofs
-lm = sf.init(nlm_len)
-L = sf.ltrunc
+nlm_len = sf.init(L)
+lm = sf.get_lm(nlm_len)
 nu = sf.get_nu(eps)
 
 nlm = np.zeros((Nt,nlm_len), dtype=np.complex128)
@@ -82,7 +84,7 @@ else:
     # Init with isotropy
     nlm[0,0] = 1/np.sqrt(4*np.pi) # Normalized such that N(t=0) = 1
 
-print('Numerics: Nt=%i, dt=%f, L=%i'%(Nt,dt,L))
+print('Numerics: Nt=%i, dt=%f, L=%i (nlm_len=%i)'%(Nt,dt,L,nlm_len))
 
 #----------------------
 # Integrate

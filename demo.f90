@@ -14,6 +14,7 @@ program demo
     ! Constants and argv strings    
     integer, parameter :: dp = 8
     integer :: ii,tt ! loop vars
+    character(len=3) :: arg_Lcap
     character(len=1) :: arg_nprime 
     character(len=5) :: arg_exp 
 
@@ -22,27 +23,35 @@ program demo
     integer :: nprime ! Grain power-law exponent: only 1 and 3 are possible.
     
     ! Fabric state and evolution
-    complex(kind=dp) :: nlm(nlm_len), dndt(nlm_len,nlm_len) ! Series expansion coefs and evolution matrix
-    real(kind=dp)    :: ugrad(3,3), eps(3,3), omg(3,3) ! Large-scale deformation
+    integer :: Lcap ! Expansion series truncation
+    complex(kind=dp), allocatable :: nlm(:), dndt(:,:) ! Series expansion coefs and evolution matrix
+    real(kind=dp) :: ugrad(3,3), eps(3,3), omg(3,3) ! Large-scale deformation
 
     ! For dumping state to netCDF
-    complex(kind=dp) :: nlm_save(nlm_len,Nt)
-    real(kind=dp)    :: eigvals_save(3,Nt), Eeiej_save(3,3,Nt), Epijqij_save(3,Nt)
-    real(kind=dp), dimension(3,Nt) :: e1_save,e2_save,e3_save, p23_save,p12_save,p13_save, q23_save,q12_save,q13_save
+    complex(kind=dp), allocatable   :: nlm_save(:,:)
+    real(kind=dp)                   :: eigvals_save(3,Nt), Eeiej_save(3,3,Nt), Epijqij_save(3,Nt)
+    real(kind=dp), dimension(3,Nt)  :: e1_save,e2_save,e3_save, p23_save,p12_save,p13_save, q23_save,q12_save,q13_save
     character(len=30) :: fname_sol
     integer :: ncid, c_did, time_did, eig_did, dim_did, pair_did ! Dimension IDs
     integer :: id_cre,id_cim,id_lm, id_eig, id_Eeiej,id_Epijqij, id_e1,id_e2,id_e3, id_p23,id_p12,id_p13, id_q23,id_q12,id_q13 ! Var IDs
 
-    if (command_argument_count() .ne. 2) then
-        print *,'usage: ./demo nprime ugrad'
+    if (command_argument_count() .ne. 3) then
+        print *,'usage: ./demo L nprime ugrad'
         call exit(0)
     end if
+
+    !-------------------------------------------------------------------
+    ! Series truncation
+    !-------------------------------------------------------------------
+
+    call get_command_argument(1, arg_Lcap)
+    read (arg_Lcap, *) Lcap
 
     !-------------------------------------------------------------------
     ! Grain rheology
     !-------------------------------------------------------------------
 
-    call get_command_argument(1, arg_nprime)
+    call get_command_argument(2, arg_nprime)
     select case (arg_nprime)
         case ('1')
             nprime = 1
@@ -61,7 +70,7 @@ program demo
     ! Velocity gradient tensor
     !-------------------------------------------------------------------
 
-    call get_command_argument(2, arg_exp)
+    call get_command_argument(3, arg_exp)
     select case (arg_exp)
 
         ! RECALL COLUMN FIRST IN FORTRAN
@@ -115,10 +124,11 @@ program demo
     ! Initialize
     !-------------------------------------------------------------------
 
-    call initspecfab() 
-
-    ! Expansion coefs "n_l^m" are saved in the 1D array "nlm". Corresponding (l,m) values for the i'th coef (i.e. nlm(i)) are (l,m) = (lm(1,i),lm(2,i))
-    nlm = [(0,ii=1,nlm_len)] ! nlm_len = #DOFs
+    call initspecfab(Lcap) ! nlm_len is now defined (number of expansion coeffcients, i.e. #DOFs)
+    allocate(nlm(nlm_len))
+    nlm = [(0,ii=1,nlm_len)] ! Expansion coefs "n_l^m" are saved in the 1D array "nlm". Corresponding (l,m) values for the i'th coef (i.e. nlm(i)) are (l,m) = (lm(1,i),lm(2,i))
+    allocate(nlm_save(nlm_len,Nt))
+    allocate(dndt(nlm_len,nlm_len))
     
     select case (arg_exp)
         case ('rr_xz','rr_xy','rr_yz')
@@ -131,7 +141,7 @@ program demo
             nlm(1) = nlm(1)/f_ev_c0(nlm(1)) ! Normalize
     end select
     
-    write(*,"(A13,I4,A5,F12.10,A4,I2)") 'Numerics: Nt=', Nt, ', dt=', dt, ', L=', Lcap
+    write(*,"(A13,I4,A5,F12.10,A4,I2,A10,I3,A1)") 'Numerics: Nt=', Nt, ', dt=', dt, ', L=', Lcap, ' (nlm_len=',nlm_len,')'
 
     !-------------------------------------------------------------------
     ! Integrate
@@ -189,7 +199,7 @@ program demo
     
     call check( nf90_put_var(ncid, id_cre,   real(nlm_save)) )
     call check( nf90_put_var(ncid, id_cim,   aimag(nlm_save)) )
-    call check( nf90_put_var(ncid, id_lm,    lm) )
+    call check( nf90_put_var(ncid, id_lm,    lm(:,1:nlm_len)) )
     
     call check( nf90_put_var(ncid, id_eig,  eigvals_save) )
     call check( nf90_put_var(ncid, id_Eeiej, Eeiej_save) )

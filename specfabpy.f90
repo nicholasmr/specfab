@@ -1,24 +1,28 @@
 ! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2020
 
-! The structure and declarations in this file might seem odd, but allow a simple wrapping of specfab.f90 into Python module using f2py
+! The structure and declarations in this file might seem odd, but allow a simple wrapping of specfab.f90 into a Python module using F2PY
 
 module specfabpy
     
     use specfab    
 
     implicit none
-    
-    integer, parameter :: num_dofs = nlm_len
-    integer, parameter :: Ltrunc = Lcap
-    
+
 contains
 
-    subroutine init(nlmlen, lm_list) 
+    subroutine init(Lcap_, nlmlen) 
+        implicit none
+        integer, intent(in) :: Lcap_
+        integer, intent(out) :: nlmlen
+        call initspecfab(Lcap_)
+        nlmlen = nlm_len
+    end
+    
+    function get_lm(nlmlen)
         implicit none
         integer, intent(in) :: nlmlen
-        integer, intent(out) :: lm_list(2,nlmlen)
-        call initspecfab()
-        lm_list = lm 
+        integer :: get_lm(2,nlmlen)
+        get_lm(:,:) = lm(:,1:nlmlen)
     end
     
     function get_dndt_ij(nlmlen, eps,omg)
@@ -33,8 +37,6 @@ contains
     subroutine get_eigenframe(nlm, e1,e2,e3, eigvals)
         implicit none
         integer, parameter :: dp = 8 ! Default precision
-!        integer, intent(in) :: nlmlen
-!        complex(kind=dp), intent(in)  :: nlm(nlmlen)
         complex(kind=dp), intent(in)  :: nlm(:) ! f2py does not need to know the dimension
         real(kind=dp), dimension(3), intent(out) :: e1,e2,e3, eigvals
         call eigenframe(nlm, e1,e2,e3, eigvals)

@@ -13,27 +13,30 @@ TENPROD=tensorproducts
 ALLOBJS=$(SPECFAB).o $(TENPROD).o $(MOMENTS).o $(GAUNT).o
 ALLSRCS=$(ALLOBJS:.o=.f90)
 
-all: libspecfab.so demo
-
-libspecfab.so: $(ALLSRCS) $(ALLOBJS)
-	$(COMPILER) $(OPTS) -shared $(ALLSRCS) -o $@
+########################
 
 demopy: $(SPECFAB)py
 	mkdir -p solutions
 	@echo "-----------------------------------------------"
 	@echo "To get going, try running (instructions on how to plot the results will follow):"
-	@echo "python3 demo.py 3 uc_zz ::: for uniaxial compression (uc) in the vertical (z) with a nprime=3 grian rheology"
-	@echo "python3 demo.py 1 ue_zz ::: for uniaxial extension (ue) in the vertical (z) with a nprime=1 grian rheology"
-	@echo "python3 demo.py 3 ss_xz ::: for simple shear (ss) along the x--z plane with a nprime=3 grian rheology"
+	@echo "python3 demo.py 20 3 uc_zz ::: for uniaxial compression (uc) in the vertical (z) with a nprime=3 grian rheology and truncation L=20"
+	@echo "python3 demo.py 20 1 ue_zz ::: for uniaxial extension (ue) in the vertical (z) with a nprime=1 grian rheology and truncation L=20"
+	@echo "python3 demo.py 20 3 ss_xz ::: for simple shear (ss) along the x--z plane with a nprime=3 grian rheology and truncation L=20"
 
-demo: libspecfab.so
-	$(COMPILER) demo.f90 -L./ -lspecfab $(OPTS) $(OPTSNETCDF) -o demo
+demo: $(SPECFAB).o
+	$(COMPILER) demo.f90 $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o demo
 	mkdir -p solutions
 	@echo "-----------------------------------------------"
 	@echo "To get going, try running (instructions on how to plot the results will follow):"
-	@echo "./demo 3 uc_zz ::: for uniaxial compression (uc) in the vertical (z) with a nprime=3 grian rheology"
-	@echo "./demo 1 ue_zz ::: for uniaxial extension (ue) in the vertical (z) with a nprime=1 grian rheology"
-	@echo "./demo 3 ss_xz ::: for simple shear (ss) along the x--z plane with a nprime=3 grian rheology"
+	@echo "./demo 20 3 uc_zz ::: for uniaxial compression (uc) in the vertical (z) with a nprime=3 grian rheology and truncation L=20"
+	@echo "./demo 20 1 ue_zz ::: for uniaxial extension (ue) in the vertical (z) with a nprime=1 grian rheology and truncation L=20"
+	@echo "./demo 20 3 ss_xz ::: for simple shear (ss) along the x--z plane with a nprime=3 grian rheology and truncation L=20"
+
+demoso: lib$(SPECFAB).so
+	$(COMPILER) demo.f90 -L./ -lspecfab $(OPTS) $(OPTSNETCDF) -o demo
+	mkdir -p solutions
+
+########################
 
 $(SPECFAB)py: $(SPECFAB).o
 	f2py -lm -llapack -lblas -lfftw3 -I. $(ALLOBJS) -c -m specfabpy specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" --quiet
@@ -41,6 +44,11 @@ $(SPECFAB)py: $(SPECFAB).o
 $(SPECFAB).o: $(MOMENTS).o $(GAUNT).o
 	$(COMPILER) $(OPTS) -c $(TENPROD).f90 
 	$(COMPILER) $(OPTS) -c $(SPECFAB).f90
+
+lib$(SPECFAB).so: $(ALLSRCS) $(ALLOBJS)
+	$(COMPILER) $(OPTS) -shared $(ALLSRCS) -o $@
+
+########################
 
 $(MOMENTS).o: 
 	@echo "***************************************************************************************************"
