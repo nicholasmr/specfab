@@ -13,6 +13,6 @@ Unpublished
 
 ## Q&A
 - **Q** What *L* are possible?
-  - **A** Any 8<=*L*<=20. If higher *L* are required:
+  - **A** Any 4<=*L*<=20. If higher *L* are required:
     1. `cd include && python3 make_gaunt_coefs.py L` (replacing *L*)
     2. `make clean && make specfab.o`
