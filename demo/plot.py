@@ -14,18 +14,19 @@ if len(sys.argv) != 3:
     sys.exit(0)
 
 exprref = sys.argv[2]
-L = int(sys.argv[1])
+nprime = int(sys.argv[1])
 
 # Options
 latres = 40 # latitude resolution on S^2
 inclination = 50 # view angle
-rot = -90*1.4 # view angle
+rot0 = -90
+rot = 1.4*rot0 # view angle
 
 #------------------
 # Load solution
 #------------------
 
-fh = Dataset('solutions/solution_n%i_%s.nc'%(L, exprref), mode='r')
+fh = Dataset('solutions/solution_n%i_%s.nc'%(nprime, exprref), mode='r')
 loadvar = lambda field: np.array(fh.variables[field][:])
 
 # Grain rheology
@@ -53,6 +54,7 @@ omg = (ugrad - np.transpose(ugrad))/2
 #------------------
 
 plot_tsteps = [0, int(Nt*1/2), Nt-1] # time steps to plot
+#plot_tsteps = [0, Nt-1] # time steps to plot
 
 lw0, lw1, lw2 = 3, 2.2, 1 
 
@@ -102,15 +104,23 @@ for tt in plot_tsteps:
     # n(theta,phi) on S^2
     #----------------------
 
-    lvls = np.linspace(0,1,5+1) # Contour lvls
+    lvls = np.linspace(0,0.2,11) # Contour lvls
 
     F = np.real(np.sum([ c[tt,ii]*sp.sph_harm(m, l, phi,theta) for ii,(l,m) in enumerate(lm) ], axis=0))
+    F = np.divide(F, c[0,0]*np.sqrt(4*np.pi))
     hdistr = axdistr.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), levels=lvls, extend='max', cmap='Greys')
     kwargs_gridlines = {'ylocs':np.arange(-90,90+30,30), 'xlocs':np.arange(0,360+45,45), 'linewidth':0.5, 'color':'black', 'alpha':0.25, 'linestyle':'-'}
     gl = axdistr.gridlines(crs=ccrs.PlateCarree(), **kwargs_gridlines)
     gl.xlocator = mticker.FixedLocator(np.array([-135, -90, -45, 0, 90, 45, 135, 180]))
-    cb1 = plt.colorbar(hdistr, ax=axdistr, fraction=0.04, aspect=19,  orientation='horizontal', pad=0.1)   
-    cb1.set_label(r'$n(\theta,\phi)$', fontsize=FS)
+    cb1 = plt.colorbar(hdistr, ax=axdistr, fraction=0.04, aspect=19,  orientation='horizontal', pad=0.1, ticks=lvls[::2])   
+    cb1.set_label(r'$n(\theta,\phi)/N(t=0)$', fontsize=FS)
+    #
+    ax = axdistr
+    ax.plot([0],[90],'k.', transform=geo) # z dir
+    ax.plot([rot0],[0],'k.', transform=geo) # y dir
+    ax.plot([rot0-90],[0],'k.', transform=geo) # x dir
+    ax.text(rot0-80, 75, r'$\vu{z}$', horizontalalignment='left', transform=geo)
+    ax.text(rot0-13, -8, r'$\vu{y}$', horizontalalignment='left', transform=geo)
 
     #----------------------
     # Eigen values
@@ -154,6 +164,8 @@ for tt in plot_tsteps:
     lblmk    = lambda ii,jj: '$E_{e_%i e_%i}$'%(ii+1,jj+1)
     lblmk_pq = lambda ii,jj: '$E_{p_{%i%i} q_{%i%i}}$'%(ii+1,jj+1, ii+1,jj+1)
 
+    ncol = 3
+
     axEvw.semilogy(steps, Eeiej[:,0,0], 'r-',  label=lblmk(0,0), lw=lw0)
     axEvw.semilogy(steps, Eeiej[:,0,1], 'r--', label=lblmk(0,1), lw=lw0)
     axEvw.semilogy(steps, Eeiej[:,0,2], 'r:',  label=lblmk(0,2), lw=lw0)
@@ -166,6 +178,8 @@ for tt in plot_tsteps:
     axEvw.semilogy(steps, Eeiej[:,2,1], 'b-.', label=lblmk(2,1), lw=lw2)
     axEvw.semilogy(steps, Eeiej[:,2,2], 'b-',  label=lblmk(2,2), lw=lw2)    
 
+    ncol = 4
+#    axEvw.semilogy(steps, Epijqij[:,1],  'k-', label='$E_{mt}(I-3*pp)$', lw=lw1) 
     axEvw.semilogy(steps, Epijqij[:,2],  'y-', label=lblmk_pq(0,2), lw=lw1) 
     Eratio = np.divide(Eeiej[:,0,2],Epijqij[:,2])
     axEvw.semilogy(steps, Eratio, 'm-', label=lblmk(0,2)+'/'+lblmk_pq(0,2), lw=lw1)
@@ -174,7 +188,7 @@ for tt in plot_tsteps:
     lw=1
     axEvw.semilogy(xlims,[2.5,2.5],'--k',lw=lw) 
     axEvw.semilogy(xlims,[4.375,4.375],'--k',lw=lw) 
-    axEvw.legend(loc=4, ncol=4, handlelength=2, columnspacing=1.2, labelspacing=0.3, fancybox=False, bbox_to_anchor=(1.05,-0.55))
+    axEvw.legend(loc=4, ncol=ncol, handlelength=2, columnspacing=1.2, labelspacing=0.3, fancybox=False, bbox_to_anchor=(1.05,-0.55))
     axEvw.set_xlim(xlims)
     axEvw.set_ylim([np.amin([1e-1, np.amin(Eeiej[:]), np.amin(Epijqij[:])]), np.amax([1e+1, np.amax(Eeiej[:]), np.amax(Epijqij[:]), np.amax(Eratio)])])
     axEvw.set_xlabel('time step')

@@ -17,7 +17,8 @@ L = int(sys.argv[1])
 dl = 2
 def lm_generator(L): return [(int(l),int(m-l),int(m)) for l in np.arange(0,L+1,dl) for m in np.arange(0,2*l+1,1)] # NOTE: must be naitive int() vals for gaunt() to behave correctly.
 lm     = lm_generator(L) # full l,m list 
-lm_dyn = lm_generator(2) # dynamic catalyst l,m list 
+#lm_dyn = lm_generator(2) # dynamic catalyst l,m list :: if lattice rotation only
+lm_dyn = lm_generator(4) # dynamic catalyst l,m list  :: required for DDRX
 Nc = len(lm)
             
 def gauntmatrix(lm_j, lm_cat, wk=None, wj=None, delta_mj=0):
@@ -58,12 +59,12 @@ def savecoef(f, f90var, gaunt):
                 if np.abs(gaunt[ii,jj,kk])>1e-20:
                     f.write("%s(%i,%i,%i) = %f\n" % (f90var,kk+1,jj+1,ii+1,np.real(gaunt[ii,jj,kk])) )
 
-f = open("gaunt__head_L%i.f90"%(L), "w")
+f = open("gaunt__head.f90", "w")
 f.write('! L = %i \n'%(L))
 f.write('real(kind=dp), dimension(%i,%i,%i) :: GC=0.0, GCm=0.0, GC_m1=0.0, GC_p1=0.0 \n'%(len(lm_dyn),Nc,Nc))
 f.close()
 
-f = open("gaunt__body_L%i.f90"%(L), "w")
+f = open("gaunt__body.f90", "w")
 savecoef(f, 'GC', GC)
 savecoef(f, 'GCm', GCm)
 savecoef(f, 'GC_m1', GC_m1)

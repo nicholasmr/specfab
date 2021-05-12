@@ -37,11 +37,13 @@ if not(2 <= L <= 40):
 if arg_nprime == 1: nprime, Ecc, Eca = 1, 1, 1e4
 if arg_nprime == 3: nprime, Ecc, Eca = 3, 1, 1e2
 
+alpha = 0 # Sachs--Taylor weight: 0 = 100% Sachs, 1 = 100% Taylor
+
 #----------------------
 # Numerics
 #----------------------
 
-Nt = 300  # Number of integration points
+Nt = 230  # Number of integration points
 dt = 0.02 # Time-step size
 
 #----------------------
@@ -99,9 +101,11 @@ else:
 
 print('Numerics: Nt=%i, dt=%f, L=%i (nlm_len=%i)'%(Nt,dt,L,nlm_len))
 
+tau,Aprime,beta = 0*eps,0,1 # Fabric evolves by a plastic spin that depends on large-scale velocity gradient only (Taylor style => beta = 1).
+
 # Euler scheme
 for tt in np.arange(1,Nt):
-    nlm[tt,:] = nlm[tt-1,:] + dt*np.tensordot(sf.get_dndt_ij(nlm_len, eps, omg), nlm[tt-1,:], axes=(-1,0))
+    nlm[tt,:] = nlm[tt-1,:] + dt*np.tensordot(sf.get_dndt_ij(nlm_len, eps,omg, tau,Aprime,Ecc,Eca,beta), nlm[tt-1,:], axes=(-1,0))
 
 #----------------------
 # Aux state vars
@@ -121,10 +125,10 @@ for tt in np.arange(0,Nt):
     c = nlm[tt,:]
     
     e1[tt,:],e2[tt,:],e3[tt,:], eigvals[tt,:] = sf.get_eigenframe(c)
-    Eeiej[tt,:,:] = np.transpose(sf.get_eeiej(c, Ecc,Eca,nprime))
+    Eeiej[tt,:,:] = np.transpose(sf.get_eeiej(c, Ecc,Eca,alpha,nprime))
     
     p23[tt,:],p12[tt,:],p13[tt,:], q23[tt,:],q12[tt,:],q13[tt,:] = sf.get_pqframe(c)
-    Epijqij[tt,:] = sf.get_epijqij(c, Ecc,Eca,nprime)
+    Epijqij[tt,:] = sf.get_epijqij(c, Ecc,Eca,alpha,nprime)
     
 #----------------------
 # Save

@@ -9,7 +9,7 @@ program demo
 
     ! Numerics
     real, parameter    :: dt = 0.02 ! Time-step size
-    integer, parameter :: Nt = 300 ! Number of time steps
+    integer, parameter :: Nt = 230 ! Number of time steps
 
     ! Constants and argv strings    
     integer, parameter :: dp = 8
@@ -20,11 +20,12 @@ program demo
 
     ! Grain rheology
     real(kind=dp) :: Ecc, Eca ! Grain enhancement-factors
+    real(kind=dp), parameter :: alpha = 0 ! Sachs--Taylor weight: 0 = 100% Sachs, 1 = 100% Taylor
     integer :: nprime ! Grain power-law exponent: only 1 and 3 are possible.
     
     ! Fabric state and evolution
     integer :: Lcap ! Expansion series truncation
-    complex(kind=dp), allocatable :: nlm(:), dndt(:,:) ! Series expansion coefs and evolution matrix
+    complex(kind=dp), allocatable :: nlm(:), dndt(:,:), dndt_LROT(:,:), dndt_DDRX(:,:), dndt_REGL(:,:)  ! Series expansion coefs and evolution matrix
     real(kind=dp) :: ugrad(3,3), eps(3,3), omg(3,3) ! Large-scale deformation
 
     ! For dumping state to netCDF
@@ -129,6 +130,10 @@ program demo
     nlm = [(0,ii=1,nlm_len)] ! Expansion coefs "n_l^m" are saved in the 1D array "nlm". Corresponding (l,m) values for the i'th coef (i.e. nlm(i)) are (l,m) = (lm(1,i),lm(2,i))
     allocate(nlm_save(nlm_len,Nt))
     allocate(dndt(nlm_len,nlm_len))
+    allocate(dndt_LROT(nlm_len,nlm_len))
+    allocate(dndt_DDRX(nlm_len,nlm_len))
+    allocate(dndt_REGL(nlm_len,nlm_len))    
+
     
     select case (arg_exp)
         case ('rr_xz','rr_xy','rr_yz')
@@ -148,11 +153,16 @@ program demo
     !-------------------------------------------------------------------
 
     call savestate(nlm, 1) ! Save initial state    
-    dndt = dndt_ij(eps,omg) ! Assume constant strain-rate and spin
-   
+    dndt_LROT = dndt_ij_LROT(eps,omg, 0*eps,0.0d0,Ecc,Eca, 1.0d0) ! Assume constant strain-rate and spin with Taylor style plastic spin.
+    dndt_REGL = dndt_ij_REGL(eps, 0*eps, 0.0d0, 1.0d0) 
+    
     do tt = 2, Nt
 !        write(*,"(A9,I3)") '*** Step ', tt
-        nlm = nlm + dt * matmul(dndt,nlm) 
+        dndt_DDRX = 1d+1*dndt_ij_DDRX_full(nlm, eps)
+!        print *,nlm(1) ! DEBUG 
+        dndt = 0*dndt_LROT + dndt_DDRX + 1*dndt_REGL
+!        dndt = dndt_LROT + 0*dndt_DDRX + dndt_REGL
+        nlm = nlm + dt * matmul(dndt, nlm)
         call savestate(nlm, tt)
     end do
     
@@ -232,10 +242,10 @@ contains
         nlm_save(:,tt)  = nlm
 
         call eigenframe(nlm, e1_save(:,tt),e2_save(:,tt),e3_save(:,tt), eigvals_save(:,tt)) 
-        Eeiej_save(:,:,tt) = Eeiej(nlm, Ecc,Eca,nprime)
+        Eeiej_save(:,:,tt) = Eeiej(nlm, Ecc,Eca,alpha,nprime)
 
         call pqframe(nlm, p23_save(:,tt),p12_save(:,tt),p13_save(:,tt), q23_save(:,tt),q12_save(:,tt),q13_save(:,tt))
-        Epijqij_save(:,tt) = Epijqij(nlm, Ecc,Eca,nprime)
+        Epijqij_save(:,tt) = Epijqij(nlm, Ecc,Eca,alpha,nprime)
 
     end
     
