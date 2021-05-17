@@ -9,12 +9,11 @@ import sys, os, copy, code # code.interact(local=locals())
 # Input arguments
 #------------------
 
-if len(sys.argv) != 3: 
-    print('usage: %s nprime ugrad'%(sys.argv[0]))
+if len(sys.argv) != 2: 
+    print('usage: %s ugrad'%(sys.argv[0]))
     sys.exit(0)
 
-exprref = sys.argv[2]
-nprime = int(sys.argv[1])
+exprref = sys.argv[1]
 
 # Options
 latres = 40 # latitude resolution on S^2
@@ -26,7 +25,7 @@ rot = 1.4*rot0 # view angle
 # Load solution
 #------------------
 
-fh = Dataset('solutions/solution_n%i_%s.nc'%(nprime, exprref), mode='r')
+fh = Dataset('solutions/solution_%s.nc'%(exprref), mode='r')
 loadvar = lambda field: np.array(fh.variables[field][:])
 
 # Model config
@@ -97,7 +96,7 @@ for tt in plot_tsteps:
     gl = axdistr.gridlines(crs=ccrs.PlateCarree(), **kwargs_gridlines)
     gl.xlocator = mticker.FixedLocator(np.array([-135, -90, -45, 0, 90, 45, 135, 180]))
     cb1 = plt.colorbar(hdistr, ax=axdistr, fraction=0.04, aspect=19,  orientation='horizontal', pad=0.1, ticks=lvls[::2])   
-    cb1.set_label(r'$n(\theta,\phi)/N(t=0)$', fontsize=FS)
+    cb1.set_label(r'$\psi/N$ (ODF)', fontsize=FS)
     #
     ax = axdistr
     ax.plot([0],[90],'k.', transform=geo) # z dir
@@ -146,7 +145,7 @@ for tt in plot_tsteps:
     #----------------------
     # Save figure
     #----------------------
-    fout = 'solutions/solution_n%i_%s__%i.png'%(nprime,exprref, tt+1)
+    fout = 'solutions/solutionDRX_%s__%i.png'%(exprref, tt+1)
     print('Saving %s'%(fout))
     plt.savefig(fout,dpi=dpi)
 

@@ -11,7 +11,7 @@ module specfab
     integer, parameter, private :: dp = 8 ! Default precision
     real, parameter, private    :: Pi = 3.1415927
     integer, parameter, private :: x = 1, y = 2, z = 3 ! Matrix indices
-    complex(kind=dp), parameter, private :: r = (1,0), i = (0,1) ! shortcuts for real and imag units
+    complex(kind=dp), parameter, private :: r = (1,0), i = (0,1) ! real and imag units
     integer, private :: ii, jj, kk, ll, mm ! Loop indicies
 
     ! Expansion series --- n(theta,phi) = sum_{l,m}^{Lcap,:} n_l^m Y_l^m(theta,phi) where nlm (= n_l^m) = (n_0^0, n_2^-2, n_2^-1, n_2^0, n_2^1, n_2^2, n_4^-4, ... ) 
@@ -22,10 +22,25 @@ module specfab
     integer, parameter :: lm(2,nlm_len__max) = reshape([( (ll,mm, mm=-ll,ll), ll=0,  Lcap__max,2)], [2,nlm_len__max]) ! These are the (l,m) values corresponding to the coefficients in "nlm".
     integer, parameter :: I_l0=1, I_l2=I_l0+1, I_l4=I_l2+(2*2+1), I_l6=I_l4+(2*4+1), I_l8=I_l6+(2*6+1), I_l10=I_l8+(2*8+1) ! Indices for extracting l=0,2,4,6,8 coefs of nlm
 
+    ! Dynamics
+    complex(kind=dp), private, allocatable :: regmat(:,:) ! Unscaled regularization matrix
+
     ! Ehancement-factor related
     real(kind=dp), private :: ev_c2_iso(3,3), ev_c4_iso(3,3,3,3), ev_c6_iso(3,3,3,3, 3,3), ev_c8_iso(3,3,3,3, 3,3,3,3) ! <c^k> for isotropic n(theta,phi)
     real(kind=dp), parameter, private :: identity(3,3)  = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
     real(kind=dp), parameter, private :: identity9(9,9) = reshape([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], [9,9])
+    
+    ! Optimal n'=1 (lin) grain parameters 
+    ! These are the linear mixed Taylor--Sachs best-fit parameters from Rathmann and Lilien (2021)
+    real(kind=dp), parameter :: Eca_opt_lin   = 1d3
+    real(kind=dp), parameter :: Ecc_opt_lin   = 1d0
+    real(kind=dp), parameter :: alpha_opt_lin = 0.0125
+    
+    ! Optimal n'=3 (nlin) grain parameters 
+    ! These are the nonlinear Sachs-only best-fit parameters (Rathmann et. al, 2021) 
+    real(kind=dp), parameter :: Eca_opt_nlin   = 1d2
+    real(kind=dp), parameter :: Ecc_opt_nlin   = 1d0
+    real(kind=dp), parameter :: alpha_opt_nlin = 0
     
 contains      
 
@@ -50,13 +65,25 @@ subroutine initspecfab(Lcap_)
     ! Set isotropic structure tensors
     nlm_iso(1) = 1
     call ck_moments(nlm_iso, ev_c2_iso,ev_c4_iso,ev_c6_iso,ev_c8_iso)
+    
+    ! Laplacian regularization (unscaled)
+    allocate(regmat(nlm_len,nlm_len))
+    regmat = 0.0 ! initialize
+    do ii = 1, nlm_len    
+        do jj = 1, nlm_len    
+            if (ii .eq. jj) then
+                regmat(ii,ii) = -(lm(1,ii)*(lm(1,ii)+1))**(1.5) ! if expo > 1 => hyper diffusion
+            end if
+        end do
+    end do
+    
 end
 
 !---------------------------------
-! FABRIC EVOLUTION PROCESSES
+! FABRIC DYNAMICS
 !---------------------------------
 
-function dndt_ij_LROT(eps,omg, tau,Aprime,Ecc,Eca, beta)  
+function dndt_ij_ROT(eps,omg, tau,Aprime,Ecc,Eca, beta)  
 
     ! *** LATTICE ROTATION ***
 
@@ -70,8 +97,8 @@ function dndt_ij_LROT(eps,omg, tau,Aprime,Ecc,Eca, beta)
 
     real(kind=dp), intent(in) :: eps(3,3), omg(3,3), tau(3,3) ! strain-rate (eps), spin (omg), dev. stress (tau)
     real(kind=dp), intent(in) :: Aprime, Ecc, Eca, beta
-    complex(kind=dp) :: dndt_ij_LROT(nlm_len,nlm_len), qe(-2:2), qt(-2:2), qo(-1:1)
-    integer, parameter :: lmdyn_len = 6 ! Scope of harmonic interactions is local in wave space (this is NOT a free parameter)
+    complex(kind=dp) :: dndt_ij_ROT(nlm_len,nlm_len), qe(-2:2), qt(-2:2), qo(-1:1)
+    integer, parameter :: lmdyn_len = 6 ! Scope of harmonic interactions is local in wave space (this is *not* a free parameter)
     complex(kind=dp), dimension(lmdyn_len) :: g0,     gz,     gn,     gp
     complex(kind=dp), dimension(lmdyn_len) :: g0_rot, gz_rot, gn_rot, gp_rot
     complex(kind=dp), dimension(lmdyn_len) :: g0_Sac, gz_Sac, gn_Sac, gp_Sac
@@ -111,7 +138,7 @@ function dndt_ij_LROT(eps,omg, tau,Aprime,Ecc,Eca, beta)
     ! Contruct rate-of-change matrix
     do ii = 1, nlm_len    
         do jj = 1, nlm_len    
-            dndt_ij_LROT(jj,ii) = -1*sum([( &
+            dndt_ij_ROT(jj,ii) = -1*sum([( &
                     GC(   kk,ii,jj)*g0(kk) + &
                     GCm(  kk,ii,jj)*gz(kk) + &
                     GC_m1(kk,ii,jj)*gn(kk) + &
@@ -121,7 +148,7 @@ function dndt_ij_LROT(eps,omg, tau,Aprime,Ecc,Eca, beta)
     
 end
 
-function dndt_ij_DDRX_full(nlm, tau)
+function dndt_ij_DRX(nlm, tau)
 
     ! *** Dynamic recrystalization (DRX) ***
     ! 
@@ -136,11 +163,11 @@ function dndt_ij_DDRX_full(nlm, tau)
     implicit none
 
     complex(kind=dp), intent(in) :: nlm(nlm_len)
-    real(kind=dp), intent(in) :: tau(3,3) ! DDRX rate contant, dev. stress tensor
-    complex(kind=dp) :: dndt_ij_DDRX_full(nlm_len,nlm_len)
+    real(kind=dp), intent(in) :: tau(3,3) ! Deviatoric stress tensor
+    complex(kind=dp) :: dndt_ij_DRX(nlm_len,nlm_len)
     real(kind=dp) :: Davg, Davgtensor(nlm_len,nlm_len)
 
-    dndt_ij_DDRX_full = dndt_ij_DDRX(tau)
+    dndt_ij_DRX = dndt_ij_DRX_src(tau)
     
     ! <D> (diagonal matrix)
     Davg = doubleinner22(matmul(tau,tau), a2_ij(nlm)) - doubleinner22(tau,doubleinner42(a4_ijkl(nlm),tau)) ! (tau.tau):a2 - tau:a4:tau 
@@ -153,42 +180,43 @@ function dndt_ij_DDRX_full(nlm, tau)
         end do
     end do
     
-    dndt_ij_DDRX_full = dndt_ij_DDRX_full - Davgtensor/doubleinner22(tau,tau) ! Combine everthing: (D - <D>)/(tau:tau) 
+    ! Add add (nonlinear) sink term such that Gamma/Gamma0 = (D - <D>)/(tau:tau) 
+    dndt_ij_DRX = dndt_ij_DRX - Davgtensor/doubleinner22(tau,tau) ! This is Gamma/Gamma_0. The caller must multiply by an appropriate DRX rate factor, Gamma_0(T,tau,eps,...).
 end
 
-function dndt_ij_DDRX(tau)  
+function dndt_ij_DRX_src(tau)  
 
-    ! Subroutine to calculate the orientation-dependent term of DRX
+    ! Calculates the ODF-independent (linear) source term of DRX 
 
     implicit none
 
-    real(kind=dp), intent(in) :: tau(3,3) ! DDRX rate contant, dev. stress tensor
-    complex(kind=dp) :: dndt_ij_DDRX(nlm_len,nlm_len), qt(-2:2)
-    integer, parameter :: lmDDRX_len = 1+5+9 ! Scope of harmonic interactions is local in wave space (this is NOT a free parameter)
+    real(kind=dp), intent(in) :: tau(3,3) ! DRX rate contant, dev. stress tensor
+    complex(kind=dp) :: dndt_ij_DRX_src(nlm_len,nlm_len), qt(-2:2)
+    integer, parameter :: lmDRX_len = 1+5+9 ! Scope of harmonic interactions is local in wave space (this is NOT a free parameter)
     real(kind=dp) :: k
-    complex(kind=dp), dimension(lmDDRX_len) :: g
+    complex(kind=dp), dimension(lmDRX_len) :: g
 
     ! Quadric expansion coefficients
     qt = rrquad(tau)
 
     ! Harmonic interaction weights 
-    include "include/DDRX__body.f90"
+    include "include/DRX__body.f90"
 
     ! D
     do ii = 1, nlm_len    
-        do jj = 1, nlm_len    
-            dndt_ij_DDRX(jj,ii) = sum([ (GC(kk,ii,jj) * k*g(kk), kk=1,lmDDRX_len) ])
+        do jj = 1, nlm_len 
+            dndt_ij_DRX_src(jj,ii) = sum([ (GC(kk,ii,jj) * k*g(kk), kk=1,lmDRX_len) ])
         end do
     end do
     
-    dndt_ij_DDRX = dndt_ij_DDRX/doubleinner22(tau,tau) 
+    dndt_ij_DRX_src = dndt_ij_DRX_src/doubleinner22(tau,tau) 
 end
 
 !---------------------------------
 ! REGULARIZATION 
 !---------------------------------
 
-function dndt_ij_REGL(eps, tau,Aprime, beta) 
+function dndt_ij_REG() 
 
     ! *** LAPLACIAN REGULARIZATION ***
 
@@ -199,60 +227,59 @@ function dndt_ij_REGL(eps, tau,Aprime, beta)
     ! where "nlm" is the vector of spectral coefficient n_l^m   
 
     implicit none
+    complex(kind=dp) :: dndt_ij_REG(nlm_len,nlm_len)
 
-    real(kind=dp), intent(in) :: eps(3,3), tau(3,3) ! strain-rate (eps), spin (omg), dev. stress (tau)
-    real(kind=dp), intent(in) :: Aprime, beta
-    complex(kind=dp) :: dndt_ij_REGL(nlm_len,nlm_len)
+    dndt_ij_REG = regmat ! The caller must multiply by the regularization strength f_nu(nu0, eps, ...)
+end
+
+function f_nu(nu0, beta, eps, tau, Aprime) result (nu)
+    
+    ! Regularization strength
+    
+    implicit none
+    
+    real(kind=dp), intent(in) :: nu0, beta, eps(3,3),tau(3,3), Aprime
     real(kind=dp) :: nu, etaprime
 
-    ! Laplacian regularization is a diagonal matrix
-    dndt_ij_REGL = 0.0
-    etaprime = Aprime*doubleinner22(tau,tau) ! Assumes eta' = A'*(I2(tau)) (i.e. n'=3).
-    nu = beta*f_nu(eps) + (1-beta)*f_nu2(etaprime*tau)
-    do ii = 1, nlm_len    
-        do jj = 1, nlm_len    
-            if (ii .eq. jj) then
-                dndt_ij_REGL(ii,ii) = -nu * (lm(1,ii)*(lm(1,ii)+1))**(1.5) ! if expo > 1 ==> hyper diffusion
-            end if
-        end do
-    end do
+    if (beta .le. 1.0d-20) then 
+        nu = f_nu_eps(nu0, eps) ! Seperate (faster) calculation if beta=0
+    else 
+        etaprime = Aprime*doubleinner22(tau,tau) ! Assumes eta' ~= A'*(I2(tau)) (i.e. n'=3).
+        nu = beta*f_nu_eps(nu0, eps) + (1-beta)*etaprime*f_nu_tau(nu0, tau)    
+    end if
 
 end
 
-function f_nu(eps) result (nu)
+function f_nu_eps(nu0, eps) result (nu)
     
-    ! Regularization diffusion coefficient.
     ! Calculates optimal nu as a function of Lcap and norm2(eps).
     
     implicit none
     
     real(kind=dp), intent(in) :: eps(3,3)
-    real(kind=dp) :: nu
+    real(kind=dp) :: nu0, nu
+    real(kind=dp), parameter :: L0=10
     
-!    real(kind=dp), parameter :: L0=10, nu0=5e-2 ! Used for DEMO scripts
-!    real(kind=dp), parameter :: L0=10, nu0=7e-3 ! Diffusion exponent = 1.5 ::: Medium, use with L=8 for calb. GRIP core
-!    real(kind=dp), parameter :: L0=10, nu0=0.5e-3 ! Diffusion exponent = 1.5 ::: Loose, for inv. problems
-    real(kind=dp), parameter :: L0=10, nu0=0.1e-3 ! Diffusion exponent = 1.5 ::: Very loose, experimental
+    ! nu0=5.0e-2 ! Used for DEMO scripts
+    ! nu0=0.5e-3 ! Medium loose
+    ! nu0=0.1e-3 ! Used for JOSEF
 
-    if (nu0 .le. 1.0d-20) then ! For debugging the regularization
-        nu = 3e-3
-    else 
-        nu = nu0*(Lcap/L0)**(-1.1)
-    end if
-    
-    nu = nu*norm2(reshape(eps,[size(eps)]))
+    nu = nu0 * (Lcap/L0)**(-1.1) * norm2(reshape(eps,[size(eps)]))
 end
 
-function f_nu2(tau) result (nu)
+function f_nu_tau(nu0, tau) result (nu)
+    
+    ! Calculates optimal nu as a function of Lcap and norm2(tau).
     
     implicit none
     
     real(kind=dp), intent(in) :: tau(3,3)
-    real(kind=dp) :: nu
-    real(kind=dp), parameter :: L0=10, nu0=5e1 !  Diffusion exponent = 1.0 --- nu0>=10e-2 seems very safe, 8e-2 is OK.
-
-    nu = nu0 *(Lcap/L0)**(-0.4)
-    nu = nu*norm2(reshape(tau,[size(tau)]))
+    real(kind=dp) :: nu0, nu
+    real(kind=dp), parameter :: L0=10
+    
+    ! nu0=5e1 ! Fitted
+    
+    nu = nu0 * (Lcap/L0)**(-0.4) * norm2(reshape(tau,[size(tau)]))
 end
 
 
@@ -290,48 +317,6 @@ function tpquad(M) result (q1m)
     
     ! components (1,-1), (1,0), (1,+1)
     q1m = fsq1*[r*M(y,z)-i*M(x,z), r*sqrt(2.)*M(x,y), -r*M(y,z)-i*M(x,z)]
-end
-
-!---------------------------------
-! CONVERT BETWEEN SPECTRAL AND TENSORIAL FORMALISMS
-!---------------------------------
-
-function ai_to_nlm(a2, a4) result(nlm)
-
-    implicit none
-    
-    real(kind=dp), intent(in) :: a2(3,3), a4(3,3,3,3)
-    complex(kind=dp) :: nlm(nlm_len)
-    
-    nlm = 0.0 ! init
-    
-    ! Sets l=0,2,4 modes
-    include "include/ci2nlm__body.f90"
-
-end
-
-function da2dt_DRX(tau, a2, a4)
-    
-    ! Returns DRX contribution to d/dt a^(2)  
-    ! 
-    !  *** The caller must multiply with the appropriate rate factor Gamma_0(T, tau, ...) ***
-    
-    implicit none
-
-    real(kind=dp), intent(in) :: tau(3,3), a2(3,3), a4(3,3,3,3)
-    real(kind=dp) :: da2dt_DRX(3,3)
-    complex(kind=dp) :: nlm(nlm_len), ddt_nlm(nlm_len)
-    
-    ! (1) tensorial --> spectral
-    nlm = ai_to_nlm(a2, a4)
-    
-    ! (2) Calculate spectral evolution due to DRX
-    ddt_nlm = matmul(dndt_ij_DDRX_full(nlm, tau), nlm) ! d/dt(nlm) = M_ij nlm_j 
-    
-    ! (3) spectral --> tensorial 
-    da2dt_DRX = f_ev_c2( (1d0,0)/Sqrt(4*Pi), nlm(I_l2:(I_l4-1)) ) ! ...Assumes normalized ODF: n00 = 1/sqrt(4*pi) 
-    da2dt_DRX = da2dt_DRX - identity/3.0 ! Remove time-constant isotropic (monopole) part due to calculating a^2 using f_ev_c2() 
-    
 end
 
 !---------------------------------
@@ -379,141 +364,8 @@ subroutine pqframe(nlm, p23,p12,p13, q23,q12,q13)
     q13 = (e1-e3)/sqrt(2.0) ! q_{e1,e3} 
 end
 
-!---------------------------------
-! FABRIC STATE 
-! ... COMBINED INFORMATION NEEDED FOR FLOW MODELS
-!---------------------------------
-
-subroutine mtframe_threedimensional(nlm, m,t, am,at1,at2, Emm,Emt, Exx,Exy,Exz, fabtype,  Ecc,Eca,alpha,nprime)
-
-    implicit none
-    
-    complex(kind=dp), intent(in) :: nlm(nlm_len)
-    real(kind=dp), intent(out) :: m(3),t(3), am,at1,at2, Emm,Emt, Exx,Exy,Exz, fabtype ! (m,t) = two-dimension vectors (x,z coords)
-    real(kind=dp), intent(in) :: Ecc, Eca, alpha
-    integer, intent(in) :: nprime
-    
-    real(kind=dp), dimension(3):: e1,e2,e3, eigvals
-    real(kind=dp), dimension(3), parameter :: ex=[1,0,0],ey=[0,1,0],ez=[0,0,1]
-    
-    call eigenframe(nlm, e1,e2,e3, eigvals) ! a(e1) >= a(e2) >= a(e3)
-
-    ! if isotropic, this will be the state
-    m = ey
-    t = ex
-    fabtype = 1
-    
-    ! Single max ?
-    if ((eigvals(1) >= 1./3) .and. (eigvals(2) <= 1./3)) then
-        fabtype = 1
-        m = e1
-        t = e2 
-        am  = eigvals(1)
-        at1 = eigvals(2)
-        at2 = eigvals(3)
-    end if
-    
-    ! Girdle ?
-    if ((eigvals(1) >= 1./3) .and. (eigvals(2) >= 1./3)) then
-        fabtype = 0
-        m = e3
-        t = e2 
-        am  = eigvals(3)
-        at1 = eigvals(2)
-        at2 = eigvals(1)
-    end if
-    
-    if (m(1)<0.0) then
-        m = -1.0*m
-        t = -1.0*t
-    end if
-    
-    Emm = Evw(outerprod(m,m), tau_vv(m),   nlm, Ecc,Eca,alpha,nprime) ! Longitidinal
-    Emt = Evw(outerprod(m,t), tau_vw(m,t), nlm, Ecc,Eca,alpha,nprime) ! Shear
-
-    Exx = Evw(outerprod(ex,ex), tau_vv(ex),     nlm, Ecc,Eca,alpha,nprime) ! Longitidinal
-    Exy = Evw(outerprod(ex,ey), tau_vw(ex,ey),  nlm, Ecc,Eca,alpha,nprime) ! Shear
-    Exz = Evw(outerprod(ex,ez), tau_vw(ex,ez),  nlm, Ecc,Eca,alpha,nprime) ! Shear
-
-end
-
-subroutine mtframe_twodimensional(nlm, m,t, am,at, Emm,Emt, Exx,Exz, fabtype,  Ecc,Eca,alpha,nprime)
-
-    implicit none
-    
-    complex(kind=dp), intent(in) :: nlm(nlm_len)
-    real(kind=dp), intent(out) :: m(2),t(2), am,at, Emm,Emt, Exx,Exz, fabtype ! (m,t) = two-dimension vectors (x,z coords)
-    real(kind=dp), intent(in) :: Ecc, Eca, alpha
-    integer, intent(in) :: nprime
-    
-    real(kind=dp), dimension(3):: m3,t3, e1,e2,e3, eigvals ! (m3,t3) = three-dimensional (m,t)
-    real(kind=dp), dimension(3), parameter :: ex=[1,0,0],ey=[0,1,0],ez=[0,0,1]
-    
-    call eigenframe(nlm, e1,e2,e3, eigvals) ! a(e1) >= a(e2) >= a(e3)
-    
-    m3 = ez
-    t3 = ex
-    m = [0,1]
-    t = [1,0]
-    fabtype = 1
-    
-    ! Single max ?
-    if ( (eigvals(1) >= 1./3) .and. (eigvals(2) <= 1./3)) then
-        fabtype = 1
-        m3 = e1
-        m  = e1([1,3])
-        am = eigvals(1)
-        if (abs(e2(2)) < 1e-20) then ! Vanishing y-comp? Then this eigenvector is in the x--z plane (and is therefore "t") 
-            t3 = e2
-            t  = e2([1,3])
-            at = eigvals(2)
-        else
-            t3 = e3
-            t  = e3([1,3])
-            at = eigvals(3)           
-        end if
-    end if
-    
-    ! Girdle ?
-    if ( (eigvals(1) >= 1./3) .and. (eigvals(2) >= 1./3)) then
-        fabtype = 0
-        m3 = e3
-        m  = e3([1,3])
-        am = eigvals(3)
-        if (abs(e2(2)) < 1e-20) then ! Vanishing y-comp? Then this eigenvector is in the x--z plane (and is therefore "t") 
-            t3 = e2
-            t  = e2([1,3])
-            at = eigvals(2)
-        else
-            t3 = e1
-            t  = e1([1,3])
-            at = eigvals(1)
-        end if
-    end if
-    
-    if (m(2)<0) then
-        m = -1.0*m
-        t = -1.0*t
-        m3 = -1.0*m3
-        t3 = -1.0*t3
-    end if
-   
-    if ( NORM2(m) .lt. 0.99999999999D0 ) then
-        print *,'m=', m
-        print *,'norm2(m)=',NORM2(m)
-        print *,'e1=', e1
-        print *,'e2=', e2
-        print *,'e3=', e3
-!        stop 'm not normalized!'
-    end if
-    
-    Emm = Evw(outerprod(m3,m3), tau_vv(m3),     nlm, Ecc,Eca,alpha,nprime) ! Longitidinal
-    Emt = Evw(outerprod(m3,t3), tau_vw(m3,t3),  nlm, Ecc,Eca,alpha,nprime) ! Shear
-
-    Exx = Evw(outerprod(ex,ex), tau_vv(ex),     nlm, Ecc,Eca,alpha,nprime) ! Longitidinal
-    Exz = Evw(outerprod(ex,ez), tau_vw(ex,ez),  nlm, Ecc,Eca,alpha,nprime) ! Shear
-
-end
+! Collection of routines used for numerical ice-flow model in FEniCS
+include "frame.f90"
 
 !---------------------------------
 ! ORIENTATION (STRUCTURE) TENSORS
@@ -545,7 +397,7 @@ end
       
 function a2_ij(nlm) 
     
-    ! a^(2) = <c^2> 
+    ! a^(2) := <c^2> 
     
     implicit none
     
@@ -559,7 +411,7 @@ end
 
 function a4_ijkl(nlm) 
     
-    ! a^(4) = <c^4> 
+    ! a^(4) := <c^4> 
     
     implicit none
     
@@ -570,6 +422,59 @@ function a4_ijkl(nlm)
     n2m = nlm(I_l2:(I_l4-1))
     n4m = nlm(I_l4:(I_l6-1))
     a4_ijkl = f_ev_c4(nlm(1),n2m,n4m)
+end
+
+!---------------------------------
+! SPECTRAL TO TENSORIAL CONVERSION
+!---------------------------------
+
+function a2_to_nlm(a2) result(nlm)
+    
+    ! Given a^(2), returns the equivelent spectral coefs assuming the true ODF is truncated at L=2 (higher order modes vanish)
+
+    implicit none
+    
+    real(kind=dp), intent(in) :: a2(3,3)
+    complex(kind=dp) :: nlm(nlm_len)
+    
+    nlm = 0.0 ! init
+    include "include/a2_to_nlm__body.f90"
+end
+
+function a4_to_nlm(a2, a4) result(nlm)
+
+    ! Given a^(2) and a^(4), returns the equivelent spectral coefs assuming the true ODF is truncated at L=4 (higher order modes vanish)
+
+    implicit none
+    
+    real(kind=dp), intent(in) :: a2(3,3), a4(3,3,3,3)
+    complex(kind=dp) :: nlm(nlm_len)
+    
+    nlm = 0.0 ! init
+    include "include/a4_to_nlm__body.f90"
+end
+
+function da2dt_DRX(tau, a2, a4)
+    
+    ! Returns DRX contribution to d/dt a^(2) --- useful routine for external tensorially-based fabric models 
+    ! 
+    !  *** The caller must multiply with the appropriate rate factor Gamma_0(T, tau, ...) ***
+    
+    implicit none
+
+    real(kind=dp), intent(in) :: tau(3,3), a2(3,3), a4(3,3,3,3)
+    real(kind=dp) :: da2dt_DRX(3,3)
+    complex(kind=dp) :: nlm(nlm_len), ddt_nlm(nlm_len)
+    
+    ! (1) tensorial --> spectral
+    nlm = a4_to_nlm(a2, a4)
+    
+    ! (2) Calculate spectral evolution due to DRX
+    ddt_nlm = matmul(dndt_ij_DRX(nlm, tau), nlm) ! d/dt(nlm) = M_ij nlm_j 
+    
+    ! (3) spectral --> tensorial 
+    da2dt_DRX = f_ev_c2( (1d0,0)/Sqrt(4*Pi), nlm(I_l2:(I_l4-1)) ) ! ...Assumes normalized ODF: n00 = 1/sqrt(4*pi) 
+    da2dt_DRX = da2dt_DRX - identity/3.0 ! Remove time-constant isotropic (monopole) part due to calculating <c^2> using f_ev_c2() 
 end
 
 !---------------------------------

@@ -1,4 +1,4 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk> 
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2021
 
 program demo
 
@@ -16,11 +16,6 @@ program demo
     integer :: ii,tt ! loop vars
     character(len=5) :: arg_exp 
 
-    ! Grain rheology
-    real(kind=dp), parameter :: Ecc = 1, Eca = 1 ! Grain enhancement-factors
-    real(kind=dp), parameter :: alpha = 0        ! Sachs--Taylor weight: 0 = 100% Sachs, 1 = 100% Taylor
-    integer, parameter       :: nprime = 1       ! Grain power-law exponent: only 1 and 3 are possible.
-    
     ! Fabric state and evolution
     integer, parameter :: Lcap = 4 ! Expansion series truncation
     complex(kind=dp), allocatable :: nlm(:), nlmiso(:), dndt(:,:) ! Series expansion coefs and evolution matrix
@@ -103,7 +98,7 @@ program demo
     nlmiso = [(0,ii=1,nlm_len)] 
     
     nlmiso(1) = (1,0)
-    nlmiso(1) = nlmiso(1)/f_ev_c0(nlmiso(1)) ! Normalize such that integral over ODF = 1
+    nlmiso(1) = nlmiso(1)/f_ev_c0(nlmiso(1)) ! Normalize such that integral over ODF is 1
 
     ! Init with isotropy
     nlm = nlmiso
@@ -129,12 +124,12 @@ program demo
 
         write(*,"(A9,I3)") '*** Step ', tt
 
-!        print *,'*** nlm consistency check ***'
-!        print *, nlm
-!        print *, ai_to_nlm(a2_ij(nlm), a4_ijkl(nlm))
+        print *,'*** nlm consistency check ***'
+        print *, nlm
+        print *, a4_to_nlm(a2_ij(nlm), a4_ijkl(nlm))
         
         ! Spectral representation
-        dndt = Gamma0 * dndt_ij_DDRX_full(nlm, tau)   ! Tau is assumed constant, but since DRX rate depends on the state itself (i.e. DRX is nonlinear), it must be called for each time step.
+        dndt = Gamma0 * dndt_ij_DRX(nlm, tau) ! Tau is assumed constant, but since DRX rate depends on the state itself (i.e. DRX is nonlinear), it must be called for each time step.
         nlm_save(:,tt) = nlm + dt * matmul(dndt, nlm) ! Spectral coefs evolve by a linear transformation
         a2_true_save(:,:,tt) = a2_ij(nlm)
 
@@ -152,7 +147,7 @@ program demo
     ! Dump solution to netCDF
     !-------------------------------------------------------------------
     
-    write (fname_sol,"('solutions/solution_n',I1.1,'_',A5,'.nc')") nprime, arg_exp
+    write (fname_sol,"('solutions/solution_',A5,'.nc')") arg_exp
     call check( nf90_create(fname_sol, NF90_CLOBBER, ncid) )
     
     call check(nf90_put_att(ncid,NF90_GLOBAL, "tsteps", Nt))
@@ -187,7 +182,7 @@ program demo
 
     print *, 'Solution dumped in ', fname_sol
     print *, "Plot result:"
-    write(*,"(A19,I2,A1,A5)") "python3 plotDRX.py ", nprime," ", arg_exp
+    write(*,"(A20,A5)") "python3 plotDRX.py ", arg_exp
 
 contains
 

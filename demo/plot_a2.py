@@ -1,11 +1,21 @@
 #!/usr/bin/python3
-# N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2020
+# N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2021
 
-# Any ODF(theta,phi) can expanded in terms of spherical harmonics Y_l^m(theta,phi): ODF(theta,phi) = sum_{l,m} c_l^m Y_l^m(theta,phi).
-# The second order structure tensor, a^(2), measures (by definition) the overlap between the ODF and the lowest-order harmonics Y_0^0 and Y_2^m (for any m=-2,-1,...,2).
-# Since a^(2) is symmetric, it contains six unique components. Hence, the six lowest-order wavenumber coefficients c_0^0 and c_2^m can be reconstructed from a^(2).
-# The reconstructed ODF (truncated at L<=2) will, however, not represent the true ODF (from which a^(2) was derived) unless all higher-order wavenumber components vanish (c_l^m=0 for l>2).
-# The reconstructed truncated ODF is therefore not guaranteed to be strictly positive.
+"""
+Any ODF(theta,phi) can expanded in terms of spherical harmonics Y_l^m(theta,phi): 
+    
+    ODF(theta,phi) = sum_{l,m} c_l^m Y_l^m(theta,phi).
+    
+The second-order structure tensor, a^(2), measures the overlap between the ODF and the lowest-order harmonic modes Y_0^0 and Y_2^m (for all m=-2,-1,0,1,2):
+
+    a^(2) := <c^2> := <c^2|ODF>  (3x3 matrix)
+
+Since a^(2) is symmetric, it contains six unique components. 
+It turns out that the six lowest-order coefficients of the ODF, c_0^0 and c_2^m, can be re-constructed from a^(2).
+Reconstructed the ODF from a^(2) will, however, not represent the true ODF unless all higher-order wavenumber components vanish (c_l^m=0 for l>2).
+The reconstructed ODF is therefore not guaranteed to be strictly positive, but *would be* if higher-order modes were derived from the higher-order structure tensors, too (not supported).
+The reconstructed ODF is nonetheless exact in the lowest-order modes (l<=2).
+"""
 
 import sys, os, code, copy # code.interact(local=locals())
 import numpy as np
@@ -14,6 +24,8 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import cartopy.crs as ccrs
+
+from specfabpy import specfabpy as sf
 
 #------------------
 # Plot resolution and options
@@ -38,35 +50,31 @@ lvls = np.linspace(0, 0.4, 6) # Contour levels
 #------------------
 
 def a2plot(a2):
-    
-    x=0;y=1;z=2;
-    k = np.sqrt(15/(2*np.pi))
 
-    # ODF expansion coefs from a^2
-    c00  =  (a2[x,x]+a2[y,y]+a2[z,z])/np.sqrt(4*np.pi)
-    c20  = -1/4*np.sqrt(5/np.pi)*(a2[x,x]+a2[y,y]-2*a2[z,z])
-    c22m =  k/4*(a2[x,x]+2j*a2[x,y]-a2[y,y]) # c_2^{-2}
-    c22p =  k/4*(a2[x,x]-2j*a2[x,y]-a2[y,y]) # c_2^{+2}
-    c21m = +k/2*(a2[x,z]+1j*a2[y,z])
-    c21p = -k/2*(a2[x,z]-1j*a2[y,z])
+    # Determine spectral coefs from a^(2)    
+    nlm_len = sf.init(2)
+    lm      = sf.get_lm(nlm_len)
+    clm     = sf.get_a2_to_nlm(nlm_len,a2)
+
+    # Check that re-calculating a2 from clm indeed gives a2 as passed to a2plot()
+#    print(a2)
+#    print(sf.get_a2_ij(clm))
 
     # Discretize ODF 
-    lm  = [(0,0), (2,-2), (2,-1), (2,0), (2,+1), (2,+2)]
-    clm = [c00, c22m, c21m, c20, c21p, c22p]
-    ODF = np.sum([ clm[ii]*sp.sph_harm(m, l, phi,theta) for ii,(l,m) in enumerate(lm) ], axis=0)
+    ODF = np.sum([ clm[ii]*sp.sph_harm(m, l, phi,theta) for ii,(l,m) in enumerate(lm.T) ], axis=0)
     ODF = np.real(ODF) # Any imag values are rounding errors.
     
     # Plot ODF
     fig = plt.figure()
     gs = gridspec.GridSpec(1,1)
     ax = plt.subplot(gs[0, 0], projection=prj)
-    ax.set_global(); 
+    ax.set_global();
     cmap = copy.copy(mpl.cm.get_cmap("Greys"))
     h = ax.contourf(np.rad2deg(lon),np.rad2deg(lat), ODF, transform=ccrs.PlateCarree(), levels=lvls, extend='both', cmap=cmap)
     h.cmap.set_under('#fee0d2')
     cb = plt.colorbar(h, ax=ax)   
     g = ax.gridlines(crs=ccrs.PlateCarree())
-    cb.set_label(r'$\mathrm{ODF}\left((a^{(2)}\right) = \sum_{l=0}^{2}\;\sum_{m=-l}^{l} c_l^m Y_l^m$')
+    cb.set_label(r'$\mathrm{ODF}\left( a^{(2)} \right)$')
     plt.show()
 
 #------------------

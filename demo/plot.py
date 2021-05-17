@@ -9,12 +9,11 @@ import sys, os, copy, code # code.interact(local=locals())
 # Input arguments
 #------------------
 
-if len(sys.argv) != 3: 
-    print('usage: %s nprime ugrad'%(sys.argv[0]))
+if len(sys.argv) != 2: 
+    print('usage: %s ugrad'%(sys.argv[0]))
     sys.exit(0)
 
-exprref = sys.argv[2]
-nprime = int(sys.argv[1])
+exprref = sys.argv[1]
 
 # Options
 latres = 40 # latitude resolution on S^2
@@ -26,23 +25,26 @@ rot = 1.4*rot0 # view angle
 # Load solution
 #------------------
 
-fh = Dataset('solutions/solution_n%i_%s.nc'%(nprime, exprref), mode='r')
+fh = Dataset('solutions/solution_%s.nc'%(exprref), mode='r')
 loadvar = lambda field: np.array(fh.variables[field][:])
-
-# Grain rheology
-nprime, Ecc, Eca = fh.getncattr('nprime'), fh.getncattr('Ecc'), fh.getncattr('Eca')
 
 # Model config
 Nt, dt, nu, L = fh.getncattr('tsteps'), fh.getncattr('dt'), fh.getncattr('nu'), fh.getncattr('L')
 
+# Grain parameters
+Eca_opt_lin,  Ecc_opt_lin  = fh.getncattr('Eca_opt_lin'),  fh.getncattr('Ecc_opt_lin')
+Eca_opt_nlin, Ecc_opt_nlin = fh.getncattr('Eca_opt_nlin'), fh.getncattr('Ecc_opt_nlin')
+alpha_opt_lin, alpha_opt_nlin = fh.getncattr('alpha_opt_lin'), fh.getncattr('alpha_opt_nlin')
+
 # Fabric state
 lm, c = loadvar('lm'), loadvar('c_re') + 1j*loadvar('c_im') 
 eigvals  = loadvar('eigvals')
-Eeiej    = loadvar('Eeiej')
-Epijqij  = loadvar('Epijqij')
 e1,e2,e3    = loadvar('e1'), loadvar('e2'), loadvar('e3')
 p23,p12,p13 = loadvar('p23'),loadvar('p12'),loadvar('p13') 
 q23,q12,q13 = loadvar('q23'),loadvar('q12'),loadvar('q13') 
+
+Eeiej_lin,   Eeiej_nlin   = loadvar('Eeiej_lin'),   loadvar('Eeiej_nlin') 
+Epijqij_lin, Epijqij_nlin = loadvar('Epijqij_lin'), loadvar('Epijqij_nlin')
 
 # Velocity gradient tensor 
 ugrad = np.array(fh.getncattr('ugrad')).reshape((3, 3))
@@ -86,17 +88,18 @@ for tt in plot_tsteps:
     #----------------------
 
     dpi, scale = 200, 3.3
-    fig = plt.figure(figsize=(2.1*scale,2.3*scale))
-    gs = gridspec.GridSpec(2,2, height_ratios=[1,1.2], width_ratios=[1,1.2])
-    a = 0.09
-    gs.update(left=a, right=1-a/3, top=0.98, bottom=0.22, wspace=0.015*18, hspace=0.25)
+    fig = plt.figure(figsize=(3/2*2.1*scale,2.3*scale))
+    gs = gridspec.GridSpec(2,3, height_ratios=[1,1.2], width_ratios=[1,1.2,1.2])
+    a = 0.06
+    gs.update(left=a, right=1-a/3, top=0.98, bottom=0.20, wspace=0.015*18, hspace=0.35)
 
     prj = ccrs.Orthographic(rot, 90-inclination)
     geo = ccrs.Geodetic()
     axdistr   = plt.subplot(gs[0, 0], projection=prj)
     axei      = plt.subplot(gs[0, 1], projection='3d')
     axeigvals = plt.subplot(gs[1, 0])
-    axEvw     = plt.subplot(gs[1, 1])
+    axEvw_Mix = plt.subplot(gs[1, 1])
+    axEvw_Sac = plt.subplot(gs[1, 2])
 
     axdistr.set_global() # show entire S^2
                 
@@ -104,7 +107,8 @@ for tt in plot_tsteps:
     # n(theta,phi) on S^2
     #----------------------
 
-    lvls = np.linspace(0,0.2,11) # Contour lvls
+#    lvls = np.linspace(0,0.2,11) # Contour lvls
+    lvls = np.arange(0,0.2+1e-5,0.025) # Contour lvls
 
     F = np.real(np.sum([ c[tt,ii]*sp.sph_harm(m, l, phi,theta) for ii,(l,m) in enumerate(lm) ], axis=0))
     F = np.divide(F, c[0,0]*np.sqrt(4*np.pi))
@@ -113,14 +117,15 @@ for tt in plot_tsteps:
     gl = axdistr.gridlines(crs=ccrs.PlateCarree(), **kwargs_gridlines)
     gl.xlocator = mticker.FixedLocator(np.array([-135, -90, -45, 0, 90, 45, 135, 180]))
     cb1 = plt.colorbar(hdistr, ax=axdistr, fraction=0.04, aspect=19,  orientation='horizontal', pad=0.1, ticks=lvls[::2])   
-    cb1.set_label(r'$n(\theta,\phi)/N(t=0)$', fontsize=FS)
+    cb1.set_label(r'$\psi/N$ (ODF)', fontsize=FS)
     #
     ax = axdistr
     ax.plot([0],[90],'k.', transform=geo) # z dir
     ax.plot([rot0],[0],'k.', transform=geo) # y dir
     ax.plot([rot0-90],[0],'k.', transform=geo) # x dir
-    ax.text(rot0-80, 75, r'$\vu{z}$', horizontalalignment='left', transform=geo)
-    ax.text(rot0-13, -8, r'$\vu{y}$', horizontalalignment='left', transform=geo)
+    ax.text(rot0-80, 78, r'$\vu{z}$', horizontalalignment='left', transform=geo)
+    ax.text(rot0-8, -8, r'$\vu{y}$', horizontalalignment='left', transform=geo)
+    ax.text(rot0-90+5, -8, r'$\vu{x}$', horizontalalignment='left', transform=geo)
 
     #----------------------
     # Eigen values
@@ -164,49 +169,61 @@ for tt in plot_tsteps:
     lblmk    = lambda ii,jj: '$E_{e_%i e_%i}$'%(ii+1,jj+1)
     lblmk_pq = lambda ii,jj: '$E_{p_{%i%i} q_{%i%i}}$'%(ii+1,jj+1, ii+1,jj+1)
 
-    ncol = 3
-
-    axEvw.semilogy(steps, Eeiej[:,0,0], 'r-',  label=lblmk(0,0), lw=lw0)
-    axEvw.semilogy(steps, Eeiej[:,0,1], 'r--', label=lblmk(0,1), lw=lw0)
-    axEvw.semilogy(steps, Eeiej[:,0,2], 'r:',  label=lblmk(0,2), lw=lw0)
-
-    axEvw.semilogy(steps, Eeiej[:,1,0], 'g--', label=lblmk(1,0), lw=lw1)
-    axEvw.semilogy(steps, Eeiej[:,1,1], 'g-',  label=lblmk(1,1), lw=lw1)
-    axEvw.semilogy(steps, Eeiej[:,1,2], 'g-.', label=lblmk(1,2), lw=lw1)
+    def plot_enh(ax, Eeiej, Epijqij):
         
-    axEvw.semilogy(steps, Eeiej[:,2,0], 'b:',  label=lblmk(2,0), lw=lw2)
-    axEvw.semilogy(steps, Eeiej[:,2,1], 'b-.', label=lblmk(2,1), lw=lw2)
-    axEvw.semilogy(steps, Eeiej[:,2,2], 'b-',  label=lblmk(2,2), lw=lw2)    
+        ax.semilogy(steps, Eeiej[:,0,0], 'r-',  label=lblmk(0,0), lw=lw0)
+        ax.semilogy(steps, Eeiej[:,0,1], 'r--', label=lblmk(0,1), lw=lw0)
+        ax.semilogy(steps, Eeiej[:,0,2], 'r:',  label=lblmk(0,2), lw=lw0)
 
+        ax.semilogy(steps, Eeiej[:,1,0], 'g--', label=lblmk(1,0), lw=lw1)
+        ax.semilogy(steps, Eeiej[:,1,1], 'g-',  label=lblmk(1,1), lw=lw1)
+        ax.semilogy(steps, Eeiej[:,1,2], 'g-.', label=lblmk(1,2), lw=lw1)
+            
+        ax.semilogy(steps, Eeiej[:,2,0], 'b:',  label=lblmk(2,0), lw=lw2)
+        ax.semilogy(steps, Eeiej[:,2,1], 'b-.', label=lblmk(2,1), lw=lw2)
+        ax.semilogy(steps, Eeiej[:,2,2], 'b-',  label=lblmk(2,2), lw=lw2)    
+
+    #    ax.semilogy(steps, Epijqij[:,1],  'k-', label='$E_{mt}(I-3*pp)$', lw=lw1) 
+        ax.semilogy(steps, Epijqij[:,2],  'y-', label=lblmk_pq(0,2), lw=lw1) 
+        Eratio = np.divide(Eeiej[:,0,2],Epijqij[:,2])
+        ax.semilogy(steps, Eratio, 'm-', label=lblmk(0,2)+'/'+lblmk_pq(0,2), lw=lw1)
+
+        xlims=[0, Nt+1]
+        lw=1
+        ax.semilogy(xlims,[2.5,2.5],'--k',lw=lw) 
+        ax.semilogy(xlims,[4.375,4.375],'--k',lw=lw) 
+        ax.set_xlim(xlims)
+        ax.set_ylim([np.amin([1e-1, np.amin(Eeiej[:]), np.amin(Epijqij[:])]), np.amax([1e+1, np.amax(Eeiej[:]), np.amax(Epijqij[:]), np.amax(Eratio)])])
+        ax.set_xlabel('time step')
+        ax.set_ylabel('$E_{vw}$')
+        ax.grid()
+    
+    
+    plot_enh(axEvw_Sac, Eeiej_nlin, Epijqij_nlin)
+    plot_enh(axEvw_Mix, Eeiej_lin,  Epijqij_lin)
+    
+    axEvw_Sac.set_title(r'Nonlinear Sachs enh. fac.')
+    axEvw_Mix.set_title(r'Linear Taylor--Sachs enh. fac.')
+    
+    from matplotlib.offsetbox import AnchoredText
+    axEvw_Sac.add_artist(AnchoredText('\n'.join( (r"$n' = %i$"%(3), r'$E_{cc} = %.1f$'%(Ecc_opt_nlin), r'$E_{ca} = %.0e$'%(Eca_opt_nlin), r'$\alpha = %.4f$'%(alpha_opt_nlin)) ), loc='lower left', frameon=True,))
+    axEvw_Mix.add_artist(AnchoredText('\n'.join( (r"$n' = %i$"%(1), r'$E_{cc} = %.1f$'%(Ecc_opt_lin), r'$E_{ca} = %.0e$'%(Eca_opt_lin),   r'$\alpha = %.4f$'%(alpha_opt_lin)) ),  loc='lower left', frameon=True,))
+    
     ncol = 4
-#    axEvw.semilogy(steps, Epijqij[:,1],  'k-', label='$E_{mt}(I-3*pp)$', lw=lw1) 
-    axEvw.semilogy(steps, Epijqij[:,2],  'y-', label=lblmk_pq(0,2), lw=lw1) 
-    Eratio = np.divide(Eeiej[:,0,2],Epijqij[:,2])
-    axEvw.semilogy(steps, Eratio, 'm-', label=lblmk(0,2)+'/'+lblmk_pq(0,2), lw=lw1)
-
-    xlims=[0, Nt+1]
-    lw=1
-    axEvw.semilogy(xlims,[2.5,2.5],'--k',lw=lw) 
-    axEvw.semilogy(xlims,[4.375,4.375],'--k',lw=lw) 
-    axEvw.legend(loc=4, ncol=ncol, handlelength=2, columnspacing=1.2, labelspacing=0.3, fancybox=False, bbox_to_anchor=(1.05,-0.55))
-    axEvw.set_xlim(xlims)
-    axEvw.set_ylim([np.amin([1e-1, np.amin(Eeiej[:]), np.amin(Epijqij[:])]), np.amax([1e+1, np.amax(Eeiej[:]), np.amax(Epijqij[:]), np.amax(Eratio)])])
-    axEvw.set_xlabel('time step')
-    axEvw.set_ylabel('$E_{vw}$')
-    axEvw.grid()
+    axEvw_Sac.legend(loc=4, ncol=ncol, handlelength=2, columnspacing=1.2, labelspacing=0.3, fancybox=False, bbox_to_anchor=(1.05,-0.55))   
     
     #----------------------
     # Model config
     #----------------------
     
     props = dict(boxstyle='square', facecolor='wheat', alpha=0.5)
-    textstr1 = '\n'.join(( r'"%s"'%(exprref.replace('_', '\_')), r"$n' = %i$"%(nprime), r'$E_{cc} = %.2f$'%(Ecc), r'$E_{ca} = %i$'%(Eca),  r'$L = %i$'%(L), r'$\nu = %.2e$'%(nu) ))
-    axeigvals.text(-0.15, -0.54, textstr1, transform=axeigvals.transAxes, fontsize=FS, bbox=props)
+    textstr1 = '\n'.join(( r'"%s"'%(exprref.replace('_', '\_')), r'$L = %i$'%(L), r'$\nu = %.2e$'%(nu) ))
+    axeigvals.text(-0.15, -0.44, textstr1, transform=axeigvals.transAxes, fontsize=FS, bbox=props)
 
     #----------------------
     # Save figure
     #----------------------
-    fout = 'solutions/solution_n%i_%s__%i.png'%(nprime,exprref, tt+1)
+    fout = 'solutions/solution_%s__%i.png'%(exprref, tt+1)
     print('Saving %s'%(fout))
     plt.savefig(fout,dpi=dpi)
 

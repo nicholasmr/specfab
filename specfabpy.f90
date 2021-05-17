@@ -30,35 +30,50 @@ contains
     end
     
     !------------------
-    ! Time evolution matrices
+    ! Fabric dynamical matrices 
     !------------------
     
-    function get_dndt_ij_lrot(nlmlen, eps,omg, tau,Aprime,Ecc,Eca, beta)
+    function get_dndt_ij_ROT(nlmlen, eps,omg, tau,Aprime,Ecc,Eca, beta)
         implicit none
         integer, parameter :: dp = 8 ! Default precision
         integer, intent(in) :: nlmlen
         real(kind=dp), intent(in) :: eps(3,3), omg(3,3), tau(3,3) ! strain-rate (eps) and spin (omg)
         real(kind=dp), intent(in) :: Aprime, Ecc, Eca, beta
-        complex(kind=dp) :: get_dndt_ij_lrot(nlmlen,nlmlen)
-        get_dndt_ij_lrot = dndt_ij_LROT(eps,omg, tau,Aprime,Ecc,Eca, beta)
+        complex(kind=dp) :: get_dndt_ij_ROT(nlmlen,nlmlen)
+        get_dndt_ij_ROT = dndt_ij_ROT(eps,omg, tau,Aprime,Ecc,Eca, beta)
     end
 
-    function get_dndt_ij_ddrx(nlmlen, tau)
+    function get_dndt_ij_DRX_src(nlmlen, tau)
         implicit none
         integer, parameter :: dp = 8 ! Default precision
         integer, intent(in) :: nlmlen
         real(kind=dp), intent(in) ::  tau(3,3)
-        complex(kind=dp) :: get_dndt_ij_ddrx(nlmlen,nlmlen)
-        get_dndt_ij_ddrx = dndt_ij_DDRX(tau)
+        complex(kind=dp) :: get_dndt_ij_DRX_src(nlmlen,nlmlen)
+        get_dndt_ij_DRX_src = dndt_ij_DRX_src(tau)
     end
     
-    function get_dndt_ij_regl(nlmlen, eps, tau, Aprime, beta)
+    function get_dndt_ij_REG(nlmlen)
         implicit none
         integer, parameter :: dp = 8 ! Default precision
         integer, intent(in) :: nlmlen
-        real(kind=dp), intent(in) ::  eps(3,3), tau(3,3), Aprime, beta
-        complex(kind=dp) :: get_dndt_ij_regl(nlmlen,nlmlen)
-        get_dndt_ij_regl = dndt_ij_REGL(eps, tau,Aprime, beta) 
+        complex(kind=dp) :: get_dndt_ij_REG(nlmlen,nlmlen)
+        get_dndt_ij_REG = dndt_ij_REG() 
+    end    
+    
+    function get_nu(nu0, beta, eps, tau, Aprime)
+        implicit none
+        integer, parameter :: dp = 8 ! Default precision
+        real(kind=dp), intent(in) :: nu0, eps(3,3), tau(3,3), Aprime, beta
+        real(kind=dp) :: get_nu
+        get_nu = f_nu(nu0, beta, eps, tau, Aprime)
+    end
+    
+    function get_nu_eps(nu0, eps)
+        implicit none
+        integer, parameter :: dp = 8 ! Default precision
+        real(kind=dp), intent(in) :: nu0, eps(3,3)
+        real(kind=dp) :: get_nu_eps
+        get_nu_eps = f_nu_eps(nu0, eps)
     end
     
     !------------------
@@ -171,20 +186,50 @@ contains
     ! AUX
     !------------------
     
-    function get_nu(eps)
-        implicit none
-        integer, parameter :: dp = 8 ! Default precision
-        real(kind=dp), intent(in) :: eps(3,3)
-        real(kind=dp) :: get_nu
-        get_nu = f_nu(eps)
-    end
-    
     subroutine get_ck_moments(nlm, ev_c2,ev_c4,ev_c6,ev_c8)
         implicit none
         integer, parameter :: dp = 8 ! Default precision
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), intent(out) :: ev_c2(3,3),ev_c4(3,3,3,3),ev_c6(3,3,3,3, 3,3),ev_c8(3,3,3,3, 3,3,3,3)
         call ck_moments(nlm, ev_c2,ev_c4,ev_c6,ev_c8)
+    end
+    
+    !---
+
+    function get_a2_ij(nlm) 
+        implicit none
+        integer, parameter :: dp = 8 ! Default precision
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp) :: get_a2_ij(3,3)
+        get_a2_ij = a2_ij(nlm)
+    end    
+    
+    function get_a4_ijkl(nlm) 
+        implicit none
+        integer, parameter :: dp = 8 ! Default precision
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp) :: get_a4_ijkl(3,3,3,3)
+        get_a4_ijkl = a4_ijkl(nlm)
+    end    
+    
+    !---
+    
+    function get_a2_to_nlm(nlmlen,a2) 
+        implicit none
+        integer, parameter :: dp = 8 ! Default precision
+        integer, intent(in) :: nlmlen
+        real(kind=dp), intent(in) :: a2(3,3)
+        real(kind=dp) :: get_a2_to_nlm(nlmlen)
+        get_a2_to_nlm = a2_to_nlm(a2)
+    end
+        
+    function get_a4_to_nlm(nlmlen,a2,a4)
+        implicit none
+        integer, parameter :: dp = 8 ! Default precision
+        integer, intent(in) :: nlmlen
+        real(kind=dp), intent(in) :: a2(3,3), a4(3,3,3,3)
+        real(kind=dp) :: get_a4_to_nlm(nlmlen)
+        get_a4_to_nlm = a4_to_nlm(a2,a4)
     end
         
 end module specfabpy 

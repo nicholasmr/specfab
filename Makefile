@@ -20,25 +20,24 @@ demopy: $(SPECFAB)py
 	cp specfabpy.cpython* demo/
 	@echo "-----------------------------------------------"
 	@echo "To get going, try running (instructions on how to plot the results will follow):"
-	@echo "cd demo; python3 demo.py 20 3 uc_zz ::: for uniaxial compression (uc) in the vertical (z) with a nprime=3 grian rheology and truncation L=20"
-	@echo "cd demo; python3 demo.py 20 1 ue_zz ::: for uniaxial extension (ue) in the vertical (z) with a nprime=1 grian rheology and truncation L=20"
-	@echo "cd demo; python3 demo.py 20 3 ss_xz ::: for simple shear (ss) along the x--z plane with a nprime=3 grian rheology and truncation L=20"
+	@echo "cd demo; python3 demo.py uc_zz ::: for uniaxial compression (uc) in the vertical (z)"
+	@echo "cd demo; python3 demo.py ss_xz ::: for simple shear (ss) along the x--z plane"
 
 demo: $(SPECFAB).o
 	$(COMPILER) demo/demo.f90 $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o demo/demo
 	mkdir -p demo/solutions
 	@echo "-----------------------------------------------"
 	@echo "To get going, try running (instructions on how to plot the results will follow):"
-	@echo "cd demo; ./demo 20 3 uc_zz ::: for uniaxial compression (uc) in the vertical (z) with a nprime=3 grian rheology and truncation L=20"
-	@echo "cd demo; ./demo 20 1 ue_zz ::: for uniaxial extension (ue) in the vertical (z) with a nprime=1 grian rheology and truncation L=20"
-	@echo "cd demo; ./demo 20 3 ss_xz ::: for simple shear (ss) along the x--z plane with a nprime=3 grian rheology and truncation L=20"
+	@echo "cd demo; ./demo uc_zz ::: for uniaxial compression (uc) in the vertical (z)"
+	@echo "cd demo; ./demo ss_xz ::: for simple shear (ss) along the x--z plane"
 
 demoDRX: $(SPECFAB).o
 	$(COMPILER) demo/demoDRX.f90 $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o demo/demoDRX
 	mkdir -p demo/solutions
 	@echo "-----------------------------------------------"
-	@echo "cd demo; ./demoDRX uc_zz ::: for uniaxial compression (uc) in the vertical (z) "
-	@echo "cd demo; ./demoDRX ss_xz ::: for simple shear (ss) along the x--z plane "
+	@echo "To get going, try running (instructions on how to plot the results will follow):"
+	@echo "cd demo; ./demoDRX uc_zz ::: for uniaxial compression (uc) in the vertical (z)"
+	@echo "cd demo; ./demoDRX ss_xz ::: for simple shear (ss) along the x--z plane"
 
 demoso: lib$(SPECFAB).so
 	$(COMPILER) demo/demo.f90 -L./ -lspecfab $(OPTS) $(OPTSNETCDF) -o demo/demo

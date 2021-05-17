@@ -7,71 +7,41 @@ program demo
     
     implicit none
 
+    integer, parameter :: dp = 8
+
     ! Numerics
     real, parameter    :: dt = 0.02 ! Time-step size
-    integer, parameter :: Nt = 230 ! Number of time steps
-
-    ! Constants and argv strings    
-    integer, parameter :: dp = 8
-    integer :: ii,tt ! loop vars
-    character(len=3) :: arg_Lcap
-    character(len=1) :: arg_nprime 
-    character(len=5) :: arg_exp 
-
-    ! Grain rheology
-    real(kind=dp) :: Ecc, Eca ! Grain enhancement-factors
-    real(kind=dp), parameter :: alpha = 0 ! Sachs--Taylor weight: 0 = 100% Sachs, 1 = 100% Taylor
-    integer :: nprime ! Grain power-law exponent: only 1 and 3 are possible.
+    integer, parameter :: Nt = 230  ! Number of time steps
+    integer            :: Lcap = 12     ! Expansion series truncation
+    real(kind=dp)      :: nu0  = 5.0d-3 ! Regularization magnitude calibrated for demo with L=12
     
+    ! Constants and argv strings    
+    integer :: ii,tt ! loop vars
+    character(len=5) :: arg_exp ! experiment type (see below)
+
     ! Fabric state and evolution
-    integer :: Lcap ! Expansion series truncation
-    complex(kind=dp), allocatable :: nlm(:), dndt(:,:), dndt_LROT(:,:), dndt_DDRX(:,:), dndt_REGL(:,:)  ! Series expansion coefs and evolution matrix
+    complex(kind=dp), allocatable :: nlm(:), dndt(:,:), dndt_ROT(:,:), dndt_REG(:,:) ! Series expansion coefs and evolution matrix
     real(kind=dp) :: ugrad(3,3), eps(3,3), omg(3,3) ! Large-scale deformation
 
     ! For dumping state to netCDF
     complex(kind=dp), allocatable   :: nlm_save(:,:)
-    real(kind=dp)                   :: eigvals_save(3,Nt), Eeiej_save(3,3,Nt), Epijqij_save(3,Nt)
+    real(kind=dp)                   :: eigvals_save(3,Nt), Eeiej_lin_save(3,3,Nt), Eeiej_nlin_save(3,3,Nt), Epijqij_lin_save(3,Nt), Epijqij_nlin_save(3,Nt)
     real(kind=dp), dimension(3,Nt)  :: e1_save,e2_save,e3_save, p23_save,p12_save,p13_save, q23_save,q12_save,q13_save
     character(len=30) :: fname_sol
     integer :: ncid, c_did, time_did, eig_did, dim_did, pair_did ! Dimension IDs
-    integer :: id_cre,id_cim,id_lm, id_eig, id_Eeiej,id_Epijqij, id_e1,id_e2,id_e3, id_p23,id_p12,id_p13, id_q23,id_q12,id_q13 ! Var IDs
+    integer :: id_cre,id_cim,id_lm, id_eig, id_e1,id_e2,id_e3, id_p23,id_p12,id_p13, id_q23,id_q12,id_q13 ! Var IDs
+    integer :: id_Eeiej_lin, id_Eeiej_nlin, id_Epijqij_lin, id_Epijqij_nlin ! Var IDs
 
-    if (command_argument_count() .ne. 3) then
-        print *,'usage: ./demo L nprime ugrad'
+    if (command_argument_count() .ne. 1) then
+        print *,'usage: ./demo ugrad'
         call exit(0)
     end if
-
-    !-------------------------------------------------------------------
-    ! Series truncation
-    !-------------------------------------------------------------------
-
-    call get_command_argument(1, arg_Lcap)
-    read (arg_Lcap, *) Lcap
-
-    !-------------------------------------------------------------------
-    ! Grain rheology
-    !-------------------------------------------------------------------
-
-    call get_command_argument(2, arg_nprime)
-    select case (arg_nprime)
-        case ('1')
-            nprime = 1
-            Ecc = 1.0d0
-            Eca = 1.0d4
-        case ('3')
-            nprime = 3
-            Ecc = 1.0d0
-            Eca = 1.0d2
-        case default
-            print *,'argv error: valid nprime values are 1 or 3'
-            call exit(0)
-    end select
 
     !-------------------------------------------------------------------
     ! Velocity gradient tensor
     !-------------------------------------------------------------------
 
-    call get_command_argument(3, arg_exp)
+    call get_command_argument(1, arg_exp)
     select case (arg_exp)
 
         ! RECALL COLUMN FIRST IN FORTRAN
@@ -130,9 +100,8 @@ program demo
     nlm = [(0,ii=1,nlm_len)] ! Expansion coefs "n_l^m" are saved in the 1D array "nlm". Corresponding (l,m) values for the i'th coef (i.e. nlm(i)) are (l,m) = (lm(1,i),lm(2,i))
     allocate(nlm_save(nlm_len,Nt))
     allocate(dndt(nlm_len,nlm_len))
-    allocate(dndt_LROT(nlm_len,nlm_len))
-    allocate(dndt_DDRX(nlm_len,nlm_len))
-    allocate(dndt_REGL(nlm_len,nlm_len))    
+    allocate(dndt_ROT(nlm_len,nlm_len))
+    allocate(dndt_REG(nlm_len,nlm_len))    
 
     
     select case (arg_exp)
@@ -153,16 +122,13 @@ program demo
     !-------------------------------------------------------------------
 
     call savestate(nlm, 1) ! Save initial state    
-    dndt_LROT = dndt_ij_LROT(eps,omg, 0*eps,0.0d0,Ecc,Eca, 1.0d0) ! Assume constant strain-rate and spin with Taylor style plastic spin.
-    dndt_REGL = dndt_ij_REGL(eps, 0*eps, 0.0d0, 1.0d0) 
-    
+    dndt_ROT = dndt_ij_ROT(eps,omg, 0*eps,0d0,0d0,0d0, 1d0) ! Assume constant strain-rate and spin with Taylor style plastic spin for lattice rotation (beta=1).
+    dndt_REG = f_nu_eps(nu0, eps) * dndt_ij_REG() ! Regularization: nu * (reg. mag.) *  reg. matrix
+            
     do tt = 2, Nt
 !        write(*,"(A9,I3)") '*** Step ', tt
-        dndt_DDRX = 1d+1*dndt_ij_DDRX_full(nlm, eps)
-!        print *,nlm(1) ! DEBUG 
-        dndt = 0*dndt_LROT + dndt_DDRX + 1*dndt_REGL
-!        dndt = dndt_LROT + 0*dndt_DDRX + dndt_REGL
-        nlm = nlm + dt * matmul(dndt, nlm)
+        dndt = dndt_ROT + dndt_REG 
+        nlm = nlm + dt * matmul(dndt, nlm) ! Spectral coefficients evolve by a linear transformation
         call savestate(nlm, tt)
     end do
     
@@ -170,17 +136,21 @@ program demo
     ! Dump solution to netCDF
     !-------------------------------------------------------------------
     
-    write (fname_sol,"('solutions/solution_n',I1.1,'_',A5,'.nc')") nprime, arg_exp
+    write (fname_sol,"('solutions/solution_',A5,'.nc')") arg_exp
     call check( nf90_create(fname_sol, NF90_CLOBBER, ncid) )
     
     call check(nf90_put_att(ncid,NF90_GLOBAL, "tsteps", Nt))
     call check(nf90_put_att(ncid,NF90_GLOBAL, "dt",     dt))
-    call check(nf90_put_att(ncid,NF90_GLOBAL, "nu",     f_nu(eps)))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "nu",     f_nu_eps(nu0, eps) ))
     call check(nf90_put_att(ncid,NF90_GLOBAL, "L",      Lcap))
-    call check(nf90_put_att(ncid,NF90_GLOBAL, "nprime", nprime))
-    call check(nf90_put_att(ncid,NF90_GLOBAL, "Ecc",    Ecc))
-    call check(nf90_put_att(ncid,NF90_GLOBAL, "Eca",    Eca))
     call check(nf90_put_att(ncid,NF90_GLOBAL, "ugrad",  reshape(ugrad, [size(ugrad)]) ))
+    
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "Eca_opt_lin", Eca_opt_lin))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "Ecc_opt_lin", Ecc_opt_lin))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "Eca_opt_nlin", Eca_opt_nlin))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "Ecc_opt_nlin", Ecc_opt_nlin))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "alpha_opt_lin",  alpha_opt_lin))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "alpha_opt_nlin", alpha_opt_nlin))
     
     call check( nf90_def_dim(ncid, "DOF",    nlm_len,   c_did) )
     call check( nf90_def_dim(ncid, "tstep",  Nt,        time_did) )
@@ -193,11 +163,13 @@ program demo
     call check( nf90_def_var(ncid, "c_im",  NF90_DOUBLE, [c_did,   time_did], id_cim) )
     
     call check( nf90_def_var(ncid, "eigvals", NF90_DOUBLE, [eig_did, time_did], id_eig) )
-    call check( nf90_def_var(ncid, "Eeiej",   NF90_DOUBLE, [dim_did,dim_did, time_did], id_Eeiej) )
+    call check( nf90_def_var(ncid, "Eeiej_nlin",   NF90_DOUBLE, [dim_did,dim_did, time_did], id_Eeiej_nlin) )
+    call check( nf90_def_var(ncid, "Eeiej_lin",    NF90_DOUBLE, [dim_did,dim_did, time_did], id_Eeiej_lin) )
     call check( nf90_def_var(ncid, "e1",      NF90_DOUBLE, [dim_did, time_did], id_e1) )
     call check( nf90_def_var(ncid, "e2",      NF90_DOUBLE, [dim_did, time_did], id_e2) )
     call check( nf90_def_var(ncid, "e3",      NF90_DOUBLE, [dim_did, time_did], id_e3) )
-    call check( nf90_def_var(ncid, "Epijqij", NF90_DOUBLE, [dim_did, time_did], id_Epijqij) )
+    call check( nf90_def_var(ncid, "Epijqij_nlin", NF90_DOUBLE, [dim_did, time_did], id_Epijqij_nlin) )
+    call check( nf90_def_var(ncid, "Epijqij_lin",  NF90_DOUBLE, [dim_did, time_did], id_Epijqij_lin) )
     call check( nf90_def_var(ncid, "p23",     NF90_DOUBLE, [dim_did, time_did], id_p23) )
     call check( nf90_def_var(ncid, "p12",     NF90_DOUBLE, [dim_did, time_did], id_p12) )
     call check( nf90_def_var(ncid, "p13",     NF90_DOUBLE, [dim_did, time_did], id_p13) )
@@ -212,11 +184,13 @@ program demo
     call check( nf90_put_var(ncid, id_lm,    lm(:,1:nlm_len)) )
     
     call check( nf90_put_var(ncid, id_eig,  eigvals_save) )
-    call check( nf90_put_var(ncid, id_Eeiej, Eeiej_save) )
+    call check( nf90_put_var(ncid, id_Eeiej_lin,  Eeiej_lin_save) )
+    call check( nf90_put_var(ncid, id_Eeiej_nlin, Eeiej_nlin_save) )
     call check( nf90_put_var(ncid, id_e1,   e1_save) )
     call check( nf90_put_var(ncid, id_e2,   e2_save) )
     call check( nf90_put_var(ncid, id_e3,   e3_save) )
-    call check( nf90_put_var(ncid, id_Epijqij, Epijqij_save) )
+    call check( nf90_put_var(ncid, id_Epijqij_lin,  Epijqij_lin_save) )
+    call check( nf90_put_var(ncid, id_Epijqij_nlin, Epijqij_nlin_save) )
     call check( nf90_put_var(ncid, id_p23,  p23_save) )
     call check( nf90_put_var(ncid, id_p12,  p12_save) )
     call check( nf90_put_var(ncid, id_p13,  p13_save) )
@@ -228,7 +202,7 @@ program demo
 
     print *, 'Solution dumped in ', fname_sol
     print *, "Plot result:"
-    write(*,"(A15,I2,A1,A5)") "python3 plot.py ",nprime,' ', arg_exp
+    write(*,"(A16,A5)") "python3 plot.py ", arg_exp
 
 contains
 
@@ -242,10 +216,15 @@ contains
         nlm_save(:,tt)  = nlm
 
         call eigenframe(nlm, e1_save(:,tt),e2_save(:,tt),e3_save(:,tt), eigvals_save(:,tt)) 
-        Eeiej_save(:,:,tt) = Eeiej(nlm, Ecc,Eca,alpha,nprime)
-
         call pqframe(nlm, p23_save(:,tt),p12_save(:,tt),p13_save(:,tt), q23_save(:,tt),q12_save(:,tt),q13_save(:,tt))
-        Epijqij_save(:,tt) = Epijqij(nlm, Ecc,Eca,alpha,nprime)
+
+        ! Linear (n'=1) mixed Taylor--Sachs enhancements        
+        Eeiej_lin_save(:,:,tt) = Eeiej(  nlm, Ecc_opt_lin, Eca_opt_lin, alpha_opt_lin, 1)
+        Epijqij_lin_save(:,tt) = Epijqij(nlm, Ecc_opt_lin, Eca_opt_lin, alpha_opt_lin, 1)
+        
+        ! Nonlinear (n'=3) Sachs enhancements
+        Eeiej_nlin_save(:,:,tt) = Eeiej(  nlm, Ecc_opt_nlin, Eca_opt_nlin, alpha_opt_nlin, 3)
+        Epijqij_nlin_save(:,tt) = Epijqij(nlm, Ecc_opt_nlin, Eca_opt_nlin, alpha_opt_nlin, 3)
 
     end
     
