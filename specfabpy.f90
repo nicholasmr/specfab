@@ -231,6 +231,35 @@ contains
         real(kind=dp) :: get_a4_to_nlm(nlmlen)
         get_a4_to_nlm = a4_to_nlm(a2,a4)
     end
+    
+    !---
+    
+    function get_DRX_decayrate(nlm,tau)
+        implicit none
+        integer, parameter :: dp = 8 ! Default precision
+        real, parameter :: Pi = 3.1415927
+        integer, parameter :: lmDRX_len = 1+5+9 ! Scope of harmonic interactions is local in wave space (this is NOT a free parameter)
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in) :: tau(3,3) ! DRX rate contant, dev. stress tensor
+        complex(kind=dp) :: get_DRX_decayrate(lmDRX_len)
+        complex(kind=dp) :: g(lmDRX_len)
+        real(kind=dp) :: Davg
+        complex(kind=dp) :: qt(-2:2)
+        real(kind=dp) :: k
+
+        ! Quadric expansion coefficients
+        qt = rrquad(tau)
+        ! Harmonic interaction weights 
+        include "include/DRX__body.f90"
+        g = k*g/doubleinner22(tau,tau) ! = D
+        
+        Davg = doubleinner22(matmul(tau,tau), a2_ij(nlm)) - doubleinner22(tau,doubleinner42(a4_ijkl(nlm),tau)) ! (tau.tau):a2 - tau:a4:tau 
+        Davg = Davg/doubleinner22(tau,tau) ! = <D>
+        
+        g(1) = g(1) - Sqrt(4*Pi)*Davg 
+        get_DRX_decayrate = g ! D - <D>
+    end
+    
         
 end module specfabpy 
 
