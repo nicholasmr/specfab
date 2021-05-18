@@ -25,7 +25,7 @@ rot = 1.4*rot0 # view angle
 # Load solution
 #------------------
 
-fh = Dataset('solutions/solution_%s.nc'%(exprref), mode='r')
+fh = Dataset('solutions/ROT_%s.nc'%(exprref), mode='r')
 loadvar = lambda field: np.array(fh.variables[field][:])
 
 # Model config
@@ -223,7 +223,7 @@ for tt in plot_tsteps:
     #----------------------
     # Save figure
     #----------------------
-    fout = 'solutions/solution_%s__%i.png'%(exprref, tt+1)
+    fout = 'solutions/ROT_%s__%i.png'%(exprref, tt+1)
     print('Saving %s'%(fout))
     plt.savefig(fout,dpi=dpi)
 

@@ -15,39 +15,32 @@ ALLSRCS=$(ALLOBJS:.o=.f90)
 
 ########################
 
-demopy: $(SPECFAB)py
-	mkdir -p demo/solutions
-	cp specfabpy.cpython* demo/
-	@echo "-----------------------------------------------"
-	@echo "To get going, try running (instructions on how to plot the results will follow):"
-	@echo "cd demo; python3 demo.py uc_zz ::: for uniaxial compression (uc) in the vertical (z)"
-	@echo "cd demo; python3 demo.py ss_xz ::: for simple shear (ss) along the x--z plane"
-
 demo: $(SPECFAB).o
-	$(COMPILER) demo/demo.f90 $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o demo/demo
-	mkdir -p demo/solutions
-	@echo "-----------------------------------------------"
-	@echo "To get going, try running (instructions on how to plot the results will follow):"
-	@echo "cd demo; ./demo uc_zz ::: for uniaxial compression (uc) in the vertical (z)"
-	@echo "cd demo; ./demo ss_xz ::: for simple shear (ss) along the x--z plane"
-
-demoDRX: $(SPECFAB).o
+	$(COMPILER) demo/demo_ROT.f90 $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o demo/demo_ROT
 	$(COMPILER) demo/demo_DRX.f90 $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o demo/demo_DRX
 	mkdir -p demo/solutions
-	@echo "-----------------------------------------------"
-	@echo "To get going, try running (instructions on how to plot the results will follow):"
-	@echo "cd demo; ./demo_DRX uc_zz ::: for uniaxial compression (uc) in the vertical (z)"
-	@echo "cd demo; ./demo_DRX ss_xz ::: for simple shear (ss) along the x--z plane"
+	@echo "\n*** To get going, try the demos:"
+	@echo "\n--- Lattice rotation ---"
+	@echo "cd demo; ./demo_ROT uc_zz :: uniaxial compression (uc) in the vertical (z)"
+	@echo "cd demo; ./demo_ROT ss_xz :: simple shear (ss) along the x--z plane"
+	@echo "\n--- Dynamic recrystallization ---"
+	@echo "cd demo; ./demo_DRX uc_zz :: uniaxial compression (uc) in the vertical (z)"
+	@echo "cd demo; ./demo_DRX ss_xz :: simple shear (ss) along the x--z plane"
 
 demoso: lib$(SPECFAB).so
-	$(COMPILER) demo/demo.f90 -L./ -lspecfab $(OPTS) $(OPTSNETCDF) -o demo/demo
+	$(COMPILER) demo/demo_ROT.f90 -L./ -lspecfab $(OPTS) $(OPTSNETCDF) -o demo/demo_ROT
 	mkdir -p demo/solutions
-
-########################
 
 $(SPECFAB)py: $(SPECFAB).o
 	f2py -lm -llapack -lblas -lfftw3 -I. $(ALLOBJS) -c -m specfabpy specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" --quiet 
-	
+	mkdir -p demo/solutions
+	cp specfabpy.cpython* demo/
+	@echo "\n*** To get going, try the demo:"
+	@echo "cd demo; python3 demo_ROT.py uc_zz ::: for uniaxial compression (uc) in the vertical (z)"
+	@echo "cd demo; python3 demo_ROT.py ss_xz ::: for simple shear (ss) along the x--z plane"
+
+########################
+
 $(SPECFAB).o: $(MOMENTS).o $(GAUNT).o
 	$(COMPILER) $(OPTS) -c $(TENPROD).f90 
 	$(COMPILER) $(OPTS) -c $(SPECFAB).f90
@@ -70,8 +63,8 @@ $(GAUNT).o:
 	$(COMPILER) $(OPTS) -c $(GAUNT).f90
 
 clean:
-	rm -f demo/demo demo/demo_DRX *.o *.mod *.so
+	rm -f demo/demo_ROT demo/demo_DRX *.o *.mod *.so
 	
 clear:
-	rm -f demo/demo demo/demo_DRX $(SPECFAB).o $(SPECFAB).mod *.so
+	rm -f demo/demo_ROT demo/demo_DRX $(SPECFAB).o $(SPECFAB).mod *.so
 

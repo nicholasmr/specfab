@@ -147,7 +147,7 @@ program demo
     ! Dump solution to netCDF
     !-------------------------------------------------------------------
     
-    write (fname_sol,"('solutions/solution_',A5,'.nc')") arg_exp
+    write (fname_sol,"('solutions/DRX_',A5,'.nc')") arg_exp
     call check( nf90_create(fname_sol, NF90_CLOBBER, ncid) )
     
     call check(nf90_put_att(ncid,NF90_GLOBAL, "tsteps", Nt))
@@ -182,7 +182,7 @@ program demo
 
     print *, 'Solution dumped in ', fname_sol
     print *, "Plot result:"
-    write(*,"(A21,A5)") "python3 plot_DRX.py ", arg_exp
+    write(*,"(A25,A5)") "python3 plot_demo_DRX.py ", arg_exp
 
 contains
 
