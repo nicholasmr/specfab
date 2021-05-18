@@ -32,12 +32,12 @@ demo: $(SPECFAB).o
 	@echo "cd demo; ./demo ss_xz ::: for simple shear (ss) along the x--z plane"
 
 demoDRX: $(SPECFAB).o
-	$(COMPILER) demo/demoDRX.f90 $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o demo/demoDRX
+	$(COMPILER) demo/demo_DRX.f90 $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o demo/demo_DRX
 	mkdir -p demo/solutions
 	@echo "-----------------------------------------------"
 	@echo "To get going, try running (instructions on how to plot the results will follow):"
-	@echo "cd demo; ./demoDRX uc_zz ::: for uniaxial compression (uc) in the vertical (z)"
-	@echo "cd demo; ./demoDRX ss_xz ::: for simple shear (ss) along the x--z plane"
+	@echo "cd demo; ./demo_DRX uc_zz ::: for uniaxial compression (uc) in the vertical (z)"
+	@echo "cd demo; ./demo_DRX ss_xz ::: for simple shear (ss) along the x--z plane"
 
 demoso: lib$(SPECFAB).so
 	$(COMPILER) demo/demo.f90 -L./ -lspecfab $(OPTS) $(OPTSNETCDF) -o demo/demo
@@ -46,7 +46,7 @@ demoso: lib$(SPECFAB).so
 ########################
 
 $(SPECFAB)py: $(SPECFAB).o
-	f2py -lm -llapack -lblas -lfftw3 -I. $(ALLOBJS) -c -m specfabpy specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" --quiet
+	f2py -lm -llapack -lblas -lfftw3 -I. $(ALLOBJS) -c -m specfabpy specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" --quiet 
 	
 $(SPECFAB).o: $(MOMENTS).o $(GAUNT).o
 	$(COMPILER) $(OPTS) -c $(TENPROD).f90 
@@ -70,8 +70,8 @@ $(GAUNT).o:
 	$(COMPILER) $(OPTS) -c $(GAUNT).f90
 
 clean:
-	rm -f demo/demo demo/demoDRX *.o *.mod *.so
+	rm -f demo/demo demo/demo_DRX *.o *.mod *.so
 	
 clear:
-	rm -f demo/demo demo/demoDRX $(SPECFAB).o $(SPECFAB).mod *.so
+	rm -f demo/demo demo/demo_DRX $(SPECFAB).o $(SPECFAB).mod *.so
 
