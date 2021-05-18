@@ -1,10 +1,10 @@
 # Spectral orientation fabric 
-
+![image](githubimg.jpg)
 **Lattice rotation:**
 
 Rathmann, N., Hvidberg, C., Grinsted, A., Lilien, D., & Dahl-Jensen, D. (2021). Effect of an orientation-dependent non-linear grain fluidity on bulk directional enhancement factors. Journal of Glaciology, 67(263), 569-575. doi:10.1017/jog.2020.117
 
-**DRX:**
+**Dynamic recrystallization:**
 
 Rathmann and Lilien 2021 (in prep.)
 
