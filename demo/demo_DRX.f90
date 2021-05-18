@@ -182,7 +182,7 @@ program demo
 
     print *, 'Solution dumped in ', fname_sol
     print *, "Plot result:"
-    write(*,"(A20,A5)") "python3 plotDRX.py ", arg_exp
+    write(*,"(A21,A5)") "python3 plot_DRX.py ", arg_exp
 
 contains
 
