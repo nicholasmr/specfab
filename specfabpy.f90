@@ -42,6 +42,16 @@ contains
         complex(kind=dp) :: get_dndt_ij_ROT(nlmlen,nlmlen)
         get_dndt_ij_ROT = dndt_ij_ROT(eps,omg, tau,Aprime,Ecc,Eca, beta)
     end
+    
+    function get_dndt_ij_DRX(nlmlen, nlm, tau)
+        implicit none
+        integer, parameter :: dp = 8 ! Default precision
+        integer, intent(in) :: nlmlen
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in) ::  tau(3,3)
+        complex(kind=dp) :: get_dndt_ij_DRX(nlmlen,nlmlen)
+        get_dndt_ij_DRX = dndt_ij_DRX(nlm, tau)
+    end
 
     function get_dndt_ij_DRX_src(nlmlen, tau)
         implicit none
