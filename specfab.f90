@@ -67,7 +67,7 @@ subroutine initspecfab(Lcap_)
     call ck_moments(nlm_iso, ev_c2_iso,ev_c4_iso,ev_c6_iso,ev_c8_iso)
     
     ! Laplacian regularization (unscaled)
-    allocate(regmat(nlm_len,nlm_len))
+    if(.not. allocated(regmat)) allocate(regmat(nlm_len,nlm_len))
     regmat = 0.0 ! initialize
     do ii = 1, nlm_len    
         do jj = 1, nlm_len    
