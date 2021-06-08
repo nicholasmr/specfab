@@ -19,7 +19,7 @@ program demo
     ! Fabric state and evolution
     integer, parameter :: Lcap = 4 ! Expansion series truncation
     complex(kind=dp), allocatable :: nlm(:), nlmiso(:), dndt(:,:) ! Series expansion coefs and evolution matrix
-    real(kind=dp) :: a2(3,3), a4(3,3,3,3), ddt_a2(3,3), ddt_a4(3,3,3,3)
+    real(kind=dp) :: a2(3,3), a4(3,3,3,3), da2dt(3,3), da4dt(3,3,3,3)
     real(kind=dp) :: ugrad(3,3), tau(3,3) ! Large-scale deformation tensors
 
     ! DRX
@@ -122,15 +122,15 @@ program demo
 
     do tt = 2, Nt
 
-        print *, '*** a^(2), spec.: ', a2_true_save(:,:,tt-1)
-        print *, '*** a^(2), tens.: ', a2_save(:,:,tt-1)
+        !print *, '*** a^(2), spec.: ', a2_true_save(:,:,tt-1)
+        !print *, '*** a^(2), tens.: ', a2_save(:,:,tt-1)
 
-        write(*,"(A9,I3)") '*** Step ', tt
+        !write(*,"(A9,I3)") '*** Step ', tt
 
-        print *,'*** nlm consistency check ***'
-        print *, nlm
-        print *, a2_to_nlm(a2_ij(nlm))
-        print *, a4_to_nlm(a2_ij(nlm), a4_ijkl(nlm))
+        !print *,'*** nlm consistency check ***'
+        !print *, nlm
+        !print *, a2_to_nlm(a2_ij(nlm))
+        !print *, a4_to_nlm(a2_ij(nlm), a4_ijkl(nlm))
         
         ! Spectral expansion
         dndt = Gamma0 * dndt_ij_DDRX(nlm, tau) ! Tau is assumed constant, but since DRX rate depends on the state itself (i.e. DRX is nonlinear), it must be called for each time step.
@@ -138,9 +138,9 @@ program demo
         a2_true_save(:,:,tt) = a2_ij(nlm)
 
         ! Tensorial expansion
-        call daidt_DDRX(tau, Gamma0, a2, a4, ddt_a2, ddt_a4) ! Sets rate-of-change matrices ddt_a2 and ddt_a4
-        a2_save(:,:,tt)     = a2 + dt*ddt_a2 
-        a4_save(:,:,:,:,tt) = a4 + dt*ddt_a4
+        call daidt_DDRX(tau, Gamma0, a2, a4, da2dt, da4dt) ! Sets rate-of-change matrices da2dt and da4dt
+        a2_save(:,:,tt)     = a2 + dt*da2dt 
+        a4_save(:,:,:,:,tt) = a4 + dt*da4dt
         
         ! Set previous state = present state for next loop entry
         nlm = nlm_save(:,tt) 
@@ -153,7 +153,7 @@ program demo
     ! Dump solution to netCDF
     !-------------------------------------------------------------------
     
-    write (fname_sol,"('solutions/DRX_',A5,'.nc')") arg_exp
+    write (fname_sol,"('solutions/DDRX_',A5,'.nc')") arg_exp
     call check( nf90_create(fname_sol, NF90_CLOBBER, ncid) )
     
     call check(nf90_put_att(ncid,NF90_GLOBAL, "tsteps", Nt))
@@ -188,7 +188,7 @@ program demo
 
     print *, 'Solution dumped in ', fname_sol
     print *, "Plot result:"
-    write(*,"(A25,A5)") "python3 plot_demo_DDRX.py ", arg_exp
+    write(*,"(A26,A5)") "python3 plot_demo_DDRX.py ", arg_exp
 
 contains
 

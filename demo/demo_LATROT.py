@@ -154,7 +154,7 @@ for tt in np.arange(0,Nt):
 # Save the solution to a netCDF file.
 # You can plot the results stored in the netCDF file using "plot.py".
 
-fname = 'solutions/ROT_%s.nc'%(arg_exp)
+fname = 'solutions/LATROT_%s.nc'%(arg_exp)
 ncfile = Dataset(fname,mode='w',format='NETCDF3_CLASSIC') 
 
 # Config

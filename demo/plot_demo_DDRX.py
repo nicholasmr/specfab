@@ -25,7 +25,7 @@ rot = 1.4*rot0 # view angle
 # Load solution
 #------------------
 
-fh = Dataset('solutions/DRX_%s.nc'%(exprref), mode='r')
+fh = Dataset('solutions/DDRX_%s.nc'%(exprref), mode='r')
 loadvar = lambda field: np.array(fh.variables[field][:])
 
 # Model config
@@ -147,7 +147,7 @@ for tt in plot_tsteps:
     #----------------------
     # Save figure
     #----------------------
-    fout = 'solutions/DRX_%s__%i.png'%(exprref, tt+1)
+    fout = 'solutions/DDRX_%s__%i.png'%(exprref, tt+1)
     print('Saving %s'%(fout))
     plt.savefig(fout,dpi=dpi)
 
