@@ -457,7 +457,7 @@ function a6_CBT(a2,a4)
     n4m = nlm(I_l4:(I_l6-1))
     n6m = nlm(I_l6:(I_l8-1))
     
-    a6_CBT = f_ev_c6(n00, n2m, n4m, 0*n6m) ! Calculate a^(6) given n_l^m = 0 for l>4
+    a6_CBT = f_ev_c6(n00, n2m, n4m, 0*n6m) ! Calculate a^(6) given the spectral truncation n_l^m = 0 for l>4
     
 end
 

@@ -257,8 +257,9 @@ contains
         complex(kind=dp) :: qt(-2:2)
         real(kind=dp) :: k
 
-        ! Quadric expansion coefficients
+        ! Quadric expansion coefficients of tau
         qt = rrquad(tau)
+        
         ! Harmonic interaction weights 
         include "include/DDRX__body.f90"
         g = k*g/doubleinner22(tau,tau) ! = D
@@ -266,8 +267,12 @@ contains
         Davg = doubleinner22(matmul(tau,tau), a2_ij(nlm)) - doubleinner22(tau,doubleinner42(a4_ijkl(nlm),tau)) ! (tau.tau):a2 - tau:a4:tau 
         Davg = Davg/doubleinner22(tau,tau) ! = <D>
         
+        ! Davg is the "isotropic reference to be subtracted"; that is, we subtract a constant value from "D" (on S^2), which amounts to adjusting the value of the isotropic speactral expansion coefficient (l,m=0,0). 
+        ! The factor of Sqrt(4*Pi) ensures that the isotropic contribution is indeed n00*Y00 = Sqrt(4*Pi)*Davg*Y00 = Davg
         g(1) = g(1) - Sqrt(4*Pi)*Davg 
-        get_DDRX_decayrate = g ! D - <D>
+        
+        ! Calculate D - <D>
+        get_DDRX_decayrate = g 
     end
     
         

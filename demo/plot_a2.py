@@ -2,19 +2,19 @@
 # N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2021
 
 """
-Any ODF(theta,phi) can expanded in terms of spherical harmonics Y_l^m(theta,phi): 
+Any ODF(theta,phi) can expanded as a spherical harmonic series, Y_l^m(theta,phi): 
     
-    ODF(theta,phi) = sum_{l,m} c_l^m Y_l^m(theta,phi).
+    ODF(theta,phi) = sum_{l,m} n_l^m Y_l^m(theta,phi).
     
-The second-order structure tensor, a^(2), measures the overlap between the ODF and the lowest-order harmonic modes Y_0^0 and Y_2^m (for all m=-2,-1,0,1,2):
+The second-order structure tensor, a^(2), measures the overlap between the ODF and the lowest-order harmonic modes Y_2^m (for all m=-2,-1,0,1,2):
 
     a^(2) := <c^2> := <c^2|ODF>  (3x3 matrix)
 
-Since a^(2) is symmetric, it contains six unique components. 
-It turns out that the six lowest-order coefficients of the ODF, c_0^0 and c_2^m, can be re-constructed from a^(2).
-Reconstructed the ODF from a^(2) will, however, not represent the true ODF unless all higher-order wavenumber components vanish (c_l^m=0 for l>2).
-The reconstructed ODF is therefore not guaranteed to be strictly positive, but *would be* if higher-order modes were derived from the higher-order structure tensors, too (not supported).
-The reconstructed ODF is nonetheless exact in the lowest-order modes (l<=2).
+Given a^(2), the expansion coefficients n_2^m can be reconstructed by writing the ODF in terms of a tensor series expansion, whereby (Siegfried Hess, 2015)
+
+    ODF(theta,phi) = 1/(4*pi) * (1 + 15/3 a^(2):(c^2-I/3) + ...)
+
+Reconstructed the ODF from a^(2) will, however, not represent the true ODF unless all higher-order wavenumber components vanish (c_l^m=0 for l>2, or equivelently a^(i)=0 for i>2).
 """
 
 import sys, os, code, copy # code.interact(local=locals())
@@ -54,9 +54,10 @@ def a2plot(a2):
     # Determine spectral coefs from a^(2)    
     nlm_len = sf.init(2)
     lm      = sf.get_lm(nlm_len)
-    clm     = sf.get_a2_to_nlm(nlm_len,a2)
+    clm     = sf.get_a2_to_nlm(nlm_len, a2)
 
     # Check that re-calculating a2 from clm indeed gives a2 as passed to a2plot()
+#    print(1/np.sqrt(4*np.pi), clm)
 #    print(a2)
 #    print(sf.get_a2_ij(clm))
 

@@ -116,7 +116,6 @@ program demo
     !-------------------------------------------------------------------
     
     ! Model fabric evolution by representing fabric both spectrally and tensorially 
-    ! ...in order to comapre the effect of modelling d/dt a^(2) only using the python plotting script
 
     write(*,"(A13,I4,A5,F12.10,A4,I2,A10,I3,A1)") 'Numerics: Nt=', Nt, ', dt=', dt, ', L=', Lcap, ' (nlm_len=',nlm_len,')'
 
