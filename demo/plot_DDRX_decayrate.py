@@ -27,6 +27,10 @@ rc('text', usetex=True)
 rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb} \usepackage{physics} \usepackage{txfonts} \usepackage{siunitx}'
 
 def plot(clm, ax=None, cmap='RdBu_r', cblbl=r'$\Gamma/\Gamma_0$', titlestr=''):
+#    print(np.shape(clm),    clm[1:6],clm[5])
+#    clm[1:6] = 0
+#    clm[6:] = 0
+    ##
     F = np.sum([ clm[ii]*sp.sph_harm(m, l, phi,theta) for ii,(l,m) in enumerate(lm.T) ], axis=0)
     F = np.real(F) # Any imag values are rounding errors.
     llim=0.3
@@ -70,16 +74,16 @@ nlm[0]  = 1 # Assume isotropic state for calculating decay rate
 
 ### Plot 1
 tau = np.diag([0.5,0.5,-1]) # Unconfined UC in z
-plot(sf.get_drx_decayrate(nlm, tau), ax1, titlestr=r'(a) Unconfined pure shear')
+plot(sf.get_ddrx_decayrate(nlm, tau), ax1, titlestr=r'(a) Unconfined pure shear')
 
 ### Plot 2
 tau = np.diag([-1,0,+1]) # Confined UC in z
-plot(sf.get_drx_decayrate(nlm, tau), ax2, titlestr=r'(b) Confined pure shear')
+plot(sf.get_ddrx_decayrate(nlm, tau), ax2, titlestr=r'(b) Confined pure shear')
 
 ### Plot 3
 tau = np.matrix([[0,0,1],[0,0,0],[1,0,0]]) # SS xz
 #tau = np.matrix([[0,1,0],[1,0,0],[0,0,0]]) # SS xy
-plot(sf.get_drx_decayrate(nlm, tau), ax3, titlestr=r'(c) Simple shear')
+plot(sf.get_ddrx_decayrate(nlm, tau), ax3, titlestr=r'(c) Simple shear')
 
 #---------
 
@@ -91,7 +95,7 @@ for ax in axlist:
 
 #---------
 
-fout = 'DRX_decayrate.png'
+fout = 'DDRX_decayrate.png'
 print('Saving %s'%(fout))
 #plt.tight_layout()
 plt.savefig(fout, dpi=300)

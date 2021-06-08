@@ -122,7 +122,7 @@ program demo
     !-------------------------------------------------------------------
 
     call savestate(nlm, 1) ! Save initial state    
-    dndt_ROT = dndt_ij_ROT(eps,omg, 0*eps,0d0,0d0,0d0, 1d0) ! Assume constant strain-rate and spin with Taylor style plastic spin for lattice rotation (beta=1).
+    dndt_ROT = dndt_ij_LATROT(eps,omg, 0*eps,0d0,0d0,0d0, 1d0) ! Assume constant strain-rate and spin with Taylor style plastic spin for lattice rotation (beta=1).
     dndt_REG = f_nu_eps(nu0, eps) * dndt_ij_REG() ! Regularization: nu * (reg. mag.) *  reg. matrix
             
     do tt = 2, Nt
@@ -202,7 +202,7 @@ program demo
 
     print *, 'Solution dumped in ', fname_sol
     print *, "Plot result:"
-    write(*,"(A25,A5)") "python3 plot_demo_ROT.py ", arg_exp
+    write(*,"(A25,A5)") "python3 plot_demo_LATROT.py ", arg_exp
 
 contains
 

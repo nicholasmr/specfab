@@ -102,7 +102,7 @@ else:
 print('Numerics: Nt=%i, dt=%f, L=%i (nlm_len=%i)'%(Nt,dt,L,nlm_len))
 
 tau,Aprime,Ecc,Eca,beta = 0*eps,0,1,1,1 # Fabric evolves by a plastic spin that depends on large-scale velocity gradient only (Taylor style => beta = 1).
-dndt_ij_ROT = sf.get_dndt_ij_rot(nlm_len, eps,omg, tau,Aprime,Ecc,Eca,beta) # Here we consider constant large-scale velocity gradients, **but if for any practical time-varying scenario dndt_ij should be calculated inside the loop below!**
+dndt_ij_ROT = sf.get_dndt_ij_latrot(nlm_len, eps,omg, tau,Aprime,Ecc,Eca,beta) # Here we consider constant large-scale velocity gradients, **but if for any practical time-varying scenario dndt_ij should be calculated inside the loop below!**
 dndt_ij_REG = sf.get_dndt_ij_reg(nlm_len)
 nu = sf.get_nu_eps(nu0, eps)
 dndt_ij = dndt_ij_ROT + nu*dndt_ij_REG
@@ -204,5 +204,5 @@ f_q23[:,:], f_q12[:,:], f_q13[:,:] = q23, q12, q13
 
 ncfile.close(); 
 print('Solution dumped in %s'%fname)
-print('Plot result:\npython3 plot_demo_ROT.py %s'%(arg_exp))
+print('Plot result:\npython3 plot_demo_LATROT.py %s'%(arg_exp))
 

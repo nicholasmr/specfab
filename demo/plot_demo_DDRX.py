@@ -33,8 +33,8 @@ Nt, dt = fh.getncattr('tsteps'), fh.getncattr('dt')
 
 # Fabric state
 lm, c   = loadvar('lm'), loadvar('c_re') + 1j*loadvar('c_im') 
-a2_true = loadvar('a2_true')
-a2      = loadvar('a2')
+a2_spec = loadvar('a2_true')
+a2_tens = loadvar('a2')
 
 #------------------
 # Plot
@@ -70,7 +70,7 @@ for tt in plot_tsteps:
     # Figure setup
     #----------------------
 
-    dpi, scale = 200, 2.6
+    dpi, scale = 200, 2.8
     fig = plt.figure(figsize=(2.5*scale,1.3*scale))
     gs = gridspec.GridSpec(1,2, width_ratios=[1,1.2])
     a = 0.04
@@ -87,7 +87,8 @@ for tt in plot_tsteps:
     # n(theta,phi) on S^2
     #----------------------
 
-    lvls = np.arange(0,0.2+1e-5,0.025) # Contour lvls
+    dlvl = 0.05
+    lvls = np.arange(0, 0.2+dlvl +1e-5, dlvl/2) # Contour lvls
 
     F = np.real(np.sum([ c[tt,ii]*sp.sph_harm(m, l, phi,theta) for ii,(l,m) in enumerate(lm) ], axis=0))
     F = np.divide(F, c[0,0]*np.sqrt(4*np.pi))
@@ -111,28 +112,29 @@ for tt in plot_tsteps:
     #----------------------
     
     def eigen(A):
-        eigenValues, eigenVectors = np.linalg.eig(A)
-#        idx = np.argsort(eigenValues)
-#        eigenValues = eigenValues[idx,:]
-        return (eigenValues)
+        N,_,_ = np.shape(A)
+        ai = np.zeros((N,3))
+        for nn in np.arange(N):
+            ai_nn, _ = np.linalg.eig(A[nn,:,:])
+            ai[nn,:] = ai_nn[np.flip(np.argsort(ai_nn))]
+        return ai
 
-    eigvals_true = eigen(a2_true)
-    eigvals      = eigen(a2)
+    ai_spec, ai_tens = eigen(a2_spec), eigen(a2_tens)
 
-    steps = np.arange(len(eigvals[:,0]))
+    steps = np.arange(len(ai_spec[:,0]))
 
     lw = 1.5
-    lwtrue = lw+0.5
+    lwtrue = lw+0.2
     
     axeigvals.plot([tt,tt],[0,1],':k',lw=lw+1)
     #
-    axeigvals.plot(steps,eigvals[:,0],'--r',label='$a_{1}$ (tens.)',lw=lw+0.5)
-    axeigvals.plot(steps,eigvals[:,1],'--g',label='$a_{2}$ (tens.)',lw=lw+1.0)
-    axeigvals.plot(steps,eigvals[:,2],'--b',label='$a_{3}$ (tens.)',lw=lw)
+    axeigvals.plot(steps,ai_spec[:,0],'-', color='#e31a1c', label='$a_{1}$ (spec.)',lw=lwtrue+0.25)
+    axeigvals.plot(steps,ai_spec[:,1],'-', color='#33a02c', label='$a_{2}$ (spec.)',lw=lwtrue+0.50)
+    axeigvals.plot(steps,ai_spec[:,2],'-', color='#1f78b4', label='$a_{3}$ (spec.)',lw=lwtrue)
     #
-    axeigvals.plot(steps,eigvals_true[:,0],'-r',label='$a_{1}$ (spec.)',lw=lwtrue+0.5)
-    axeigvals.plot(steps,eigvals_true[:,1],'-g',label='$a_{2}$ (spec.)',lw=lwtrue+1.0)
-    axeigvals.plot(steps,eigvals_true[:,2],'-b',label='$a_{3}$ (spec.)',lw=lwtrue)
+    axeigvals.plot(steps,ai_tens[:,0],'--', color='#fb9a99', label='$a_{1}$ (tens.)',lw=lw+0.25)
+    axeigvals.plot(steps,ai_tens[:,1],'--', color='#b2df8a', label='$a_{2}$ (tens.)',lw=lw+0.50)
+    axeigvals.plot(steps,ai_tens[:,2],'--', color='#a6cee3', label='$a_{3}$ (tens.)',lw=lw)
     
     axeigvals.plot([0,1],[-tt,-tt],':k',lw=lw) 
     axeigvals.set_ylim([0,1])
