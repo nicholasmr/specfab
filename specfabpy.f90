@@ -33,33 +33,33 @@ contains
     ! Fabric dynamical matrices 
     !------------------
     
-    function get_dndt_ij_ROT(nlmlen, eps,omg, tau,Aprime,Ecc,Eca, beta)
+    function get_dndt_ij_LATROT(nlmlen, eps,omg, tau,Aprime,Ecc,Eca, beta)
         implicit none
         integer, parameter :: dp = 8 ! Default precision
         integer, intent(in) :: nlmlen
         real(kind=dp), intent(in) :: eps(3,3), omg(3,3), tau(3,3) ! strain-rate (eps) and spin (omg)
         real(kind=dp), intent(in) :: Aprime, Ecc, Eca, beta
-        complex(kind=dp) :: get_dndt_ij_ROT(nlmlen,nlmlen)
-        get_dndt_ij_ROT = dndt_ij_ROT(eps,omg, tau,Aprime,Ecc,Eca, beta)
+        complex(kind=dp) :: get_dndt_ij_LATROT(nlmlen,nlmlen)
+        get_dndt_ij_LATROT = dndt_ij_LATROT(eps,omg, tau,Aprime,Ecc,Eca, beta)
     end
     
-    function get_dndt_ij_DRX(nlmlen, nlm, tau)
+    function get_dndt_ij_DDRX(nlmlen, nlm, tau)
         implicit none
         integer, parameter :: dp = 8 ! Default precision
         integer, intent(in) :: nlmlen
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), intent(in) ::  tau(3,3)
-        complex(kind=dp) :: get_dndt_ij_DRX(nlmlen,nlmlen)
-        get_dndt_ij_DRX = dndt_ij_DRX(nlm, tau)
+        complex(kind=dp) :: get_dndt_ij_DDRX(nlmlen,nlmlen)
+        get_dndt_ij_DDRX = dndt_ij_DDRX(nlm, tau)
     end
 
-    function get_dndt_ij_DRX_src(nlmlen, tau)
+    function get_dndt_ij_DDRX_src(nlmlen, tau)
         implicit none
         integer, parameter :: dp = 8 ! Default precision
         integer, intent(in) :: nlmlen
         real(kind=dp), intent(in) ::  tau(3,3)
-        complex(kind=dp) :: get_dndt_ij_DRX_src(nlmlen,nlmlen)
-        get_dndt_ij_DRX_src = dndt_ij_DRX_src(tau)
+        complex(kind=dp) :: get_dndt_ij_DDRX_src(nlmlen,nlmlen)
+        get_dndt_ij_DDRX_src = dndt_ij_DDRX_src(tau)
     end
     
     function get_dndt_ij_REG(nlmlen)
@@ -244,15 +244,15 @@ contains
     
     !---
     
-    function get_DRX_decayrate(nlm,tau)
+    function get_DDRX_decayrate(nlm,tau)
         implicit none
         integer, parameter :: dp = 8 ! Default precision
         real, parameter :: Pi = 3.1415927
-        integer, parameter :: lmDRX_len = 1+5+9 ! Scope of harmonic interactions is local in wave space (this is NOT a free parameter)
+        integer, parameter :: lmDDRX_len = 1+5+9 ! Scope of harmonic interactions is local in wave space (this is NOT a free parameter)
         complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp), intent(in) :: tau(3,3) ! DRX rate contant, dev. stress tensor
-        complex(kind=dp) :: get_DRX_decayrate(lmDRX_len)
-        complex(kind=dp) :: g(lmDRX_len)
+        real(kind=dp), intent(in) :: tau(3,3) ! DDRX rate contant, dev. stress tensor
+        complex(kind=dp) :: get_DDRX_decayrate(lmDDRX_len)
+        complex(kind=dp) :: g(lmDDRX_len)
         real(kind=dp) :: Davg
         complex(kind=dp) :: qt(-2:2)
         real(kind=dp) :: k
@@ -260,14 +260,14 @@ contains
         ! Quadric expansion coefficients
         qt = rrquad(tau)
         ! Harmonic interaction weights 
-        include "include/DRX__body.f90"
+        include "include/DDRX__body.f90"
         g = k*g/doubleinner22(tau,tau) ! = D
         
         Davg = doubleinner22(matmul(tau,tau), a2_ij(nlm)) - doubleinner22(tau,doubleinner42(a4_ijkl(nlm),tau)) ! (tau.tau):a2 - tau:a4:tau 
         Davg = Davg/doubleinner22(tau,tau) ! = <D>
         
         g(1) = g(1) - Sqrt(4*Pi)*Davg 
-        get_DRX_decayrate = g ! D - <D>
+        get_DDRX_decayrate = g ! D - <D>
     end
     
         

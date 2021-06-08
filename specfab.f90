@@ -37,7 +37,7 @@ module specfab
     real(kind=dp), parameter :: alpha_opt_lin = 0.0125
     
     ! Optimal n'=3 (nlin) grain parameters 
-    ! These are the nonlinear Sachs-only best-fit parameters (Rathmann et. al, 2021) 
+    ! These are the nonlinear Sachs-only best-fit parameters (Rathmann et al., 2021) 
     real(kind=dp), parameter :: Eca_opt_nlin   = 1d2
     real(kind=dp), parameter :: Ecc_opt_nlin   = 1d0
     real(kind=dp), parameter :: alpha_opt_nlin = 0
@@ -83,7 +83,7 @@ end
 ! FABRIC DYNAMICS
 !---------------------------------
 
-function dndt_ij_ROT(eps,omg, tau,Aprime,Ecc,Eca, beta)  
+function dndt_ij_LATROT(eps,omg, tau,Aprime,Ecc,Eca, beta)  
 
     ! *** LATTICE ROTATION ***
 
@@ -97,7 +97,7 @@ function dndt_ij_ROT(eps,omg, tau,Aprime,Ecc,Eca, beta)
 
     real(kind=dp), intent(in) :: eps(3,3), omg(3,3), tau(3,3) ! strain-rate (eps), spin (omg), dev. stress (tau)
     real(kind=dp), intent(in) :: Aprime, Ecc, Eca, beta
-    complex(kind=dp) :: dndt_ij_ROT(nlm_len,nlm_len), qe(-2:2), qt(-2:2), qo(-1:1)
+    complex(kind=dp) :: dndt_ij_LATROT(nlm_len,nlm_len), qe(-2:2), qt(-2:2), qo(-1:1)
     integer, parameter :: lmdyn_len = 6 ! Scope of harmonic interactions is local in wave space (this is *not* a free parameter)
     complex(kind=dp), dimension(lmdyn_len) :: g0,     gz,     gn,     gp
     complex(kind=dp), dimension(lmdyn_len) :: g0_rot, gz_rot, gn_rot, gp_rot
@@ -138,7 +138,7 @@ function dndt_ij_ROT(eps,omg, tau,Aprime,Ecc,Eca, beta)
     ! Contruct rate-of-change matrix
     do ii = 1, nlm_len    
         do jj = 1, nlm_len    
-            dndt_ij_ROT(jj,ii) = -1*sum([( &
+            dndt_ij_LATROT(jj,ii) = -1*sum([( &
                     GC(   kk,ii,jj)*g0(kk) + &
                     GCm(  kk,ii,jj)*gz(kk) + &
                     GC_m1(kk,ii,jj)*gn(kk) + &
@@ -148,9 +148,9 @@ function dndt_ij_ROT(eps,omg, tau,Aprime,Ecc,Eca, beta)
     
 end
 
-function dndt_ij_DRX(nlm, tau)
+function dndt_ij_DDRX(nlm, tau)
 
-    ! *** Dynamic recrystalization (DRX) ***
+    ! *** Discontinuous dynamic recrystalization (DDRX) ***
     ! 
     ! Nucleation and migration recrystalization modelled as a decay process (Placidi et al., 2010)
 
@@ -164,10 +164,10 @@ function dndt_ij_DRX(nlm, tau)
 
     complex(kind=dp), intent(in) :: nlm(nlm_len)
     real(kind=dp), intent(in) :: tau(3,3) ! Deviatoric stress tensor
-    complex(kind=dp) :: dndt_ij_DRX(nlm_len,nlm_len)
+    complex(kind=dp) :: dndt_ij_DDRX(nlm_len,nlm_len)
     real(kind=dp) :: Davg, Davgtensor(nlm_len,nlm_len)
 
-    dndt_ij_DRX = dndt_ij_DRX_src(tau)
+    dndt_ij_DDRX = dndt_ij_DDRX_src(tau)
     
     ! <D> (diagonal matrix)
     Davg = doubleinner22(matmul(tau,tau), a2_ij(nlm)) - doubleinner22(tau,doubleinner42(a4_ijkl(nlm),tau)) ! (tau.tau):a2 - tau:a4:tau 
@@ -181,35 +181,35 @@ function dndt_ij_DRX(nlm, tau)
     end do
     
     ! Add add (nonlinear) sink term such that Gamma/Gamma0 = (D - <D>)/(tau:tau) 
-    dndt_ij_DRX = dndt_ij_DRX - Davgtensor/doubleinner22(tau,tau) ! This is Gamma/Gamma_0. The caller must multiply by an appropriate DRX rate factor, Gamma_0(T,tau,eps,...).
+    dndt_ij_DDRX = dndt_ij_DDRX - Davgtensor/doubleinner22(tau,tau) ! This is Gamma/Gamma_0. The caller must multiply by an appropriate DDRX rate factor, Gamma_0(T,tau,eps,...).
 end
 
-function dndt_ij_DRX_src(tau)  
+function dndt_ij_DDRX_src(tau)  
 
-    ! Calculates the ODF-independent (linear) source term of DRX 
+    ! Calculates the ODF-independent (linear) source term of DDRX 
 
     implicit none
 
-    real(kind=dp), intent(in) :: tau(3,3) ! DRX rate contant, dev. stress tensor
-    complex(kind=dp) :: dndt_ij_DRX_src(nlm_len,nlm_len), qt(-2:2)
-    integer, parameter :: lmDRX_len = 1+5+9 ! Scope of harmonic interactions is local in wave space (this is NOT a free parameter)
+    real(kind=dp), intent(in) :: tau(3,3) ! dev. stress tensor
+    complex(kind=dp) :: dndt_ij_DDRX_src(nlm_len,nlm_len), qt(-2:2)
+    integer, parameter :: lmDDRX_len = 1+5+9 ! Scope of harmonic interactions is local in wave space (this is NOT a free parameter)
     real(kind=dp) :: k
-    complex(kind=dp), dimension(lmDRX_len) :: g
+    complex(kind=dp), dimension(lmDDRX_len) :: g
 
     ! Quadric expansion coefficients
     qt = rrquad(tau)
 
     ! Harmonic interaction weights 
-    include "include/DRX__body.f90"
+    include "include/DDRX__body.f90"
 
     ! D
     do ii = 1, nlm_len    
         do jj = 1, nlm_len 
-            dndt_ij_DRX_src(jj,ii) = sum([ (GC(kk,ii,jj) * k*g(kk), kk=1,lmDRX_len) ])
+            dndt_ij_DDRX_src(jj,ii) = sum([ (GC(kk,ii,jj) * k*g(kk), kk=1,lmDDRX_len) ])
         end do
     end do
     
-    dndt_ij_DRX_src = dndt_ij_DRX_src/doubleinner22(tau,tau) 
+    dndt_ij_DDRX_src = dndt_ij_DDRX_src/doubleinner22(tau,tau) 
 end
 
 !---------------------------------
@@ -396,85 +396,95 @@ end
 ! Just some shortcuts for computational efficiency...
       
 function a2_ij(nlm) 
-    
     ! a^(2) := <c^2> 
-    
     implicit none
-    
     complex(kind=dp), intent(in) :: nlm(nlm_len)
-    real(kind=dp) :: a2_ij(3,3)
+    real(kind=dp)    :: a2_ij(3,3)
     complex(kind=dp) :: n2m(-2:2) 
-
     n2m = nlm(I_l2:(I_l4-1))
     a2_ij = f_ev_c2(nlm(1),n2m)
 end
 
 function a4_ijkl(nlm) 
-    
     ! a^(4) := <c^4> 
-    
     implicit none
-    
     complex(kind=dp), intent(in) :: nlm(nlm_len)
-    real(kind=dp) :: a4_ijkl(3,3,3,3)
+    real(kind=dp)    :: a4_ijkl(3,3,3,3)
     complex(kind=dp) :: n2m(-2:2), n4m(-4:4)
-    
     n2m = nlm(I_l2:(I_l4-1))
     n4m = nlm(I_l4:(I_l6-1))
     a4_ijkl = f_ev_c4(nlm(1),n2m,n4m)
 end
 
-!---------------------------------
-! SPECTRAL TO TENSORIAL CONVERSION
-!---------------------------------
+! Reverse: tensorial expansion --> spectral expansion
 
 function a2_to_nlm(a2) result(nlm)
-    
-    ! Given a^(2), returns the equivelent spectral coefs assuming the true ODF is truncated at L=2 (higher order modes vanish)
-
+    ! Get n_2^m from a^(2)
     implicit none
-    
     real(kind=dp), intent(in) :: a2(3,3)
     complex(kind=dp) :: nlm(nlm_len)
-    
     nlm = 0.0 ! init
     include "include/a2_to_nlm__body.f90"
 end
 
 function a4_to_nlm(a2, a4) result(nlm)
-
-    ! Given a^(2) and a^(4), returns the equivelent spectral coefs assuming the true ODF is truncated at L=4 (higher order modes vanish)
-
+    ! Get n_2^m and n_4^m from a^(2) and a^(4)
     implicit none
-    
     real(kind=dp), intent(in) :: a2(3,3), a4(3,3,3,3)
     complex(kind=dp) :: nlm(nlm_len)
-    
     nlm = 0.0 ! init
     include "include/a4_to_nlm__body.f90"
 end
 
-function da2dt_DRX(tau, a2, a4)
+!---------------------------------
+! Dynamics in tensorial space
+!---------------------------------
+
+function a6_CBT(a2,a4)
+
+    ! "Clusure By Trancation" for a^(6) in terms of a^(2) and a^(4)
+
+    implicit none
     
-    ! Returns DRX contribution to d/dt a^(2) --- useful routine for external tensorially-based fabric models 
-    ! 
-    !  *** The caller must multiply with the appropriate rate factor Gamma_0(T, tau, ...) ***
+    real(kind=dp), intent(in) :: a2(3,3), a4(3,3,3,3)
+    real(kind=dp) :: a6_CBT(3,3,3,3,3,3)
+    complex(kind=dp) :: nlm(nlm_len), n00, n2m(-2:2), n4m(-4:4), n6m(-6:6)
+        
+    nlm = a4_to_nlm(a2, a4) ! Reconstruct n_l^m
+
+    n00 = nlm(1)
+    n2m = nlm(I_l2:(I_l4-1))
+    n4m = nlm(I_l4:(I_l6-1))
+    n6m = nlm(I_l6:(I_l8-1))
+    
+    a6_CBT = f_ev_c6(n00, n2m, n4m, 0*n6m) ! Calculate a^(6) given n_l^m = 0 for l>4
+    
+end
+
+subroutine daidt_DDRX(tau, Gamma0, a2, a4, da2dt, da4dt)
+    
+    ! DDRX contribution to d/dt a^(2) and d/dt a^(4) 
     
     implicit none
 
-    real(kind=dp), intent(in) :: tau(3,3), a2(3,3), a4(3,3,3,3)
-    real(kind=dp) :: da2dt_DRX(3,3)
+    real(kind=dp), intent(in)  :: tau(3,3), Gamma0, a2(3,3), a4(3,3,3,3)
+    real(kind=dp), intent(out) :: da2dt(3,3), da4dt(3,3,3,3)
     complex(kind=dp) :: nlm(nlm_len), ddt_nlm(nlm_len)
+    complex(kind=dp) :: n00, ddt_n2m(-2:2), ddt_n4m(-4:4)
     
-    ! (1) tensorial --> spectral
+    ! (1) tensorial --> spectral, truncated at L=4
     nlm = a4_to_nlm(a2, a4)
-    
-    ! (2) Calculate spectral evolution due to DRX
-    ddt_nlm = matmul(dndt_ij_DRX(nlm, tau), nlm) ! d/dt(nlm) = M_ij nlm_j 
-    
+    n00 = nlm(1) ! = 1/sqrt(4*pi) due to ODF normalization 
+        
+    ! (2) Calculate spectral evolution due to DDRX
+    ddt_nlm = Gamma0 * matmul(dndt_ij_DDRX(nlm, tau), nlm) ! d/dt nlm_i = M_ij nlm_j 
+    ddt_n2m = ddt_nlm(I_l2:(I_l4-1))
+    ddt_n4m = ddt_nlm(I_l4:(I_l6-1))
+        
     ! (3) spectral --> tensorial 
-    da2dt_DRX = f_ev_c2( (1d0,0)/Sqrt(4*Pi), nlm(I_l2:(I_l4-1)) ) ! ...Assumes normalized ODF: n00 = 1/sqrt(4*pi) 
-    da2dt_DRX = da2dt_DRX - identity/3.0 ! Remove time-constant isotropic (monopole) part due to calculating <c^2> using f_ev_c2() 
+    da2dt = f_ev_c2(n00, ddt_n2m)          - f_ev_c2(n00, 0*ddt_n2m)            ! <c^> entries are *linear* combinations of n_l^m, allowing d/dt <c^2> to be calculated by substituting "d/dt n_l^m" for "n_l^m" in "<c^2>(n_l^m)" by removing the constant part(s).
+    da4dt = f_ev_c4(n00, ddt_n2m, ddt_n4m) - f_ev_c4(n00, 0*ddt_n2m, 0*ddt_n4m) ! ...same reasoning as above
+
 end
 
 !---------------------------------
