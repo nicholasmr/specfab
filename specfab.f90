@@ -24,6 +24,7 @@ module specfab
 
     ! Dynamics
     complex(kind=dp), private, allocatable :: regmat(:,:) ! Unscaled regularization matrix
+    complex(kind=dp), private, allocatable :: lapmat(:,:) ! Laplacian diffusion operator
 
     ! Ehancement-factor related
     real(kind=dp), private :: ev_c2_iso(3,3), ev_c4_iso(3,3,3,3), ev_c6_iso(3,3,3,3, 3,3), ev_c8_iso(3,3,3,3, 3,3,3,3) ! <c^k> for isotropic n(theta,phi)
@@ -68,11 +69,14 @@ subroutine initspecfab(Lcap_)
     
     ! Laplacian regularization (unscaled)
     if(.not. allocated(regmat)) allocate(regmat(nlm_len,nlm_len))
+    if(.not. allocated(lapmat)) allocate(lapmat(nlm_len,nlm_len))
     regmat = 0.0 ! initialize
+    lapmat = 0.0 ! initialize
     do ii = 1, nlm_len    
         do jj = 1, nlm_len    
             if (ii .eq. jj) then
                 regmat(ii,ii) = -(lm(1,ii)*(lm(1,ii)+1))**(1.5) ! if expo > 1 => hyper diffusion
+                lapmat(ii,ii) = -(lm(1,ii)*(lm(1,ii)+1))
             end if
         end do
     end do
@@ -210,6 +214,25 @@ function dndt_ij_DDRX_src(tau)
     end do
     
     dndt_ij_DDRX_src = dndt_ij_DDRX_src/doubleinner22(tau,tau) 
+end
+
+function dndt_ij_CDRX()
+
+    ! *** Continuous dynamic recrystalization (CDRX) ***
+    ! 
+    ! Rotation recrystalization (polygonization) as a Laplacian diffusion process (Godert, 2003)
+
+    ! Returns matrix "dndt_ij" such that
+    ! 
+    !       d/dt (nlm)_i = dndt_ij (nlm)_j
+    ! 
+    ! where "nlm" is the vector of spectral coefficient n_l^m    
+
+    implicit none
+
+    complex(kind=dp) :: dndt_ij_CDRX(nlm_len,nlm_len)
+
+    dndt_ij_CDRX = lapmat 
 end
 
 !---------------------------------
@@ -454,7 +477,7 @@ end
 subroutine daidt_LATROT(eps, omg, a2, a4, da2dt, da4dt)
     
     ! Lattice rotation contribution to d/dt a^(2) and d/dt a^(4) 
-    ! Assumes Taylor hypothesis  (constant strain-rate over polycrystal).
+    ! Assumes Taylor hypothesis (constant strain-rate over polycrystal).
     
     implicit none
 
