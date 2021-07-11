@@ -1,6 +1,6 @@
 # Spectral orientation fabric 
 A spectral fabric model of kinematic lattice (c-axis) rotation (Svendsen and
-Hutter, 1996) and dynamic recrystallization (Placidi and others, 2010).
+Hutter, 1996), discontinuous dynamic recrystallization (Placidi and others, 2010), and rotation recrystallization (Gödert, 2003).
 
 ![image](githubimg.jpg)
 **Lattice rotation:** <br>
