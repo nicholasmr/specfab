@@ -32,19 +32,18 @@ loadvar = lambda field: np.array(fh.variables[field][:])
 Nt, dt, nu, L = fh.getncattr('tsteps'), fh.getncattr('dt'), fh.getncattr('nu'), fh.getncattr('L')
 
 # Grain parameters
-Eca_opt_lin,  Ecc_opt_lin  = fh.getncattr('Eca_opt_lin'),  fh.getncattr('Ecc_opt_lin')
-Eca_opt_nlin, Ecc_opt_nlin = fh.getncattr('Eca_opt_nlin'), fh.getncattr('Ecc_opt_nlin')
-alpha_opt_lin, alpha_opt_nlin = fh.getncattr('alpha_opt_lin'), fh.getncattr('alpha_opt_nlin')
+Eca_lin,  Ecc_lin  = fh.getncattr('Eca_lin'),  fh.getncattr('Ecc_lin')
+Eca_nlin, Ecc_nlin = fh.getncattr('Eca_nlin'), fh.getncattr('Ecc_nlin')
+alpha_lin, alpha_nlin = fh.getncattr('alpha_lin'), fh.getncattr('alpha_nlin')
 
 # Fabric state
 lm, c = loadvar('lm'), loadvar('c_re') + 1j*loadvar('c_im') 
-eigvals  = loadvar('eigvals')
-e1,e2,e3    = loadvar('e1'), loadvar('e2'), loadvar('e3')
-p23,p12,p13 = loadvar('p23'),loadvar('p12'),loadvar('p13') 
-q23,q12,q13 = loadvar('q23'),loadvar('q12'),loadvar('q13') 
+eigvals = loadvar('eigvals')
+e1,e2,e3 = loadvar('e1'), loadvar('e2'), loadvar('e3')
+p1,p2,p3 = loadvar('p1'), loadvar('p2'), loadvar('p3')
 
-Eeiej_lin,   Eeiej_nlin   = loadvar('Eeiej_lin'),   loadvar('Eeiej_nlin') 
-Epijqij_lin, Epijqij_nlin = loadvar('Epijqij_lin'), loadvar('Epijqij_nlin')
+Eeiej_lin, Eeiej_nlin = loadvar('Eeiej_lin'), loadvar('Eeiej_nlin') 
+Epipj_lin, Epipj_nlin = loadvar('Epipj_lin'), loadvar('Epipj_nlin') 
 
 # Velocity gradient tensor 
 ugrad = np.array(fh.getncattr('ugrad')).reshape((3, 3))
@@ -158,8 +157,9 @@ for tt in plot_tsteps:
     plot_vec(axei,e2[tt,:],r'$\vb{e}_2$','g')
     plot_vec(axei,e3[tt,:],r'$\vb{e}_3$','b')
     lwpq=1
-    plot_vec(axei,p13[tt,:],r'$\vb{p}_{13}$','y', lw=lwpq)
-    plot_vec(axei,q13[tt,:],r'$\vb{q}_{13}$','y', ls='--', lw=lwpq)
+    plot_vec(axei,p1[tt,:],r'$\vb{p}_{1}$', 'r', ls='--', lw=lwpq)
+    plot_vec(axei,p2[tt,:],r'$\vb{p}_{2}$', 'g', ls='--', lw=lwpq)
+    plot_vec(axei,p3[tt,:],r'$\vb{p}_{3}$', 'b', ls='--', lw=lwpq)
     axei.legend(handlelength=1, loc=1, bbox_to_anchor=(1.17,1), fancybox=False)
 
     #----------------------
@@ -169,7 +169,7 @@ for tt in plot_tsteps:
     lblmk    = lambda ii,jj: '$E_{e_%i e_%i}$'%(ii+1,jj+1)
     lblmk_pq = lambda ii,jj: '$E_{p_{%i%i} q_{%i%i}}$'%(ii+1,jj+1, ii+1,jj+1)
 
-    def plot_enh(ax, Eeiej, Epijqij):
+    def plot_enh(ax, Eeiej, Epipj):
         
         ax.semilogy(steps, Eeiej[:,0,0], 'r-',  label=lblmk(0,0), lw=lw0)
         ax.semilogy(steps, Eeiej[:,0,1], 'r--', label=lblmk(0,1), lw=lw0)
@@ -183,9 +183,9 @@ for tt in plot_tsteps:
         ax.semilogy(steps, Eeiej[:,2,1], 'b-.', label=lblmk(2,1), lw=lw2)
         ax.semilogy(steps, Eeiej[:,2,2], 'b-',  label=lblmk(2,2), lw=lw2)    
 
-    #    ax.semilogy(steps, Epijqij[:,1],  'k-', label='$E_{mt}(I-3*pp)$', lw=lw1) 
-        ax.semilogy(steps, Epijqij[:,2],  'y-', label=lblmk_pq(0,2), lw=lw1) 
-        Eratio = np.divide(Eeiej[:,0,2],Epijqij[:,2])
+        ax.semilogy(steps, Epipj[:,0,1],  'y-', label=lblmk_pq(0,2), lw=lw1) 
+
+        Eratio = np.divide(Eeiej[:,0,1],Epipj[:,0,1])
         ax.semilogy(steps, Eratio, 'm-', label=lblmk(0,2)+'/'+lblmk_pq(0,2), lw=lw1)
 
         xlims=[0, Nt+1]
@@ -193,21 +193,21 @@ for tt in plot_tsteps:
         ax.semilogy(xlims,[2.5,2.5],'--k',lw=lw) 
         ax.semilogy(xlims,[4.375,4.375],'--k',lw=lw) 
         ax.set_xlim(xlims)
-        ax.set_ylim([np.amin([1e-1, np.amin(Eeiej[:]), np.amin(Epijqij[:])]), np.amax([1e+1, np.amax(Eeiej[:]), np.amax(Epijqij[:]), np.amax(Eratio)])])
+        ax.set_ylim([np.amin([1e-1, np.amin(Eeiej[:]), np.amin(Epipj[:])]), np.amax([1e+1, np.amax(Eeiej[:]), np.amax(Epipj[:]), np.amax(Eratio)])])
         ax.set_xlabel('time step')
         ax.set_ylabel('$E_{vw}$')
         ax.grid()
     
     
-    plot_enh(axEvw_Sac, Eeiej_nlin, Epijqij_nlin)
-    plot_enh(axEvw_Mix, Eeiej_lin,  Epijqij_lin)
+    plot_enh(axEvw_Sac, Eeiej_nlin, Epipj_nlin)
+    plot_enh(axEvw_Mix, Eeiej_lin,  Epipj_lin)
     
     axEvw_Sac.set_title(r'Nonlinear Sachs enh. fac.')
     axEvw_Mix.set_title(r'Linear Taylor--Sachs enh. fac.')
     
     from matplotlib.offsetbox import AnchoredText
-    axEvw_Sac.add_artist(AnchoredText('\n'.join( (r"$n' = %i$"%(3), r'$E_{cc} = %.1f$'%(Ecc_opt_nlin), r'$E_{ca} = %.0e$'%(Eca_opt_nlin), r'$\alpha = %.4f$'%(alpha_opt_nlin)) ), loc='lower left', frameon=True,))
-    axEvw_Mix.add_artist(AnchoredText('\n'.join( (r"$n' = %i$"%(1), r'$E_{cc} = %.1f$'%(Ecc_opt_lin), r'$E_{ca} = %.0e$'%(Eca_opt_lin),   r'$\alpha = %.4f$'%(alpha_opt_lin)) ),  loc='lower left', frameon=True,))
+    axEvw_Sac.add_artist(AnchoredText('\n'.join( (r"$n' = %i$"%(3), r'$E_{cc} = %.1f$'%(Ecc_nlin), r'$E_{ca} = %.0e$'%(Eca_nlin), r'$\alpha = %.4f$'%(alpha_nlin)) ), loc='lower left', frameon=True,))
+    axEvw_Mix.add_artist(AnchoredText('\n'.join( (r"$n' = %i$"%(1), r'$E_{cc} = %.1f$'%(Ecc_lin),  r'$E_{ca} = %.0e$'%(Eca_lin),  r'$\alpha = %.4f$'%(alpha_lin)) ),  loc='lower left', frameon=True,))
     
     ncol = 4
     axEvw_Sac.legend(loc=4, ncol=ncol, handlelength=2, columnspacing=1.2, labelspacing=0.3, fancybox=False, bbox_to_anchor=(1.05,-0.55))   

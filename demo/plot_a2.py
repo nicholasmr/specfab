@@ -54,7 +54,7 @@ def a2plot(a2):
     # Determine spectral coefs from a^(2)    
     nlm_len = sf.init(2)
     lm      = sf.get_lm(nlm_len)
-    clm     = sf.get_a2_to_nlm(nlm_len, a2)
+    clm     = sf.a2_to_nlm(a2)
 
     # Check that re-calculating a2 from clm indeed gives a2 as passed to a2plot()
 #    print(1/np.sqrt(4*np.pi), clm)

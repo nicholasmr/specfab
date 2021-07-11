@@ -2,25 +2,26 @@
 
 program demo
 
-    use specfab    
+    use specfab, f_a2 => a2, f_a4 => a4
     use netcdf
     
     implicit none
+
+    integer, parameter :: dp = 8
 
     ! Numerics
     real, parameter    :: dt = 0.1 * 3.154e+7 ! 1/10 year
     integer, parameter :: Nt = 500 ! Number of time steps
 
     ! Constants and argv strings    
-    integer, parameter :: dp = 8
-    integer :: ii,tt ! loop vars
+    integer          :: ii,tt ! loop vars
     character(len=5) :: arg_exp 
 
     ! Fabric state and evolution
-    integer, parameter :: Lcap = 4 ! Expansion series truncation
+    integer, parameter            :: Lcap = 4 ! Expansion series truncation
     complex(kind=dp), allocatable :: nlm(:), nlmiso(:), dndt(:,:) ! Series expansion coefs and evolution matrix
-    real(kind=dp) :: a2(3,3), a4(3,3,3,3), da2dt(3,3), da4dt(3,3,3,3)
-    real(kind=dp) :: ugrad(3,3), tau(3,3) ! Large-scale deformation tensors
+    real(kind=dp)                 :: a2(3,3), a4(3,3,3,3), da2dt(3,3), da4dt(3,3,3,3)
+    real(kind=dp)                 :: ugrad(3,3), tau(3,3) ! Large-scale deformation tensors
 
     ! DRX
     real(kind=dp), parameter :: Gamma0 = 1d-8 ! Sets DRX time scale
@@ -28,9 +29,10 @@ program demo
     ! For dumping state to netCDF
     complex(kind=dp), allocatable   :: nlm_save(:,:)
     real(kind=dp)                   :: a2_true_save(3,3,Nt), a2_save(3,3,Nt), a4_save(3,3,3,3,Nt) 
+    
     character(len=30) :: fname_sol
-    integer :: ncid, c_did, time_did, dim_did, pair_did ! Dimension IDs
-    integer :: id_cre,id_cim,id_lm, id_a2, id_a2_true ! Var IDs
+    integer           :: ncid, c_did, time_did, dim_did, pair_did ! Dimension IDs
+    integer           :: id_cre,id_cim,id_lm, id_a2, id_a2_true ! Var IDs
 
     if (command_argument_count() .ne. 1) then
         print *,'usage: ./demo ugrad'
@@ -102,9 +104,9 @@ program demo
     nlmiso(1) = nlmiso(1)/f_ev_c0(nlmiso(1)) 
 
     ! Init with isotropy
-    nlm = nlmiso      ! Spectral expansion
-    a2 = a2_ij(nlm)   ! Tensorial expansion
-    a4 = a4_ijkl(nlm) ! ...
+    nlm = nlmiso   ! Spectral expansion
+    a2 = f_a2(nlm) ! Tensorial expansion
+    a4 = f_a4(nlm) ! ...
     
     ! Save initial state
     nlm_save(:,1)       = nlm
@@ -117,7 +119,7 @@ program demo
     
     ! Model fabric evolution by representing fabric both spectrally and tensorially 
 
-    write(*,"(A13,I4,A5,F12.10,A4,I2,A10,I3,A1)") 'Numerics: Nt=', Nt, ', dt=', dt, ', L=', Lcap, ' (nlm_len=',nlm_len,')'
+    write(*,"(A13,I4,A4,I2,A10,I3,A1)") 'Numerics: Nt=', Nt, ', L=', Lcap, ' (nlm_len=',nlm_len,')'
 
     do tt = 2, Nt
 
@@ -128,13 +130,13 @@ program demo
 
         !print *,'*** nlm consistency check ***'
         !print *, nlm
-        !print *, a2_to_nlm(a2_ij(nlm))
-        !print *, a4_to_nlm(a2_ij(nlm), a4_ijkl(nlm))
+        !print *, a2_to_nlm(f_a2(nlm))
+        !print *, a4_to_nlm(f_a2(nlm), f_a4(nlm))
         
         ! Spectral expansion
         dndt = Gamma0 * dndt_ij_DDRX(nlm, tau) ! Tau is assumed constant, but since DRX rate depends on the state itself (i.e. DRX is nonlinear), it must be called for each time step.
         nlm_save(:,tt) = nlm + dt * matmul(dndt, nlm) ! Spectral coefs evolve by a linear transformation
-        a2_true_save(:,:,tt) = a2_ij(nlm)
+        a2_true_save(:,:,tt) = f_a2(nlm)
 
         ! Tensorial expansion
         call daidt_DDRX(tau, Gamma0, a2, a4, da2dt, da4dt) ! Sets rate-of-change matrices da2dt and da4dt

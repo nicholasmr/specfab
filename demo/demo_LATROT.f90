@@ -16,21 +16,21 @@ program demo
     real(kind=dp)      :: nu0  = 5.0d-3 ! Regularization magnitude calibrated for demo with L=12
     
     ! Constants and argv strings    
-    integer :: ii,tt ! loop vars
+    integer          :: ii,tt ! loop vars
     character(len=5) :: arg_exp ! experiment type (see below)
 
     ! Fabric state and evolution
     complex(kind=dp), allocatable :: nlm(:), dndt(:,:), dndt_ROT(:,:), dndt_REG(:,:) ! Series expansion coefs and evolution matrix
-    real(kind=dp) :: ugrad(3,3), eps(3,3), omg(3,3) ! Large-scale deformation
+    real(kind=dp)                 :: ugrad(3,3), eps(3,3), omg(3,3) ! Large-scale deformation
 
     ! For dumping state to netCDF
     complex(kind=dp), allocatable   :: nlm_save(:,:)
-    real(kind=dp)                   :: eigvals_save(3,Nt), Eeiej_lin_save(3,3,Nt), Eeiej_nlin_save(3,3,Nt), Epijqij_lin_save(3,Nt), Epijqij_nlin_save(3,Nt)
-    real(kind=dp), dimension(3,Nt)  :: e1_save,e2_save,e3_save, p23_save,p12_save,p13_save, q23_save,q12_save,q13_save
+    real(kind=dp)                   :: eigvals_save(3,Nt), Eeiej_lin_save(3,3,Nt), Eeiej_nlin_save(3,3,Nt), Epipj_lin_save(3,3,Nt), Epipj_nlin_save(3,3,Nt)
+    real(kind=dp), dimension(3,Nt)  :: e1_save,e2_save,e3_save, p1_save,p2_save,p3_save
     character(len=30) :: fname_sol
     integer :: ncid, c_did, time_did, eig_did, dim_did, pair_did ! Dimension IDs
-    integer :: id_cre,id_cim,id_lm, id_eig, id_e1,id_e2,id_e3, id_p23,id_p12,id_p13, id_q23,id_q12,id_q13 ! Var IDs
-    integer :: id_Eeiej_lin, id_Eeiej_nlin, id_Epijqij_lin, id_Epijqij_nlin ! Var IDs
+    integer :: id_cre,id_cim,id_lm, id_eig, id_e1,id_e2,id_e3, id_p1,id_p2,id_p3! Var IDs
+    integer :: id_Eeiej_lin, id_Eeiej_nlin, id_Epipj_lin, id_Epipj_nlin ! Var IDs
 
     if (command_argument_count() .ne. 1) then
         print *,'usage: ./demo ugrad'
@@ -123,7 +123,7 @@ program demo
 
     call savestate(nlm, 1) ! Save initial state    
     dndt_ROT = dndt_ij_LATROT(eps,omg, 0*eps,0d0,0d0,0d0, 1d0) ! Assume constant strain-rate and spin with Taylor style plastic spin for lattice rotation (beta=1).
-    dndt_REG = f_nu_eps(nu0, eps) * dndt_ij_REG() ! Regularization: nu * (reg. mag.) *  reg. matrix
+    dndt_REG = f_nu_eps(nu0, eps) * dndt_ij_REG() ! Regularization: nu * (reg. mag.) * (reg. matrix)
 !    dndt_REG = 5*f_nu_eps(nu0, eps) * dndt_ij_CDRX() ! Rotation recrystalization
             
     do tt = 2, Nt
@@ -146,12 +146,12 @@ program demo
     call check(nf90_put_att(ncid,NF90_GLOBAL, "L",      Lcap))
     call check(nf90_put_att(ncid,NF90_GLOBAL, "ugrad",  reshape(ugrad, [size(ugrad)]) ))
     
-    call check(nf90_put_att(ncid,NF90_GLOBAL, "Eca_opt_lin", Eca_opt_lin))
-    call check(nf90_put_att(ncid,NF90_GLOBAL, "Ecc_opt_lin", Ecc_opt_lin))
-    call check(nf90_put_att(ncid,NF90_GLOBAL, "Eca_opt_nlin", Eca_opt_nlin))
-    call check(nf90_put_att(ncid,NF90_GLOBAL, "Ecc_opt_nlin", Ecc_opt_nlin))
-    call check(nf90_put_att(ncid,NF90_GLOBAL, "alpha_opt_lin",  alpha_opt_lin))
-    call check(nf90_put_att(ncid,NF90_GLOBAL, "alpha_opt_nlin", alpha_opt_nlin))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "Eca_lin", Eca_opt_lin))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "Ecc_lin", Ecc_opt_lin))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "Eca_nlin", Eca_opt_nlin))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "Ecc_nlin", Ecc_opt_nlin))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "alpha_lin",  alpha_opt_lin))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "alpha_nlin", alpha_opt_nlin))
     
     call check( nf90_def_dim(ncid, "DOF",    nlm_len,   c_did) )
     call check( nf90_def_dim(ncid, "tstep",  Nt,        time_did) )
@@ -164,20 +164,17 @@ program demo
     call check( nf90_def_var(ncid, "c_im",  NF90_DOUBLE, [c_did,   time_did], id_cim) )
     
     call check( nf90_def_var(ncid, "eigvals", NF90_DOUBLE, [eig_did, time_did], id_eig) )
-    call check( nf90_def_var(ncid, "Eeiej_nlin",   NF90_DOUBLE, [dim_did,dim_did, time_did], id_Eeiej_nlin) )
-    call check( nf90_def_var(ncid, "Eeiej_lin",    NF90_DOUBLE, [dim_did,dim_did, time_did], id_Eeiej_lin) )
-    call check( nf90_def_var(ncid, "e1",      NF90_DOUBLE, [dim_did, time_did], id_e1) )
-    call check( nf90_def_var(ncid, "e2",      NF90_DOUBLE, [dim_did, time_did], id_e2) )
-    call check( nf90_def_var(ncid, "e3",      NF90_DOUBLE, [dim_did, time_did], id_e3) )
-    call check( nf90_def_var(ncid, "Epijqij_nlin", NF90_DOUBLE, [dim_did, time_did], id_Epijqij_nlin) )
-    call check( nf90_def_var(ncid, "Epijqij_lin",  NF90_DOUBLE, [dim_did, time_did], id_Epijqij_lin) )
-    call check( nf90_def_var(ncid, "p23",     NF90_DOUBLE, [dim_did, time_did], id_p23) )
-    call check( nf90_def_var(ncid, "p12",     NF90_DOUBLE, [dim_did, time_did], id_p12) )
-    call check( nf90_def_var(ncid, "p13",     NF90_DOUBLE, [dim_did, time_did], id_p13) )
-    call check( nf90_def_var(ncid, "q23",     NF90_DOUBLE, [dim_did, time_did], id_q23) )
-    call check( nf90_def_var(ncid, "q12",     NF90_DOUBLE, [dim_did, time_did], id_q12) )
-    call check( nf90_def_var(ncid, "q13",     NF90_DOUBLE, [dim_did, time_did], id_q13) )
-    
+    call check( nf90_def_var(ncid, "Eeiej_nlin", NF90_DOUBLE, [dim_did,dim_did, time_did], id_Eeiej_nlin) )
+    call check( nf90_def_var(ncid, "Eeiej_lin",  NF90_DOUBLE, [dim_did,dim_did, time_did], id_Eeiej_lin) )
+    call check( nf90_def_var(ncid, "Epipj_nlin", NF90_DOUBLE, [dim_did,dim_did, time_did], id_Epipj_nlin) )
+    call check( nf90_def_var(ncid, "Epipj_lin",  NF90_DOUBLE, [dim_did,dim_did, time_did], id_Epipj_lin) )
+    call check( nf90_def_var(ncid, "e1", NF90_DOUBLE, [dim_did, time_did], id_e1) )
+    call check( nf90_def_var(ncid, "e2", NF90_DOUBLE, [dim_did, time_did], id_e2) )
+    call check( nf90_def_var(ncid, "e3", NF90_DOUBLE, [dim_did, time_did], id_e3) )
+    call check( nf90_def_var(ncid, "p1", NF90_DOUBLE, [dim_did, time_did], id_p1) )
+    call check( nf90_def_var(ncid, "p2", NF90_DOUBLE, [dim_did, time_did], id_p2) )
+    call check( nf90_def_var(ncid, "p3", NF90_DOUBLE, [dim_did, time_did], id_p3) )
+
     call check( nf90_enddef(ncid) )
     
     call check( nf90_put_var(ncid, id_cre,   real(nlm_save)) )
@@ -187,17 +184,14 @@ program demo
     call check( nf90_put_var(ncid, id_eig,  eigvals_save) )
     call check( nf90_put_var(ncid, id_Eeiej_lin,  Eeiej_lin_save) )
     call check( nf90_put_var(ncid, id_Eeiej_nlin, Eeiej_nlin_save) )
-    call check( nf90_put_var(ncid, id_e1,   e1_save) )
-    call check( nf90_put_var(ncid, id_e2,   e2_save) )
-    call check( nf90_put_var(ncid, id_e3,   e3_save) )
-    call check( nf90_put_var(ncid, id_Epijqij_lin,  Epijqij_lin_save) )
-    call check( nf90_put_var(ncid, id_Epijqij_nlin, Epijqij_nlin_save) )
-    call check( nf90_put_var(ncid, id_p23,  p23_save) )
-    call check( nf90_put_var(ncid, id_p12,  p12_save) )
-    call check( nf90_put_var(ncid, id_p13,  p13_save) )
-    call check( nf90_put_var(ncid, id_q23,  q23_save) )
-    call check( nf90_put_var(ncid, id_q12,  q12_save) )
-    call check( nf90_put_var(ncid, id_q13,  q13_save) )
+    call check( nf90_put_var(ncid, id_e1, e1_save) )
+    call check( nf90_put_var(ncid, id_e2, e2_save) )
+    call check( nf90_put_var(ncid, id_e3, e3_save) )
+    call check( nf90_put_var(ncid, id_Epipj_lin,  Epipj_lin_save) )
+    call check( nf90_put_var(ncid, id_Epipj_nlin, Epipj_nlin_save) )
+    call check( nf90_put_var(ncid, id_p1, p1_save) )
+    call check( nf90_put_var(ncid, id_p2, p2_save) )
+    call check( nf90_put_var(ncid, id_p3, p3_save) )
     
     call check( nf90_close(ncid) )
 
@@ -216,16 +210,16 @@ contains
     
         nlm_save(:,tt)  = nlm
 
-        call eigenframe(nlm, e1_save(:,tt),e2_save(:,tt),e3_save(:,tt), eigvals_save(:,tt)) 
-        call pqframe(nlm, p23_save(:,tt),p12_save(:,tt),p13_save(:,tt), q23_save(:,tt),q12_save(:,tt),q13_save(:,tt))
+        call frame(nlm, 'e', e1_save(:,tt),e2_save(:,tt),e3_save(:,tt), eigvals_save(:,tt)) ! eigen frame 
+        call frame(nlm, 'p', p1_save(:,tt),p2_save(:,tt),p3_save(:,tt), eigvals_save(:,tt)) ! eigen frame rotated 45 deg. (pq-frame)
 
         ! Linear (n'=1) mixed Taylor--Sachs enhancements        
-        Eeiej_lin_save(:,:,tt) = Eeiej(  nlm, Ecc_opt_lin, Eca_opt_lin, alpha_opt_lin, 1)
-        Epijqij_lin_save(:,tt) = Epijqij(nlm, Ecc_opt_lin, Eca_opt_lin, alpha_opt_lin, 1)
+        Eeiej_lin_save(:,:,tt) = Eeiej(nlm, e1_save(:,tt),e2_save(:,tt),e3_save(:,tt), Ecc_opt_lin, Eca_opt_lin, alpha_opt_lin, 1)
+        Epipj_lin_save(:,:,tt) = Eeiej(nlm, p1_save(:,tt),p2_save(:,tt),p3_save(:,tt), Ecc_opt_lin, Eca_opt_lin, alpha_opt_lin, 1)
         
         ! Nonlinear (n'=3) Sachs enhancements
-        Eeiej_nlin_save(:,:,tt) = Eeiej(  nlm, Ecc_opt_nlin, Eca_opt_nlin, alpha_opt_nlin, 3)
-        Epijqij_nlin_save(:,tt) = Epijqij(nlm, Ecc_opt_nlin, Eca_opt_nlin, alpha_opt_nlin, 3)
+        Eeiej_nlin_save(:,:,tt) = Eeiej(nlm, e1_save(:,tt),e2_save(:,tt),e3_save(:,tt), Ecc_opt_nlin, Eca_opt_nlin, alpha_opt_nlin, 3)
+        Epipj_nlin_save(:,:,tt) = Eeiej(nlm, p1_save(:,tt),p2_save(:,tt),p3_save(:,tt), Ecc_opt_nlin, Eca_opt_nlin, alpha_opt_nlin, 3)
 
     end
     

@@ -99,18 +99,18 @@ Emm_alpha,  Emt_alpha,  Epq_alpha  = np.zeros(size), np.zeros(size), np.zeros(si
 for ii,Eca in enumerate(Eca_list):
 
     for jj,Ecc in enumerate(Ecc_list):
-        Emm_Sachs[ii,jj] = sf.get_evw(r2,r4,r6,r8, mm,tau_ps_mm, Ecc,Eca,0,nprime)
-        Emt_Sachs[ii,jj] = sf.get_evw(r2,r4,r6,r8, mt,tau_ss_mt, Ecc,Eca,0,nprime)
-        Epq_Sachs[ii,jj] = sf.get_evw(r2,r4,r6,r8, pq,tau_ss_pq, Ecc,Eca,0,nprime)
+        Emm_Sachs[ii,jj] = sf.enhfac_vw(r2,r4,r6,r8, mm,tau_ps_mm, Ecc,Eca,0,nprime)
+        Emt_Sachs[ii,jj] = sf.enhfac_vw(r2,r4,r6,r8, mt,tau_ss_mt, Ecc,Eca,0,nprime)
+        Epq_Sachs[ii,jj] = sf.enhfac_vw(r2,r4,r6,r8, pq,tau_ss_pq, Ecc,Eca,0,nprime)
         #       
-        Emm_Taylor[ii,jj] = sf.get_evw(r2,r4,r6,r8, mm,tau_ps_mm, Ecc,Eca,1,nprime)
-        Emt_Taylor[ii,jj] = sf.get_evw(r2,r4,r6,r8, mt,tau_ss_mt, Ecc,Eca,1,nprime)
-        Epq_Taylor[ii,jj] = sf.get_evw(r2,r4,r6,r8, pq,tau_ss_pq, Ecc,Eca,1,nprime)
+        Emm_Taylor[ii,jj] = sf.enhfac_vw(r2,r4,r6,r8, mm,tau_ps_mm, Ecc,Eca,1,nprime)
+        Emt_Taylor[ii,jj] = sf.enhfac_vw(r2,r4,r6,r8, mt,tau_ss_mt, Ecc,Eca,1,nprime)
+        Epq_Taylor[ii,jj] = sf.enhfac_vw(r2,r4,r6,r8, pq,tau_ss_pq, Ecc,Eca,1,nprime)
         
     for kk,alpha in enumerate(alpha_list):
-        Emm_alpha[ii,kk] = sf.get_evw(r2,r4,r6,r8, mm,tau_ps_mm, 1,Eca,alpha,nprime)
-        Emt_alpha[ii,kk] = sf.get_evw(r2,r4,r6,r8, mt,tau_ss_mt, 1,Eca,alpha,nprime)
-        Epq_alpha[ii,kk] = sf.get_evw(r2,r4,r6,r8, pq,tau_ss_pq, 1,Eca,alpha,nprime)
+        Emm_alpha[ii,kk] = sf.enhfac_vw(r2,r4,r6,r8, mm,tau_ps_mm, 1,Eca,alpha,nprime)
+        Emt_alpha[ii,kk] = sf.enhfac_vw(r2,r4,r6,r8, mt,tau_ss_mt, 1,Eca,alpha,nprime)
+        Epq_alpha[ii,kk] = sf.enhfac_vw(r2,r4,r6,r8, pq,tau_ss_pq, 1,Eca,alpha,nprime)
         
 Xe = np.array([[ Ecc for Ecc in Ecc_list]   for Eca in Eca_list])
 Xa = np.array([[ alp for alp in alpha_list] for Eca in Eca_list])
@@ -229,8 +229,8 @@ for ii,TYPE in enumerate(types):
         label_pos_2 = getlblpos(CS2,logmid_2)
 
         # draw labels
-        ax1.clabel(CS1, CS1.levels, fmt=fmt, inline_spacing=12, manual=label_pos_1)
-        ax1.clabel(CS2, CS2.levels, fmt=fmt, inline_spacing=12, manual=label_pos_2)
+        ax1.clabel(CS1, CS1.levels, fmt=fmt, inline_spacing=20, manual=label_pos_1)
+        ax1.clabel(CS2, CS2.levels, fmt=fmt, inline_spacing=20, manual=label_pos_2)
 
     #-------------
 
