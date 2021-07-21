@@ -28,7 +28,9 @@ module specfabpy
         alpha_opt_lin__sf  => alpha_opt_lin, &
         Eca_opt_nlin__sf   => Eca_opt_nlin, &
         Ecc_opt_nlin__sf   => Ecc_opt_nlin, &
-        alpha_opt_nlin__sf => alpha_opt_nlin
+        alpha_opt_nlin__sf => alpha_opt_nlin, &
+        ae2_to_a2__sf => ae2_to_a2, ae4_to_a4__sf => ae4_to_a4, & 
+        a4_IBOF__sf => a4_IBOF
         
     implicit none
     
@@ -129,9 +131,6 @@ contains
         
         call frame__sf(nlm, ftype, e1,e2,e3, eigvals)
     end
-    
-    ! JOSEF (Rathmann and Lilien, 2021) fabric interface   
-!    include "frame_josef.f90"
     
     !------------------
     ! Enhancement factors

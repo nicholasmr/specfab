@@ -120,7 +120,7 @@ Y  = np.array([[ Eca for Ecc in Ecc_list]   for Eca in Eca_list])
 # Plot maps
 #-----------------------
 
-panelstrs = [r'(a) $\alpha=0$', r'(b) $\alpha=1$', '(c) $E_{cc} = 1$']
+panelstrs = [r'{\LARGE \bf a}\,\, $\alpha=0$', r'{\LARGE \bf b}\,\, $\alpha=1$', r'{\LARGE \bf c}\,\, $E_{cc} = 1$']
 
 for ii,TYPE in enumerate(types):
 
@@ -229,8 +229,10 @@ for ii,TYPE in enumerate(types):
         label_pos_2 = getlblpos(CS2,logmid_2)
 
         # draw labels
-        ax1.clabel(CS1, CS1.levels, fmt=fmt, inline_spacing=20, manual=label_pos_1)
-        ax1.clabel(CS2, CS2.levels, fmt=fmt, inline_spacing=20, manual=label_pos_2)
+        inline_spacing=12
+#        inline_spacing=20
+        ax1.clabel(CS1, CS1.levels, fmt=fmt, inline_spacing=inline_spacing, manual=label_pos_1)
+        ax1.clabel(CS2, CS2.levels, fmt=fmt, inline_spacing=inline_spacing, manual=label_pos_2)
 
     #-------------
 
