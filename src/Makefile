@@ -72,6 +72,9 @@ clean:
 	
 clear:
 	rm -f $(DEMOPATH)/demo_LATROT $(DEMOPATH)/demo_DDRX $(SPECFAB).o $(SPECFAB).mod *.so
+
+orthotest: $(SPECFAB).o
+	$(COMPILER) $(DEMOPATH)/test_orthotropic_rheology.f90 $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o $(DEMOPATH)/test_orthotropic_rheology
 	
 #-------------------
 # Elmer, JOSEF, ...

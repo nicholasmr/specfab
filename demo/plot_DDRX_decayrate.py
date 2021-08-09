@@ -74,16 +74,16 @@ nlm[0]  = 1 # Assume isotropic state for calculating decay rate
 
 ### Plot 1
 tau = np.diag([0.5,0.5,-1]) # Unconfined UC in z
-plot(sf.ddrx_decayrate(nlm, tau), ax1, titlestr=r'(a) Unconfined pure shear')
+plot(sf.ddrx_decayrate(nlm, tau), ax1, titlestr=r'%s Unconfined pure shear'%(r'{\Large \bf a}\,\,'))
 
 ### Plot 2
 tau = np.diag([-1,0,+1]) # Confined UC in z
-plot(sf.ddrx_decayrate(nlm, tau), ax2, titlestr=r'(b) Confined pure shear')
+plot(sf.ddrx_decayrate(nlm, tau), ax2, titlestr=r'%s Confined pure shear'%(r'{\Large \bf b}\,\,'))
 
 ### Plot 3
 tau = np.matrix([[0,0,1],[0,0,0],[1,0,0]]) # SS xz
 #tau = np.matrix([[0,1,0],[1,0,0],[0,0,0]]) # SS xy
-plot(sf.ddrx_decayrate(nlm, tau), ax3, titlestr=r'(c) Simple shear')
+plot(sf.ddrx_decayrate(nlm, tau), ax3, titlestr=r'%s Simple shear'%(r'{\Large \bf c}\,\,'))
 
 #---------
 

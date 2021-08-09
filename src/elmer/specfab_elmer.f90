@@ -76,7 +76,7 @@ function ae4_to_a4(ae2, ae4) result(a4)
 
     real(kind=dp), intent(in) :: ae2(5), ae4(9)
     Real(kind=dp)             :: a4(3,3,3,3)
-    integer :: i,j,k,l
+!    integer :: i,j,k,l
 
     a4 = 0.0 ! init
     include "elmer/include/ae4_to_a4__body.f90"

@@ -408,6 +408,7 @@ subroutine frame(nlm, ftype, e1,e2,e3, eigvals)
         e1 = [1,0,0] 
         e2 = [0,1,0] 
         e3 = [0,0,1] 
+        
     else
         ! Eigen frame    
         e_ij = a2(nlm)
@@ -416,6 +417,7 @@ subroutine frame(nlm, ftype, e1,e2,e3, eigvals)
         e2 = e_ij(:,2)
         e3 = e_ij(:,1)
         eigvals = [eigvals(3),eigvals(2),eigvals(1)] ! Largest first
+        
         ! Rotated eigen frame
         if (ftype == 'p') then
             p = (e1+e2)/sqrt(2.0) 
@@ -426,7 +428,8 @@ subroutine frame(nlm, ftype, e1,e2,e3, eigvals)
             e3(1) = p(2) * q(3) - p(3) * q(2)
             e3(2) = p(3) * q(1) - p(1) * q(3)
             e3(3) = p(1) * q(2) - p(2) * q(1)
-        end if        
+        end if     
+           
     end if
 end
 
@@ -456,7 +459,7 @@ end
 function Eeiej(nlm, e1,e2,e3, Ecc,Eca,alpha,nprime)
 
     ! Enhancement factors in directions (ei,ej) 
-    ! (3x3 matrix of enhancement factors)
+    ! (3x3 symmetric matrix of enhancement factors)
 
     implicit none
 
@@ -466,18 +469,20 @@ function Eeiej(nlm, e1,e2,e3, Ecc,Eca,alpha,nprime)
     integer, intent(in)          :: nprime
     real(kind=dp)                :: Eeiej(3,3)
     
-    ! Stored column-wise
-    Eeiej(1,1) = Evw(outerprod(e1,e1), tau_vv(e1),     nlm, Ecc,Eca,alpha,nprime) ! Longitudinal
-    Eeiej(2,1) = Evw(outerprod(e1,e2), tau_vw(e1,e2),  nlm, Ecc,Eca,alpha,nprime) ! Shear
-    Eeiej(3,1) = Evw(outerprod(e1,e3), tau_vw(e1,e3),  nlm, Ecc,Eca,alpha,nprime) ! Shear
-
-    Eeiej(1,2) = Evw(outerprod(e2,e1), tau_vw(e2,e1),  nlm, Ecc,Eca,alpha,nprime)
+    ! Longitudinal
+    Eeiej(1,1) = Evw(outerprod(e1,e1), tau_vv(e1),     nlm, Ecc,Eca,alpha,nprime) 
     Eeiej(2,2) = Evw(outerprod(e2,e2), tau_vv(e2),     nlm, Ecc,Eca,alpha,nprime)
-    Eeiej(3,2) = Evw(outerprod(e2,e3), tau_vw(e2,e3),  nlm, Ecc,Eca,alpha,nprime)
-
-    Eeiej(1,3) = Evw(outerprod(e3,e1), tau_vw(e3,e1),  nlm, Ecc,Eca,alpha,nprime)
-    Eeiej(2,3) = Evw(outerprod(e3,e2), tau_vw(e3,e2),  nlm, Ecc,Eca,alpha,nprime)
-    Eeiej(3,3) = Evw(outerprod(e3,e3), tau_vv(e3),     nlm, Ecc,Eca,alpha,nprime)
+    Eeiej(3,3) = Evw(outerprod(e3,e3), tau_vv(e3),     nlm, Ecc,Eca,alpha,nprime)    
+    
+    ! Shear
+    Eeiej(1,2) = Evw(outerprod(e1,e2), tau_vw(e1,e2),  nlm, Ecc,Eca,alpha,nprime) 
+    Eeiej(1,3) = Evw(outerprod(e1,e3), tau_vw(e1,e3),  nlm, Ecc,Eca,alpha,nprime) 
+    Eeiej(2,3) = Evw(outerprod(e2,e3), tau_vw(e2,e3),  nlm, Ecc,Eca,alpha,nprime)
+    
+    ! Symmetric matrix
+    Eeiej(2,1) = Eeiej(1,2)
+    Eeiej(3,1) = Eeiej(1,3) 
+    Eeiej(3,2) = Eeiej(2,3)   
 end
 
 function Evw_Sac(vw, tau, ev_c2,ev_c4,ev_c6,ev_c8, Ecc,Eca, nprime)
@@ -633,11 +638,11 @@ function tau_of_eps(eps,m,A,Emm,Emt,n) result(tau)
     I4 = doubleinner22(eps,mm)
     I5 = doubleinner22(epssq,mm)
 
-    expo = (1.0d0-n)/(2.0d0*n)
-        
     if (n .lt. 0) then
-        viscosity = A**(-1.0d0/n)*(I2)**(expo)
+        expo = (1.0d0-abs(n))/(2.0d0*abs(n))
+        viscosity = A**(-1.0d0/abs(n))*(I2)**(expo)
     else
+        expo = (1.0d0-n)/(2.0d0*n)
         viscosity = A**(-1.0d0/n)*(I2 + kM*I4**2 + 2*kL*I5)**(expo)
     end if
 
@@ -652,11 +657,164 @@ subroutine johnson_coefs(Emm,Emt,d,n,expo, kI,kM,kL)
     real(kind=dp), intent(out) :: kI,kM,kL
     real(kind=dp)              :: nexpo
 
-    nexpo = expo * 2.0d0/(n+1.0d0) 
+    nexpo = expo * 2.0d0/(n + 1.0d0) 
     
     kI = (Emm**nexpo-1)/(d-1.)
     kM = (d*(Emm**nexpo+1)-2.)/(d-1.) - 2*Emt**nexpo
     kL = Emt**nexpo - 1
+end
+
+!---------------------------------
+! ORTHOTROPIC RHEOLOGY
+!---------------------------------
+
+function eps_of_tau__orthotropic(tau, A,n, m1,m2,m3, Eij) result(eps)
+
+    implicit none
+    real(kind=dp), intent(in) :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+    integer, intent(in)       :: n
+    real(kind=dp)             :: eps(3,3)
+    real(kind=dp)             :: E11n,E22n,E33n,E12n,E13n,E23n, M11(3,3),M22(3,3),M33(3,3),M12(3,3),M13(3,3),M23(3,3), tau11,tau22,tau33,tau12,tau13,tau23
+    real(kind=dp)             :: fluidity
+    real(kind=dp)             :: w1,w2,w3, I1,I2,I3,I4,I5,I6
+
+    call orthotropic_coefs(tau, n, m1,m2,m3, Eij, E11n,E22n,E33n,E12n,E13n,E23n, M11,M22,M33,M12,M13,M23, tau11,tau22,tau33,tau12,tau13,tau23)
+
+    I1 = (tau22 - tau33)/2.0d0 
+    I2 = (tau33 - tau11)/2.0d0 
+    I3 = (tau11 - tau22)/2.0d0 
+    I4 = tau12 
+    I5 = tau13
+    I6 = tau23
+
+    w1 = (-E11n+E22n+E33n)/3.0d0
+    w2 = (+E11n-E22n+E33n)/3.0d0
+    w3 = (+E11n+E22n-E33n)/3.0d0
+
+    fluidity = A * ( &
+        + 4 * w1   * I1**2 &
+        + 4 * w2   * I2**2 &
+        + 4 * w3   * I3**2 &
+        + 2 * E12n * I4**2 &
+        + 2 * E13n * I5**2 &
+        + 2 * E23n * I6**2 &
+    )**((n-1.d0)/2.d0)
+    
+    eps = fluidity * ( &
+        + w1 * 2*I1 * (M22 - M33) &
+        + w2 * 2*I2 * (M33 - M11) &
+        + w3 * 2*I3 * (M11 - M22) &
+        + E12n * I4 * (M12 + transpose(M12)) &
+        + E13n * I5 * (M13 + transpose(M13)) &
+        + E23n * I6 * (M23 + transpose(M23)) &
+    )
+end
+
+function tau_of_eps__orthotropic(eps, A,n, m1,m2,m3, Eij) result(tau)
+
+    implicit none
+    real(kind=dp), intent(in)     :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+    integer, intent(in)           :: n
+    real(kind=dp)                 :: tau(3,3)
+    real(kind=dp)                 :: E11n,E22n,E33n,E12n,E13n,E23n, M11(3,3),M22(3,3),M33(3,3),M12(3,3),M13(3,3),M23(3,3), eps11,eps22,eps33,eps12,eps13,eps23
+    real(kind=dp)                 :: viscosity
+    real(kind=dp)                 :: w1,w2,w3, J1,J2,J3,J4,J5,J6, J12,J31,J23
+    real(kind=dp)                 :: mu
+
+    call orthotropic_coefs(eps, n, m1,m2,m3, Eij, E11n,E22n,E33n,E12n,E13n,E23n, M11,M22,M33,M12,M13,M23, eps11,eps22,eps33,eps12,eps13,eps23)
+
+    J1 = (eps22 - eps33)/2.0d0 
+    J2 = (eps33 - eps11)/2.0d0 
+    J3 = (eps11 - eps22)/2.0d0 
+    J4 = eps12
+    J5 = eps13
+    J6 = eps23
+    J12 = -3*eps33/2.0d0 ! J12 := J1-J2 = (eps11 + eps22 - 2*eps33)/2.0d0
+    J31 = -3*eps22/2.0d0 ! J31 := J3-J1 = (eps11 + eps33 - 2*eps22)/2.0d0
+    J23 = -3*eps11/2.0d0 ! J23 := J2-J3 = (eps22 + eps33 - 2*eps11)/2.0d0
+
+    w1 = (-E11n+E22n+E33n)/3.0d0
+    w2 = (+E11n-E22n+E33n)/3.0d0
+    w3 = (+E11n+E22n-E33n)/3.0d0
+
+    mu = -(E11n**2 + E22n**2 + E33n**2) + 2*(E11n*E22n + E11n*E33n + E22n*E33n)
+    
+    viscosity = A**(-1.d0/n) * ( &
+        + 4 * w3/mu    * J12**2 &
+        + 4 * w2/mu    * J31**2 & 
+        + 4 * w1/mu    * J23**2 &
+        + 2 * (1/E12n) * J4**2 &
+        + 2 * (1/E13n) * J5**2 &
+        + 2 * (1/E23n) * J6**2 &
+    )**((1-n)/(2.d0*n))
+
+    tau = viscosity * ( &
+        + 2*w3/mu * J12 * 3*(identity/3-M33) &
+        + 2*w2/mu * J31 * 3*(identity/3-M22) &
+        + 2*w1/mu * J23 * 3*(identity/3-M11) &
+        + (1/E12n) * J4 * (M12 + transpose(M12)) &
+        + (1/E13n) * J5 * (M13 + transpose(M13)) &
+        + (1/E23n) * J6 * (M23 + transpose(M23)) &
+    )
+end
+
+subroutine orthotropic_coefs(tau, n, m1,m2,m3, Eij, E11n,E22n,E33n,E12n,E13n,E23n, M11,M22,M33,M12,M13,M23, tau11,tau22,tau33,tau12,tau13,tau23)
+
+    implicit none
+    
+    real(kind=dp), intent(in)  :: tau(3,3), m1(3),m2(3),m3(3), Eij(3,3)
+    integer, intent(in)        :: n
+    real(kind=dp), intent(out) :: E11n,E22n,E33n,E12n,E13n,E23n, M11(3,3),M22(3,3),M33(3,3),M12(3,3),M13(3,3),M23(3,3), tau11,tau22,tau33,tau12,tau13,tau23
+    real(kind=dp)              :: Eexpo
+
+    Eexpo = 2.0d0/(n + 1.0d0) 
+    
+    E11n = Eij(1,1)**Eexpo
+    E22n = Eij(2,2)**Eexpo
+    E33n = Eij(3,3)**Eexpo
+    E12n = Eij(1,2)**Eexpo
+    E13n = Eij(1,3)**Eexpo
+    E23n = Eij(2,3)**Eexpo
+    
+    M11 = outerprod(m1,m1)
+    M22 = outerprod(m2,m2)
+    M33 = outerprod(m3,m3)
+    M12 = outerprod(m1,m2)
+    M13 = outerprod(m1,m3)
+    M23 = outerprod(m2,m3)
+
+    tau11 = doubleinner22(tau, M11) 
+    tau22 = doubleinner22(tau, M22) 
+    tau33 = doubleinner22(tau, M33) 
+    tau12 = doubleinner22(tau, M12) 
+    tau13 = doubleinner22(tau, M13) 
+    tau23 = doubleinner22(tau, M23) 
+end
+
+!---------------------------------
+! ISOTROPIC (GLEN) RHEOLOGY
+!---------------------------------
+
+function eps_of_tau__isotropic(tau, A,n) result(eps)
+
+    implicit none
+    real(kind=dp), intent(in)     :: tau(3,3), A
+    integer, intent(in)           :: n
+    real(kind=dp)                 :: eps(3,3), fluidity
+
+    fluidity = A * (doubleinner22(tau,tau))**((n-1)/2.0d0)
+    eps = fluidity * tau
+end
+
+function tau_of_eps__isotropic(eps, A,n) result(tau)
+
+    implicit none
+    real(kind=dp), intent(in)     :: eps(3,3), A
+    integer, intent(in)           :: n
+    real(kind=dp)                 :: tau(3,3), viscosity
+
+    viscosity = A**(-1./n) * (doubleinner22(eps,eps))**((1-n)/(2.0d0*n))
+    tau = viscosity * eps
 end
 
 !---------------------------------
