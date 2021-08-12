@@ -7,7 +7,7 @@ Hutter, 1996), discontinuous dynamic recrystallization (Placidi and others, 2010
 Rathmann, N., Hvidberg, C., Grinsted, A., Lilien, D., & Dahl-Jensen, D. (2021). Effect of an orientation-dependent non-linear grain fluidity on bulk directional enhancement factors. Journal of Glaciology, 67(263), 569-575. doi:10.1017/jog.2020.117
 
 **Discontinuous dynamic recrystallization:** <br>
-Rathmann and Lilien 2021 (in prep.)
+Rathmann, N., & Lilien, D. (2021). Inferred basal friction and mass flux affected by crystal-orientation fabrics. Journal of Glaciology, 1-17. doi:10.1017/jog.2021.88
 
 ## Contains
 - Modules for Fortran (`make specfab.o`) and Python (`make specfabpy`).
