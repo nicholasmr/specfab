@@ -671,42 +671,43 @@ end
 function eps_of_tau__orthotropic(tau, A,n, m1,m2,m3, Eij) result(eps)
 
     implicit none
-    real(kind=dp), intent(in) :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
-    integer, intent(in)       :: n
-    real(kind=dp)             :: eps(3,3)
-    real(kind=dp)             :: E11n,E22n,E33n,E12n,E13n,E23n, M11(3,3),M22(3,3),M33(3,3),M12(3,3),M13(3,3),M23(3,3), tau11,tau22,tau33,tau12,tau13,tau23
-    real(kind=dp)             :: fluidity
-    real(kind=dp)             :: w1,w2,w3, I1,I2,I3,I4,I5,I6
+    real(kind=dp), intent(in)     :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+    integer, intent(in)           :: n
+    real(kind=dp)                 :: eps(3,3)
+    real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
+    real(kind=dp)                 :: tau11,tau22,tau33,tau23,tau31,tau12
+    real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
+    real(kind=dp)                 :: I1,I2,I3,I4,I5,I6
+    real(kind=dp)                 :: fluidity
 
-    call orthotropic_coefs(tau, n, m1,m2,m3, Eij, E11n,E22n,E33n,E12n,E13n,E23n, M11,M22,M33,M12,M13,M23, tau11,tau22,tau33,tau12,tau13,tau23)
+    call orthotropic_coefs(n, Eij, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    call orthotropic_tensors_and_invars(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12, tau11,tau22,tau33,tau23,tau31,tau12)
 
     I1 = (tau22 - tau33)/2.0d0 
     I2 = (tau33 - tau11)/2.0d0 
     I3 = (tau11 - tau22)/2.0d0 
-    I4 = tau12 
-    I5 = tau13
-    I6 = tau23
-
-    w1 = (-E11n+E22n+E33n)/3.0d0
-    w2 = (+E11n-E22n+E33n)/3.0d0
-    w3 = (+E11n+E22n-E33n)/3.0d0
+    
+    ! Strictly speaking, these are sqrt(I4), sqrt(I5), and sqrt(I6)
+    I4 = tau23  
+    I5 = tau31
+    I6 = tau12
 
     fluidity = A * ( &
-        + 4 * w1   * I1**2 &
-        + 4 * w2   * I2**2 &
-        + 4 * w3   * I3**2 &
-        + 2 * E12n * I4**2 &
-        + 2 * E13n * I5**2 &
-        + 2 * E23n * I6**2 &
+        + lam1 * I1**2 &
+        + lam2 * I2**2 &
+        + lam3 * I3**2 &
+        + lam4 * I4**2 &
+        + lam5 * I5**2 &
+        + lam6 * I6**2 &
     )**((n-1.d0)/2.d0)
     
     eps = fluidity * ( &
-        + w1 * 2*I1 * (M22 - M33) &
-        + w2 * 2*I2 * (M33 - M11) &
-        + w3 * 2*I3 * (M11 - M22) &
-        + E12n * I4 * (M12 + transpose(M12)) &
-        + E13n * I5 * (M13 + transpose(M13)) &
-        + E23n * I6 * (M23 + transpose(M23)) &
+        + lam1 * I1 * (M22 - M33)/2.0d0 &
+        + lam2 * I2 * (M33 - M11)/2.0d0 &
+        + lam3 * I3 * (M11 - M22)/2.0d0 &
+        + lam4 * I4 * (M23 + transpose(M23))/2.0d0 &
+        + lam5 * I5 * (M31 + transpose(M31))/2.0d0 &
+        + lam6 * I6 * (M12 + transpose(M12))/2.0d0 &
     )
 end
 
@@ -716,79 +717,91 @@ function tau_of_eps__orthotropic(eps, A,n, m1,m2,m3, Eij) result(tau)
     real(kind=dp), intent(in)     :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
     integer, intent(in)           :: n
     real(kind=dp)                 :: tau(3,3)
-    real(kind=dp)                 :: E11n,E22n,E33n,E12n,E13n,E23n, M11(3,3),M22(3,3),M33(3,3),M12(3,3),M13(3,3),M23(3,3), eps11,eps22,eps33,eps12,eps13,eps23
+    real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
+    real(kind=dp)                 :: eps11,eps22,eps33,eps23,eps31,eps12
+    real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
+    real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
     real(kind=dp)                 :: viscosity
-    real(kind=dp)                 :: w1,w2,w3, J1,J2,J3,J4,J5,J6, J12,J31,J23
-    real(kind=dp)                 :: mu
 
-    call orthotropic_coefs(eps, n, m1,m2,m3, Eij, E11n,E22n,E33n,E12n,E13n,E23n, M11,M22,M33,M12,M13,M23, eps11,eps22,eps33,eps12,eps13,eps23)
-
+    call orthotropic_coefs(n, Eij, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    call orthotropic_tensors_and_invars(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, eps11,eps22,eps33,eps23,eps31,eps12)
+    
     J1 = (eps22 - eps33)/2.0d0 
     J2 = (eps33 - eps11)/2.0d0 
     J3 = (eps11 - eps22)/2.0d0 
-    J4 = eps12
-    J5 = eps13
-    J6 = eps23
-    J12 = -3*eps33/2.0d0 ! J12 := J1-J2 = (eps11 + eps22 - 2*eps33)/2.0d0
-    J31 = -3*eps22/2.0d0 ! J31 := J3-J1 = (eps11 + eps33 - 2*eps22)/2.0d0
-    J23 = -3*eps11/2.0d0 ! J23 := J2-J3 = (eps22 + eps33 - 2*eps11)/2.0d0
-
-    w1 = (-E11n+E22n+E33n)/3.0d0
-    w2 = (+E11n-E22n+E33n)/3.0d0
-    w3 = (+E11n+E22n-E33n)/3.0d0
-
-    mu = -(E11n**2 + E22n**2 + E33n**2) + 2*(E11n*E22n + E11n*E33n + E22n*E33n)
     
+    ! Strictly speaking, these are sqrt(I4), sqrt(I5), and sqrt(I6)
+    J4 = eps23
+    J5 = eps31
+    J6 = eps12
+    
+    J23 = -3/2.0d0 * eps11 ! J23 := J2-J3 = (eps22 + eps33 - 2*eps11)/2.0d0 = -3/2.0d0 * eps11
+    J31 = -3/2.0d0 * eps22 ! J31 := J3-J1 = (eps11 + eps33 - 2*eps22)/2.0d0 = -3/2.0d0 * eps22
+    J12 = -3/2.0d0 * eps33 ! J12 := J1-J2 = (eps11 + eps22 - 2*eps33)/2.0d0 = -3/2.0d0 * eps33
+
     viscosity = A**(-1.d0/n) * ( &
-        + 4 * w3/mu    * J12**2 &
-        + 4 * w2/mu    * J31**2 & 
-        + 4 * w1/mu    * J23**2 &
-        + 2 * (1/E12n) * J4**2 &
-        + 2 * (1/E13n) * J5**2 &
-        + 2 * (1/E23n) * J6**2 &
+        + lam1/gam * J23**2 &
+        + lam2/gam * J31**2 & 
+        + lam3/gam * J12**2 &
+        + 4 * (1/lam4) * J4**2 &
+        + 4 * (1/lam5) * J5**2 &
+        + 4 * (1/lam6) * J6**2 &
     )**((1-n)/(2.d0*n))
 
     tau = viscosity * ( &
-        + 2*w3/mu * J12 * 3*(identity/3-M33) &
-        + 2*w2/mu * J31 * 3*(identity/3-M22) &
-        + 2*w1/mu * J23 * 3*(identity/3-M11) &
-        + (1/E12n) * J4 * (M12 + transpose(M12)) &
-        + (1/E13n) * J5 * (M13 + transpose(M13)) &
-        + (1/E23n) * J6 * (M23 + transpose(M23)) &
+        + lam1/gam * J23 * (identity - 3*M11)/2 &
+        + lam2/gam * J31 * (identity - 3*M22)/2 &
+        + lam3/gam * J12 * (identity - 3*M33)/2 &
+        + 4 * (1/lam4) * J4 * (M23 + transpose(M23))/2 &
+        + 4 * (1/lam5) * J5 * (M31 + transpose(M31))/2 &
+        + 4 * (1/lam6) * J6 * (M12 + transpose(M12))/2 &
     )
 end
 
-subroutine orthotropic_coefs(tau, n, m1,m2,m3, Eij, E11n,E22n,E33n,E12n,E13n,E23n, M11,M22,M33,M12,M13,M23, tau11,tau22,tau33,tau12,tau13,tau23)
+subroutine orthotropic_coefs(n, Eij, lam1,lam2,lam3,lam4,lam5,lam6, gam)
 
     implicit none
-    
-    real(kind=dp), intent(in)  :: tau(3,3), m1(3),m2(3),m3(3), Eij(3,3)
+    real(kind=dp), intent(in)  :: Eij(3,3)
     integer, intent(in)        :: n
-    real(kind=dp), intent(out) :: E11n,E22n,E33n,E12n,E13n,E23n, M11(3,3),M22(3,3),M33(3,3),M12(3,3),M13(3,3),M23(3,3), tau11,tau22,tau33,tau12,tau13,tau23
-    real(kind=dp)              :: Eexpo
+    real(kind=dp), intent(out) :: lam1,lam2,lam3,lam4,lam5,lam6, gam
+    real(kind=dp)              :: Eexpo, E11n,E22n,E33n !,E12n,E31n,E23n
 
     Eexpo = 2.0d0/(n + 1.0d0) 
     
     E11n = Eij(1,1)**Eexpo
     E22n = Eij(2,2)**Eexpo
     E33n = Eij(3,3)**Eexpo
-    E12n = Eij(1,2)**Eexpo
-    E13n = Eij(1,3)**Eexpo
-    E23n = Eij(2,3)**Eexpo
+
+    lam1 = 4/3.0d0*(-E11n+E22n+E33n)
+    lam2 = 4/3.0d0*(+E11n-E22n+E33n)
+    lam3 = 4/3.0d0*(+E11n+E22n-E33n)
+    lam4 = 2* Eij(2,3)**Eexpo
+    lam5 = 2* Eij(3,1)**Eexpo
+    lam6 = 2* Eij(1,2)**Eexpo
     
+    gam = -(E11n**2 + E22n**2 + E33n**2) + 2*(E11n*E22n + E11n*E33n + E22n*E33n)
+end
+
+subroutine orthotropic_tensors_and_invars(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12, tau11,tau22,tau33,tau23,tau31,tau12)
+
+    implicit none    
+    real(kind=dp), intent(in)  :: tau(3,3), m1(3),m2(3),m3(3)
+    real(kind=dp), intent(out) :: M11(3,3),M22(3,3),M33(3,3),M23(3,3),M31(3,3),M12(3,3)
+    real(kind=dp), intent(out) :: tau11,tau22,tau33,tau23,tau31,tau12
+   
     M11 = outerprod(m1,m1)
     M22 = outerprod(m2,m2)
     M33 = outerprod(m3,m3)
-    M12 = outerprod(m1,m2)
-    M13 = outerprod(m1,m3)
     M23 = outerprod(m2,m3)
+    M31 = outerprod(m3,m1)
+    M12 = outerprod(m1,m2)
 
     tau11 = doubleinner22(tau, M11) 
     tau22 = doubleinner22(tau, M22) 
     tau33 = doubleinner22(tau, M33) 
-    tau12 = doubleinner22(tau, M12) 
-    tau13 = doubleinner22(tau, M13) 
     tau23 = doubleinner22(tau, M23) 
+    tau31 = doubleinner22(tau, M31) 
+    tau12 = doubleinner22(tau, M12) 
 end
 
 !---------------------------------
