@@ -12,7 +12,7 @@
        Real(dp),dimension(9),intent(out):: a4  
        Real(dp):: a_11,a_22,a_33,a_12,a_13,a_23
        Real(dp):: b_11,b_22,b_12,b_13,b_23
-       Real(dp):: aPlusa
+!       Real(dp):: aPlusa
 
        Real(dp),dimension(21) :: vec
        Real(dp),dimension(3,21) :: Mat

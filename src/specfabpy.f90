@@ -18,8 +18,10 @@ module specfabpy
         a4__sf => a4, &
         a2_to_nlm__sf => a2_to_nlm, &
         a4_to_nlm__sf => a4_to_nlm, &
-        tau_of_eps__sf => tau_of_eps, &
-        eps_of_tau__sf => eps_of_tau, &
+        tau_of_eps__tranisotropic__sf => tau_of_eps__tranisotropic, &
+        eps_of_tau__tranisotropic__sf => eps_of_tau__tranisotropic, &
+        tau_of_eps__orthotropic__sf => tau_of_eps__orthotropic, &
+        eps_of_tau__orthotropic__sf => eps_of_tau__orthotropic, &
         frame__sf => frame, &
         Eeiej__sf => Eeiej, &
         Evw__sf => Evw, &
@@ -215,24 +217,24 @@ contains
     ! TRANSVERSELY ISOTROPIC RHEOLOGY 
     !---------------------------------
     
-    function tau_of_eps(eps, m,A,Emm,Emt,n)
+    function tau_of_eps__tranisotropic(eps, A,n, m,Emm,Emt) result(tau_of_eps)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in) :: eps(3,3), m(3),A,Emm,Emt 
+        real(kind=dp), intent(in) :: eps(3,3), A, m(3),Emm,Emt 
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: tau_of_eps(3,3)
         
-        tau_of_eps = tau_of_eps__sf(eps, m,A,Emm,Emt,n)
+        tau_of_eps = tau_of_eps__tranisotropic__sf(eps, A,n, m,Emm,Emt)
     end
     
-    function eps_of_tau(tau, m,A,Emm,Emt,n)
+    function eps_of_tau__tranisotropic(tau, A,n, m,Emm,Emt) result(eps_of_tau)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in) :: tau(3,3), m(3),A,Emm,Emt
+        real(kind=dp), intent(in) :: tau(3,3), A, m(3),Emm,Emt
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: eps_of_tau(3,3)
         
-        eps_of_tau = eps_of_tau__sf(tau, m,A,Emm,Emt,n)
+        eps_of_tau = eps_of_tau__tranisotropic__sf(tau, A,n, m,Emm,Emt)
     end
         
     !---------------------------------

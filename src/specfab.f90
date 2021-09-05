@@ -526,7 +526,7 @@ function ev_epsprime_Sac(tau, ev_c2,ev_c4,ev_c6,ev_c8, Ecc,Eca,nprime)
     real(kind=dp)             :: ev_etac0 = 0, ev_etac2(3,3), ev_etac4(3,3,3,3)
     real(kind=dp)             :: ev_epsprime_Sac(3,3), coefA,coefB,coefC, tausq(3,3), I2
 
-    call johnson_coefs(Ecc,Eca,d,nprime,1.0d0, coefA,coefB,coefC)
+    call tranisotropic_coefs(Ecc,Eca,d,nprime,1.0d0, coefA,coefB,coefC)
 
     I2 = doubleinner22(tau,tau)
     tausq = matmul(tau,tau)
@@ -569,7 +569,7 @@ function ev_epsprime_Tay(tau, ev_c2,ev_c4, Ecc,Eca,nprime)
     integer                   :: info
 !    integer :: ipiv(9), work
 
-    call johnson_coefs(Ecc,Eca,d,nprime,-1.0d0, coefA,coefB,coefC)
+    call tranisotropic_coefs(Ecc,Eca,d,nprime,-1.0d0, coefA,coefB,coefC)
 
     include "include/Taylor_n1.f90"
 
@@ -593,16 +593,16 @@ end
 ! TRANSVERSELY ISOTROPIC RHEOLOGY
 !---------------------------------
 
-function eps_of_tau(tau,m,A,Emm,Emt,n) result(eps)
+function eps_of_tau__tranisotropic(tau, A,n, m,Emm,Emt) result(eps)
 
     implicit none
-    real(kind=dp), intent(in) :: tau(3,3), m(3), A, Emm, Emt
+    real(kind=dp), intent(in) :: tau(3,3), A, m(3), Emm, Emt
     integer, intent(in)       :: n
     real(kind=dp)             :: eps(3,3), fluidity, kI,kM,kL, I2,I4,I5, mm(3,3),tausq(3,3)
     real(kind=dp), parameter  :: d = 3.0
     real(kind=dp)             :: expo
     
-    call johnson_coefs(Emm,Emt,d,n,1.0d0, kI,kM,kL)
+    call tranisotropic_coefs(Emm,Emt,d,n,1.0d0, kI,kM,kL)
 
     mm = outerprod(m,m)
     tausq = matmul(tau,tau)    
@@ -611,26 +611,20 @@ function eps_of_tau(tau,m,A,Emm,Emt,n) result(eps)
     I5 = doubleinner22(tausq,mm)
     
     expo = (n-1)/2
-    
-    if (n .lt. 0) then
-        fluidity = A*(I2)**(expo)
-    else
-        fluidity = A*(I2 + kM*I4**2 + 2*kL*I5)**(expo)
-    end if
-    
+    fluidity = A*(I2 + kM*I4**2 + 2*kL*I5)**(expo)
     eps = fluidity*( tau - kI*I4*identity + kM*I4*mm + kL*(matmul(tau,mm)+matmul(mm,tau)) )
 end
 
-function tau_of_eps(eps,m,A,Emm,Emt,n) result(tau)
+function tau_of_eps__tranisotropic(eps, A,n, m,Emm,Emt) result(tau)
 
     implicit none
-    real(kind=dp), intent(in) :: eps(3,3), m(3), A, Emm, Emt
+    real(kind=dp), intent(in) :: eps(3,3), A, m(3), Emm, Emt
     integer, intent(in)       :: n
     real(kind=dp)             :: tau(3,3), viscosity, kI,kM,kL, I2,I4,I5, mm(3,3),epssq(3,3)
     real(kind=dp), parameter  :: d = 3.0
     real(kind=dp)             :: expo
 
-    call johnson_coefs(Emm,Emt,d,n,-1.0d0, kI,kM,kL)
+    call tranisotropic_coefs(Emm,Emt,d,n,-1.0d0, kI,kM,kL)
 
     mm = outerprod(m,m)
     epssq = matmul(eps,eps)    
@@ -638,18 +632,12 @@ function tau_of_eps(eps,m,A,Emm,Emt,n) result(tau)
     I4 = doubleinner22(eps,mm)
     I5 = doubleinner22(epssq,mm)
 
-    if (n .lt. 0) then
-        expo = (1.0d0-abs(n))/(2.0d0*abs(n))
-        viscosity = A**(-1.0d0/abs(n))*(I2)**(expo)
-    else
-        expo = (1.0d0-n)/(2.0d0*n)
-        viscosity = A**(-1.0d0/n)*(I2 + kM*I4**2 + 2*kL*I5)**(expo)
-    end if
-
+    expo = (1.0d0-n)/(2.0d0*n)
+    viscosity = A**(-1.0d0/n)*(I2 + kM*I4**2 + 2*kL*I5)**(expo)
     tau = viscosity*( eps - kI*I4*identity + kM*I4*mm + kL*(matmul(eps,mm)+matmul(mm,eps)) )
 end
 
-subroutine johnson_coefs(Emm,Emt,d,n,expo, kI,kM,kL)
+subroutine tranisotropic_coefs(Emm,Emt,d,n,expo, kI,kM,kL)
 
     implicit none
     real(kind=dp), intent(in)  :: Emm,Emt,expo,d
