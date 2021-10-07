@@ -15,7 +15,8 @@ contains
         implicit none
         real(kind=dp), intent(in) :: a(3), b(3)
         real(kind=dp) :: outerprod(3,3)
-        outerprod = reshape( [( [( a(ii)*b(jj), jj=1,3)], ii=1,3)] , [3,3])
+!        outerprod = reshape( [( [( a(ii)*b(jj), jj=1,3)], ii=1,3)] , [3,3])
+        outerprod = reshape( [( [( a(ii)*b(jj), ii=1,3)], jj=1,3)] , [3,3])
     end
 
     function doubleinner22(A,B) 

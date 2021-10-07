@@ -1,4 +1,70 @@
 include "elmer/include/IBOF.f90"
+
+function outerprod9(a,b) result(outerprod)
+    ! a_i b_j = rank-2 tensor
+    implicit none
+    real(kind=dp), intent(in) :: a(9), b(9)
+    real(kind=dp) :: outerprod(9,9)
+!    outerprod = reshape( [( [( a(ii)*b(jj), jj=1,9)], ii=1,9)] , [9,9])
+    outerprod = reshape( [( [( a(ii)*b(jj), ii=1,9)], jj=1,9)] , [9,9])
+end
+
+function vectorize9(M) result(vec)
+    implicit none
+    real(kind=dp) :: M(3,3)
+    real(kind=dp) :: vec(9)
+    vec = reshape(M, [9])
+end
+    
+function Cmat_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(C)
+
+    ! Vectorized inverse orthotropic flow law "tau_of_eps__orthotropic()".
+    ! Returns 9x9 matrix "C" such that vec(tau) = matmul(C, vec(eps)), where vec(tau) and vec(eps) are 9x1 column vectors.
+
+    implicit none
+    real(kind=dp), intent(in)     :: A, m1(3),m2(3),m3(3), Eij(3,3)
+    integer, intent(in)           :: n
+    real(kind=dp)                 :: eps(3,3), C(9,9)
+    real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
+    real(kind=dp)                 :: eps11,eps22,eps33,eps23,eps31,eps12
+    real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
+    real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
+    real(kind=dp)                 :: viscosity
+
+    call orthotropic_coefs(n, Eij, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    call orthotropic_tensors_and_invars(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, eps11,eps22,eps33,eps23,eps31,eps12)
+    
+    J1 = (eps22 - eps33)/2.0d0 
+    J2 = (eps33 - eps11)/2.0d0 
+    J3 = (eps11 - eps22)/2.0d0 
+    
+    ! Strictly speaking, these are sqrt(I4), sqrt(I5), and sqrt(I6)
+    J4 = eps23
+    J5 = eps31
+    J6 = eps12
+    
+    J23 = -3/2.0d0 * eps11 ! J23 := J2-J3 = (eps22 + eps33 - 2*eps11)/2.0d0 = -3/2.0d0 * eps11
+    J31 = -3/2.0d0 * eps22 ! J31 := J3-J1 = (eps11 + eps33 - 2*eps22)/2.0d0 = -3/2.0d0 * eps22
+    J12 = -3/2.0d0 * eps33 ! J12 := J1-J2 = (eps11 + eps22 - 2*eps33)/2.0d0 = -3/2.0d0 * eps33
+
+    viscosity = A**(-1.d0/n) * ( &
+        + lam1/gam * J23**2 &
+        + lam2/gam * J31**2 & 
+        + lam3/gam * J12**2 &
+        + 4 * (1/lam4) * J4**2 &
+        + 4 * (1/lam5) * J5**2 &
+        + 4 * (1/lam6) * J6**2 &
+    )**((1-n)/(2.d0*n))
+
+    C = viscosity * ( &
+        -3/4.0d0 * lam1/gam * outerprod9(vectorize9(identity - 3*M11), vectorize9(M11)) &
+        -3/4.0d0 * lam2/gam * outerprod9(vectorize9(identity - 3*M22), vectorize9(M22)) &
+        -3/4.0d0 * lam3/gam * outerprod9(vectorize9(identity - 3*M33), vectorize9(M33)) &
+        + 2/lam4            * outerprod9(vectorize9(M23 + transpose(M23)), vectorize9(M23)) &
+        + 2/lam5            * outerprod9(vectorize9(M31 + transpose(M31)), vectorize9(M31)) &
+        + 2/lam6            * outerprod9(vectorize9(M12 + transpose(M12)), vectorize9(M12)) &
+    )
+end
     
 function a4_IBOF(a2) 
 

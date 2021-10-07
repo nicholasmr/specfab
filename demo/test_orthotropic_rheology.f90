@@ -91,6 +91,23 @@ program demo
     print *, '...an arbitrary, non-trivial stress tensor:'
     call tau_of_eps_of_tau(0.1*tau_vw(x1,x2) + 0.33*tau_vw(x2,x3) + 0.51*tau_vw(x1,x2) + 0.43*tau_vv(x3), A, n, m1,m2,m3, Eij) 
    
+    !-------------------------------------------------------------------
+    ! Test vecotized inverse rheology 
+    !-------------------------------------------------------------------
+
+    print *, '--------------------------------------------------------'    
+    print *, 'Test vectorized inverse rheology: vec(tau)_i = C_ij vec(eps)_j'
+    print *, '--------------------------------------------------------'
+    print *, '...compression and shear stress tensors w.r.t m_1, m_2, and m_3:'
+    call test_vectorized_rheology(tau_vv(x1), A, n, m1,m2,m3, Eij) 
+    call test_vectorized_rheology(tau_vv(x2), A, n, m1,m2,m3, Eij) 
+    call test_vectorized_rheology(tau_vv(x3), A, n, m1,m2,m3, Eij) 
+    call test_vectorized_rheology(tau_vw(x1,x2), A, n, m1,m2,m3, Eij) 
+    call test_vectorized_rheology(tau_vw(x1,x3), A, n, m1,m2,m3, Eij) 
+    call test_vectorized_rheology(tau_vw(x2,x3), A, n, m1,m2,m3, Eij) 
+    print *, '...an arbitrary, non-trivial stress tensor:'
+    call tau_of_eps_of_tau(0.1*tau_vw(x1,x2) + 0.33*tau_vw(x2,x3) + 0.51*tau_vw(x1,x2) + 0.43*tau_vv(x3), A, n, m1,m2,m3, Eij) 
+    
 contains
 
 function eps_ratio(tau,A,n, m1,m2,m3, Eij, v,w) 
@@ -122,6 +139,26 @@ subroutine tau_of_eps_of_tau(tau_in, A, n, m1,m2,m3, Eij)
     print *, 'tau0             = ', tau_in
     print *, 'tau(eps(tau0))   = ', tau
     print *, 'norm2(abs(diff)) = ', norm2(abs(tau-tau_in))
+    print *, '----------------'
+        
+end
+
+subroutine test_vectorized_rheology(eps, A, n, m1,m2,m3, Eij) 
+
+    implicit none
+
+    integer, parameter        :: dp = 8
+    real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+    integer, intent(in)       :: n
+    real(kind=dp)             :: tau(3,3), tau_vec(9), C(9,9)
+
+    tau = tau_of_eps__orthotropic(eps, A, n, m1,m2,m3, Eij)
+    C   = Cmat_inverse_orthotropic(eps, A, n, m1,m2,m3, Eij)
+    tau_vec = matmul(C, vectorize9(eps))
+    
+    print *, 'tau              = ', tau
+    print *, 'tau_vec          = ', tau_vec
+    print *, 'norm2(abs(diff)) = ', norm2(abs(tau - reshape(tau_vec,[3,3])))
     print *, '----------------'
         
 end
