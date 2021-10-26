@@ -190,7 +190,7 @@ contains
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), intent(out)   :: a2(3,3), a4(3,3,3,3), a6(3,3,3,3, 3,3), a8(3,3,3,3, 3,3,3,3)
 
-        call f_ev_ck(nlm, a2,a4,a6,a8) ! recall notation: ai := a^(i) := ev_ci := <c^i> 
+        call f_ev_ck(nlm, 'f', a2,a4,a6,a8) ! recall notation: ai := a^(i) := ev_ci := <c^i> 
     end
     
     function a2_to_nlm(a2) 

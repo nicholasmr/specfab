@@ -77,7 +77,7 @@ subroutine initspecfab(Lcap_)
     
     ! Calculate structure tensors for an isotropic fabric (used for calculating enhancement factors)
     nlm_iso(1) = 1/Sqrt(4*Pi) ! Normalized ODF 
-    call f_ev_ck(nlm_iso, ev_c2_iso,ev_c4_iso,ev_c6_iso,ev_c8_iso) ! Sets <c^i> := a^(i) for i=2,4,6,8
+    call f_ev_ck(nlm_iso, 'f', ev_c2_iso,ev_c4_iso,ev_c6_iso,ev_c8_iso) ! Sets <c^i> := a^(i) for i=2,4,6,8
     
     ! Static (constant) matrices used for spectral dynamics
     if(.not. allocated(regmat)) allocate(regmat(nlm_len,nlm_len)) ! Regularization (unscaled)
@@ -322,26 +322,34 @@ end
 ! STRUCTURE TENSORS
 !---------------------------------
        
-subroutine f_ev_ck(nlm, ev_c2,ev_c4,ev_c6,ev_c8)
+subroutine f_ev_ck(nlm, opt, ev_c2,ev_c4,ev_c6,ev_c8)
     
     ! "ev_ck" are the structure tensors <c^k> := a^(k) for a given n(theta,phi) prescribed in terms of "nlm"
     
     implicit none
     
     complex(kind=dp), intent(in) :: nlm(nlm_len)
+    character*1, intent(in)      :: opt 
     real(kind=dp), intent(inout) :: ev_c2(3,3),ev_c4(3,3,3,3),ev_c6(3,3,3,3, 3,3),ev_c8(3,3,3,3, 3,3,3,3)
     complex(kind=dp)             :: n00, n2m(-2:2), n4m(-4:4), n6m(-6:6), n8m(-8:8)
     
     n00 = nlm(1)
     n2m = nlm(I_l2:(I_l4-1))
     n4m = nlm(I_l4:(I_l6-1))
-    n6m = nlm(I_l6:(I_l8-1))
-    n8m = nlm(I_l8:(I_l10-1))
-    
     ev_c2 = f_ev_c2(n00,n2m)
     ev_c4 = f_ev_c4(n00,n2m,n4m)
-    ev_c6 = f_ev_c6(n00,n2m,n4m,n6m)
-    ev_c8 = f_ev_c8(n00,n2m,n4m,n6m,n8m)
+    
+    if (opt == 'f') then
+        ! Full calculation?
+        n6m = nlm(I_l6:(I_l8-1))
+        n8m = nlm(I_l8:(I_l10-1))
+        ev_c6 = f_ev_c6(n00,n2m,n4m,n6m)
+        ev_c8 = f_ev_c8(n00,n2m,n4m,n6m,n8m)
+    else
+        ! Reduced calculation?
+        ev_c6 = 0.0d0
+        ev_c8 = 0.0d0
+    end if
 end
       
 function a2(nlm) 
@@ -450,8 +458,15 @@ function Evw(vw, tau, nlm, Ecc, Eca, alpha, nprime)
     integer, intent(in)          :: nprime
     real(kind=dp)                :: ev_c2(3,3), ev_c4(3,3,3,3), ev_c6(3,3,3,3, 3,3), ev_c8(3,3,3,3, 3,3,3,3)
     real(kind=dp)                :: Evw
-    
-    call f_ev_ck(nlm, ev_c2,ev_c4,ev_c6,ev_c8) 
+
+    if (nprime .eq. 1) then 
+        ! Linear grain rheology (n'=1) relies only on <c^2> and <c^4>
+        call f_ev_ck(nlm, 'r', ev_c2,ev_c4,ev_c6,ev_c8) ! Calculate structure tensors of orders 2,4 (6,8 are assumed zero for faster evaluation)
+    else if (nprime .eq. 3) then
+        ! Nonlinear grain rheology (n'=3) relies on <c^k> for k=2,4,6,8
+        call f_ev_ck(nlm, 'f', ev_c2,ev_c4,ev_c6,ev_c8) ! Calculate structure tensors of orders 2,4,6,8
+    end if
+
     Evw = (1-alpha)*Evw_Sac(vw, tau, ev_c2,ev_c4,ev_c6,ev_c8, Ecc,Eca, nprime) &
             + alpha*Evw_Tay(vw, tau, ev_c2,ev_c4,             Ecc,Eca, nprime)
 end
