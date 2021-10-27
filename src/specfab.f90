@@ -689,11 +689,9 @@ function eps_of_tau__orthotropic(tau, A,n, m1,m2,m3, Eij) result(eps)
     I1 = (tau22 - tau33)/2.0d0 
     I2 = (tau33 - tau11)/2.0d0 
     I3 = (tau11 - tau22)/2.0d0 
-    
-    ! Strictly speaking, these are sqrt(I4), sqrt(I5), and sqrt(I6)
-    I4 = tau23  
-    I5 = tau31
-    I6 = tau12
+    I4 = tau23 ! I4 := (tau23 + tau32)/2 (but tau is symmetric)
+    I5 = tau31 ! I5 := (tau31 + tau13)/2 (but tau is symmetric)
+    I6 = tau12 ! I6 := (tau12 + tau21)/2 (but tau is symmetric)
 
     fluidity = A * ( &
         + lam1 * I1**2 &
@@ -732,11 +730,9 @@ function tau_of_eps__orthotropic(eps, A,n, m1,m2,m3, Eij) result(tau)
     J1 = (eps22 - eps33)/2.0d0 
     J2 = (eps33 - eps11)/2.0d0 
     J3 = (eps11 - eps22)/2.0d0 
-    
-    ! Strictly speaking, these are sqrt(I4), sqrt(I5), and sqrt(I6)
-    J4 = eps23
-    J5 = eps31
-    J6 = eps12
+    J4 = eps23 ! J4 := (eps23 + eps32)/2 (but eps is symmetric)
+    J5 = eps31 ! J5 := (eps31 + eps13)/2 (but eps is symmetric)
+    J6 = eps12 ! J6 := (eps12 + eps21)/2 (but eps is symmetric)
     
     J23 = -3/2.0d0 * eps11 ! J23 := J2-J3 = (eps22 + eps33 - 2*eps11)/2.0d0 = -3/2.0d0 * eps11
     J31 = -3/2.0d0 * eps22 ! J31 := J3-J1 = (eps11 + eps33 - 2*eps22)/2.0d0 = -3/2.0d0 * eps22
