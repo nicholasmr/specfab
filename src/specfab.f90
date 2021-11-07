@@ -135,16 +135,24 @@ function dndt_ij_LATROT(eps,omg, tau,Aprime,Ecc,Eca, beta)
     gn_Tay = [ sqrt(5./6)*qe(-1), 0*r, qe(-2), sqrt(2./3)*qe(-1), sqrt(3./2)*qe(0), 2*qe(+1) ]
     gp_Tay = [ sqrt(5./6)*qe(+1), 2*qe(-1), sqrt(3./2)*qe(0), sqrt(2./3)*qe(+1), qe(+2), 0*r ]
     
-    g0_Sac = 3*[ 0*r, Eca*qt(-2),Eca*qt(-1),Eca*qt(0),Eca*qt(+1),Eca*qt(+2) ]
-    gz_Sac = [ 0*r, -Eca*qt(-2),-1./2*(Eca-1)*qt(-1),0*r,1./2*(Eca-1)*qt(+1),Eca*qt(+2) ]
-    gn_Sac = [ sqrt(5./6)*qt(-1), 0*r, Eca*qt(-2), sqrt(1./6)*(3*Eca-1)*qt(-1), sqrt(3./2)*Eca*qt(0), (Eca+1)*qt(+1) ]
-    gp_Sac = [ sqrt(5./6)*qt(+1), (Eca+1)*qt(-1), sqrt(3./2)*Eca*qt(0), sqrt(1./6)*(3*Eca-1)*qt(+1), Eca*qt(+2), 0*r ]
+    if (beta .lt. 1.0d0 - 1d-5) then
+        ! For efficiency, calculate the Sachs contribution only if beta < 1
+        g0_Sac = 3*[ 0*r, Eca*qt(-2),Eca*qt(-1),Eca*qt(0),Eca*qt(+1),Eca*qt(+2) ]
+        gz_Sac = [ 0*r, -Eca*qt(-2),-1./2*(Eca-1)*qt(-1),0*r,1./2*(Eca-1)*qt(+1),Eca*qt(+2) ]
+        gn_Sac = [ sqrt(5./6)*qt(-1), 0*r, Eca*qt(-2), sqrt(1./6)*(3*Eca-1)*qt(-1), sqrt(3./2)*Eca*qt(0), (Eca+1)*qt(+1) ]
+        gp_Sac = [ sqrt(5./6)*qt(+1), (Eca+1)*qt(-1), sqrt(3./2)*Eca*qt(0), sqrt(1./6)*(3*Eca-1)*qt(+1), Eca*qt(+2), 0*r ]
 
-    g0 = g0_rot + (1-beta)*etaprime*g0_Sac + beta*g0_Tay
-    gz = gz_rot + (1-beta)*etaprime*gz_Sac + beta*gz_Tay
-    gn = gn_rot + (1-beta)*etaprime*gn_Sac + beta*gn_Tay
-    gp = gp_rot + (1-beta)*etaprime*gp_Sac + beta*gp_Tay
-
+        g0 = g0_rot + (1-beta)*etaprime*g0_Sac + beta*g0_Tay
+        gz = gz_rot + (1-beta)*etaprime*gz_Sac + beta*gz_Tay
+        gn = gn_rot + (1-beta)*etaprime*gn_Sac + beta*gn_Tay
+        gp = gp_rot + (1-beta)*etaprime*gp_Sac + beta*gp_Tay
+    else
+        ! If beta = 1, the ODF evolution is kinematic in the sense that c-axes rotate in response to the bulk stretching and spin.
+        g0 = g0_rot + g0_Tay
+        gz = gz_rot + gz_Tay
+        gn = gn_rot + gn_Tay
+        gp = gp_rot + gp_Tay
+    end if 
 
     ! Contruct rate-of-change matrix
     do ii = 1, nlm_len    
@@ -184,11 +192,7 @@ function dndt_ij_DDRX(nlm, tau)
     Davg = doubleinner22(matmul(tau,tau), a2(nlm)) - doubleinner22(tau,doubleinner42(a4(nlm),tau)) ! (tau.tau):a2 - tau:a4:tau 
     Davgtensor = 0.0 ! initialize 
     do ii = 1, nlm_len    
-        do jj = 1, nlm_len    
-            if (ii .eq. jj) then
-                Davgtensor(ii,ii) = Davg
-            end if
-        end do
+        Davgtensor(ii,ii) = Davg
     end do
     
     ! Add add (nonlinear) sink term such that Gamma/Gamma0 = (D - <D>)/(tau:tau) 

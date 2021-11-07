@@ -6,7 +6,7 @@
 
 #COMPILER=ifort -free -xHost -shared-intel -align all  -debug all -qopt-report-phase=vec -diag-disable 8291 -diag-disable 8290  
 COMPILER=gfortran -ffree-line-length-none -m64 -Wall -fPIC
-OPTS=-O1 -mcmodel=medium -lm -llapack -lblas -lfftw3
+OPTS=-O2 -mcmodel=medium -lm -llapack -lblas -lfftw3
 OPTSNETCDF=-lnetcdff -I/usr/include -L/usr/lib 
 
 SPECFAB=specfab
