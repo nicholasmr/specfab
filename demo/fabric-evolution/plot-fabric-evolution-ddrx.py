@@ -5,6 +5,8 @@ import scipy.special as sp
 from netCDF4 import Dataset
 import sys, os, copy, code # code.interact(local=locals())
 
+from header import *
+
 #------------------
 # Input arguments
 #------------------
@@ -33,6 +35,7 @@ Nt, dt = fh.getncattr('tsteps'), fh.getncattr('dt')
 
 # Fabric state
 lm, c   = loadvar('lm'), loadvar('c_re') + 1j*loadvar('c_im') 
+lm = np.array(lm).T
 a2_spec = loadvar('a2_true')
 a2_tens = loadvar('a2')
 
@@ -87,19 +90,9 @@ for tt in plot_tsteps:
     # n(theta,phi) on S^2
     #----------------------
 
-    dlvl = 0.05
-    lvls = np.arange(0, 0.2+dlvl +1e-5, dlvl/2) # Contour lvls
-
-    F = np.real(np.sum([ c[tt,ii]*sp.sph_harm(m, l, phi,theta) for ii,(l,m) in enumerate(lm) ], axis=0))
-    F = np.divide(F, c[0,0]*np.sqrt(4*np.pi))
-    hdistr = axdistr.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), levels=lvls, extend='max', cmap='Greys')
-    kwargs_gridlines = {'ylocs':np.arange(-90,90+30,30), 'xlocs':np.arange(0,360+45,45), 'linewidth':0.5, 'color':'black', 'alpha':0.25, 'linestyle':'-'}
-    gl = axdistr.gridlines(crs=ccrs.PlateCarree(), **kwargs_gridlines)
-    gl.xlocator = mticker.FixedLocator(np.array([-135, -90, -45, 0, 90, 45, 135, 180]))
-    cb1 = plt.colorbar(hdistr, ax=axdistr, fraction=0.04, aspect=19,  orientation='horizontal', pad=0.1, ticks=lvls[::2])   
-    cb1.set_label(r'$\psi/N$ (ODF)', fontsize=FS)
-    #
     ax = axdistr
+    ODF = c[tt,:]/(np.sqrt(4*np.pi)*c[tt,0])
+    plot_ODF(c[tt,:], lm, ax=ax, cmap='Greys', cblabel=r'$\psi/N$ (ODF)')
     ax.plot([0],[90],'k.', transform=geo) # z dir
     ax.plot([rot0],[0],'k.', transform=geo) # y dir
     ax.plot([rot0-90],[0],'k.', transform=geo) # x dir

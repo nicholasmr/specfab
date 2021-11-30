@@ -5,6 +5,8 @@ import scipy.special as sp
 from netCDF4 import Dataset
 import sys, os, copy, code # code.interact(local=locals())
 
+from header import *
+
 #------------------
 # Input arguments
 #------------------
@@ -38,6 +40,7 @@ alpha_lin, alpha_nlin = fh.getncattr('alpha_lin'), fh.getncattr('alpha_nlin')
 
 # Fabric state
 lm, c = loadvar('lm'), loadvar('c_re') + 1j*loadvar('c_im') 
+lm = np.array(lm).T
 eigvals = loadvar('eigvals')
 e1,e2,e3 = loadvar('e1'), loadvar('e2'), loadvar('e3')
 p1,p2,p3 = loadvar('p1'), loadvar('p2'), loadvar('p3')
@@ -55,9 +58,9 @@ omg = (ugrad - np.transpose(ugrad))/2
 #------------------
 
 plot_tsteps = [0, int(Nt*1/2), Nt-1] # time steps to plot
-#plot_tsteps = [0, Nt-1] # time steps to plot
+#plot_tsteps = [Nt-1,] # time steps to plot
 
-lw0, lw1, lw2 = 3, 2.2, 1 
+lw0, lw1, lw2 = 2.5,2.25,2.0
 
 theta = np.linspace(0,   np.pi,   latres) # CO-LAT 
 phi   = np.linspace(0, 2*np.pi, 2*latres) # LON
@@ -88,7 +91,7 @@ for tt in plot_tsteps:
 
     dpi, scale = 200, 3.3
     fig = plt.figure(figsize=(3/2*2.1*scale,2.3*scale))
-    gs = gridspec.GridSpec(2,3, height_ratios=[1,1.2], width_ratios=[1,1.2,1.2])
+    gs = gridspec.GridSpec(2,3, height_ratios=[1,1.2], width_ratios=[1,1,1])
     a = 0.06
     gs.update(left=a, right=1-a/3, top=0.98, bottom=0.20, wspace=0.015*18, hspace=0.35)
 
@@ -96,7 +99,7 @@ for tt in plot_tsteps:
     geo = ccrs.Geodetic()
     axdistr   = plt.subplot(gs[0, 0], projection=prj)
     axei      = plt.subplot(gs[0, 1], projection='3d')
-    axeigvals = plt.subplot(gs[1, 0])
+    axeigvals = plt.subplot(gs[0, 2])
     axEvw_Mix = plt.subplot(gs[1, 1])
     axEvw_Sac = plt.subplot(gs[1, 2])
 
@@ -106,25 +109,15 @@ for tt in plot_tsteps:
     # n(theta,phi) on S^2
     #----------------------
 
-#    lvls = np.linspace(0,0.2,11) # Contour lvls
-    lvls = np.arange(0,0.2+1e-5,0.025) # Contour lvls
-
-    F = np.real(np.sum([ c[tt,ii]*sp.sph_harm(m, l, phi,theta) for ii,(l,m) in enumerate(lm) ], axis=0))
-    F = np.divide(F, c[0,0]*np.sqrt(4*np.pi))
-    hdistr = axdistr.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), levels=lvls, extend='max', cmap='Greys')
-    kwargs_gridlines = {'ylocs':np.arange(-90,90+30,30), 'xlocs':np.arange(0,360+45,45), 'linewidth':0.5, 'color':'black', 'alpha':0.25, 'linestyle':'-'}
-    gl = axdistr.gridlines(crs=ccrs.PlateCarree(), **kwargs_gridlines)
-    gl.xlocator = mticker.FixedLocator(np.array([-135, -90, -45, 0, 90, 45, 135, 180]))
-    cb1 = plt.colorbar(hdistr, ax=axdistr, fraction=0.04, aspect=19,  orientation='horizontal', pad=0.1, ticks=lvls[::2])   
-    cb1.set_label(r'$\psi/N$ (ODF)', fontsize=FS)
-    #
     ax = axdistr
-    ax.plot([0],[90],'k.', transform=geo) # z dir
-    ax.plot([rot0],[0],'k.', transform=geo) # y dir
-    ax.plot([rot0-90],[0],'k.', transform=geo) # x dir
-    ax.text(rot0-80, 78, r'$\vu{z}$', horizontalalignment='left', transform=geo)
-    ax.text(rot0-8, -8, r'$\vu{y}$', horizontalalignment='left', transform=geo)
-    ax.text(rot0-90+5, -8, r'$\vu{x}$', horizontalalignment='left', transform=geo)
+    ODF = c[tt,:]/(np.sqrt(4*np.pi)*c[tt,0])
+    plot_ODF(c[tt,:], lm, ax=ax, cmap='Greys', cblabel=r'$\psi/N$ (ODF)')
+    ax.plot([0],[90],'X', color=c_brown, transform=geo) # z dir
+    ax.plot([rot0],[0],'X', color=c_brown, transform=geo) # y dir
+    ax.plot([rot0-90],[0],'X', color=c_brown, transform=geo) # x dir
+    ax.text(rot0-80, 78, r'$\vu{z}$', color=c_brown, horizontalalignment='left', transform=geo)
+    ax.text(rot0-8, -8, r'$\vu{y}$', color=c_brown, horizontalalignment='left', transform=geo)
+    ax.text(rot0-90+5, -8, r'$\vu{x}$', color=c_brown, horizontalalignment='left', transform=geo)
 
     #----------------------
     # Eigen values
@@ -134,9 +127,9 @@ for tt in plot_tsteps:
 
     lw = 2
     axeigvals.plot([tt,tt],[0,1],':k',lw=lw)
-    axeigvals.plot(steps,eigvals[:,0],'-r',label='$a_{1}$',lw=lw0)
-    axeigvals.plot(steps,eigvals[:,1],'-g',label='$a_{2}$',lw=lw1)
-    axeigvals.plot(steps,eigvals[:,2],'-b',label='$a_{3}$',lw=lw2)
+    axeigvals.plot(steps,eigvals[:,0],'-', c=c_red,   label='$a_{1}$',lw=lw0)
+    axeigvals.plot(steps,eigvals[:,1],'-', c=c_green, label='$a_{2}$',lw=lw1)
+    axeigvals.plot(steps,eigvals[:,2],'-', c=c_blue,  label='$a_{3}$',lw=lw2)
     axeigvals.plot([0,1],[-tt,-tt],':k',lw=lw) 
     axeigvals.set_ylim([0,1])
     axeigvals.set_xlim([0, Nt+1])
@@ -153,13 +146,13 @@ for tt in plot_tsteps:
     axei.set_xlabel('$x$'); axei.set_xlim([-1,1])
     axei.set_ylabel('$y$'); axei.set_ylim([-1,1])
     axei.set_zlabel('$z$'); axei.set_zlim([0,1])
-    plot_vec(axei,e1[tt,:],r'$\vb{e}_1$','r')
-    plot_vec(axei,e2[tt,:],r'$\vb{e}_2$','g')
-    plot_vec(axei,e3[tt,:],r'$\vb{e}_3$','b')
+    plot_vec(axei,e1[tt,:],r'$\vb{e}_1$', c_red)
+    plot_vec(axei,e2[tt,:],r'$\vb{e}_2$', c_green)
+    plot_vec(axei,e3[tt,:],r'$\vb{e}_3$', c_blue)
     lwpq=1
-    plot_vec(axei,p1[tt,:],r'$\vb{p}_{1}$', 'r', ls='--', lw=lwpq)
-    plot_vec(axei,p2[tt,:],r'$\vb{p}_{2}$', 'g', ls='--', lw=lwpq)
-    plot_vec(axei,p3[tt,:],r'$\vb{p}_{3}$', 'b', ls='--', lw=lwpq)
+    plot_vec(axei,p1[tt,:],r'$\vb{p}_{1}$', c_red,   ls='--', lw=lwpq)
+    plot_vec(axei,p2[tt,:],r'$\vb{p}_{2}$', c_green, ls='--', lw=lwpq)
+    plot_vec(axei,p3[tt,:],r'$\vb{p}_{3}$', c_blue,  ls='--', lw=lwpq)
     axei.legend(handlelength=1, loc=1, bbox_to_anchor=(1.17,1), fancybox=False)
 
     #----------------------
@@ -171,22 +164,22 @@ for tt in plot_tsteps:
 
     def plot_enh(ax, Eeiej, Epipj):
         
-        ax.semilogy(steps, Eeiej[:,0,0], 'r-',  label=lblmk(0,0), lw=lw0)
-        ax.semilogy(steps, Eeiej[:,0,1], 'r--', label=lblmk(0,1), lw=lw0)
-        ax.semilogy(steps, Eeiej[:,0,2], 'r:',  label=lblmk(0,2), lw=lw0)
+        ax.semilogy(steps, Eeiej[:,0,0], '-', c=c_red,  label=lblmk(0,0), lw=lw0)
+        ax.semilogy(steps, Eeiej[:,1,1], '-', c=c_green, label=lblmk(1,1), lw=lw1)
+        ax.semilogy(steps, Eeiej[:,2,2], '-', c=c_blue, label=lblmk(2,2), lw=lw2)    
+        
+        ax.semilogy(steps, Eeiej[:,0,1], ':', c=c_lred,   label=lblmk(0,1), lw=lw0)
+        ax.semilogy(steps, Eeiej[:,1,2], ':', c=c_lgreen, label=lblmk(1,2), lw=lw2)
+        ax.semilogy(steps, Eeiej[:,0,2], ':', c=c_lblue,  label=lblmk(0,2), lw=lw1)
 
-        ax.semilogy(steps, Eeiej[:,1,0], 'g--', label=lblmk(1,0), lw=lw1)
-        ax.semilogy(steps, Eeiej[:,1,1], 'g-',  label=lblmk(1,1), lw=lw1)
-        ax.semilogy(steps, Eeiej[:,1,2], 'g-.', label=lblmk(1,2), lw=lw1)
-            
-        ax.semilogy(steps, Eeiej[:,2,0], 'b:',  label=lblmk(2,0), lw=lw2)
-        ax.semilogy(steps, Eeiej[:,2,1], 'b-.', label=lblmk(2,1), lw=lw2)
-        ax.semilogy(steps, Eeiej[:,2,2], 'b-',  label=lblmk(2,2), lw=lw2)    
+# Don't plot, Eij is symmetric
+#        ax.semilogy(steps, Eeiej[:,1,0], 'g--', label=lblmk(1,0), lw=lw1)
+#        ax.semilogy(steps, Eeiej[:,2,0], 'b:',  label=lblmk(2,0), lw=lw2)
+#        ax.semilogy(steps, Eeiej[:,2,1], 'b-.', label=lblmk(2,1), lw=lw2)
 
-        ax.semilogy(steps, Epipj[:,0,1],  'y-', label=lblmk_pq(0,2), lw=lw1) 
-
+        ax.semilogy(steps, Epipj[:,0,1],  '-', c=c_gray, label=lblmk_pq(0,2), lw=lw2) 
         Eratio = np.divide(Eeiej[:,0,1],Epipj[:,0,1])
-        ax.semilogy(steps, Eratio, 'm-', label=lblmk(0,2)+'/'+lblmk_pq(0,2), lw=lw1)
+        ax.semilogy(steps, Eratio, '--', c=c_gray, label=lblmk(0,2)+'/'+lblmk_pq(0,2), lw=lw2)
 
         xlims=[0, Nt+1]
         lw=1
@@ -202,15 +195,15 @@ for tt in plot_tsteps:
     plot_enh(axEvw_Sac, Eeiej_nlin, Epipj_nlin)
     plot_enh(axEvw_Mix, Eeiej_lin,  Epipj_lin)
     
-    axEvw_Sac.set_title(r'Nonlinear Sachs enh. fac.')
-    axEvw_Mix.set_title(r'Linear Taylor--Sachs enh. fac.')
+    axEvw_Sac.set_title(r'Nonlinear Sachs')
+    axEvw_Mix.set_title(r'Linear mixed Taylor--Sachs')
     
     from matplotlib.offsetbox import AnchoredText
     axEvw_Sac.add_artist(AnchoredText('\n'.join( (r"$n' = %i$"%(3), r'$E_{cc} = %.1f$'%(Ecc_nlin), r'$E_{ca} = %.0e$'%(Eca_nlin), r'$\alpha = %.4f$'%(alpha_nlin)) ), loc='lower left', frameon=True,))
     axEvw_Mix.add_artist(AnchoredText('\n'.join( (r"$n' = %i$"%(1), r'$E_{cc} = %.1f$'%(Ecc_lin),  r'$E_{ca} = %.0e$'%(Eca_lin),  r'$\alpha = %.4f$'%(alpha_lin)) ),  loc='lower left', frameon=True,))
     
-    ncol = 4
-    axEvw_Sac.legend(loc=4, ncol=ncol, handlelength=2, columnspacing=1.2, labelspacing=0.3, fancybox=False, bbox_to_anchor=(1.05,-0.55))   
+    ncol = 3
+    axEvw_Sac.legend(loc=4, fontsize=FS+1, ncol=ncol, handlelength=2, columnspacing=1.2, labelspacing=0.3, fancybox=False, bbox_to_anchor=(1.05,-0.55))   
     
     #----------------------
     # Model config
@@ -218,7 +211,7 @@ for tt in plot_tsteps:
     
     props = dict(boxstyle='square', facecolor='wheat', alpha=0.5)
     textstr1 = '\n'.join(( r'"%s"'%(exprref.replace('_', '\_')), r'$L = %i$'%(L), r'$\nu = %.2e$'%(nu) ))
-    axeigvals.text(-0.15, -0.44, textstr1, transform=axeigvals.transAxes, fontsize=FS, bbox=props)
+    axeigvals.text(-1.6, -0.1, textstr1, transform=axeigvals.transAxes, fontsize=FS, bbox=props)
 
     #----------------------
     # Save figure
