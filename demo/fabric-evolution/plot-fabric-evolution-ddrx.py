@@ -5,6 +5,7 @@ import scipy.special as sp
 from netCDF4 import Dataset
 import sys, os, copy, code # code.interact(local=locals())
 
+sys.path.insert(0, '..')
 from header import *
 
 #------------------

@@ -4,6 +4,8 @@ import sys, os, copy, code # code.interact(local=locals())
 import numpy as np
 import scipy.special as sp
 from netCDF4 import Dataset
+
+sys.path.insert(0, '..')
 from specfabpy import specfabpy as sf # To use specfabpy compile the specfab Python module by running "make specfabpy"
 
 #----------------------
@@ -186,5 +188,5 @@ f_p1[:,:], f_p2[:,:], f_p3[:,:] = p1, p2, p3
 
 ncfile.close(); 
 print('Solution dumped in %s'%fname)
-print('Plot result:\npython3 plot_demo_LATROT.py %s'%(arg_exp))
+print('Plot result:\npython3 plot-fabric-evolution-latrot.py %s'%(arg_exp))
 

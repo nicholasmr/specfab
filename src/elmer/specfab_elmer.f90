@@ -31,7 +31,7 @@ function Cmat_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(C)
     real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
     real(kind=dp)                 :: viscosity
 
-    call orthotropic_coefs(n, Eij, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    call orthotropic_coefs(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
     call orthotropic_tensors_and_invars(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, eps11,eps22,eps33,eps23,eps31,eps12)
     
     J1 = (eps22 - eps33)/2.0d0 

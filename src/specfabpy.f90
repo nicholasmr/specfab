@@ -18,10 +18,18 @@ module specfabpy
         a4__sf => a4, &
         a2_to_nlm__sf => a2_to_nlm, &
         a4_to_nlm__sf => a4_to_nlm, &
+        tau_of_eps__isotropic__sf => tau_of_eps__isotropic, &
+        eps_of_tau__isotropic__sf => eps_of_tau__isotropic, &
         tau_of_eps__tranisotropic__sf => tau_of_eps__tranisotropic, &
         eps_of_tau__tranisotropic__sf => eps_of_tau__tranisotropic, &
         tau_of_eps__orthotropic__sf => tau_of_eps__orthotropic, &
         eps_of_tau__orthotropic__sf => eps_of_tau__orthotropic, &
+        tau_of_eps__orthotropic_Martin__sf => tau_of_eps__orthotropic_Martin, &
+        eps_of_tau__orthotropic_Martin__sf => eps_of_tau__orthotropic_Martin, &
+        tau_of_eps__orthotropic_Pettit__sf => tau_of_eps__orthotropic_Pettit, &
+        eps_of_tau__orthotropic_Pettit__sf => eps_of_tau__orthotropic_Pettit, &
+        eps_of_tau__nlin_Sachs__sf => eps_of_tau__nlin_Sachs, &
+        eps_of_tau__lin_TaylorSachs__sf => eps_of_tau__lin_TaylorSachs, &
         frame__sf => frame, &
         Eeiej__sf => Eeiej, &
         Evw__sf => Evw, &
@@ -135,7 +143,7 @@ contains
     end
     
     !------------------
-    ! Enhancement factors
+    ! ENHANCEMENT FACTORS
     !------------------
     
     function enhfac_vw(a2,a4,a6,a8, vw,tau, Ecc,Eca,alpha,nprime) result(Evw)
@@ -212,31 +220,145 @@ contains
         
         a4_to_nlm = a4_to_nlm__sf(a2,a4)
     end
+    
+    !---------------------------------
+    ! GRAIN-AVERAGED RHEOLOGY (SACHS, TAYLOR)
+    !---------------------------------
+    
+    function eps_of_tau__nlin_Sachs(tau, nlm, Aprime,Ecc,Eca) result(eps_of_tau)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in)    :: tau(3,3), Aprime, Ecc,Eca
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp)                :: eps_of_tau(3,3)
+    
+        eps_of_tau = eps_of_tau__nlin_Sachs__sf(tau, nlm, Aprime,Ecc,Eca)
+    end
+       
+    function eps_of_tau__lin_TaylorSachs(tau, nlm, Aprime,Ecc,Eca,alpha) result(eps_of_tau)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in)    :: tau(3,3), Aprime, Ecc,Eca,alpha
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp)                :: eps_of_tau(3,3)
+    
+        eps_of_tau = eps_of_tau__lin_TaylorSachs__sf(tau, nlm, Aprime,Ecc,Eca,alpha)
+    end
         
     !---------------------------------
     ! TRANSVERSELY ISOTROPIC RHEOLOGY 
     !---------------------------------
-    
-    function tau_of_eps__tranisotropic(eps, A,n, m,Emm,Emt) result(tau_of_eps)
-        use specfabpy_const
-        implicit none
-        real(kind=dp), intent(in) :: eps(3,3), A, m(3),Emm,Emt 
-        integer, intent(in)       :: n ! Glen exponent
-        real(kind=dp)             :: tau_of_eps(3,3)
-        
-        tau_of_eps = tau_of_eps__tranisotropic__sf(eps, A,n, m,Emm,Emt)
-    end
-    
-    function eps_of_tau__tranisotropic(tau, A,n, m,Emm,Emt) result(eps_of_tau)
+
+    function eps_of_tau__tranisotropic(tau, A,n, m,Emm,Emt) result(eps)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in) :: tau(3,3), A, m(3),Emm,Emt
         integer, intent(in)       :: n ! Glen exponent
-        real(kind=dp)             :: eps_of_tau(3,3)
+        real(kind=dp)             :: eps(3,3)
         
-        eps_of_tau = eps_of_tau__tranisotropic__sf(tau, A,n, m,Emm,Emt)
+        eps = eps_of_tau__tranisotropic__sf(tau, A,n, m,Emm,Emt)
     end
+    
+    function tau_of_eps__tranisotropic(eps, A,n, m,Emm,Emt) result(tau)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: eps(3,3), A, m(3),Emm,Emt 
+        integer, intent(in)       :: n ! Glen exponent
+        real(kind=dp)             :: tau(3,3)
         
+        tau = tau_of_eps__tranisotropic__sf(eps, A,n, m,Emm,Emt)
+    end
+    
+    !---------------------------------
+    ! ORTHOTROPIC RHEOLOGY 
+    !---------------------------------
+    
+    function eps_of_tau__orthotropic(tau, A,n, m1,m2,m3, Eij) result(eps)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        integer, intent(in)       :: n ! Glen exponent
+        real(kind=dp)             :: eps(3,3)
+        
+        eps = eps_of_tau__orthotropic__sf(tau, A,n, m1,m2,m3, Eij)
+    end
+    
+    function tau_of_eps__orthotropic(eps, A,n, m1,m2,m3, Eij) result(tau)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        integer, intent(in)       :: n ! Glen exponent
+        real(kind=dp)             :: tau(3,3)
+        
+        tau = tau_of_eps__orthotropic__sf(eps, A,n, m1,m2,m3, Eij)
+    end
+    
+    ! Pettit's hypothesis that the fluidity is orientation independent.
+    function eps_of_tau__orthotropic_Pettit(tau, A,n, m1,m2,m3, Eij) result(eps)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        integer, intent(in)       :: n ! Glen exponent
+        real(kind=dp)             :: eps(3,3)
+        
+        eps = eps_of_tau__orthotropic_Pettit__sf(tau, A,n, m1,m2,m3, Eij)
+    end
+    
+    function tau_of_eps__orthotropic_Pettit(eps, A,n, m1,m2,m3, Eij) result(tau)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        integer, intent(in)       :: n ! Glen exponent
+        real(kind=dp)             :: tau(3,3)
+        
+        tau = tau_of_eps__orthotropic_Pettit__sf(eps, A,n, m1,m2,m3, Eij)
+    end
+    
+    ! Martin's hypothesis that the viscosity is orientation independent.
+    function eps_of_tau__orthotropic_Martin(tau, A,n, m1,m2,m3, Eij) result(eps)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        integer, intent(in)       :: n ! Glen exponent
+        real(kind=dp)             :: eps(3,3)
+        
+        eps = eps_of_tau__orthotropic_Martin__sf(tau, A,n, m1,m2,m3, Eij)
+    end
+    
+    function tau_of_eps__orthotropic_Martin(eps, A,n, m1,m2,m3, Eij) result(tau)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        integer, intent(in)       :: n ! Glen exponent
+        real(kind=dp)             :: tau(3,3)
+        
+        tau = tau_of_eps__orthotropic_Martin__sf(eps, A,n, m1,m2,m3, Eij)
+    end
+    
+    !---------------------------------
+    ! ISOTROPIC (GLEN) RHEOLOGY 
+    !---------------------------------
+
+    function eps_of_tau__isotropic(tau, A,n) result(eps)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: tau(3,3), A
+        integer, intent(in)       :: n ! Glen exponent
+        real(kind=dp)             :: eps(3,3)
+        
+        eps = eps_of_tau__isotropic__sf(tau, A,n)
+    end
+    
+    function tau_of_eps__isotropic(eps, A,n) result(tau)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: eps(3,3), A
+        integer, intent(in)       :: n ! Glen exponent
+        real(kind=dp)             :: tau(3,3)
+        
+        tau = tau_of_eps__isotropic__sf(eps, A,n)
+    end
+    
     !---------------------------------
     ! AUX
     !---------------------------------

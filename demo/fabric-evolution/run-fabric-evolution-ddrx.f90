@@ -189,7 +189,7 @@ program demo
 
     print *, 'Solution dumped in ', fname_sol
     print *, "Plot result:"
-    write(*,"(A26,A5)") "python3 plot_demo_DDRX.py ", arg_exp
+    write(*,"(A39,A5)") "python3 plot-fabric-evolution-ddrx.py ", arg_exp
 
 contains
 

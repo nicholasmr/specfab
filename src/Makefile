@@ -13,10 +13,13 @@ SPECFAB=specfab
 MOMENTS=moments
 GAUNT=gaunt
 TENPROD=tensorproducts
+RHEOLOGIES=rheologies
 
-DEMOPATH=../demo
+PATHDEMO=../demo
+PATHFABEVO=$(PATHDEMO)/fabric-evolution
+PATHRHEOTEST=$(PATHDEMO)/rheology-test
 
-ALLOBJS=$(SPECFAB).o $(TENPROD).o $(MOMENTS).o $(GAUNT).o
+ALLOBJS=$(SPECFAB).o $(TENPROD).o $(MOMENTS).o $(GAUNT).o $(RHEOLOGIES).o
 ALLMODS=$(ALLOBJS:.o=.mod)
 ALLSRCS=$(ALLOBJS:.o=.f90)
 
@@ -24,7 +27,7 @@ ALLSRCS=$(ALLOBJS:.o=.f90)
 # Elmer, JOSEF, ...
 #-------------------
 
-ELMERSRCS=$(wildcard $(DEMOPATH)/elmer*.f90)
+ELMERSRCS=$(wildcard $(PATHDEMO)/elmer/elmer*.f90)
 ELMERS=$(ELMERSRCS:.f90=)
 
 ########################################
@@ -33,31 +36,33 @@ ELMERS=$(ELMERSRCS:.f90=)
 # Core
 #-------------------
 
-demo: $(SPECFAB).o
-	$(COMPILER) $(DEMOPATH)/demo_LATROT.f90 $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o $(DEMOPATH)/demo_LATROT
-	$(COMPILER) $(DEMOPATH)/demo_DDRX.f90   $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o $(DEMOPATH)/demo_DDRX
-	mkdir -p $(DEMOPATH)/solutions
+fabric-evolution-demo: $(SPECFAB).o
+	$(COMPILER) $(PATHFABEVO)/run-fabric-evolution-latrot.f90 $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o $(PATHFABEVO)/run-fabric-evolution-latrot 
+	$(COMPILER) $(PATHFABEVO)/run-fabric-evolution-ddrx.f90   $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o $(PATHFABEVO)/run-fabric-evolution-ddrx
+	mkdir -p $(PATHFABEVO)/solutions
 	@echo "\n*** To get going, try the demos:"
 	@echo "\n--- Lattice rotation ---"
-	@echo "cd $(DEMOPATH); ./demo_LATROT uc_zz :: uniaxial compression (uc) in the vertical (z)"
-	@echo "cd $(DEMOPATH); ./demo_LATROT ss_xz :: simple shear (ss) along the x--z plane"
+	@echo "cd $(PATHFABEVO); ./run-fabric-evolution-latrot  uc_zz :: uniaxial compression (uc) in the vertical (z)"
+	@echo "cd $(PATHFABEVO); ./run-fabric-evolution-latrot  ss_xz :: simple shear (ss) along the x-z plane"
 	@echo "\n--- Dynamic recrystallization ---"
-	@echo "cd $(DEMOPATH); ./demo_DDRX uc_zz :: uniaxial compression (uc) in the vertical (z)"
-	@echo "cd $(DEMOPATH); ./demo_DDRX ss_xz :: simple shear (ss) along the x--z plane"
+	@echo "cd $(PATHFABEVO); ./run-fabric-evolution-ddrx uc_zz :: uniaxial compression (uc) in the vertical (z)"
+	@echo "cd $(PATHFABEVO); ./run-fabric-evolution-ddrx ss_xz :: simple shear (ss) along the x-z plane"
 
 specfabpy: $(SPECFAB).o
 	f2py -lm -llapack -lblas -lfftw3 -I. $(ALLOBJS) -c -m specfabpy specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" --quiet 
-	mkdir -p $(DEMOPATH)/solutions
-	cp specfabpy.cpython* $(DEMOPATH)/
+	cp specfabpy.cpython* $(PATHDEMO)/
+	@echo "\n*** Python module installed in demo path."
+	mkdir -p $(PATHFABEVO)/solutions
 	@echo "\n*** To get going, try the demo:"
-	@echo "cd $(DEMOPATH); python3 demo_LATROT.py uc_zz ::: for uniaxial compression (uc) in the vertical (z)"
-	@echo "cd $(DEMOPATH); python3 demo_LATROT.py ss_xz ::: for simple shear (ss) along the x--z plane"
+	@echo "cd $(PATHFABEVO); python3 run-fabric-evolution-latrot.py uc_zz ::: for uniaxial compression (uc) in the vertical (z)"
+	@echo "cd $(PATHFABEVO); python3 run-fabric-evolution-latrot.py ss_xz ::: for simple shear (ss) along the x-z plane"
 
 lib$(SPECFAB).so: $(ALLSRCS) $(ALLOBJS)
 	$(COMPILER) $(OPTS) -shared $(ALLSRCS) -o $@
 
 $(SPECFAB).o: $(MOMENTS).o $(GAUNT).o
 	$(COMPILER) $(OPTS) -c $(TENPROD).f90 
+	$(COMPILER) $(OPTS) -c $(RHEOLOGIES).f90
 	$(COMPILER) $(OPTS) -c $(SPECFAB).f90
 
 $(MOMENTS).o: 
@@ -68,14 +73,14 @@ $(GAUNT).o:
 	$(COMPILER) $(OPTS) -c $(GAUNT).f90
 
 clean:
-	rm -f $(DEMOPATH)/demo_LATROT $(DEMOPATH)/demo_DDRX *.o *.mod *.so
+	rm -f $(PATHFABEVO)/run-fabric-evolution-latrot $(PATHFABEVO)/run-fabric-evolution-ddrx *.o *.mod *.so
 	
 clear:
-	rm -f $(DEMOPATH)/demo_LATROT $(DEMOPATH)/demo_DDRX $(SPECFAB).o $(SPECFAB).mod *.so
+	rm -f $(PATHFABEVO)/run-fabric-evolution-latrot $(PATHFABEVO)/run-fabric-evolution-ddrx $(SPECFAB).o $(SPECFAB).mod *.so
 
-rheologytests: $(SPECFAB).o
-	$(COMPILER) $(DEMOPATH)/test_orthotropic_rheology.f90   $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o $(DEMOPATH)/test_orthotropic_rheology
-	$(COMPILER) $(DEMOPATH)/test_tranisotropic_rheology.f90 $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o $(DEMOPATH)/test_tranisotropic_rheology
+rheology-test: $(SPECFAB).o
+	$(COMPILER) $(PATHRHEOTEST)/rheology-test-orthotropic.f90           $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-orthotropic
+	$(COMPILER) $(PATHRHEOTEST)/rheology-test-transverselyisotropic.f90 $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-transverselyisotropic
 	
 #-------------------
 # Elmer, JOSEF, ...

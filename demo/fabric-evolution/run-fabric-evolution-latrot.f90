@@ -197,7 +197,7 @@ program demo
 
     print *, 'Solution dumped in ', fname_sol
     print *, "Plot result:"
-    write(*,"(A28,A5)") "python3 plot_demo_LATROT.py ", arg_exp
+    write(*,"(A41,A5)") "python3 plot-fabric-evolution-latrot.py ", arg_exp
 
 contains
 
