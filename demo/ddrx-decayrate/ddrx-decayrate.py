@@ -1,15 +1,15 @@
 #!/usr/bin/python3
 # N. M. Rathmann <rathmann@nbi.ku.dk>, 2021
 
+import copy, sys, code # code.interact(local=locals())
 import numpy as np
+sys.path.insert(0, '..')
+from header import *
 from specfabpy import specfabpy as sf
 
 import matplotlib.pyplot as plt
 from matplotlib import rcParams, rc
-import matplotlib.ticker as mticker
-from matplotlib.offsetbox import AnchoredText
 import matplotlib.gridspec as gridspec
-import cartopy.crs as ccrs
 import scipy.special as sp
 
 latres = 60 # latitude resolution on S^2        
@@ -20,11 +20,6 @@ lon, colat = phi, theta
 lat = np.pi/2-colat
 
 #---------
-
-FS = 12
-rc('font',**{'family':'serif','sans-serif':['Times'],'size':FS})
-rc('text', usetex=True)
-rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb} \usepackage{physics} \usepackage{txfonts} \usepackage{siunitx}'
 
 def plot(clm, ax=None, cmap='RdBu_r', cblbl=r'$\Gamma/\Gamma_0$', titlestr=''):
 #    print(np.shape(clm),    clm[1:6],clm[5])
@@ -95,7 +90,7 @@ for ax in axlist:
 
 #---------
 
-fout = 'DDRX_decayrate.png'
+fout = 'ddrx-decayrate.png'
 print('Saving %s'%(fout))
 #plt.tight_layout()
 plt.savefig(fout, dpi=300)
