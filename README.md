@@ -11,8 +11,7 @@ Rathmann, N., & Lilien, D. (2021). Inferred basal friction and mass flux affecte
 
 ## Contains
 - Modules for Fortran (`make specfab.o`) and Python (`make specfabpy`).
-- Demos for Fortran (`make demo`) and Python (`make specfabpy`).
-- `plot_*.py` scripts for plotting solutions of the demos (netCDF dumps).
+- Demos for Fortran (`make fabric-evolution-demo`) and Python (`make specfabpy`).
 
 All `make` commands must be executed in `/src`. Demos are located in `/demo`.
 
