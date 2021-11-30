@@ -6,6 +6,7 @@ from numpy import cos, sin, rad2deg, deg2rad
 import sys, os, code # code.interact(local=locals())
 from scipy.interpolate import interp1d
 
+sys.path.insert(0, '..')
 from specfabpy import specfabpy as sf 
 
 import warnings
@@ -171,7 +172,8 @@ for ii,nprime in enumerate(nprime_list):
     hsim, = ax.plot(xysim[ii][0],xysim[ii][1], 'X', markeredgecolor='k',markerfacecolor='w', markersize=10)
 
     legstrs = ['$E_{mt}/E_{pq}$','$E_{mm}$', r'{\fontsize{%i}{%i}\selectfont Simulated}'%(FS-1,FS-1)]
-    leg=ax.legend([CS1.collections[0], CS2.collections[0], hsim], legstrs, loc=1, bbox_to_anchor=(1,1),fontsize=FS-0.0, **legkwargs); 
+    hlist = [CS1.legend_elements()[0][0], CS2.legend_elements()[0][0], hsim]
+    leg=ax.legend(hlist, legstrs, loc=1, bbox_to_anchor=(1,1),fontsize=FS-0.0, **legkwargs); 
     leg.get_frame().set_linewidth(0.7);
 
     writeSubplotLabel(ax,2, panelstrs[ii],frameon=True, alpha=0.0, fontsize=FS-0.5, pad=-0.05)
@@ -188,6 +190,6 @@ for ii,nprime in enumerate(nprime_list):
     ax.xaxis.set_minor_locator(locmin)
     ax.xaxis.set_minor_formatter(mpl.ticker.NullFormatter())
 
-plt.savefig('Evw_nlin_Sachs.png', dpi=300)
+plt.savefig('enhancement-factor-nlin-sachs.png', dpi=300)
 plt.close()
 

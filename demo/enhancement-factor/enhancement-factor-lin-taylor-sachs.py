@@ -4,6 +4,8 @@
 import numpy as np
 import sys, os, code # code.interact(local=locals())
 
+sys.path.insert(0, '..')
+#from header import *
 from specfabpy import specfabpy as sf 
 
 import matplotlib.pyplot as plt
@@ -240,7 +242,7 @@ for ii,TYPE in enumerate(types):
         xysim = (1.25e-2,1e3)
         hsim, = ax1.plot(xysim[0],xysim[1], 'X', markeredgecolor='k',markerfacecolor='w', markersize=10)
 
-    hlist = [CS1.collections[0], CS2.collections[0]]
+    hlist = [CS1.legend_elements()[0][0], CS2.legend_elements()[0][0]]
     hlbls = ['$E_{mt}/E_{pq}$','$E_{mm}$']
     if TYPE is "Mixed":
         hlist += [hsim]
@@ -267,7 +269,7 @@ for ii,TYPE in enumerate(types):
     
 if len(types) == 3:
     flist = "Evw_Sachs.pdf Evw_Taylor.pdf Evw_Mixed.pdf"
-    fout = "Evw_all"
+    fout = "enhancement-factor-lin-taylor-sachs"
     os.system('pdfjam --nup 3x1 --trim "0 0 0em 0" %s --outfile %s.pdf;'%(flist,fout))    
     os.system('pdfcrop --margins 2 %s.pdf %s.pdf;'%(fout,fout))
     os.system('convert -density 400 -quality 100 +profile "icc" -flatten %s.pdf %s.png'%(fout,fout))
