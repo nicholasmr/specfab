@@ -274,5 +274,6 @@ if len(types) == 3:
     os.system('pdfcrop --margins 2 %s.pdf %s.pdf;'%(fout,fout))
     os.system('convert -density 400 -quality 100 +profile "icc" -flatten %s.pdf %s.png'%(fout,fout))
     os.system('rm %s'%(flist))
+    os.system('rm %s.pdf'%(fout))
 
 

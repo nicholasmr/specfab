@@ -41,7 +41,7 @@ def writeSubplotLabel(ax,loc,txt,frameon=True, alpha=1.0, fontsize=FS, pad=0.005
 # Settings
 #----------------------
 
-PRODUCTION = 0
+PRODUCTION = 1
 
 nprime_list = [1,3]
 
