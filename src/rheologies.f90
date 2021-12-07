@@ -114,20 +114,12 @@ function eps_of_tau__orthotropic(tau, A,n, m1,m2,m3, Eij) result(eps)
     integer, intent(in)           :: n
     real(kind=dp)                 :: eps(3,3)
     real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
-    real(kind=dp)                 :: tau11,tau22,tau33,tau23,tau31,tau12
     real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
     real(kind=dp)                 :: I1,I2,I3,I4,I5,I6
     real(kind=dp)                 :: fluidity
 
     call orthotropic_coefs(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-    call orthotropic_tensors_and_invars(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12, tau11,tau22,tau33,tau23,tau31,tau12)
-
-    I1 = (tau22 - tau33)/2.0d0 
-    I2 = (tau33 - tau11)/2.0d0 
-    I3 = (tau11 - tau22)/2.0d0 
-    I4 = tau23 ! I4 := (tau23 + tau32)/2 (but tau is symmetric)
-    I5 = tau31 ! I5 := (tau31 + tau13)/2 (but tau is symmetric)
-    I6 = tau12 ! I6 := (tau12 + tau21)/2 (but tau is symmetric)
+    call orthotropic_tensors_and_invars(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12, I1,I2,I3,I4,I5,I6)
 
     fluidity = A * ( &
         + lam1 * I1**2 &
@@ -155,24 +147,13 @@ function tau_of_eps__orthotropic(eps, A,n, m1,m2,m3, Eij) result(tau)
     integer, intent(in)           :: n
     real(kind=dp)                 :: tau(3,3)
     real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
-    real(kind=dp)                 :: eps11,eps22,eps33,eps23,eps31,eps12
     real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
     real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
     real(kind=dp)                 :: viscosity
 
     call orthotropic_coefs(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-    call orthotropic_tensors_and_invars(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, eps11,eps22,eps33,eps23,eps31,eps12)
-    
-    J1 = (eps22 - eps33)/2.0d0 
-    J2 = (eps33 - eps11)/2.0d0 
-    J3 = (eps11 - eps22)/2.0d0 
-    J4 = eps23 ! J4 := (eps23 + eps32)/2 (but eps is symmetric)
-    J5 = eps31 ! J5 := (eps31 + eps13)/2 (but eps is symmetric)
-    J6 = eps12 ! J6 := (eps12 + eps21)/2 (but eps is symmetric)
-    
-    J23 = -3/2.0d0 * eps11 ! J23 := J2-J3 = (eps22 + eps33 - 2*eps11)/2.0d0 = -3/2.0d0 * eps11
-    J31 = -3/2.0d0 * eps22 ! J31 := J3-J1 = (eps11 + eps33 - 2*eps22)/2.0d0 = -3/2.0d0 * eps22
-    J12 = -3/2.0d0 * eps33 ! J12 := J1-J2 = (eps11 + eps22 - 2*eps33)/2.0d0 = -3/2.0d0 * eps33
+    call orthotropic_tensors_and_invars(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
+    call orthotropic_auxinvars(J1,J2,J3, J23,J31,J12)
 
     viscosity = A**(-1.d0/n) * ( &
         + lam1/gam * J23**2 &
@@ -217,12 +198,13 @@ subroutine orthotropic_coefs(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
     gam = -(E11n**2 + E22n**2 + E33n**2) + 2*(E11n*E22n + E11n*E33n + E22n*E33n)
 end
 
-subroutine orthotropic_tensors_and_invars(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12, tau11,tau22,tau33,tau23,tau31,tau12)
+subroutine orthotropic_tensors_and_invars(X, m1,m2,m3, M11,M22,M33,M23,M31,M12, I1,I2,I3,I4,I5,I6)
 
     implicit none    
-    real(kind=dp), intent(in)  :: tau(3,3), m1(3),m2(3),m3(3)
-    real(kind=dp), intent(out) :: M11(3,3),M22(3,3),M33(3,3),M23(3,3),M31(3,3),M12(3,3)
-    real(kind=dp), intent(out) :: tau11,tau22,tau33,tau23,tau31,tau12
+    real(kind=dp), intent(in)  :: X(3,3), m1(3),m2(3),m3(3)
+    real(kind=dp), intent(out) :: M11(3,3), M22(3,3), M33(3,3), M23(3,3), M31(3,3), M12(3,3)
+    real(kind=dp), intent(out) :: I1, I2, I3, I4, I5, I6
+    real(kind=dp)              :: X11, X22, X33, X23, X31, X12
    
     M11 = outerprod(m1,m1)
     M22 = outerprod(m2,m2)
@@ -231,12 +213,30 @@ subroutine orthotropic_tensors_and_invars(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12
     M31 = outerprod(m3,m1)
     M12 = outerprod(m1,m2)
 
-    tau11 = doubleinner22(tau, M11) 
-    tau22 = doubleinner22(tau, M22) 
-    tau33 = doubleinner22(tau, M33) 
-    tau23 = doubleinner22(tau, M23) 
-    tau31 = doubleinner22(tau, M31) 
-    tau12 = doubleinner22(tau, M12) 
+    X11 = doubleinner22(X, M11) 
+    X22 = doubleinner22(X, M22) 
+    X33 = doubleinner22(X, M33) 
+    X23 = doubleinner22(X, M23) 
+    X31 = doubleinner22(X, M31) 
+    X12 = doubleinner22(X, M12) 
+    
+    I1 = (X22 - X33)/2.0d0 
+    I2 = (X33 - X11)/2.0d0 
+    I3 = (X11 - X22)/2.0d0 
+    I4 = X23 ! I4 := (X23 + X32)/2 (but X is symmetric)
+    I5 = X31 ! I5 := (X31 + X13)/2 (but X is symmetric)
+    I6 = X12 ! I6 := (X12 + X21)/2 (but X is symmetric)
+end
+
+subroutine orthotropic_auxinvars(J1,J2,J3, J23,J31,J12)
+
+    implicit none    
+    real(kind=dp), intent(in)  :: J1,J2,J3
+    real(kind=dp), intent(out) :: J23,J31,J12
+   
+    J23 = J2-J3 ! J23 := J2-J3 = (X22 + X33 - 2*X11)/2.0d0 = -3/2.0d0 * X11
+    J31 = J3-J1 ! J31 := J3-J1 = (X11 + X33 - 2*X22)/2.0d0 = -3/2.0d0 * X22
+    J12 = J1-J2 ! J12 := J1-J2 = (X11 + X22 - 2*X33)/2.0d0 = -3/2.0d0 * X33
 end
 
 !---------------------------------
@@ -251,20 +251,12 @@ function eps_of_tau__orthotropic_Pettit(tau, A,n, m1,m2,m3, Eij) result(eps)
     integer, intent(in)           :: n
     real(kind=dp)                 :: eps(3,3)
     real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
-    real(kind=dp)                 :: tau11,tau22,tau33,tau23,tau31,tau12
     real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
     real(kind=dp)                 :: I1,I2,I3,I4,I5,I6
     real(kind=dp)                 :: fluidity
 
-    call orthotropic_coefs_PM(Eij, 1.0d0, 1.0d0, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-    call orthotropic_tensors_and_invars(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12, tau11,tau22,tau33,tau23,tau31,tau12)
-
-    I1 = (tau22 - tau33)/2.0d0 
-    I2 = (tau33 - tau11)/2.0d0 
-    I3 = (tau11 - tau22)/2.0d0 
-    I4 = tau23 ! I4 := (tau23 + tau32)/2 (but tau is symmetric)
-    I5 = tau31 ! I5 := (tau31 + tau13)/2 (but tau is symmetric)
-    I6 = tau12 ! I6 := (tau12 + tau21)/2 (but tau is symmetric)
+    call orthotropic_coefs(Eij, 1, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    call orthotropic_tensors_and_invars(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12, I1,I2,I3,I4,I5,I6)
 
     fluidity = A * (doubleinner22(tau,tau))**((n-1)/2.0d0) ! Pettit's hypothesis: fluidity = Glen's isotropic fluidity 
     
@@ -285,24 +277,13 @@ function tau_of_eps__orthotropic_Pettit(eps, A,n, m1,m2,m3, Eij) result(tau)
     integer, intent(in)           :: n
     real(kind=dp)                 :: tau(3,3)
     real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
-    real(kind=dp)                 :: eps11,eps22,eps33,eps23,eps31,eps12
     real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
     real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
     real(kind=dp)                 :: viscosity 
 
-    call orthotropic_coefs_PM(Eij, 1.0d0, 1.0d0, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-    call orthotropic_tensors_and_invars(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, eps11,eps22,eps33,eps23,eps31,eps12)
-    
-    J1 = (eps22 - eps33)/2.0d0 
-    J2 = (eps33 - eps11)/2.0d0 
-    J3 = (eps11 - eps22)/2.0d0 
-    J4 = eps23 ! J4 := (eps23 + eps32)/2 (but eps is symmetric)
-    J5 = eps31 ! J5 := (eps31 + eps13)/2 (but eps is symmetric)
-    J6 = eps12 ! J6 := (eps12 + eps21)/2 (but eps is symmetric)
-    
-    J23 = -3/2.0d0 * eps11 ! J23 := J2-J3 = (eps22 + eps33 - 2*eps11)/2.0d0 = -3/2.0d0 * eps11
-    J31 = -3/2.0d0 * eps22 ! J31 := J3-J1 = (eps11 + eps33 - 2*eps22)/2.0d0 = -3/2.0d0 * eps22
-    J12 = -3/2.0d0 * eps33 ! J12 := J1-J2 = (eps11 + eps22 - 2*eps33)/2.0d0 = -3/2.0d0 * eps33
+    call orthotropic_coefs(Eij, 1, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    call orthotropic_tensors_and_invars(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
+    call orthotropic_auxinvars(J1,J2,J3, J23,J31,J12)
 
     viscosity = A**(-1.d0/n) * ( &
         + 3.0d0/2 * lam1**2/gam**2 * J23**2 &
@@ -324,33 +305,6 @@ function tau_of_eps__orthotropic_Pettit(eps, A,n, m1,m2,m3, Eij) result(tau)
         + 4 * (1/lam5) * J5 * (M31 + transpose(M31))/2 &
         + 4 * (1/lam6) * J6 * (M12 + transpose(M12))/2 &
     )
-
-end
-
-subroutine orthotropic_coefs_PM(Eij, Eexpo_norm, Eexpo_shear, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-
-    implicit none
-    real(kind=dp), intent(in)  :: Eij(3,3)
-!    integer, intent(in)        :: n
-    real(kind=dp), intent(in)  :: Eexpo_norm, Eexpo_shear
-    real(kind=dp), intent(out) :: lam1,lam2,lam3,lam4,lam5,lam6, gam
-!    real(kind=dp)              :: Eexpo, E11n,E22n,E33n !,E12n,E31n,E23n
-    real(kind=dp)              :: E11n,E22n,E33n !,E12n,E31n,E23n
-
-!    Eexpo = 1.0d0/n
-    
-    E11n = Eij(1,1)**Eexpo_norm !**Eexpo
-    E22n = Eij(2,2)**Eexpo_norm !**Eexpo
-    E33n = Eij(3,3)**Eexpo_norm !**Eexpo
-
-    lam1 = 4/3.0d0*(-E11n+E22n+E33n)
-    lam2 = 4/3.0d0*(+E11n-E22n+E33n)
-    lam3 = 4/3.0d0*(+E11n+E22n-E33n)
-    lam4 = 2* Eij(2,3)**Eexpo_shear
-    lam5 = 2* Eij(3,1)**Eexpo_shear
-    lam6 = 2* Eij(1,2)**Eexpo_shear
-    
-    gam = -(E11n**2 + E22n**2 + E33n**2) + 2*(E11n*E22n + E11n*E33n + E22n*E33n)
 end
 
 !---------------------------------
@@ -358,17 +312,43 @@ end
 ! ... with Martin's hypothesis that the *viscosity* is orientation independant.
 !---------------------------------
 
-! Still in development...
-!include "rheologies-Martin.f90"
-
 function eps_of_tau__orthotropic_Martin(tau, A,n, m1,m2,m3, Eij) result(eps)
 
     implicit none
     real(kind=dp), intent(in)     :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
     integer, intent(in)           :: n
     real(kind=dp)                 :: eps(3,3)
+    real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
+    real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
+    real(kind=dp)                 :: I1,I2,I3,I4,I5,I6
+    real(kind=dp)                 :: fluidity 
+    real(kind=dp)                 :: c1,c2,c3, fc
+
+    call orthotropic_coefs_Martin(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    call orthotropic_tensors_and_invars(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12, I1,I2,I3,I4,I5,I6)
+
+    fc = 1.0d0/16 
+    c1 = fc * 4*(2*lam1**2 + lam1*(lam2+lam3) - lam2*lam3)
+    c2 = fc * 4*(2*lam2**2 + lam2*(lam3+lam1) - lam3*lam1)
+    c3 = fc * 4*(2*lam3**2 + lam3*(lam1+lam2) - lam1*lam2)
+
+    fluidity = A * ( &
+        + c1 * I1**2 &
+        + c2 * I2**2 &
+        + c3 * I3**2 &
+        + 0.5d0 * lam4**2 * I4**2 &
+        + 0.5d0 * lam5**2 * I5**2 &
+        + 0.5d0 * lam6**2 * I6**2 &
+    )**((n-1.d0)/2.d0)
     
-    eps = eps_of_tau__isotropic(tau,A,n)
+    eps = fluidity * ( &
+        + lam1 * I1 * (M22 - M33)/2.0d0 &
+        + lam2 * I2 * (M33 - M11)/2.0d0 &
+        + lam3 * I3 * (M11 - M22)/2.0d0 &
+        + lam4 * I4 * (M23 + transpose(M23))/2.0d0 &
+        + lam5 * I5 * (M31 + transpose(M31))/2.0d0 &
+        + lam6 * I6 * (M12 + transpose(M12))/2.0d0 &
+    )
 end
 
 function tau_of_eps__orthotropic_Martin(eps, A,n, m1,m2,m3, Eij) result(tau)
@@ -377,9 +357,76 @@ function tau_of_eps__orthotropic_Martin(eps, A,n, m1,m2,m3, Eij) result(tau)
     real(kind=dp), intent(in)     :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
     integer, intent(in)           :: n
     real(kind=dp)                 :: tau(3,3)
+    real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
+    real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
+    real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
+    real(kind=dp)                 :: viscosity
 
-    tau = tau_of_eps__isotropic(eps,A,n)
+    call orthotropic_coefs_Martin(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    call orthotropic_tensors_and_invars(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
+    call orthotropic_auxinvars(J1,J2,J3, J23,J31,J12)
+
+    viscosity = A**(-1.0d0/n) * (doubleinner22(eps,eps))**((1.0d0-n)/(2.0d0*n)) ! Martin's hypothesis: viscosity = Glen's isotropic viscosity
+
+    tau = viscosity * ( &
+        + lam1/gam * J23 * (identity - 3*M11)/2 &
+        + lam2/gam * J31 * (identity - 3*M22)/2 &
+        + lam3/gam * J12 * (identity - 3*M33)/2 &
+        + 4 * (1/lam4) * J4 * (M23 + transpose(M23))/2 &
+        + 4 * (1/lam5) * J5 * (M31 + transpose(M31))/2 &
+        + 4 * (1/lam6) * J6 * (M12 + transpose(M12))/2 &
+    )
+
 end
+
+subroutine orthotropic_coefs_Martin(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+
+    use lambdasolver
+    
+    implicit none
+    real(kind=dp), intent(in)  :: Eij(3,3)
+    integer, intent(in)        :: n
+    real(kind=dp), intent(out) :: lam1,lam2,lam3,lam4,lam5,lam6, gam
+    real(kind=dp)              :: Eexpo, lami(3), Eii(3), f1
+
+    ! Logitudinal 
+    Eii = [Eij(1,1),Eij(2,2),Eij(3,3)] ! Init guess
+    lami = lambdaprime(n, Eii)
+    lam1 = lami(1)
+    lam2 = lami(2)
+    lam3 = lami(3)
+    f1 = 3.0d0/16
+    gam = 3 * f1 * (lam2*lam3 + lam3*lam1 + lam1*lam2)
+
+    ! Shear
+    Eexpo = 1.0d0/n
+    lam4 = 2 * Eij(2,3)**Eexpo
+    lam5 = 2 * Eij(3,1)**Eexpo
+    lam6 = 2 * Eij(1,2)**Eexpo
+end
+
+! Still in development...
+!include "rheologies-Martin.f90"
+
+!function eps_of_tau__orthotropic_Martin(tau, A,n, m1,m2,m3, Eij) result(eps)
+
+!    implicit none
+!    real(kind=dp), intent(in)     :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+!    integer, intent(in)           :: n
+!    real(kind=dp)                 :: eps(3,3)
+!    
+!    eps = eps_of_tau__isotropic(tau,A,n)
+!end
+
+!function tau_of_eps__orthotropic_Martin(eps, A,n, m1,m2,m3, Eij) result(tau)
+
+!    implicit none
+!    real(kind=dp), intent(in)     :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+!    integer, intent(in)           :: n
+!    real(kind=dp)                 :: tau(3,3)
+
+!    tau = tau_of_eps__isotropic(eps,A,n)
+!end
 
 end module rheologies
 

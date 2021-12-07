@@ -7,9 +7,10 @@ program demo
     implicit none
 
     integer, parameter :: dp = 8
-    real(kind=dp)      :: A, Eij(3,3), m1(3),m2(3),m3(3)
+    real(kind=dp)      :: A, Eij(3,3), m1(3),m2(3),m3(3), rotang
     integer            :: n
     real(kind=dp), dimension(3), parameter :: x1 = [1,0,0], x2 = [0,1,0], x3 = [0,0,1] ! x,y,z dir.
+    real, parameter    :: Pi = 3.1415927
 
     call initspecfab(4) ! Not going to use specfab, but is good practice to initialize it even when using static routines (as is the case here).
 
@@ -42,14 +43,15 @@ program demo
     m3 = x3 
 
     ! Alternative (45 deg rotated)
-    m1 = [+1.0d0/sqrt(2.0d0), 0.0d0, 1.0d0/sqrt(2.0d0)] 
-    m2 = [-1.0d0/sqrt(2.0d0), 0.0d0, 1.0d0/sqrt(2.0d0)] 
-    m3 = [0.0d0, 1.0d0, 0.0d0]
-    
-    ! Alternative (45 deg rotated)
 !    m1 = [+1.0d0/sqrt(2.0d0), 0.0d0, 1.0d0/sqrt(2.0d0)] 
-!    m2 = [0.0d0, 1.0d0, 0.0d0]
-!    m3 = [-1.0d0/sqrt(2.0d0), 0.0d0, 1.0d0/sqrt(2.0d0)] 
+!    m2 = [-1.0d0/sqrt(2.0d0), 0.0d0, 1.0d0/sqrt(2.0d0)] 
+!    m3 = [0.0d0, 1.0d0, 0.0d0]
+    
+    ! Alternative: rotation around y-axis
+    rotang = Pi/8 ! 45 deg
+    m1 = [cos(rotang), 0.0d0, sin(rotang)] 
+    m2 = [0.0d0, 1.0d0, 0.0d0]
+    m3 = [-sin(rotang), 0.0d0, cos(rotang)] 
     
     !-------------------------------------------------------------------
     ! Test orthtropic viscosity structure is correct
@@ -89,7 +91,7 @@ program demo
     print *, '(i,j)=(3,1) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Martin(tau_vw(m1,m3), A,n, m1,m2,m3, Eij, m3,m1), ' --- should be E_{ij} = ', Eij(3,1)
     print *, '(i,j)=(1,2) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Martin(tau_vw(m1,m2), A,n, m1,m2,m3, Eij, m1,m2), ' --- should be E_{ij} = ', Eij(1,2)
     print *, ' '
-       
+    
     print *, "... where m_1, m_2, m_3 = "
     print *, m1
     print *, m2
@@ -100,36 +102,36 @@ program demo
     ! Test inverse rheology --> check that eps_in = eps(tau(eps_in))
     !-------------------------------------------------------------------
 
-!    print *, '--------------------------------------------------------'    
-!    print *, 'Test self consistency of forward and inverse rheologies (verify that tau0 = tau(eps(tau0)) for different stress tensors)'
-!    print *, '--------------------------------------------------------'
-!    print *, '...compression and shear stress tensors w.r.t m_1, m_2, and m_3:'
-!    call tau_of_eps_of_tau(tau_vv(x1), A, n, m1,m2,m3, Eij) 
-!    call tau_of_eps_of_tau(tau_vv(x2), A, n, m1,m2,m3, Eij) 
-!    call tau_of_eps_of_tau(tau_vv(x3), A, n, m1,m2,m3, Eij) 
-!    call tau_of_eps_of_tau(tau_vw(x1,x2), A, n, m1,m2,m3, Eij) 
-!    call tau_of_eps_of_tau(tau_vw(x1,x3), A, n, m1,m2,m3, Eij) 
-!    call tau_of_eps_of_tau(tau_vw(x2,x3), A, n, m1,m2,m3, Eij) 
-!    print *, '...an arbitrary, non-trivial stress tensor:'
-!    call tau_of_eps_of_tau(0.1*tau_vw(x1,x2) + 0.33*tau_vw(x2,x3) + 0.51*tau_vw(x1,x2) + 0.43*tau_vv(x3), A, n, m1,m2,m3, Eij) 
-!   
-!    !-------------------------------------------------------------------
-!    ! Test Pettit's inverse rheology 
-!    !-------------------------------------------------------------------
+    print *, '--------------------------------------------------------'    
+    print *, 'Test self consistency of forward and inverse rheologies (verify that tau0 = tau(eps(tau0)) for different stress tensors)'
+    print *, '--------------------------------------------------------'
+    print *, '...compression and shear stress tensors w.r.t m_1, m_2, and m_3:'
+    call tau_of_eps_of_tau(tau_vv(x1), A, n, m1,m2,m3, Eij) 
+    call tau_of_eps_of_tau(tau_vv(x2), A, n, m1,m2,m3, Eij) 
+    call tau_of_eps_of_tau(tau_vv(x3), A, n, m1,m2,m3, Eij) 
+    call tau_of_eps_of_tau(tau_vw(x1,x2), A, n, m1,m2,m3, Eij) 
+    call tau_of_eps_of_tau(tau_vw(x1,x3), A, n, m1,m2,m3, Eij) 
+    call tau_of_eps_of_tau(tau_vw(x2,x3), A, n, m1,m2,m3, Eij) 
+    print *, '...an arbitrary, non-trivial stress tensor:'
+    call tau_of_eps_of_tau(0.1*tau_vw(x1,x2) + 0.33*tau_vw(x2,x3) + 0.51*tau_vw(x1,x2) + 0.43*tau_vv(x3), A, n, m1,m2,m3, Eij) 
+   
+    !-------------------------------------------------------------------
+    ! Test Pettit's inverse rheology 
+    !-------------------------------------------------------------------
 
-!    print *, ' '
-!    print *, '--------------------------------------------------------'    
-!    print *, 'Test self consistency of forward and inverse *Pettit* rheology (verify that tau0 = tau(eps(tau0)) for different stress tensors)'
-!    print *, '--------------------------------------------------------'
-!    print *, '...compression and shear stress tensors w.r.t m_1, m_2, and m_3:'
-!    call tau_of_eps_of_tau_Pettit(tau_vv(x1), A, n, m1,m2,m3, Eij) 
-!    call tau_of_eps_of_tau_Pettit(tau_vv(x2), A, n, m1,m2,m3, Eij) 
-!    call tau_of_eps_of_tau_Pettit(tau_vv(x3), A, n, m1,m2,m3, Eij) 
-!    call tau_of_eps_of_tau_Pettit(tau_vw(x1,x2), A, n, m1,m2,m3, Eij) 
-!    call tau_of_eps_of_tau_Pettit(tau_vw(x1,x3), A, n, m1,m2,m3, Eij) 
-!    call tau_of_eps_of_tau_Pettit(tau_vw(x2,x3), A, n, m1,m2,m3, Eij) 
-!    print *, '...an arbitrary, non-trivial stress tensor:'
-!    call tau_of_eps_of_tau_Pettit(0.1*tau_vw(x1,x2) + 0.33*tau_vw(x2,x3) + 0.51*tau_vw(x1,x2) + 0.43*tau_vv(x3), A, n, m1,m2,m3, Eij) 
+    print *, ' '
+    print *, '--------------------------------------------------------'    
+    print *, 'Test self consistency of forward and inverse *Pettit* rheology (verify that tau0 = tau(eps(tau0)) for different stress tensors)'
+    print *, '--------------------------------------------------------'
+    print *, '...compression and shear stress tensors w.r.t m_1, m_2, and m_3:'
+    call tau_of_eps_of_tau_Pettit(tau_vv(x1), A, n, m1,m2,m3, Eij) 
+    call tau_of_eps_of_tau_Pettit(tau_vv(x2), A, n, m1,m2,m3, Eij) 
+    call tau_of_eps_of_tau_Pettit(tau_vv(x3), A, n, m1,m2,m3, Eij) 
+    call tau_of_eps_of_tau_Pettit(tau_vw(x1,x2), A, n, m1,m2,m3, Eij) 
+    call tau_of_eps_of_tau_Pettit(tau_vw(x1,x3), A, n, m1,m2,m3, Eij) 
+    call tau_of_eps_of_tau_Pettit(tau_vw(x2,x3), A, n, m1,m2,m3, Eij) 
+    print *, '...an arbitrary, non-trivial stress tensor:'
+    call tau_of_eps_of_tau_Pettit(0.1*tau_vw(x1,x2) + 0.33*tau_vw(x2,x3) + 0.51*tau_vw(x1,x2) + 0.43*tau_vv(x3), A, n, m1,m2,m3, Eij) 
        
     !-------------------------------------------------------------------
     ! Test Martin's inverse rheology 
@@ -154,19 +156,19 @@ program demo
     ! Test vecotized inverse rheology 
     !-------------------------------------------------------------------
 
-!    print *, ' '
-!    print *, '--------------------------------------------------------'    
-!    print *, 'Test vectorized inverse rheology: vec(tau)_i = C_ij vec(eps)_j'
-!    print *, '--------------------------------------------------------'
-!    print *, '...compression and shear stress tensors w.r.t m_1, m_2, and m_3:'
-!    call test_vectorized_rheology(tau_vv(x1), A, n, m1,m2,m3, Eij) 
-!    call test_vectorized_rheology(tau_vv(x2), A, n, m1,m2,m3, Eij) 
-!    call test_vectorized_rheology(tau_vv(x3), A, n, m1,m2,m3, Eij) 
-!    call test_vectorized_rheology(tau_vw(x1,x2), A, n, m1,m2,m3, Eij) 
-!    call test_vectorized_rheology(tau_vw(x1,x3), A, n, m1,m2,m3, Eij) 
-!    call test_vectorized_rheology(tau_vw(x2,x3), A, n, m1,m2,m3, Eij) 
-!    print *, '...an arbitrary, non-trivial stress tensor:'
-!    call test_vectorized_rheology(0.1*tau_vw(x1,x2) + 0.33*tau_vw(x2,x3) + 0.51*tau_vw(x1,x2) + 0.43*tau_vv(x3), A, n, m1,m2,m3, Eij) 
+    print *, ' '
+    print *, '--------------------------------------------------------'    
+    print *, 'Test vectorized inverse rheology: vec(tau)_i = C_ij vec(eps)_j'
+    print *, '--------------------------------------------------------'
+    print *, '...compression and shear stress tensors w.r.t m_1, m_2, and m_3:'
+    call test_vectorized_rheology(tau_vv(x1), A, n, m1,m2,m3, Eij) 
+    call test_vectorized_rheology(tau_vv(x2), A, n, m1,m2,m3, Eij) 
+    call test_vectorized_rheology(tau_vv(x3), A, n, m1,m2,m3, Eij) 
+    call test_vectorized_rheology(tau_vw(x1,x2), A, n, m1,m2,m3, Eij) 
+    call test_vectorized_rheology(tau_vw(x1,x3), A, n, m1,m2,m3, Eij) 
+    call test_vectorized_rheology(tau_vw(x2,x3), A, n, m1,m2,m3, Eij) 
+    print *, '...an arbitrary, non-trivial stress tensor:'
+    call test_vectorized_rheology(0.1*tau_vw(x1,x2) + 0.33*tau_vw(x2,x3) + 0.51*tau_vw(x1,x2) + 0.43*tau_vv(x3), A, n, m1,m2,m3, Eij) 
     
     
 contains

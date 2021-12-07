@@ -178,7 +178,7 @@ class SyntheticFabric():
             axE.text(2.2,y0+0*dy, r'$\lambda_3 = %.2f$'%(eigvals[ii,2]), transform=axE.transAxes, fontsize=FS-1, ha='left')
             
             plot_parcel(axParcel, xyz0[ii,:], 0,0,0, color='0.5', colorax=colorax, scale=0.7, plotaxlbls=True)
-            plot_ODF(nlm_list[ii,:], self.lm, ax=axODF, rot0=rot0)        
+            plot_ODF(nlm_list[ii,:], self.lm, ax=axODF, rot0=rot0, cblabel='$\psi/N$ (ODF)')        
         
             ###
 

@@ -26,24 +26,13 @@ function Cmat_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(C)
     integer, intent(in)           :: n
     real(kind=dp)                 :: eps(3,3), C(9,9)
     real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
-    real(kind=dp)                 :: eps11,eps22,eps33,eps23,eps31,eps12
     real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
     real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
     real(kind=dp)                 :: viscosity
 
     call orthotropic_coefs(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-    call orthotropic_tensors_and_invars(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, eps11,eps22,eps33,eps23,eps31,eps12)
-    
-    J1 = (eps22 - eps33)/2.0d0 
-    J2 = (eps33 - eps11)/2.0d0 
-    J3 = (eps11 - eps22)/2.0d0 
-    J4 = eps23 ! J4 := (eps23 + eps32)/2 (but eps is symmetric)
-    J5 = eps31 ! J5 := (eps31 + eps13)/2 (but eps is symmetric)
-    J6 = eps12 ! J6 := (eps12 + eps21)/2 (but eps is symmetric)
-    
-    J23 = -3/2.0d0 * eps11 ! J23 := J2-J3 = (eps22 + eps33 - 2*eps11)/2.0d0 = -3/2.0d0 * eps11
-    J31 = -3/2.0d0 * eps22 ! J31 := J3-J1 = (eps11 + eps33 - 2*eps22)/2.0d0 = -3/2.0d0 * eps22
-    J12 = -3/2.0d0 * eps33 ! J12 := J1-J2 = (eps11 + eps22 - 2*eps33)/2.0d0 = -3/2.0d0 * eps33
+    call orthotropic_tensors_and_invars(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
+    call orthotropic_auxinvars(J1,J2,J3, J23,J31,J12)
 
     viscosity = A**(-1.d0/n) * ( &
         + lam1/gam * J23**2 &
