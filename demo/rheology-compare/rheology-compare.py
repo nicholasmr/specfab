@@ -190,7 +190,7 @@ with Bar('dt=%.3fyr, Nt=%i :: L=%i (nlm_len=%i) ::'%(dt/year2sec,Nt,L,nlm_len), 
 # Plot
 #----------------------
 
-legkwargs = {'frameon':True, 'fancybox':False, 'edgecolor':'k', 'framealpha':0.75, 'ncol':1, 'handlelength':1.34, 'labelspacing':0.25, 'fontsize':FSSMALL}
+legkwargs = {'frameon':True, 'fancybox':False, 'edgecolor':'k', 'framealpha':1, 'ncol':1, 'handlelength':1.34, 'labelspacing':0.25, 'fontsize':FSSMALL}
 
 color_darkred = '#a50f15'
 color_blue = '#08519c'
@@ -240,10 +240,16 @@ if T_EXP==T_EXP_CC: strainMinorTicks = np.arange(-1,0,0.1)
 if T_EXP==T_EXP_SS: 
     ii,jj = 0,2 # x,z
     ylbl = r'$\dot{\epsilon}_{xz}/\dot{\epsilon}^{\mathrm{Glen}}_{xz}$'
+    xglen,yglen = 4.5,1.05
     
 if T_EXP==T_EXP_CC: 
     ii,jj = 2,2 # z,z
     ylbl = r'$\dot{\epsilon}_{zz}/\dot{\epsilon}^{\mathrm{Glen}}_{zz}$'
+    xglen,yglen = -0.625,1.08
+
+cglen = '0.4'
+ax_Y.plot(X, X*0+1, '-', lw=1.2,  color=cglen)
+ax_Y.text(xglen, yglen, "Glen's law", color=cglen, horizontalalignment='center', fontsize=FSSMALL)
 
 Yn_R = Y_R[:,ii,jj]/Y_G[ii,jj]
 Yn_P = Y_P[:,ii,jj]/Y_G[ii,jj]
@@ -255,7 +261,7 @@ print('max(Pettit-True)=%.2f'%(np.amax(delta_Pettit)))
 print('(Martin-True)_{-1}=%.2f'%(delta_Martin[-1]))
 print('(Pettit-True)_{-1}=%.2f'%(delta_Pettit[-1]))
 Yall = np.vstack((Yn_R,Yn_P,Yn_M))
-ax_Y.plot(X, Yn_R, '-',  color=color_R, label=r"True")
+ax_Y.plot(X, Yn_R, '-',  color=color_R, label=r"Unapprox.")
 ax_Y.plot(X, Yn_M, '--', color=color_M, label=r"Martin")
 ax_Y.plot(X, Yn_P, ':',  color=color_P, label=r"Pettit")
 ax_Y.set_xlabel(r'$\epsilon$')
