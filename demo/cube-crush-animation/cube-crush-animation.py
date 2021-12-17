@@ -97,7 +97,6 @@ class SyntheticFabric():
         Eij = np.ones((Nt+1,3,3))
         e1,e2,e3 = [1, 0, 0], [0, 1, 0], [0, 0, 1]
         Ecc,Eca,alpha,nprime = sf.ecc_opt_lin, sf.eca_opt_lin, sf.alpha_opt_lin, 1
-        #Ecc,Eca,alpha,nprime = 1, 1e4, 0, 1
         
         nlm_prev = nlm_list[Nt,:].copy()
         for ii in np.arange(Nt0+1):
@@ -125,22 +124,20 @@ class SyntheticFabric():
         ### Plot
         
         steps = [0, int(Nt/2),Nt]
-        #steps = np.arange(0,Nt,10)
         steps = [0,Nt0,Nt]
         m = 1
         steps = np.hstack((np.arange(0,Nt0,m),np.arange(Nt0,Nt+1,m))) 
         
         for ii in steps:
             
-            #scale = 0.4
             scale = 0.4
-            fig = plt.figure(figsize=(14*scale,10*scale))
+            fig = plt.figure(figsize=(13*scale,10*scale))
             
             gs_master = gridspec.GridSpec(2, 2, width_ratios=[0.8,1], height_ratios=[1,0.8])
-            gs_master.update(top=0.91, bottom=0.13, left=0.12, right=1-0.15, hspace=-0.05, wspace=0.1)
+            gs_master.update(top=0.91, bottom=0.13, left=0.095, right=1-0.05, hspace=-0.05, wspace=-0.075)
             gs = gs_master
  
-            axE = fig.add_subplot(gs_master[:, 0])
+            axE = fig.add_subplot(gs_master[0, 0])
             #
             axParcel = fig.add_subplot(gs[0, 1], projection='3d')
             #
@@ -153,40 +150,52 @@ class SyntheticFabric():
             axODF.set_global()
             
             ##
+
+            xlims = [-1,2]
+            ylims = [0,2.5]
+            
+            rect1 = plt.Rectangle((xlims[0],1), np.diff(xlims), ylims[1]-1, color='#deebf7')
+            rect2 = plt.Rectangle((xlims[0],0), np.diff(xlims), 1, color='#fee0d2')
+            axE.add_patch(rect1)
+            axE.add_patch(rect2)
  
             lw = 1.5
-            axE.plot(Eij[:,STRESSAX,STRESSAX], strain_zz, '--k',  lw=lw, label=r'$E_{zz}$' if STRESSDIRECTION == 'z' else r'$E_{xx}$')
-            axE.plot(Eij[:,STRESSAXPERP,STRESSAX], strain_zz, '-k', lw=lw, label=r'$E_{xz}$' if STRESSDIRECTION == 'z' else r'$E_{zx}$')
+            axE.plot(strain_zz[[ii,ii]], ylims, '-', c='0.5', lw=lw)
+            axE.plot(strain_zz, Eij[:,STRESSAX,STRESSAX], '--k',  lw=lw, label=r'$E_{zz}$' if STRESSDIRECTION == 'z' else r'$E_{xx}$')
+            axE.plot(strain_zz, Eij[:,STRESSAXPERP,STRESSAX], '-k', lw=lw, label=r'$E_{xz}$' if STRESSDIRECTION == 'z' else r'$E_{zx}$')
+            axE.text(0, 1.50, 'Softer than\nisotropy', fontsize=FS-2, color='#08519c', ha='center', ma='center')
+            axE.text(0, 0.25, 'Harder than\nisotropy', fontsize=FS-2, color='#a50f15', ha='center', ma='center')
 
-            ylims = [-1,2]
-            dy=0.5
-            axE.set_yticks(np.arange(ylims[0],ylims[1]+dy, dy))
-            axE.set_yticks(np.arange(ylims[0],ylims[1]+dy, dy/2), minor=True)
-            axE.set_ylim(ylims)
-
-            xlims = [0,2.5]
-            axE.plot(xlims,strain_zz[[ii,ii]], ':', c=c_green, lw=lw)
             dx=1
-            axE.set_xticks(np.arange(xlims[0],xlims[1]+dx,dx))
-            axE.set_xticks(np.arange(xlims[0],xlims[1]+dx,dx/4), minor=True)
+            axE.set_xticks(np.arange(xlims[0],xlims[1]+dx, dx))
+            axE.set_xticks(np.arange(xlims[0],xlims[1]+dx, dx/2), minor=True)
             axE.set_xlim(xlims)
+
+            dy=1
+            axE.set_yticks(np.arange(ylims[0],ylims[1]+dy,dy))
+            axE.set_yticks(np.arange(ylims[0],ylims[1]+dy,dy/4), minor=True)
+            axE.set_ylim(ylims)
             
-            axE.set_ylabel(r'$\epsilon_{zz}$' if STRESSDIRECTION == 'z' else r'$\epsilon_{xx}$')
-            axE.set_xlabel('$E_{ij}$')
-            axE.set_title('Directional enhancement factors', pad=12, fontsize=FS)
+            axE.set_xlabel(r'$\epsilon_{zz}$' if STRESSDIRECTION == 'z' else r'$\epsilon_{xx}$')
+            axE.set_ylabel('$E_{ij}$')
+            axE.set_title('Directional enhancement factors', pad=8, fontsize=FS)
             #
             legkwargs = {'frameon':True, 'fancybox':False, 'edgecolor':'k', 'framealpha':0.9, 'ncol':1, 'handlelength':1.34, 'labelspacing':0.3}
             hleg = axE.legend(loc=1, **legkwargs)
             hleg.get_frame().set_linewidth(0.7);
             
             ###
-
-            axE.text(1.95,1.05, r'Rathmann et al. (2021)', transform=axE.transAxes, fontsize=FS-1, horizontalalignment='left')
             
-            y0,dy = 0.20, 0.06
-            axE.text(2.2,y0+2*dy, r'$\lambda_1 = %.2f$'%(eigvals[ii,0]), transform=axE.transAxes, fontsize=FS-1, ha='left')
-            axE.text(2.2,y0+1*dy, r'$\lambda_2 = %.2f$'%(eigvals[ii,1]), transform=axE.transAxes, fontsize=FS-1, ha='left')
-            axE.text(2.2,y0+0*dy, r'$\lambda_3 = %.2f$'%(eigvals[ii,2]), transform=axE.transAxes, fontsize=FS-1, ha='left')
+            x0, y0, dy = -0.05, -0.45, 0.11
+            axE.text(x0, y0, r'{\bf Lattice rotation demo}', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
+            axE.text(x0, y0-1*dy, r'Rathmann et al. (2021)', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
+            axE.text(x0, y0-2*dy, r'Rathmann and Lilien (2021)', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
+            
+            x0, y0, dy = +1.875, -0.40, 0.1
+            axE.text(x0,y0+3*dy, r'Eigenvalues:', transform=axE.transAxes, fontsize=FS-1, ha='left')
+            axE.text(x0,y0+2*dy, r'$\lambda_1 = %.2f$'%(eigvals[ii,0]), transform=axE.transAxes, fontsize=FS-1, ha='left')
+            axE.text(x0,y0+1*dy, r'$\lambda_2 = %.2f$'%(eigvals[ii,1]), transform=axE.transAxes, fontsize=FS-1, ha='left')
+            axE.text(x0,y0+0*dy, r'$\lambda_3 = %.2f$'%(eigvals[ii,2]), transform=axE.transAxes, fontsize=FS-1, ha='left')
             
             plot_parcel(axParcel, xyz0[ii,:], 0,0,0, color='0.5', colorax=colorax, scale=0.60, plotaxlbls=True)
             plot_ODF(nlm_list[ii,:], self.lm, ax=axODF, rot0=rot0, cblabel='ODF')        
@@ -226,7 +235,7 @@ synthfab.make_profile()
 os.system('ffmpeg -y -f image2 -framerate 50 -stream_loop 1 -i frames/frame%04d.png -vcodec libx264 -crf 20  -pix_fmt yuv420p cube-crush.avi')
 
 # Make GIF
-if 0:
+if 1:
     os.system('ffmpeg -y -f image2 -framerate 50 -stream_loop 0 -i frames/frame%04d.png -vcodec libx264 -crf 20  -pix_fmt yuv420p cube-crush-for-gif.avi')
     os.system('ffmpeg -i cube-crush-for-gif.avi -vf "fps=25,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 cube-crush.gif')
     os.system('rm cube-crush-for-gif.avi')
