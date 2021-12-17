@@ -2,12 +2,13 @@
 A spectral fabric model of kinematic lattice (c-axis) rotation (Svendsen and
 Hutter, 1996), discontinuous dynamic recrystallization (Placidi and others, 2010), and rotation recrystallization (Gödert, 2003).
 
-![image](githubimg.jpg)
-**Lattice rotation:** <br>
-Rathmann, N., Hvidberg, C., Grinsted, A., Lilien, D., & Dahl-Jensen, D. (2021). Effect of an orientation-dependent non-linear grain fluidity on bulk directional enhancement factors. Journal of Glaciology, 67(263), 569-575. doi:10.1017/jog.2020.117
+## Lattice rotation demo
+![image](demo/cube-crush-animation/cube-crush.gif)
 
-**Discontinuous dynamic recrystallization:** <br>
-Rathmann, N., & Lilien, D. (2021). Inferred basal friction and mass flux affected by crystal-orientation fabrics. Journal of Glaciology, 1-17. doi:10.1017/jog.2021.88
+## Documentation
+**Lattice rotation:** Rathmann et al. (2021), JOG, doi:10.1017/jog.2020.117 <br>
+**Discontinuous dynamic recrystallization:** Rathmann and Lilien (2021), JOG, doi:10.1017/jog.2021.88 <br>
+**Orthotropic bulk rheologies:** Rathmann and Lilien (in prep.)
 
 ## Contains
 - Modules for Fortran (`make specfab.o`) and Python (`make specfabpy`).
