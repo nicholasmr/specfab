@@ -69,24 +69,24 @@ class SyntheticFabric():
         xyz0     = np.ones((Nt+1,3))
         xyz0_alt = np.ones((Nt+1,3))
         
-        strain_zz = np.zeros(Nt+1)
+        strainvec = np.zeros(Nt+1)
         
         # Determine D and W for fabric evolution
         for ii in np.arange(Nt0+1):
             t = ii*dt
             PS = PureShear(+deformExpr['t_c']*yr2s, deformExpr['r'], ax=deformExpr['ax'])
-            strain_zz[Nt0-ii] = PS.strain(t)[STRESSAX,STRESSAX]
+            strainvec[Nt0-ii] = PS.strain(t)[STRESSAX,STRESSAX]
             xyz0[Nt0-ii,:] = np.matmul(PS.F(t), xyz0_init)
             W[Nt0-ii,:,:], D[Nt0-ii,:,:] = PS.W(), PS.D()            
 
         for ii in np.arange(Nt1+1):
             t = ii*dt
             PS = PureShear(-deformExpr['t_c']*yr2s, deformExpr['r'], ax=deformExpr['ax'])
-            strain_zz[Nt0+ii] = PS.strain(t)[STRESSAX,STRESSAX]
+            strainvec[Nt0+ii] = PS.strain(t)[STRESSAX,STRESSAX]
             xyz0[Nt0+ii,:] = np.matmul(PS.F(t), xyz0_init)
             W[Nt0+ii,:,:], D[Nt0+ii,:,:] = PS.W(), PS.D()            
 
-        print(Nt, Nt1,Nt0, strain_zz)
+        #print(Nt, Nt1,Nt0, strainvec)
 
         ### Fabric evolution 
         
@@ -133,20 +133,21 @@ class SyntheticFabric():
             scale = 0.4
             fig = plt.figure(figsize=(13*scale,10*scale))
             
-            gs_master = gridspec.GridSpec(2, 2, width_ratios=[0.8,1], height_ratios=[1,0.8])
+            gs_master = gridspec.GridSpec(1, 2, width_ratios=[0.8,1])
             gs_master.update(top=0.91, bottom=0.13, left=0.095, right=1-0.05, hspace=-0.05, wspace=-0.075)
-            gs = gs_master
- 
-            axE = fig.add_subplot(gs_master[0, 0])
             #
-            axParcel = fig.add_subplot(gs[0, 1], projection='3d')
+            gsleft = gs_master[0,0].subgridspec(2, 1,  height_ratios=[1,0.3]) 
+            axE = fig.add_subplot(gsleft[0, 0])
+            #
+            gs = gs_master[0,1].subgridspec(2, 1,  height_ratios=[1,0.8], hspace=-0.05)
+            axParcel = fig.add_subplot(gs[0, 0], projection='3d')
             #
             inclination = 55 # view angle
             rot0 = 1 * -90
             rot = 1*-35 + rot0 #*1.4 # view angle
             prj = ccrs.Orthographic(rot, 90-inclination)
             geo = ccrs.Geodetic()            
-            axODF = fig.add_subplot(gs[1, 1], projection=prj)
+            axODF = fig.add_subplot(gs[1, 0], projection=prj)
             axODF.set_global()
             
             ##
@@ -160,11 +161,13 @@ class SyntheticFabric():
             axE.add_patch(rect2)
  
             lw = 1.5
-            axE.plot(strain_zz[[ii,ii]], ylims, '-', c='0.5', lw=lw)
-            axE.plot(strain_zz, Eij[:,STRESSAX,STRESSAX], '--k',  lw=lw, label=r'$E_{zz}$' if STRESSDIRECTION == 'z' else r'$E_{xx}$')
-            axE.plot(strain_zz, Eij[:,STRESSAXPERP,STRESSAX], '-k', lw=lw, label=r'$E_{xz}$' if STRESSDIRECTION == 'z' else r'$E_{zx}$')
-            axE.text(0, 1.50, 'Softer than\nisotropy', fontsize=FS-2, color='#08519c', ha='center', ma='center')
-            axE.text(0, 0.25, 'Harder than\nisotropy', fontsize=FS-2, color='#a50f15', ha='center', ma='center')
+            axE.plot(strainvec[[ii,ii]], ylims, '-', c='0.5', lw=lw)
+            axE.plot(strainvec, Eij[:,STRESSAXPERP,STRESSAX], '-k', lw=lw, label=r'$E_{xz}$')
+            axE.plot(strainvec, Eij[:,1,STRESSAXPERP], '-.k', lw=lw, label=r'$E_{yz}$')
+            axE.plot(strainvec, Eij[:,STRESSAX,STRESSAX], '--k',  lw=lw, label=r'$E_{zz}$' if STRESSDIRECTION == 'z' else r'$E_{xx}$')
+            axE.plot(strainvec, Eij[:,STRESSAXPERP,STRESSAXPERP], ':k',  lw=lw, label=r'$E_{xx}$' if STRESSDIRECTION == 'z' else r'$E_{zz}$')
+            axE.text(0.1, 1.50, '{\\bf Softer than}\n{\\bf isotropy}', fontsize=FS-2.5, color='#08519c', ha='center', ma='center')
+            axE.text(0.1, 0.25, '{\\bf Harder than}\n{\\bf isotropy}', fontsize=FS-2.5, color='#a50f15', ha='center', ma='center')
 
             dx=1
             axE.set_xticks(np.arange(xlims[0],xlims[1]+dx, dx))
@@ -180,18 +183,19 @@ class SyntheticFabric():
             axE.set_ylabel('$E_{ij}$')
             axE.set_title('Directional enhancement factors', pad=8, fontsize=FS)
             #
-            legkwargs = {'frameon':True, 'fancybox':False, 'edgecolor':'k', 'framealpha':0.9, 'ncol':1, 'handlelength':1.34, 'labelspacing':0.3}
+            legkwargs = {'frameon':True, 'fancybox':False, 'edgecolor':'k', 'handlelength':1.9, 'labelspacing':0.2}
             hleg = axE.legend(loc=1, **legkwargs)
             hleg.get_frame().set_linewidth(0.7);
             
             ###
             
-            x0, y0, dy = -0.05, -0.45, 0.11
-            axE.text(x0, y0, r'{\bf Lattice rotation demo}', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
+            x0, y0, dy = -0.125, -0.38, 0.09
+            axE.text(1.47, 1.05, r'{\bf Lattice rotation demo}', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
+            axE.text(x0, y0, r'{\bf References:}', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
             axE.text(x0, y0-1*dy, r'Rathmann et al. (2021)', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
             axE.text(x0, y0-2*dy, r'Rathmann and Lilien (2021)', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
             
-            x0, y0, dy = +1.875, -0.40, 0.1
+            x0, y0, dy = +1.875, -0.15, 0.08
             axE.text(x0,y0+3*dy, r'Eigenvalues:', transform=axE.transAxes, fontsize=FS-1, ha='left')
             axE.text(x0,y0+2*dy, r'$\lambda_1 = %.2f$'%(eigvals[ii,0]), transform=axE.transAxes, fontsize=FS-1, ha='left')
             axE.text(x0,y0+1*dy, r'$\lambda_2 = %.2f$'%(eigvals[ii,1]), transform=axE.transAxes, fontsize=FS-1, ha='left')
@@ -232,12 +236,12 @@ class SyntheticFabric():
 os.system('mkdir -p frames')    
 synthfab = SyntheticFabric()
 synthfab.make_profile()    
+
 os.system('ffmpeg -y -f image2 -framerate 50 -stream_loop 1 -i frames/frame%04d.png -vcodec libx264 -crf 20  -pix_fmt yuv420p cube-crush.avi')
 
 # Make GIF
 if 1:
     os.system('ffmpeg -y -f image2 -framerate 50 -stream_loop 0 -i frames/frame%04d.png -vcodec libx264 -crf 20  -pix_fmt yuv420p cube-crush-for-gif.avi')
     os.system('ffmpeg -i cube-crush-for-gif.avi -vf "fps=25,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 cube-crush.gif')
-    os.system('rm cube-crush-for-gif.avi')
-    
+    os.system('rm cube-crush-for-gif.avi')    
        
