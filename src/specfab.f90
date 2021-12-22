@@ -173,7 +173,7 @@ function dndt_ij_LATROT(eps,omg, tau,Aprime,Ecc,Eca, beta)
     end if 
 
     do ii = 1, nlm_len
-        dndt_ij_LATROT(ii,:) = -1*( matmul(GC(ii,:,1:SHI_LATROT),g0) + matmul(GCm(ii,:,1:SHI_LATROT),gz) + matmul(GC_m1(ii,:,1:SHI_LATROT),gn) + matmul(GC_p1(ii,:,1:SHI_LATROT),gp) )    
+        dndt_ij_LATROT(ii,1:nlm_len) = -1*( matmul(GC(ii,1:nlm_len,1:SHI_LATROT),g0) + matmul(GCm(ii,1:nlm_len,1:SHI_LATROT),gz) + matmul(GC_m1(ii,1:nlm_len,1:SHI_LATROT),gn) + matmul(GC_p1(ii,1:nlm_len,1:SHI_LATROT),gp) )    
     end do
     
 end
@@ -229,14 +229,10 @@ function dndt_ij_DDRX_src(tau)
 
     ! D
     g = k*g ! common prefactor
+    g = g/doubleinner22(tau,tau) ! normalize (can be done already here since it is a constant prefactor for dndt_ij_DDRX_src)
     do ii = 1, nlm_len    
-        do jj = 1, nlm_len 
-            dndt_ij_DDRX_src(ii,jj) = sum([ (GC(ii,jj,kk) * g(kk), kk=1,SHI_DDRX) ])
-        end do
+        dndt_ij_DDRX_src(ii,1:nlm_len) = matmul(GC(ii,:nlm_len,:), g)
     end do
-    
-    dndt_ij_DDRX_src = dndt_ij_DDRX_src/doubleinner22(tau,tau) ! normalize
-    
 end
 
 function dndt_ij_CDRX()
