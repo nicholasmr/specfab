@@ -40,7 +40,9 @@ module specfabpy
         Ecc_opt_nlin__sf   => Ecc_opt_nlin, &
         alpha_opt_nlin__sf => alpha_opt_nlin, &
         ae2_to_a2__sf => ae2_to_a2, ae4_to_a4__sf => ae4_to_a4, & 
-        a4_IBOF__sf => a4_IBOF
+        a4_IBOF__sf => a4_IBOF, &
+        nlm_reduced__sf => nlm_reduced, &
+        nlm_full__sf => nlm_full
         
     implicit none
     
@@ -362,6 +364,33 @@ contains
     !---------------------------------
     ! AUX
     !---------------------------------
+
+    subroutine get_nlm_reduced_len(nlm_red_len) 
+        implicit none
+        integer, intent(out) :: nlm_red_len
+        
+        nlm_red_len = nlm_reduced_len
+    end
+
+    function nlm_reduced(nlm_full, nlm_red_len) ! pass nlm_reduced_len, which can be obtained by calling get_nlm_reduced_len()
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm_full(:)
+        integer, intent(in)          :: nlm_red_len
+        complex(kind=dp)             :: nlm_reduced(nlm_red_len)
+        
+        nlm_reduced = nlm_reduced__sf(nlm_full)
+    end
+    
+    function nlm_full(nlm_red, nlm_len) 
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm_red(:)
+        integer, intent(in)          :: nlm_len
+        complex(kind=dp)             :: nlm_full(nlm_len)
+        
+        nlm_full = nlm_full__sf(nlm_red)
+    end
     
     function DDRX_decayrate(nlm, tau)
     

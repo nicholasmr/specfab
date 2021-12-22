@@ -1,4 +1,4 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2019-2021
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2019-2022
 
 module specfab  
 
@@ -15,16 +15,30 @@ module specfab
     complex(kind=dp), parameter, private :: r = (1,0), i = (0,1) ! real and imag units
     integer, private :: ii, jj, kk, ll, mm ! Loop indicies
 
-    ! Expansion series:
-    !     n(theta,phi) = sum_{l,m}^{Lcap,:} n_l^m Y_l^m(theta,phi) 
+    ! Expansion series: n(theta,phi) = sum_{l,m}^{Lcap,:} n_l^m Y_l^m(theta,phi) 
     ! where "nlm" vector := n_l^m = (n_0^0, n_2^-2, n_2^-1, n_2^0, n_2^1, n_2^2, n_4^-4, ... ) 
     integer, private   :: Lcap    ! Truncation "L" of expansion series (internal copy of what was passed to the init routine).
-    integer            :: nlm_len ! Total number of expansion coefficients (i.e. DOFs)
-    integer, parameter :: Lcap__max          = 60 ! Hard limit
-    integer, parameter :: nlm_len__max       = sum([(1+ll*2, ll=0, Lcap__max,2)])
+    integer            :: nlm_len             ! Total number of expansion coefficients (i.e. DOFs)
+    integer            :: nlm_reduced_len     ! ...same but for "reduced" nlm vector (see below comment on reduced form since ODF is real-valued).
+    integer            :: nlm_reduced_neg_len ! ...same but for negative part of "reduced" nlm vector
+    integer, parameter :: Lcap__max                   = 60 ! Hard limit
+    integer, parameter :: nlm_len_from_L(0:Lcap__max) = [((ll+1)*(ll+2)/2, ll=0, Lcap__max, 1)] ! nlm length for a given Lcap: sum_{l=0}^L (2*l+1) **for even l** = sum_{l=0}^{L/2} (4*l+1) = (L+1)*(L+2)/2
+    integer, parameter :: nlm_len__max                = nlm_len_from_L(Lcap__max)
+    
+    ! For converting between full (nlm) and reduced (nlm_reduced) forms of nlm by noting n_l^{-m} = (-1)^m conj(n_l^m) for real-valued ODFs.
+    integer, parameter :: nlm_reduced_len_from_L(0:Lcap__max)     = [( (ll+2)**2/4,     ll=0, Lcap__max, 1)] ! nlm length for a given Lcap: sum_{l=0}^L (1*l+1) **for even l** = sum_{l=0}^{L/2} (2*l+1) = (L+2)^2/4
+    integer, parameter :: nlm_reduced_neg_len_from_L(0:Lcap__max) = [( ll*(ll+2)/4,     ll=0, Lcap__max, 1)] ! nlm length for a given Lcap: sum_{l=0}^L l       **for even l** = sum_{l=0}^{L/2} (2*l)   = L*(L+2)/4
+    integer, parameter :: nlm_reduced_len__max                    = nlm_reduced_len_from_L(Lcap__max)
+    integer, parameter :: nlm_reduced_neg_len__max                = nlm_reduced_neg_len_from_L(Lcap__max)
+    integer, parameter :: I_full(nlm_len__max)                    = [( (kk+nlm_reduced_len_from_L(ll)-1*ll, kk=ll, 1, -1), (kk+nlm_reduced_len_from_L(ll)-1*ll, kk=0, ll, 1), ll=0, Lcap__max, 2)] ! nlm(1:nlm_len) = Mdiag(1:nlm_len) * nlm_reduced(I_full(1:nlm_len(L))) ...and then nlm(I_reduced_neg(1:nlm_reduced_neg_len(L))) = conj( nlm(I_reduced_neg(1:nlm_reduced_neg_len(L))) )
+    integer, parameter :: I_reduced(nlm_reduced_len__max)         = [( (kk+nlm_len_from_L(ll)-ll , kk=0, ll, 1), ll=0, Lcap__max, 2)]     ! nlm_reduced     = nlm(I_reduced(    1:nlm_reduced_len(L))) = (n_0^0, n_2^0, n_2^1, n_2^2, n_4^0, ... ) 
+    integer, parameter :: I_reduced_neg(nlm_reduced_neg_len__max) = [( (kk+nlm_len_from_L(ll)-2*ll , kk=0, ll-1, 1), ll=0, Lcap__max, 2)] ! nlm_reduced_neg = nlm(I_reduced_neg(1:nlm_reduced_len(L))) = (n_2^-2, n_2^-1, n_4^-4, n_4^-3, n_4^-2, n_4^-1, n_6^-6, ... ) 
+    integer, parameter :: Mdiag(nlm_len__max)                     = [( ((-1)**(mm), mm=ll, 1, -1), (1, kk=0, ll, 1), ll=0, Lcap__max, 2)] ! For adjusting odd negative m values with a factor of -1 (i.e. the (-1)^m factor in n_l^{-m} = (-1)^m conj(n_l^m))
+
+    ! (l,m) vector, etc.
     integer, parameter :: lm(2,nlm_len__max) = reshape([( (ll,mm, mm=-ll,ll), ll=0,  Lcap__max,2)], [2,nlm_len__max]) ! These are the (l,m) values corresponding to the coefficients in "nlm".
     integer, parameter :: I_l0=1, I_l2=I_l0+1, I_l4=I_l2+(2*2+1), I_l6=I_l4+(2*4+1), I_l8=I_l6+(2*6+1), I_l10=I_l8+(2*8+1) ! Indices for extracting l=0,2,4,6,8 coefs of nlm
-
+    
     ! Dynamics
     complex(kind=dp), private, allocatable :: regmat(:,:) ! Unscaled regularization matrix
     complex(kind=dp), private, allocatable :: lapmat(:,:) ! Laplacian diffusion operator
@@ -70,8 +84,11 @@ subroutine initspecfab(Lcap_)
     integer, intent(in) :: Lcap_ ! Trauncation "Lcap"
     complex(kind=dp)    :: nlm_iso(nlm_len__max) = 0.0
     
-    Lcap     = Lcap_ ! Save internal copy
-    nlm_len  = sum([(1+ll*2, ll=0, Lcap,2)]) ! Number of DOFs (expansion coefficients)
+    Lcap = Lcap_ ! Save internal copy
+    
+    nlm_len             = nlm_len_from_L(Lcap)             ! Number of DOFs (expansion coefficients) for full nlm vector
+    nlm_reduced_len     = nlm_reduced_len_from_L(Lcap)     ! ...same but for reduced nlm vector
+    nlm_reduced_neg_len = nlm_reduced_neg_len_from_L(Lcap) ! ...same but for negative "m" part of reduced nlm vector
 
     ! Set gaunt coefficients (overlap integrals involving three spherical harmonics)
     call set_gaunts()
@@ -110,11 +127,11 @@ function dndt_ij_LATROT(eps,omg, tau,Aprime,Ecc,Eca, beta)
     real(kind=dp), intent(in) :: eps(3,3), omg(3,3), tau(3,3) ! strain-rate (eps), spin (omg), dev. stress (tau)
     real(kind=dp), intent(in) :: Aprime, Ecc, Eca, beta
     complex(kind=dp)          :: dndt_ij_LATROT(nlm_len,nlm_len), qe(-2:2), qt(-2:2), qo(-1:1)
-    integer, parameter        :: lmdyn_len = 6 ! Scope of harmonic interactions is local in wave space (this is *not* a free parameter)
-    complex(kind=dp), dimension(lmdyn_len) :: g0,     gz,     gn,     gp
-    complex(kind=dp), dimension(lmdyn_len) :: g0_rot, gz_rot, gn_rot, gp_rot
-    complex(kind=dp), dimension(lmdyn_len) :: g0_Sac, gz_Sac, gn_Sac, gp_Sac
-    complex(kind=dp), dimension(lmdyn_len) :: g0_Tay, gz_Tay, gn_Tay, gp_Tay
+    integer, parameter        :: SHI_LATROT = 6 ! Scope of harmonic interactions (in wave space) for LATROT
+    complex(kind=dp), dimension(SHI_LATROT) :: g0,     gz,     gn,     gp
+    complex(kind=dp), dimension(SHI_LATROT) :: g0_rot, gz_rot, gn_rot, gp_rot
+    complex(kind=dp), dimension(SHI_LATROT) :: g0_Sac, gz_Sac, gn_Sac, gp_Sac
+    complex(kind=dp), dimension(SHI_LATROT) :: g0_Tay, gz_Tay, gn_Tay, gp_Tay
     real(kind=dp) :: etaprime
 
     etaprime = Aprime*doubleinner22(tau,tau) ! Assumes eta' = A'*(I2(tau)) (i.e. n'=3).
@@ -155,15 +172,8 @@ function dndt_ij_LATROT(eps,omg, tau,Aprime,Ecc,Eca, beta)
         gp = gp_rot + gp_Tay
     end if 
 
-    ! Contruct rate-of-change matrix
-    do ii = 1, nlm_len    
-        do jj = 1, nlm_len    
-            dndt_ij_LATROT(jj,ii) = -1*sum([( &
-                    GC(   kk,ii,jj)*g0(kk) + &
-                    GCm(  kk,ii,jj)*gz(kk) + &
-                    GC_m1(kk,ii,jj)*gn(kk) + &
-                    GC_p1(kk,ii,jj)*gp(kk), kk=1,lmdyn_len)])
-        end do
+    do ii = 1, nlm_len
+        dndt_ij_LATROT(ii,:) = -1*( matmul(GC(ii,:,1:SHI_LATROT),g0) + matmul(GCm(ii,:,1:SHI_LATROT),gz) + matmul(GC_m1(ii,:,1:SHI_LATROT),gn) + matmul(GC_p1(ii,:,1:SHI_LATROT),gp) )    
     end do
     
 end
@@ -179,25 +189,24 @@ function dndt_ij_DDRX(nlm, tau)
     !       d/dt (nlm)_i = dndt_ij (nlm)_j
     ! 
     ! where "nlm" is the vector of spectral coefficient n_l^m    
+    
+    ! **NOTICE** This is Gamma/Gamma_0. The caller must multiply by an appropriate DDRX rate factor, Gamma_0(T,tau,eps,...).
 
     implicit none
 
     complex(kind=dp), intent(in) :: nlm(nlm_len)
     real(kind=dp), intent(in)    :: tau(3,3) ! Deviatoric stress tensor
     complex(kind=dp)             :: dndt_ij_DDRX(nlm_len,nlm_len)
-    real(kind=dp)                :: Davg, Davgtensor(nlm_len,nlm_len)
+    real(kind=dp)                :: Davg
 
     dndt_ij_DDRX = dndt_ij_DDRX_src(tau)
-    
-    ! <D> (diagonal matrix)
+
+    ! Add add (nonlinear) sink term <D> to all diagonal entries such that dndt_ij = Gamma_ij/Gamma0 = (D_ij - <D>*I_ij)/(tau:tau) (where I is the identity)
     Davg = doubleinner22(matmul(tau,tau), a2(nlm)) - doubleinner22(tau,doubleinner42(a4(nlm),tau)) ! (tau.tau):a2 - tau:a4:tau 
-    Davgtensor = 0.0 ! initialize 
+    Davg = Davg/doubleinner22(tau,tau) ! normalize
     do ii = 1, nlm_len    
-        Davgtensor(ii,ii) = Davg
+        dndt_ij_DDRX(ii,ii) = dndt_ij_DDRX(ii,ii) - Davg 
     end do
-    
-    ! Add add (nonlinear) sink term such that Gamma/Gamma0 = (D - <D>)/(tau:tau) 
-    dndt_ij_DDRX = dndt_ij_DDRX - Davgtensor/doubleinner22(tau,tau) ! This is Gamma/Gamma_0. The caller must multiply by an appropriate DDRX rate factor, Gamma_0(T,tau,eps,...).
 end
 
 function dndt_ij_DDRX_src(tau)  
@@ -208,24 +217,26 @@ function dndt_ij_DDRX_src(tau)
 
     real(kind=dp), intent(in) :: tau(3,3) ! dev. stress tensor
     complex(kind=dp)          :: dndt_ij_DDRX_src(nlm_len,nlm_len), qt(-2:2)
-    integer, parameter        :: lmDDRX_len = 1+5+9 ! Scope of harmonic interactions is local in wave space (fixed parameter)
+    integer, parameter        :: SHI_DDRX = 1+5+9 ! Scope of harmonic interactions (in wave space) for DDRX
     real(kind=dp)             :: k
-    complex(kind=dp)          :: g(lmDDRX_len)
+    complex(kind=dp)          :: g(SHI_DDRX)
 
     ! Quadric expansion coefficients
     qt = quad_rr(tau)
 
-    ! Harmonic interaction weights 
+    ! Harmonic interaction weights (requires qt, sets g and k)
     include "include/DDRX__body.f90"
 
     ! D
+    g = k*g ! common prefactor
     do ii = 1, nlm_len    
         do jj = 1, nlm_len 
-            dndt_ij_DDRX_src(jj,ii) = sum([ (GC(kk,ii,jj) * k*g(kk), kk=1,lmDDRX_len) ])
+            dndt_ij_DDRX_src(ii,jj) = sum([ (GC(ii,jj,kk) * g(kk), kk=1,SHI_DDRX) ])
         end do
     end do
     
-    dndt_ij_DDRX_src = dndt_ij_DDRX_src/doubleinner22(tau,tau) 
+    dndt_ij_DDRX_src = dndt_ij_DDRX_src/doubleinner22(tau,tau) ! normalize
+    
 end
 
 function dndt_ij_CDRX()
@@ -700,6 +711,35 @@ function quad_tp(M) result (q1m)
     
     ! components (1,-1), (1,0), (1,+1)
     q1m = fsq1*[r*M(y,z)-i*M(x,z), r*sqrt(2.)*M(x,y), -r*M(y,z)-i*M(x,z)]
+end
+
+!---------------------------------
+! REDUCED AND FULL FORM
+!---------------------------------
+
+! The ODF being real implies that n_l^{-m} = (-1)^m  conj(n_l^m)
+! Hence, coefficients for negative m can be concontructed from the coefficients for m.
+
+function nlm_reduced(nlm_full) 
+
+    implicit none
+
+    complex(kind=dp), intent(in) :: nlm_full(nlm_len)
+    complex(kind=dp)             :: nlm_reduced(nlm_reduced_len)
+    
+    nlm_reduced = nlm_full(I_reduced(1:nlm_reduced_len))
+end
+
+function nlm_full(nlm_reduced) 
+
+    implicit none
+
+    complex(kind=dp), intent(in) :: nlm_reduced(nlm_reduced_len)
+    complex(kind=dp)             :: nlm_full(nlm_len)
+
+    nlm_full(1:nlm_len) = Mdiag(1:nlm_len) * nlm_reduced(I_full(1:nlm_len)) 
+    nlm_full(I_reduced_neg(1:nlm_reduced_neg_len)) = conjg( nlm_full(I_reduced_neg(1:nlm_reduced_neg_len)) )
+
 end
 
 !---------------------------------

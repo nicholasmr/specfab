@@ -57,11 +57,11 @@ def savecoef(f, f90var, gaunt):
         for jj, (lj,mj,mjj) in enumerate(lm): # j'th coef in sum over Psi
             for kk, (lk,mk,mkk) in enumerate(lm_dyn): # k'th coef for "catalyst" terms in tripple products
                 if np.abs(gaunt[ii,jj,kk])>1e-20:
-                    f.write("%s(%i,%i,%i) = %f\n" % (f90var,kk+1,jj+1,ii+1,np.real(gaunt[ii,jj,kk])) )
+                    f.write("%s(%i,%i,%i) = %f\n" % (f90var,ii+1,jj+1,kk+1,np.real(gaunt[ii,jj,kk])) ) # indices +=1 in fortran convention
 
 f = open("gaunt__head.f90", "w")
 f.write('! L = %i \n'%(L))
-f.write('real(kind=dp), dimension(%i,%i,%i) :: GC=0.0, GCm=0.0, GC_m1=0.0, GC_p1=0.0 \n'%(len(lm_dyn),Nc,Nc))
+f.write('real(kind=dp), dimension(%i,%i,%i) :: GC=0.0, GCm=0.0, GC_m1=0.0, GC_p1=0.0 \n'%(Nc,Nc,len(lm_dyn)))
 f.close()
 
 f = open("gaunt__body.f90", "w")

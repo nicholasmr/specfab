@@ -1,4 +1,4 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2020-2021
+# N. M. Rathmann <rathmann@nbi.ku.dk>, 2021
 
 import sys, os, copy, code # code.interact(local=locals())
 import numpy as np
@@ -326,12 +326,6 @@ ax_Y.text(DDRX_strainthres*(1+dx), y0, r'{\bf DDRX}',             color=color_da
 ### Plot ODFs
 
 colax = 'k'
-
-def plot_ei(ax, vec, geo, ei_num, mrk='.', ms=7, lbl=False, phi_rel=0, theta_rel=0):
-    theta,phi = getPolarAngles(vec)
-    if 0<=phi<=180 and (theta<=0): theta,phi = getPolarAngles(-vec)
-    color = color_darkred
-    ax.plot([phi],[theta], mrk, ms=ms, markerfacecolor=color, markeredgecolor=color, markeredgewidth=1.0, transform=geo)
 
 def getPolarAngles(vec):
     x,y,z = vec

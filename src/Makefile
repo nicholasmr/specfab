@@ -83,6 +83,9 @@ rheology-test: $(SPECFAB).o
 	$(COMPILER) $(PATHRHEOTEST)/rheology-test-orthotropic.f90           $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-orthotropic
 	$(COMPILER) $(PATHRHEOTEST)/rheology-test-transverselyisotropic.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-transverselyisotropic
 
+aux-tests: $(SPECFAB).o
+	$(COMPILER) $(PATHDEMO)/reduced-coef-test/reduced-coef-test.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHDEMO)/reduced-coef-test/reduced-coef-test
+
 lib$(SPECFAB).so: $(SRCALL) $(OBJALL)
 	$(COMPILER) $(OPTS) -shared $(SRCALL) -o $@
 
