@@ -14,8 +14,9 @@ OPTSNETCDF=-lnetcdff -I/usr/include -L/usr/lib
 #-------------------
 
 PATHDEMO=../demo
+PATHTEST=../tests
 PATHFABEVO=$(PATHDEMO)/fabric-evolution
-PATHRHEOTEST=$(PATHDEMO)/rheology-test
+PATHRHEOTEST=$(PATHTEST)/rheology-test
 
 SPECFAB=specfab
 MOMENTS=moments
@@ -84,7 +85,7 @@ rheology-test: $(SPECFAB).o
 	$(COMPILER) $(PATHRHEOTEST)/rheology-test-transverselyisotropic.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-transverselyisotropic
 
 aux-tests: $(SPECFAB).o
-	$(COMPILER) $(PATHDEMO)/reduced-coef-test/reduced-coef-test.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHDEMO)/reduced-coef-test/reduced-coef-test
+	$(COMPILER) $(PATHTEST)/reduced-coef-test/reduced-coef-test.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHTEST)/reduced-coef-test/reduced-coef-test
 
 lib$(SPECFAB).so: $(SRCALL) $(OBJALL)
 	$(COMPILER) $(OPTS) -shared $(SRCALL) -o $@
