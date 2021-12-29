@@ -72,7 +72,9 @@ fabric-evolution-demo: $(SPECFAB).o
 	@echo "cd $(PATHFABEVO); ./run-fabric-evolution-ddrx ss_xz :: simple shear (ss) along the x-z plane"
 
 specfabpy: $(SPECFAB).o
-	f2py -lm -llapack -lblas -lfftw3 -I. $(OBJALL) -c -m specfabpy specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" --quiet 
+	rm -f specfabpy.pyf
+	f2py --no-lower -m specfabpy -h specfabpy.pyf specfabpy.f90 --quiet 
+	f2py -lm -llapack -lblas -lfftw3 -I. $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" --quiet
 	@cp specfabpy.cpython* $(PATHDEMO)/
 	@echo "\n*** Python module (specfabpy.cpython) installed in demo path."
 	@mkdir -p $(PATHFABEVO)/solutions

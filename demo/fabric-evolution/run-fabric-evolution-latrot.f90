@@ -10,10 +10,9 @@ program demo
     integer, parameter :: dp = 8
 
     ! Numerics
-    real, parameter    :: dt = 0.02 ! Time-step size
-    integer, parameter :: Nt = 230  ! Number of time steps
-    integer            :: Lcap = 12     ! Expansion series truncation
-    real(kind=dp)      :: nu0  = 5.0d-3 ! Regularization magnitude calibrated for demo with L=12
+    integer, parameter :: Nt = 50  ! Number of time steps
+    real, parameter    :: dt = 0.0782404601085629 ! Time-step size (gives a vertical strain of -0.98 for experiment "uc_zz")
+    integer            :: Lcap = 6 ! Spectral truncation (4<=L<=8)
     
     ! Constants and argv strings    
     integer          :: ii,tt ! loop vars
@@ -123,8 +122,8 @@ program demo
 
     call savestate(nlm, 1) ! Save initial state    
     dndt_ROT = dndt_ij_LATROT(eps,omg, 0*eps,0d0,0d0,0d0, 1d0) ! Assume constant strain-rate and spin with Taylor style plastic spin for lattice rotation (beta=1).
-    dndt_REG = f_nu_eps(nu0, eps) * dndt_ij_REG() ! Regularization: nu * (reg. mag.) * (reg. matrix)
-!    dndt_REG = 5*f_nu_eps(nu0, eps) * dndt_ij_CDRX() ! Rotation recrystalization
+    dndt_REG = dndt_ij_REG(eps) ! Regularization
+!    dndt_REG = 5 * dndt_ij_CDRX() ! Rotation recrystalization
             
     do tt = 2, Nt
 !        write(*,"(A9,I3)") '*** Step ', tt
@@ -142,7 +141,6 @@ program demo
     
     call check(nf90_put_att(ncid,NF90_GLOBAL, "tsteps", Nt))
     call check(nf90_put_att(ncid,NF90_GLOBAL, "dt",     dt))
-    call check(nf90_put_att(ncid,NF90_GLOBAL, "nu",     f_nu_eps(nu0, eps) ))
     call check(nf90_put_att(ncid,NF90_GLOBAL, "L",      Lcap))
     call check(nf90_put_att(ncid,NF90_GLOBAL, "ugrad",  reshape(ugrad, [size(ugrad)]) ))
     

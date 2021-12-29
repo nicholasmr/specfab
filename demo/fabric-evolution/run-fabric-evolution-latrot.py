@@ -22,18 +22,16 @@ arg_exp = sys.argv[1] # Velocity gradient experiment
 # Numerics
 #----------------------
 
-Nt = 230  # Number of integration points
-dt = 0.02 # Time-step size
-
-L   = 12     # Spectral truncation
-nu0 = 5.0e-3 # Regularization strength (calibrated for L)
+Nt = 50 # Number of time steps
+dt = 0.0782404601085629 # Time-step size (gives a vertical strain of -0.98 for experiment "uc_zz")
+L = 6 # Spectral truncation (4<=L<=8)
 
 #----------------------
 # Grain parameters
 #----------------------
 
-Eca_lin,  Ecc_lin,  alpha_lin  = sf.eca_opt_lin,  sf.ecc_opt_lin,  sf.alpha_opt_lin  # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
-Eca_nlin, Ecc_nlin, alpha_nlin = sf.eca_opt_nlin, sf.ecc_opt_nlin, sf.alpha_opt_nlin # Optimal n'=3 (nlin) grain parameters (Rathmann et. al, 2021)
+Eca_lin,  Ecc_lin,  alpha_lin  = sf.Eca_opt_lin,  sf.Ecc_opt_lin,  sf.alpha_opt_lin  # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
+Eca_nlin, Ecc_nlin, alpha_nlin = sf.Eca_opt_nlin, sf.Ecc_opt_nlin, sf.alpha_opt_nlin # Optimal n'=3 (nlin) grain parameters (Rathmann et. al, 2021)
 
 #----------------------
 # Velocity gradient
@@ -70,9 +68,10 @@ omg = (ugrad-np.transpose(ugrad))/2 # Anti-symmetric part (spin)
 # Initialize model
 #----------------------
 
-nlm_len = sf.init(L)         # nlm_len is the number of fabric expansion coefficients (degrees of freedom).
-lm      = sf.get_lm(nlm_len) # The (l,m) values corresponding to the coefficients in "nlm".
-nlm     = np.zeros((Nt,nlm_len), dtype=np.complex128) # The expansion coefficients
+# The (l,m) values corresponding to the coefficients in "nlm".
+# nlm_len is the number of fabric expansion coefficients (degrees of freedom).
+lm, nlm_len = sf.init(L) 
+nlm = np.zeros((Nt,nlm_len), dtype=np.complex64) # The expansion coefficients
 
 # Initial fabric state
 if arg_exp[0:2] == 'rr':
@@ -81,24 +80,26 @@ if arg_exp[0:2] == 'rr':
     nlm[0,2] = np.sqrt(1/2 + 0j)
 else:
     # Init with isotropy
-    nlm[0,0] = 1/np.sqrt(4*np.pi) # Normalized such that N(t=0) = 1
+    nlm[:,0] = 1/np.sqrt(4*np.pi) # Normalized such that N(t=0) = 1
 
 #----------------------
 # Integrate
 #----------------------
 
-print('Numerics: Nt=%i, dt=%f, L=%i (nlm_len=%i)'%(Nt,dt,L,nlm_len))
+if arg_exp == 'uc_zz' or arg_exp == 'cc_zx' or arg_exp == 'ue_zz': 
+    te = 1/eps[-1,-1]
+    print(r'Integrating until strain_zz = %.3f'%(np.exp(Nt*dt/te)-1))
 
-nu = sf.nu(nu0, eps)
+print('Numerics: Nt=%i, dt=%f, L=%i (nlm_len=%i)'%(Nt,dt,L,nlm_len))
 
 # Euler integration scheme
 for tt in np.arange(1,Nt):
 
     nlm_prev = nlm[tt-1,:]
 
-    dndt_latrot = sf.dndt_latrot(nlm_prev, eps,omg) # Here we consider constant large-scale velocity gradients, **but if for any practical time-varying scenario dndt_ij should be calculated inside the loop below!**
-    dndt_reg    = sf.dndt_reg(nlm_prev)
-    dndt        = dndt_latrot + nu*dndt_reg
+    dndt_LATROT = sf.dndt_LATROT(nlm_prev, eps,omg) # Here we consider constant large-scale velocity gradients, **but if for any practical time-varying scenario dndt_ij should be calculated inside the loop below!**
+    dndt_REG    = sf.dndt_REG(nlm_prev, eps)
+    dndt        = dndt_LATROT + dndt_REG
 
     nlm[tt,:] = nlm_prev + dt*np.matmul(dndt, nlm_prev)
 
@@ -118,6 +119,7 @@ e1,e2,e3 = np.zeros(vecdim, dtype=np.float64),np.zeros(vecdim, dtype=np.float64)
 p1,p2,p3 = np.zeros(vecdim, dtype=np.float64),np.zeros(vecdim, dtype=np.float64),np.zeros(vecdim, dtype=np.float64)
 
 for tt in np.arange(0,Nt):
+
     c = nlm[tt,:]
     
     e1[tt,:],e2[tt,:],e3[tt,:], eigvals[tt,:] = sf.frame(c, 'e')
@@ -125,13 +127,13 @@ for tt in np.arange(0,Nt):
 
     # Linear (n'=1) mixed Taylor--Sachs enhancements            
     nprime = 1
-    Eeiej_lin[tt,:,:] = np.transpose(sf.enhfac_eiej(c, e1[tt,:],e2[tt,:],e3[tt,:], Ecc_lin, Eca_lin, alpha_lin, nprime))
-    Epipj_lin[tt,:,:] = np.transpose(sf.enhfac_eiej(c, p1[tt,:],p2[tt,:],p3[tt,:], Ecc_lin, Eca_lin, alpha_lin, nprime))
+    Eeiej_lin[tt,:,:] = np.transpose(sf.Eeiej(c, e1[tt,:],e2[tt,:],e3[tt,:], Ecc_lin, Eca_lin, alpha_lin, nprime))
+    Epipj_lin[tt,:,:] = np.transpose(sf.Eeiej(c, p1[tt,:],p2[tt,:],p3[tt,:], Ecc_lin, Eca_lin, alpha_lin, nprime))
     
     # Nonlinear (n'=3) Sachs enhancements
     nprime = 3
-    Eeiej_nlin[tt,:,:] = np.transpose(sf.enhfac_eiej(c, e1[tt,:],e2[tt,:],e3[tt,:], Ecc_nlin, Eca_nlin, alpha_nlin, nprime))
-    Epipj_nlin[tt,:,:] = np.transpose(sf.enhfac_eiej(c, p1[tt,:],p2[tt,:],p3[tt,:], Ecc_nlin, Eca_nlin, alpha_nlin, nprime))
+    Eeiej_nlin[tt,:,:] = np.transpose(sf.Eeiej(c, e1[tt,:],e2[tt,:],e3[tt,:], Ecc_nlin, Eca_nlin, alpha_nlin, nprime))
+    Epipj_nlin[tt,:,:] = np.transpose(sf.Eeiej(c, p1[tt,:],p2[tt,:],p3[tt,:], Ecc_nlin, Eca_nlin, alpha_nlin, nprime))
     
 #----------------------
 # Save
@@ -144,7 +146,7 @@ fname = 'solutions/LATROT_%s.nc'%(arg_exp)
 ncfile = Dataset(fname,mode='w',format='NETCDF3_CLASSIC') 
 
 # Config
-ncfile.tsteps, ncfile.dt, ncfile.nu, ncfile.L = Nt, dt, nu, L
+ncfile.tsteps, ncfile.dt, ncfile.L = Nt, dt, L
 ncfile.Ecc_lin,  ncfile.Eca_lin,  ncfile.alpha_lin  = Ecc_lin,  Eca_lin,  alpha_lin
 ncfile.Ecc_nlin, ncfile.Eca_nlin, ncfile.alpha_nlin = Ecc_nlin, Eca_nlin, alpha_nlin
 

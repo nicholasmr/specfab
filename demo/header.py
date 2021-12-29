@@ -42,6 +42,11 @@ c_purple = '#6a51a3'
 c_brown  = '#b15928'
 c_gray   = 'gray'
 
+def dndt_REG_custom(nu, expo, eps, sfobj):
+    nlm_len = int( (sfobj.Lcap+1)*(sfobj.Lcap+2)/2 )
+    nlm_dummy = np.zeros((nlm_len), dtype=np.complex64)
+    return -nu * np.linalg.norm(eps) * np.power(np.abs(sfobj.dndt_REG(nlm_dummy, eps)), expo)
+
 def discretize_ODF(nlm, lm, latres=60):
 
     #latres = 60 # latitude resolution on S^2        
@@ -57,7 +62,7 @@ def discretize_ODF(nlm, lm, latres=60):
     return (F, lon,lat)
 
 
-def plot_ODF(nlm, lm, ax=None, cmap='Greys', cblabel='$\psi$', rot0=-40, lvls=lvls_default, tickintvl=tickintvl_default):
+def plot_ODF(nlm, lm, ax=None, cmap='Greys', cblabel='$\psi$', rot0=-40, lvls=lvls_default, tickintvl=tickintvl_default, latres=60):
     
     pltshow = (ax is None)
     
@@ -71,7 +76,7 @@ def plot_ODF(nlm, lm, ax=None, cmap='Greys', cblabel='$\psi$', rot0=-40, lvls=lv
         ax = plt.subplot(projection=prj)
         ax.set_global()
     
-    F, lon,lat = discretize_ODF(nlm, lm)
+    F, lon,lat = discretize_ODF(nlm, lm, latres=latres)
     F[F<0] = 0 # fix numerical/truncation errors
     cmap = cmr.get_sub_cmap(cmap, 0.05, 1) # don't include pure white.
     h = ax.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), levels=lvls, extend=('max' if lvls[0]==0.0 else 'both'), cmap=cmap, nchunk=5) # "nchunk" argument must be larger than 0 for constant-ODF (e.g. isotropy) is plotted correctly.

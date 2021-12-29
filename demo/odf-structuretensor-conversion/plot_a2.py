@@ -49,17 +49,16 @@ lvls = np.linspace(0, 0.4, 6) # Contour levels
 def a2plot(a2):
 
     # Determine spectral coefs from a^(2)    
-    nlm_len = sf.init(2)
-    lm      = sf.get_lm(nlm_len)
-    clm     = sf.a2_to_nlm(a2)
+    lm, nlm_len = sf.init(2)
+    nlm = sf.a2_to_nlm(a2)
 
-    # Check that re-calculating a2 from clm indeed gives a2 as passed to a2plot()
-#    print(1/np.sqrt(4*np.pi), clm)
+    # Check that re-calculating a2 from nlm indeed gives a2 as passed to a2plot()
+#    print(1/np.sqrt(4*np.pi), nlm)
 #    print(a2)
-#    print(sf.get_a2_ij(clm))
+#    print(sf.get_a2_ij(nlm))
 
     # Plot ODF
-    plot_ODF(clm, lm, cblabel=r'$\mathrm{ODF}(a^{(2)})$')
+    plot_ODF(nlm, lm, cblabel=r'$\mathrm{ODF}(a^{(2)})$')
 
 #------------------
 # Examples

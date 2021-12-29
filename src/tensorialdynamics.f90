@@ -44,19 +44,20 @@ subroutine daidt_DDRX(tau, Gamma0, a2, a4, da2dt, da4dt)
     call dndt_to_daidt(ddt_nlm, nlm(1) , da2dt, da4dt) ! spectral --> tensorial 
 end
 
-subroutine daidt_REG(nu, a2, a4, da2dt, da4dt)
+subroutine daidt_REG(eps, a2, a4, da2dt, da4dt)
     
     ! Regularization contribution to d/dt a^(2) and d/dt a^(4) 
     
     implicit none
 
-    real(kind=dp), intent(in)  :: nu, a2(3,3), a4(3,3,3,3)
+    real(kind=dp), intent(in)  :: eps(3,3), a2(3,3), a4(3,3,3,3)
     real(kind=dp), intent(out) :: da2dt(3,3), da4dt(3,3,3,3)
     complex(kind=dp)           :: nlm(nlm_len), ddt_nlm(nlm_len)
     
     nlm = 0.0
     nlm(1:(I_l6-1)) = a4_to_nlm(a2, a4) ! tensorial --> spectral, truncated at L=4
-    ddt_nlm = nu * matmul(dndt_ij_REG(), nlm) ! spectral evolution  --- d/dt nlm_i = M_ij nlm_j 
+!    ddt_nlm = nu * matmul(dndt_ij_REG(), nlm) ! spectral evolution  --- d/dt nlm_i = M_ij nlm_j
+    ddt_nlm = matmul(dndt_ij_REG(eps), nlm) ! spectral evolution  --- d/dt nlm_i = M_ij nlm_j  
     call dndt_to_daidt(ddt_nlm, nlm(1), da2dt, da4dt) ! spectral --> tensorial 
 end
 

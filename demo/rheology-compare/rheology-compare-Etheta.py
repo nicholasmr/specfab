@@ -24,16 +24,15 @@ Nt = len(angles)
         
 # Linear (n'=1) mixed Taylor--Sachs enhancements: Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
 nprime = 1 
-Eca   = sf.eca_opt_lin
-Ecc   = sf.ecc_opt_lin
+Eca   = sf.Eca_opt_lin
+Ecc   = sf.Ecc_opt_lin
 alpha = sf.alpha_opt_lin  
 
 #----------------------
 # Initialize model
 #----------------------
 
-nlm_len  = sf.init(4)         # nlm_len is the number of fabric expansion coefficients (degrees of freedom).
-lm       = sf.get_lm(nlm_len) # The (l,m) values corresponding to the coefficients in "nlm".
+lm, nlm_len = sf.init(4)
 
 c_vert = np.array([0,0,1], dtype=np.complex128)
 a2_true = np.tensordot(c_vert,  c_vert,  axes=0)
@@ -68,12 +67,12 @@ def f_tau(mag, ang):
 
 for kk, ang in enumerate(angles):
 
-    Eij = np.transpose(sf.enhfac_eiej(nlm, e1,e2,e3, Ecc, Eca, alpha, nprime))
+    Eij = np.transpose(sf.Eeiej(nlm, e1,e2,e3, Ecc, Eca, alpha, nprime))
     tau, vw = f_tau(1, ang)
     eps_G = sf.eps_of_tau__isotropic(         tau, Aglen,nglen)
     eps_R = sf.eps_of_tau__orthotropic(       tau, Aglen,nglen, e1,e2,e3, Eij)
-    eps_P = sf.eps_of_tau__orthotropic_pettit(tau, Aglen,nglen, e1,e2,e3, Eij)
-    eps_M = sf.eps_of_tau__orthotropic_martin(tau, Aglen,nglen, e1,e2,e3, Eij)
+    eps_P = sf.eps_of_tau__orthotropic_Pettit(tau, Aglen,nglen, e1,e2,e3, Eij)
+    eps_M = sf.eps_of_tau__orthotropic_Martin(tau, Aglen,nglen, e1,e2,e3, Eij)
     
     eps_G_vw = np.tensordot(eps_G, vw, axes=2)
     Eang[kk,0] = np.tensordot(eps_R, vw, axes=2)/eps_G_vw

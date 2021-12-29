@@ -21,42 +21,30 @@ module specfab
     integer            :: nlm_len             ! Total number of expansion coefficients (i.e. DOFs)
     integer            :: nlm_reduced_len     ! ...same but for "reduced" nlm vector (see below comment on reduced form since ODF is real-valued).
     integer            :: nlm_reduced_neg_len ! ...same but for negative part of "reduced" nlm vector
-    integer, parameter :: Lcap__max                   = 60 ! Hard limit
+    integer, parameter :: Lcap__max                   = 30 ! Hard limit
     integer, parameter :: nlm_len_from_L(0:Lcap__max) = [((ll+1)*(ll+2)/2, ll=0, Lcap__max, 1)] ! nlm length for a given Lcap: sum_{l=0}^L (2*l+1) **for even l** = sum_{l=0}^{L/2} (4*l+1) = (L+1)*(L+2)/2
     integer, parameter :: nlm_len__max                = nlm_len_from_L(Lcap__max)
     
     ! For converting between full (nlm) and reduced (nlm_reduced) forms of nlm by noting n_l^{-m} = (-1)^m conj(n_l^m) for real-valued ODFs.
-    integer, parameter :: nlm_reduced_len_from_L(0:Lcap__max)     = [( (ll+2)**2/4,     ll=0, Lcap__max, 1)] ! nlm length for a given Lcap: sum_{l=0}^L (1*l+1) **for even l** = sum_{l=0}^{L/2} (2*l+1) = (L+2)^2/4
-    integer, parameter :: nlm_reduced_neg_len_from_L(0:Lcap__max) = [( ll*(ll+2)/4,     ll=0, Lcap__max, 1)] ! nlm length for a given Lcap: sum_{l=0}^L l       **for even l** = sum_{l=0}^{L/2} (2*l)   = L*(L+2)/4
-    integer, parameter :: nlm_reduced_len__max                    = nlm_reduced_len_from_L(Lcap__max)
-    integer, parameter :: nlm_reduced_neg_len__max                = nlm_reduced_neg_len_from_L(Lcap__max)
-    integer, parameter :: I_full(nlm_len__max)                    = [( (kk+nlm_reduced_len_from_L(ll)-1*ll, kk=ll, 1, -1), (kk+nlm_reduced_len_from_L(ll)-1*ll, kk=0, ll, 1), ll=0, Lcap__max, 2)] ! nlm(1:nlm_len) = Mdiag(1:nlm_len) * nlm_reduced(I_full(1:nlm_len(L))) ...and then nlm(I_reduced_neg(1:nlm_reduced_neg_len(L))) = conj( nlm(I_reduced_neg(1:nlm_reduced_neg_len(L))) )
-    integer, parameter :: I_reduced(nlm_reduced_len__max)         = [( (kk+nlm_len_from_L(ll)-ll , kk=0, ll, 1), ll=0, Lcap__max, 2)]     ! nlm_reduced     = nlm(I_reduced(    1:nlm_reduced_len(L))) = (n_0^0, n_2^0, n_2^1, n_2^2, n_4^0, ... ) 
-    integer, parameter :: I_reduced_neg(nlm_reduced_neg_len__max) = [( (kk+nlm_len_from_L(ll)-2*ll , kk=0, ll-1, 1), ll=0, Lcap__max, 2)] ! nlm_reduced_neg = nlm(I_reduced_neg(1:nlm_reduced_len(L))) = (n_2^-2, n_2^-1, n_4^-4, n_4^-3, n_4^-2, n_4^-1, n_6^-6, ... ) 
-    integer, parameter :: Mdiag(nlm_len__max)                     = [( ((-1)**(mm), mm=ll, 1, -1), (1, kk=0, ll, 1), ll=0, Lcap__max, 2)] ! For adjusting odd negative m values with a factor of -1 (i.e. the (-1)^m factor in n_l^{-m} = (-1)^m conj(n_l^m))
+    integer, parameter, private :: nlm_reduced_len_from_L(0:Lcap__max)     = [( (ll+2)**2/4,     ll=0, Lcap__max, 1)] ! nlm length for a given Lcap: sum_{l=0}^L (1*l+1) **for even l** = sum_{l=0}^{L/2} (2*l+1) = (L+2)^2/4
+    integer, parameter, private :: nlm_reduced_neg_len_from_L(0:Lcap__max) = [( ll*(ll+2)/4,     ll=0, Lcap__max, 1)] ! nlm length for a given Lcap: sum_{l=0}^L l       **for even l** = sum_{l=0}^{L/2} (2*l)   = L*(L+2)/4
+    integer, parameter, private :: nlm_reduced_len__max                    = nlm_reduced_len_from_L(Lcap__max)
+    integer, parameter, private :: nlm_reduced_neg_len__max                = nlm_reduced_neg_len_from_L(Lcap__max)
+    integer, parameter, private :: I_full(nlm_len__max)                    = [( (kk+nlm_reduced_len_from_L(ll)-1*ll, kk=ll, 1, -1), (kk+nlm_reduced_len_from_L(ll)-1*ll, kk=0, ll, 1), ll=0, Lcap__max, 2)] ! nlm(1:nlm_len) = Mdiag(1:nlm_len) * nlm_reduced(I_full(1:nlm_len(L))) ...and then nlm(I_reduced_neg(1:nlm_reduced_neg_len(L))) = conj( nlm(I_reduced_neg(1:nlm_reduced_neg_len(L))) )
+    integer, parameter, private :: I_reduced(nlm_reduced_len__max)         = [( (kk+nlm_len_from_L(ll)-ll , kk=0, ll, 1), ll=0, Lcap__max, 2)]     ! nlm_reduced     = nlm(I_reduced(    1:nlm_reduced_len(L))) = (n_0^0, n_2^0, n_2^1, n_2^2, n_4^0, ... ) 
+    integer, parameter, private :: I_reduced_neg(nlm_reduced_neg_len__max) = [( (kk+nlm_len_from_L(ll)-2*ll , kk=0, ll-1, 1), ll=0, Lcap__max, 2)] ! nlm_reduced_neg = nlm(I_reduced_neg(1:nlm_reduced_len(L))) = (n_2^-2, n_2^-1, n_4^-4, n_4^-3, n_4^-2, n_4^-1, n_6^-6, ... ) 
+    integer, parameter, private :: Mdiag(nlm_len__max)                     = [( ((-1)**(mm), mm=ll, 1, -1), (1, kk=0, ll, 1), ll=0, Lcap__max, 2)] ! For adjusting odd negative m values with a factor of -1 (i.e. the (-1)^m factor in n_l^{-m} = (-1)^m conj(n_l^m))
 
     ! (l,m) vector, etc.
     integer, parameter :: lm(2,nlm_len__max) = reshape([( (ll,mm, mm=-ll,ll), ll=0,  Lcap__max,2)], [2,nlm_len__max]) ! These are the (l,m) values corresponding to the coefficients in "nlm".
     integer, parameter :: I_l0=1, I_l2=I_l0+1, I_l4=I_l2+(2*2+1), I_l6=I_l4+(2*4+1), I_l8=I_l6+(2*6+1), I_l10=I_l8+(2*8+1) ! Indices for extracting l=0,2,4,6,8 coefs of nlm
     
-    ! Dynamics
-    complex(kind=dp), private, allocatable :: regmat(:,:) ! Unscaled regularization matrix
-    complex(kind=dp), private, allocatable :: lapmat(:,:) ! Laplacian diffusion operator
+    ! Static (constant) matrices used for spectral dynamics
+    real(kind=dp), parameter :: Ldiag(nlm_len__max) = [( -(lm(1,ii)*(lm(1,ii)+1)), ii=1, nlm_len__max )] ! Diagonal entries of Laplacian diffusion operator.
 
-    ! Ehancement-factor related
+    ! Enhancement-factor related
     real(kind=dp), private :: ev_c2_iso(3,3), ev_c4_iso(3,3,3,3), ev_c6_iso(3,3,3,3, 3,3), ev_c8_iso(3,3,3,3, 3,3,3,3) ! <c^k> for isotropic n(theta,phi)
-    real(kind=dp), parameter, private :: identity(3,3)  = reshape([1,0,0, &
-                                                                   0,1,0, &
-                                                                   0,0,1], [3,3])
-    real(kind=dp), parameter, private :: identity9(9,9) = reshape([1, 0, 0, 0, 0, 0, 0, 0, 0, &
-                                                                   0, 1, 0, 0, 0, 0, 0, 0, 0, & 
-                                                                   0, 0, 1, 0, 0, 0, 0, 0, 0, & 
-                                                                   0, 0, 0, 1, 0, 0, 0, 0, 0, & 
-                                                                   0, 0, 0, 0, 1, 0, 0, 0, 0, & 
-                                                                   0, 0, 0, 0, 0, 1, 0, 0, 0, & 
-                                                                   0, 0, 0, 0, 0, 0, 1, 0, 0, &
-                                                                   0, 0, 0, 0, 0, 0, 0, 1, 0, &
-                                                                   0, 0, 0, 0, 0, 0, 0, 0, 1], [9,9])
+    real(kind=dp), parameter, private :: identity(3,3)  = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
     
     ! Optimal n'=1 (lin) grain parameters 
     ! These are the linear mixed Taylor--Sachs best-fit parameters from Rathmann and Lilien (2021)
@@ -96,16 +84,6 @@ subroutine initspecfab(Lcap_)
     ! Calculate structure tensors for an isotropic fabric (used for calculating enhancement factors)
     nlm_iso(1) = 1/Sqrt(4*Pi) ! Normalized ODF 
     call f_ev_ck(nlm_iso, 'f', ev_c2_iso,ev_c4_iso,ev_c6_iso,ev_c8_iso) ! Sets <c^i> := a^(i) for i=2,4,6,8
-    
-    ! Static (constant) matrices used for spectral dynamics
-    if(.not. allocated(regmat)) allocate(regmat(nlm_len,nlm_len)) ! Regularization (unscaled)
-    if(.not. allocated(lapmat)) allocate(lapmat(nlm_len,nlm_len)) ! Laplacian operator
-    regmat = 0.0 ! initialize
-    lapmat = 0.0 ! initialize
-    do ii = 1, nlm_len 
-        regmat(ii,ii) = -(lm(1,ii)*(lm(1,ii)+1))**(1.5) ! if expo > 1 => hyper diffusion
-        lapmat(ii,ii) = -(lm(1,ii)*(lm(1,ii)+1))
-    end do    
 end
 
 !---------------------------------
@@ -114,13 +92,11 @@ end
 
 function dndt_ij_LATROT(eps,omg, tau,Aprime,Ecc,Eca, beta)  
 
-    ! *** LATTICE ROTATION ***
+    !------------------
+    ! Lattice rotation
+    !------------------
 
-    ! Returns matrix "dndt_ij" such that
-    ! 
-    !       d/dt (nlm)_i = dndt_ij (nlm)_j
-    ! 
-    ! where "nlm" is the vector of spectral coefficient n_l^m
+    ! Returns matrix dndt_ij such that d/dt (nlm)_i = dndt_ij (nlm)_j
 
     implicit none
 
@@ -134,27 +110,35 @@ function dndt_ij_LATROT(eps,omg, tau,Aprime,Ecc,Eca, beta)
     complex(kind=dp), dimension(SHI_LATROT) :: g0_Tay, gz_Tay, gn_Tay, gp_Tay
     real(kind=dp) :: etaprime
 
-    etaprime = Aprime*doubleinner22(tau,tau) ! Assumes eta' = A'*(I2(tau)) (i.e. n'=3).
-
     ! Quadric expansion coefficients
     qe = quad_rr(eps)
     qt = quad_rr(tau)
     qo = quad_tp(omg)
 
     ! Harmonic interaction weights
-
     g0_rot = [ 0*r, 0*r,0*r,0*r,0*r,0*r ]
     gz_rot = [ -i*sqrt(3.)*qo(0), 0*r,0*r,0*r,0*r,0*r ]
     gn_rot = [ -i*6/sqrt(6.)*qo(-1), 0*r,0*r,0*r,0*r,0*r ]
     gp_rot = [ +i*6/sqrt(6.)*qo(+1), 0*r,0*r,0*r,0*r,0*r ]
-
     g0_Tay = 3*[ 0*r, qe(-2),qe(-1),qe(0),qe(+1),qe(+2) ]
     gz_Tay = [ 0*r, -qe(-2),0*r,0*r,0*r,qe(+2) ]
     gn_Tay = [ sqrt(5./6)*qe(-1), 0*r, qe(-2), sqrt(2./3)*qe(-1), sqrt(3./2)*qe(0), 2*qe(+1) ]
     gp_Tay = [ sqrt(5./6)*qe(+1), 2*qe(-1), sqrt(3./2)*qe(0), sqrt(2./3)*qe(+1), qe(+2), 0*r ]
     
-    if (beta .lt. 1.0d0 - 1d-5) then
-        ! For efficiency, calculate the Sachs contribution only if beta < 1
+    if (beta .gt. 1.0d0-1d-4) then
+        ! beta=1 => ODF evolution is kinematic in the sense that c-axes rotate in response to the bulk stretching and spin.
+        ! This is what was used in Rathmann et al. (2021) and Rathmann and Lilien (2021).
+        
+        g0 = g0_rot + g0_Tay
+        gz = gz_rot + gz_Tay
+        gn = gn_rot + gn_Tay
+        gp = gp_rot + gp_Tay
+    
+    else
+        ! *** EXPERIMENTAL, NOT VALIDATED ***
+        ! Depends on (tau,Aprime,Ecc,Eca) unlike the Taylor case.
+        
+        etaprime = Aprime*doubleinner22(tau,tau) ! Assumes eta' = A'*(I2(tau)) (i.e. n'=3).
         g0_Sac = 3*[ 0*r, Eca*qt(-2),Eca*qt(-1),Eca*qt(0),Eca*qt(+1),Eca*qt(+2) ]
         gz_Sac = [ 0*r, -Eca*qt(-2),-1./2*(Eca-1)*qt(-1),0*r,1./2*(Eca-1)*qt(+1),Eca*qt(+2) ]
         gn_Sac = [ sqrt(5./6)*qt(-1), 0*r, Eca*qt(-2), sqrt(1./6)*(3*Eca-1)*qt(-1), sqrt(3./2)*Eca*qt(0), (Eca+1)*qt(+1) ]
@@ -164,34 +148,23 @@ function dndt_ij_LATROT(eps,omg, tau,Aprime,Ecc,Eca, beta)
         gz = gz_rot + (1-beta)*etaprime*gz_Sac + beta*gz_Tay
         gn = gn_rot + (1-beta)*etaprime*gn_Sac + beta*gn_Tay
         gp = gp_rot + (1-beta)*etaprime*gp_Sac + beta*gp_Tay
-    else
-        ! If beta = 1, the ODF evolution is kinematic in the sense that c-axes rotate in response to the bulk stretching and spin.
-        g0 = g0_rot + g0_Tay
-        gz = gz_rot + gz_Tay
-        gn = gn_rot + gn_Tay
-        gp = gp_rot + gp_Tay
     end if 
 
     do ii = 1, nlm_len
         dndt_ij_LATROT(ii,1:nlm_len) = -1*( matmul(GC(ii,1:nlm_len,1:SHI_LATROT),g0) + matmul(GCm(ii,1:nlm_len,1:SHI_LATROT),gz) + matmul(GC_m1(ii,1:nlm_len,1:SHI_LATROT),gn) + matmul(GC_p1(ii,1:nlm_len,1:SHI_LATROT),gp) )    
     end do
-    
 end
 
 function dndt_ij_DDRX(nlm, tau)
 
-    ! *** Discontinuous dynamic recrystalization (DDRX) ***
-    ! 
-    ! Nucleation and migration recrystalization modelled as a decay process (Placidi et al., 2010)
-
-    ! Returns matrix "dndt_ij" such that
-    ! 
-    !       d/dt (nlm)_i = dndt_ij (nlm)_j
-    ! 
-    ! where "nlm" is the vector of spectral coefficient n_l^m    
+    !-----------------------------------------------
+    ! Discontinuous dynamic recrystallization (DDRX)
+    !----------------------------------------------- 
     
-    ! **NOTICE** This is Gamma/Gamma_0. The caller must multiply by an appropriate DDRX rate factor, Gamma_0(T,tau,eps,...).
-
+    ! Nucleation and migration recrystalization modeled as a decay process (Placidi et al., 2010).
+    ! Returns matrix dndt_ij such that d/dt (nlm)_i = dndt_ij (nlm)_j
+    ! NOTICE: This is Gamma/Gamma_0. The caller must multiply by an appropriate DDRX rate factor, Gamma_0(T,tau,eps,...).
+    
     implicit none
 
     complex(kind=dp), intent(in) :: nlm(nlm_len)
@@ -211,7 +184,9 @@ end
 
 function dndt_ij_DDRX_src(tau)  
 
-    ! Calculates the ODF-independent (linear) source term of DDRX 
+    !------------------
+    ! DDRX source term
+    !------------------
 
     implicit none
 
@@ -237,21 +212,65 @@ end
 
 function dndt_ij_CDRX()
 
-    ! *** Continuous dynamic recrystalization (CDRX) ***
-    ! 
-    ! Rotation recrystalization (polygonization) as a Laplacian diffusion process (Godert, 2003)
-
-    ! Returns matrix "dndt_ij" such that
-    ! 
-    !       d/dt (nlm)_i = dndt_ij (nlm)_j
-    ! 
-    ! where "nlm" is the vector of spectral coefficient n_l^m    
+    !--------------------------------------------
+    ! Continuous dynamic recrystalization (CDRX)
+    !--------------------------------------------
+    
+    ! Rotation recrystalization (polygonization) as a Laplacian diffusion process (Godert, 2003).
+    ! Returns matrix dndt_ij such that d/dt (nlm)_i = dndt_ij (nlm)_j
+    ! NOTICE: This gives the unscaled effect of CDRX. The caller must multiply by an appropriate CDRX rate factor (scale) that should depend on temperature, stress, etc.
 
     implicit none
+    real(kind=dp) :: dndt_ij_CDRX(nlm_len,nlm_len)
 
-    complex(kind=dp) :: dndt_ij_CDRX(nlm_len,nlm_len)
+    dndt_ij_CDRX = 0.0
+    do ii = 1, nlm_len 
+        dndt_ij_CDRX(ii,ii) = Ldiag(ii) ! Laplacian
+    end do  
+end
 
-    dndt_ij_CDRX = lapmat 
+function dndt_ij_REG(eps) 
+
+    !----------------
+    ! Regularization 
+    !----------------
+    
+    ! Returns matrix dndt_ij such that d/dt (nlm)_i = dndt_ij (nlm)_j
+    ! NOTICE: Calibrated for 4 <= L <= 8. For larger L, the caller  must specify an appropriate scaling.
+    ! Calibration is provided by the script in tests/calibrate-regularization.
+    
+    implicit none
+    real(kind=dp), intent(in) :: eps(3,3)
+    real(kind=dp)             :: dndt_ij_REG(nlm_len,nlm_len)
+    real(kind=dp)             :: nu, expo, scalefac
+    
+    if (Lcap == 4) then
+        expo = 1.65
+        nu   = 2.126845e+00
+    end if 
+
+    if (Lcap == 6) then
+        expo = 2.35
+        nu   = 2.892680e+00
+    end if 
+    
+    if (Lcap == 8) then
+        expo = 3.00
+        nu   = 3.797282e+00
+    end if 
+
+    if (Lcap .gt. 8) then
+!        print *, 'specfab error: regularization (dndt_ij_REG) is calibrated for the range 4 <= L <= 8, but you are using a larger L. Returning instead the unscaled (but normalized) Laplacian matrix for you to scale yourself.'
+        expo = 1
+        scalefac = -1
+    else
+        scalefac = -nu * norm2(reshape(eps,[size(eps)])) 
+    end if
+    
+    dndt_ij_REG = 0.0
+    do ii = 1, nlm_len 
+        dndt_ij_REG(ii,ii) = scalefac * abs( Ldiag(ii)/(Lcap*(Lcap+1)) )**expo 
+    end do
 end
 
 !---------------------------------
@@ -259,76 +278,6 @@ end
 !---------------------------------
 
 include "tensorialdynamics.f90"
-
-!---------------------------------
-! REGULARIZATION 
-!---------------------------------
-
-function dndt_ij_REG() 
-
-    ! *** LAPLACIAN REGULARIZATION ***
-
-    ! Returns matrix "dndt_ij" such that
-    ! 
-    !       d/dt (nlm)_i = dndt_ij (nlm)_j
-    ! 
-    ! where "nlm" is the vector of spectral coefficient n_l^m   
-
-    implicit none
-    complex(kind=dp) :: dndt_ij_REG(nlm_len,nlm_len)
-
-    dndt_ij_REG = regmat ! The caller must multiply by the regularization strength, e.g. f_nu(nu0, eps, ...)
-end
-
-function f_nu(nu0, beta, eps, tau, Aprime) result (nu)
-    
-    ! Regularization strength
-    
-    implicit none
-    
-    real(kind=dp), intent(in) :: nu0, beta, eps(3,3),tau(3,3), Aprime
-    real(kind=dp)             :: nu, etaprime
-
-    if (beta .le. 1.0d-20) then 
-        nu = f_nu_eps(nu0, eps) ! Seperate (faster) calculation if beta=0
-    else 
-        etaprime = Aprime*doubleinner22(tau,tau) ! Assumes eta' ~= A'*(I2(tau)) (i.e. n'=3).
-        nu = beta*f_nu_eps(nu0, eps) + (1-beta)*etaprime*f_nu_tau(nu0, tau)    
-    end if
-
-end
-
-function f_nu_eps(nu0, eps) result (nu)
-    
-    ! Calculates optimal nu as a function of Lcap and norm2(eps).
-    
-    implicit none
-    
-    real(kind=dp), intent(in) :: eps(3,3)
-    real(kind=dp)             :: nu0, nu
-    real(kind=dp), parameter  :: L0=10
-    
-    ! nu0=5.0e-2 ! Used for DEMO scripts
-    ! nu0=0.5e-3 ! Medium loose
-    ! nu0=0.1e-3 ! Used for JOSEF
-
-    nu = nu0 * (Lcap/L0)**(-1.1) * norm2(reshape(eps,[size(eps)]))
-end
-
-function f_nu_tau(nu0, tau) result (nu)
-    
-    ! Calculates optimal nu as a function of Lcap and norm2(tau).
-    
-    implicit none
-    
-    real(kind=dp), intent(in) :: tau(3,3)
-    real(kind=dp)             :: nu0, nu
-    real(kind=dp), parameter  :: L0=10
-    
-    ! nu0=5e1 ! Fitted
-    
-    nu = nu0 * (Lcap/L0)**(-0.4) * norm2(reshape(tau,[size(tau)]))
-end
 
 !---------------------------------
 ! STRUCTURE TENSORS
@@ -620,7 +569,7 @@ end
 
 function ev_epsprime_Tay(tau, ev_c2,ev_c4, Ecc,Eca,nprime) 
     
-    ! Taylor model supports only n'=1. nprime is required any way for future compatibility with n'>1.
+    ! Taylor model supports only n'=1. nprime is required anyway for future compatibility with n'>1.
     
     implicit none
     
@@ -632,6 +581,16 @@ function ev_epsprime_Tay(tau, ev_c2,ev_c4, Ecc,Eca,nprime)
     real(kind=dp)             :: ev_epsprime_Tay(3,3), coefA,coefB,coefC
     integer                   :: info
 !    integer :: ipiv(9), work
+
+    real(kind=dp), parameter  :: identity9(9,9) = reshape([1, 0, 0, 0, 0, 0, 0, 0, 0, &
+                                                           0, 1, 0, 0, 0, 0, 0, 0, 0, & 
+                                                           0, 0, 1, 0, 0, 0, 0, 0, 0, & 
+                                                           0, 0, 0, 1, 0, 0, 0, 0, 0, & 
+                                                           0, 0, 0, 0, 1, 0, 0, 0, 0, & 
+                                                           0, 0, 0, 0, 0, 1, 0, 0, 0, & 
+                                                           0, 0, 0, 0, 0, 0, 1, 0, 0, &
+                                                           0, 0, 0, 0, 0, 0, 0, 1, 0, &
+                                                           0, 0, 0, 0, 0, 0, 0, 0, 1], [9,9])
 
     call tranisotropic_coefs(Ecc,Eca,d,nprime,-1.0d0, coefA,coefB,coefC)
 
@@ -650,6 +609,7 @@ function ev_epsprime_Tay(tau, ev_c2,ev_c4, Ecc,Eca,nprime)
             stop 'specfab error: Taylor viscosity-matrix inversion failed! Please check the ODF is correct (reducing the fabric integration time-step, and/or increasing regularization, for transient problems can often help).'
         end if
     end if
+    
     ev_epsprime_Tay = reshape(tau_vec, [3,3])
 end
 
@@ -679,7 +639,7 @@ end
 
 function quad_rr(M) result (q2m)
     
-    ! Expansion coefs of "M : rr" assuming M is symmetric and r is the radial unit vector
+    ! Expansion coefficients of "M : rr" assuming M is symmetric and r is the radial unit vector
     
     implicit none
     
@@ -697,7 +657,7 @@ end
    
 function quad_tp(M) result (q1m)
     
-    ! Expansion coefs of "M : tp" assuming M is anti-symmetric and (t,p) are the (theta,phi) unit vectors.
+    ! Expansion coefficients of "M : tp" assuming M is anti-symmetric and (t,p) are the (theta,phi) unit vectors.
     
     implicit none
     
@@ -713,8 +673,8 @@ end
 ! REDUCED AND FULL FORM
 !---------------------------------
 
-! The ODF being real implies that n_l^{-m} = (-1)^m  conj(n_l^m)
-! Hence, coefficients for negative m can be concontructed from the coefficients for m.
+! The ODF being real implies that n_l^{-m} = (-1)^m conj(n_l^m)
+! Hence, coefficients for negative m can be constructed from the coefficients for m.
 
 function nlm_reduced(nlm_full) 
 
@@ -742,10 +702,10 @@ end
 ! EXTERNAL, NON-CORE FEATURES
 !---------------------------------
 
-! Elmer ice flow model 
+! Elmer/ice flow model 
 include "elmer/specfab_elmer.f90"
 
-! JOSEF ice flow model 
+! JOSEF ice flow model (Rathmann and Lilien, 2021)
 include "josef/specfab_josef.f90"
 
 end module specfab 

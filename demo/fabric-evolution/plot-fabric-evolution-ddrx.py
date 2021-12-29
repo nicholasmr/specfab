@@ -132,7 +132,7 @@ for tt in plot_tsteps:
     
     axeigvals.plot([0,1],[-tt,-tt],':k',lw=lw) 
     axeigvals.set_ylim([0,1])
-    axeigvals.set_xlim([0, Nt+1])
+    axeigvals.set_xlim([0, Nt])
     axeigvals.set_xlabel('time step')
     axeigvals.set_ylabel('$a_{i}$')
     axeigvals.grid()              

@@ -19,18 +19,29 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib import rcParams, rc, patches
 
+import warnings
+warnings.filterwarnings("ignore")
+
 # plot colors (colorbrewer)
 colorax = c_dred
 
 class SyntheticFabric():
     
-    def __init__(self, L=16, nu=3e-3): 
+    def __init__(self, L=16): 
 
-        self.L  = L # spectral truncation 
-        self.nu0 = nu # Regularization strength (calibrated for L and strain-rate)
-               
-        self.nlm_len = sf.init(self.L) 
-        self.lm = sf.get_lm(self.nlm_len)
+        self.L = L # spectral truncation 
+        self.lm, self.nlm_len = sf.init(self.L) 
+        self.nlm_dummy = np.zeros((self.nlm_len), dtype=np.complex64) 
+            
+    def dndt_REG(self, D):
+
+        if self.L <= 8:
+            dndt_REG = sf.dndt_REG(self.nlm_dummy, D)        
+        else:
+            nu0, expo = 10, 2
+            dndt_REG = dndt_REG_custom(nu0, expo, D, sf) # from header.py
+    
+        return dndt_REG 
     
     ####################################
 
@@ -46,15 +57,17 @@ class SyntheticFabric():
         if STRESSDIRECTION == 'z': 
             STRESSAX = 2
             STRESSAXPERP = 0
+
+        Nc = 120 # Total number of integration steps taken
+        epszz = -0.95 # Target: 5% of initial parcel height
+        D = np.diag([0.5,0.5,-1]); Dzz = D[2,2];
+        te = 1/Dzz # characteristic time, t_e
+        t_epszz = te*np.log(epszz + 1)
+        dt = t_epszz/Nc # time step size for thresshold strain epszz in "Nc" time steps 
+        #tsteps = np.arange(Nc+1) # list of steps
+        #epszz_t = np.exp(tsteps*dt/te)-1 # list of strains
     
-        deformExpr1 = {'ax':STRESSDIRECTION, 't_c':+1000, 'r':0, 'Gamma0':0}
-        deformExpr = deformExpr1
-        
-        t_end = [3000*yr2s, 1500*yr2s]
-        dt    *= yr2s 
-        
-        Nt0 = int(t_end[0]/dt)# Total number of integration steps taken
-        Nt1 = int(t_end[1]/dt)# Total number of integration steps taken
+        Nt0, Nt1 = Nc, int(Nc*0.5)
         Nt = Nt0 + Nt1
         
         ### Construct strain-rate and spin tensor histories
@@ -74,14 +87,14 @@ class SyntheticFabric():
         # Determine D and W for fabric evolution
         for ii in np.arange(Nt0+1):
             t = ii*dt
-            PS = PureShear(+deformExpr['t_c']*yr2s, deformExpr['r'], ax=deformExpr['ax'])
+            PS = PureShear(-te, 0, ax=STRESSDIRECTION)
             strainvec[Nt0-ii] = PS.strain(t)[STRESSAX,STRESSAX]
             xyz0[Nt0-ii,:] = np.matmul(PS.F(t), xyz0_init)
             W[Nt0-ii,:,:], D[Nt0-ii,:,:] = PS.W(), PS.D()            
 
         for ii in np.arange(Nt1+1):
             t = ii*dt
-            PS = PureShear(-deformExpr['t_c']*yr2s, deformExpr['r'], ax=deformExpr['ax'])
+            PS = PureShear(+te, 0, ax=STRESSDIRECTION)
             strainvec[Nt0+ii] = PS.strain(t)[STRESSAX,STRESSAX]
             xyz0[Nt0+ii,:] = np.matmul(PS.F(t), xyz0_init)
             W[Nt0+ii,:,:], D[Nt0+ii,:,:] = PS.W(), PS.D()            
@@ -90,23 +103,24 @@ class SyntheticFabric():
 
         ### Fabric evolution 
         
-        nlm_list      = np.zeros((Nt+1,self.nlm_len), dtype=np.complex128) # The expansion coefficients
+        nlm_list      = np.zeros((Nt+1,self.nlm_len), dtype=np.complex64) # The expansion coefficients
         nlm_list[:,0] = 1/np.sqrt(4*np.pi) # Normalized such that N(t=0) = 1
         eigvals = np.zeros((Nt+1,3))
         
         Eij = np.ones((Nt+1,3,3))
         e1,e2,e3 = [1, 0, 0], [0, 1, 0], [0, 0, 1]
-        Ecc,Eca,alpha,nprime = sf.ecc_opt_lin, sf.eca_opt_lin, sf.alpha_opt_lin, 1
+        Ecc,Eca,alpha,nprime = sf.Ecc_opt_lin, sf.Eca_opt_lin, sf.alpha_opt_lin, 1
         
         nlm_prev = nlm_list[Nt,:].copy()
+        nu0 = 1
         for ii in np.arange(Nt0+1):
             tt = Nt0-ii
             D_, W_ = D[tt,:,:], W[tt,:,:]
-            dndt = sf.nu(self.nu0, D_) * sf.dndt_reg(nlm_prev) # Regularization
-            dndt += sf.dndt_latrot(nlm_prev, D_,W_) # Lattice rotation
+            dndt = sf.dndt_LATROT(nlm_prev, D_,W_) # Lattice rotation
+            dndt += self.dndt_REG(D_) # Regularization
             nlm_list[tt,:] = nlm_prev + dt * np.matmul(dndt, nlm_prev)
             nlm_prev = nlm_list[tt,:]
-            Eij[tt,:,:] = sf.enhfac_eiej(nlm_prev, e1,e2,e3, Ecc,Eca,alpha,nprime) 
+            Eij[tt,:,:] = sf.Eeiej(nlm_prev, e1,e2,e3, Ecc,Eca,alpha,nprime) 
             _,_,_, eigvals[tt,:] = sf.frame(nlm_prev, 'e')
 #            print(eigvals)
         
@@ -114,11 +128,11 @@ class SyntheticFabric():
         for ii in np.arange(Nt1+1):
             tt = Nt0+ii
             D_, W_ = D[tt,:,:], W[tt,:,:]
-            dndt = sf.nu(self.nu0, D_) * sf.dndt_reg(nlm_prev) # Regularization
-            dndt += sf.dndt_latrot(nlm_prev, D_,W_) # Lattice rotation
+            dndt = sf.dndt_LATROT(nlm_prev, D_,W_) # Lattice rotation
+            dndt += nu0 * sf.dndt_REG(nlm_prev, D_) # Regularization
             nlm_list[tt,:] = nlm_prev + dt * np.matmul(dndt, nlm_prev)
             nlm_prev = nlm_list[tt,:]
-            Eij[tt,:,:] = sf.enhfac_eiej(nlm_prev, e1,e2,e3, Ecc,Eca,alpha,nprime) 
+            Eij[tt,:,:] = sf.Eeiej(nlm_prev, e1,e2,e3, Ecc,Eca,alpha,nprime) 
             _,_,_, eigvals[tt,:] = sf.frame(nlm_prev, 'e')
         
         ### Plot

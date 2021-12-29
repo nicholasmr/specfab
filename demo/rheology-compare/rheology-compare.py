@@ -26,7 +26,7 @@ T_EXP_STR = {T_EXP_CC:'cc', T_EXP_SS:'ss'}
 ### Select experiment
 
 T_EXP = T_EXP_CC
-T_EXP = T_EXP_SS
+#T_EXP = T_EXP_SS
 
 DEBUG = 0
 
@@ -40,10 +40,11 @@ Gamma0 = 1*6e-6
 if T_EXP==T_EXP_SS: DDRX_strainthres = 5.5
 if T_EXP==T_EXP_CC: DDRX_strainthres = -0.7 
 
-
 #----------------------
 # Numerics
 #----------------------
+
+L = 20
 
 if T_EXP==T_EXP_SS:
     tau0mag = 1.087e6
@@ -61,15 +62,6 @@ if T_EXP==T_EXP_CC:
 t_c = 1/ugrad0
 T = 1.3 * year2sec
 dt = T/Nt
-
-if DEBUG:
-    L = 12 # Spectral truncation
-    nu0 = 3.0e-3 # Regularization strength (calibrated for L)
-#    nu0 = 0.0e-14 # Regularization strength (calibrated for L)
-else:
-    L = 26 # Spectral truncation
-    nu0 = 3e-3 # Regularization strength (calibrated for L)
-        
         
 #----------------------
 # Grain parameters for enhancement-factor model
@@ -78,8 +70,8 @@ else:
 # Linear (n'=1) mixed Taylor--Sachs enhancements            
 # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
 nprime    = 1 
-Eca_lin   = sf.eca_opt_lin
-Ecc_lin   = sf.ecc_opt_lin
+Eca_lin   = sf.Eca_opt_lin
+Ecc_lin   = sf.Ecc_opt_lin
 alpha_lin = sf.alpha_opt_lin  
 
 #----------------------
@@ -114,9 +106,8 @@ print(strain[ODF_tsteps])
 # Initialize model
 #----------------------
 
-nlm_len  = sf.init(L)         # nlm_len is the number of fabric expansion coefficients (degrees of freedom).
-lm       = sf.get_lm(nlm_len) # The (l,m) values corresponding to the coefficients in "nlm".
-nlm      = np.zeros((Nt,nlm_len), dtype=np.complex128) # The expansion coefficients
+lm, nlm_len = sf.init(L)
+nlm      = np.zeros((Nt,nlm_len), dtype=np.complex64) # The expansion coefficients
 nlm[0,0] = 1/np.sqrt(4*np.pi) # Init with isotropy (Normalized such that N(t=0) = 1)
 
 #----------------------
@@ -145,12 +136,12 @@ with Bar('dt=%.3fyr, Nt=%i :: L=%i (nlm_len=%i) ::'%(dt/year2sec,Nt,L,nlm_len), 
         e1[ttp,:], e2[ttp,:], e3[ttp,:], eig[ttp,:] = sf.frame(c, 'e')
 
         ### Enhancement factors
-        Eij[ttp,:,:] = np.transpose(sf.enhfac_eiej(c, e1[ttp,:],e2[ttp,:],e3[ttp,:], Ecc_lin, Eca_lin, alpha_lin, nprime))
+        Eij[ttp,:,:] = np.transpose(sf.Eeiej(c, e1[ttp,:],e2[ttp,:],e3[ttp,:], Ecc_lin, Eca_lin, alpha_lin, nprime))
         
         ### Y for fabric at constant strain rate
         Y_R[ttp,:,:] = sf.eps_of_tau__orthotropic(       tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:])
-        Y_P[ttp,:,:] = sf.eps_of_tau__orthotropic_pettit(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:])
-        Y_M[ttp,:,:] = sf.eps_of_tau__orthotropic_martin(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:])
+        Y_P[ttp,:,:] = sf.eps_of_tau__orthotropic_Pettit(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:])
+        Y_M[ttp,:,:] = sf.eps_of_tau__orthotropic_Martin(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:])
  
         # Verify enhancement factors are correct
         if False:
@@ -165,23 +156,23 @@ with Bar('dt=%.3fyr, Nt=%i :: L=%i (nlm_len=%i) ::'%(dt/year2sec,Nt,L,nlm_len), 
                 Eij_ = Eij[ttp,ii,jj]
                 Y_G_ = np.tensordot(sf.eps_of_tau__isotropic(tau0, Aglen,nglen), eij, axes=2)
                 Eij_R = np.tensordot(sf.eps_of_tau__orthotropic(       tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:]), eij, axes=2) / Y_G_
-                Eij_P = np.tensordot(sf.eps_of_tau__orthotropic_pettit(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:]), eij, axes=2) / Y_G_
-                Eij_M = np.tensordot(sf.eps_of_tau__orthotropic_martin(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:]), eij, axes=2) / Y_G_
+                Eij_P = np.tensordot(sf.eps_of_tau__orthotropic_Pettit(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:]), eij, axes=2) / Y_G_
+                Eij_M = np.tensordot(sf.eps_of_tau__orthotropic_Martin(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:]), eij, axes=2) / Y_G_
                 print("(i,j)=(%i,%i) :: Eij_R/Eij = %.3e --- Eij_P/Eij = %.3e --- Eij_M/Eij = %.3e :: Eij = %.3e"%(ii,jj, Eij_R/Eij_, Eij_P/Eij_, Eij_M/Eij_, Eij_))
             print("\n")
  
         if tt == Nt: break # We're done after calculating Y for the last step!
         
         ### Fabric evolution
-        nu = sf.nu(nu0, eps)
-        dndt = 0 * nu*sf.dndt_reg(c)
         
         if np.abs(strain[tt]) <= np.abs(DDRX_strainthres):
-            dndt += nu*sf.dndt_reg(c)
-            dndt += sf.dndt_latrot(c, eps, omg) 
+            dndt = sf.dndt_LATROT(c, eps, omg) 
         else:
-            dndt += Gamma0 * sf.dndt_ddrx(c, tau0)  # TODO : should be tau0
-
+            dndt = Gamma0 * sf.dndt_DDRX(c, tau0) 
+            
+        nu0, expo = 10, 2
+        dndt += dndt_REG_custom(nu0, expo, eps, sf) # from header.py
+        
         nlm[tt,:] = c + dt*np.matmul(dndt, c)
         
         bar.next()

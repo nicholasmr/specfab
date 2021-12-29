@@ -8,6 +8,9 @@ import sys, os, copy, code # code.interact(local=locals())
 sys.path.insert(0, '..')
 from header import *
 
+import warnings
+warnings.filterwarnings("ignore")
+
 #------------------
 # Input arguments
 #------------------
@@ -32,7 +35,7 @@ fh = Dataset('solutions/LATROT_%s.nc'%(exprref), mode='r')
 loadvar = lambda field: np.array(fh.variables[field][:])
 
 # Model config
-Nt, dt, nu, L = fh.getncattr('tsteps'), fh.getncattr('dt'), fh.getncattr('nu'), fh.getncattr('L')
+Nt, dt, L = fh.getncattr('tsteps'), fh.getncattr('dt'), fh.getncattr('L')
 
 # Grain parameters
 Eca_lin,  Ecc_lin  = fh.getncattr('Eca_lin'),  fh.getncattr('Ecc_lin')
@@ -211,7 +214,7 @@ for tt in plot_tsteps:
     #----------------------
     
     props = dict(boxstyle='square', facecolor='wheat', alpha=0.5)
-    textstr1 = '\n'.join(( r'"%s"'%(exprref.replace('_', '\_')), r'$L = %i$'%(L), r'$\nu = %.2e$'%(nu) ))
+    textstr1 = '\n'.join(( r'"%s"'%(exprref.replace('_', '\_')), r'$L = %i$'%(L) ))
     axeigvals.text(-1.6, -0.1, textstr1, transform=axeigvals.transAxes, fontsize=FS, bbox=props)
 
     #----------------------

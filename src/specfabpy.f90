@@ -39,10 +39,13 @@ module specfabpy
         Eca_opt_nlin__sf   => Eca_opt_nlin, &
         Ecc_opt_nlin__sf   => Ecc_opt_nlin, &
         alpha_opt_nlin__sf => alpha_opt_nlin, &
+        Ldiag__sf => Ldiag, &
         ae2_to_a2__sf => ae2_to_a2, ae4_to_a4__sf => ae4_to_a4, & 
         a4_IBOF__sf => a4_IBOF, &
         nlm_reduced__sf => nlm_reduced, &
-        nlm_full__sf => nlm_full
+        nlm_full__sf => nlm_full, &
+        lm__sf => lm, &
+        nlm_len__sf => nlm_len
         
     implicit none
     
@@ -54,6 +57,8 @@ module specfabpy
     real(kind=dp), parameter :: Eca_opt_nlin   = Eca_opt_nlin__sf
     real(kind=dp), parameter :: Ecc_opt_nlin   = Ecc_opt_nlin__sf
     real(kind=dp), parameter :: alpha_opt_nlin = alpha_opt_nlin__sf
+    
+    integer :: Lcap
 
 contains
 
@@ -61,23 +66,18 @@ contains
     ! SETUP
     !---------------------------------
 
-    subroutine init(L, nlmlen) 
+    subroutine init(L, lm, nlm_len) 
         implicit none
         integer, intent(in)  :: L
-        integer, intent(out) :: nlmlen
+        integer, intent(out) :: lm(2,(L+1)*(L+2)/2)
+        integer, intent(out) :: nlm_len
         
+        Lcap = L
         call initspecfab(L)
-        nlmlen = nlm_len
+        nlm_len = nlm_len__sf
+        lm = lm__sf(:,1:nlm_len)
     end
-    
-    function get_lm(nlmlen)
-        implicit none
-        integer, intent(in) :: nlmlen
-        integer             :: get_lm(2,nlmlen)
-        
-        get_lm(:,:) = lm(:,1:nlmlen)
-    end
-        
+
     !---------------------------------
     ! FABRIC DYNAMICS
     !---------------------------------
@@ -112,24 +112,29 @@ contains
         dndt_DDRX_src = dndt_ij_DDRX_src(tau)
     end
     
-    function dndt_REG(nlm)
+    function dndt_REG(nlm, eps)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
-        complex(kind=dp)             :: dndt_REG(size(nlm),size(nlm))
+        real(kind=dp), intent(in)    :: eps(3,3)
+        real(kind=dp)                :: dndt_REG(size(nlm),size(nlm))
         
-        dndt_REG = dndt_ij_REG() 
+        dndt_REG = dndt_ij_REG(eps) 
     end    
     
-    function nu(nu0, eps)
+    function Lmat(nlm)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in) :: nu0, eps(3,3)
-        real(kind=dp)             :: nu
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp)                :: Lmat(size(nlm),size(nlm))
+        integer                      :: ii
         
-        nu = f_nu_eps(nu0, eps)
-    end
-
+        Lmat = 0.0
+        do ii = 1, size(nlm)
+            Lmat(ii,ii) = Ldiag__sf(ii) ! Laplacian (diagonal) matrix
+        end do
+    end    
+    
     !---------------------------------
     ! FABRIC FRAME
     !---------------------------------
@@ -148,7 +153,7 @@ contains
     ! ENHANCEMENT FACTORS
     !------------------
     
-    function enhfac_vw(a2,a4,a6,a8, vw,tau, Ecc,Eca,alpha,nprime) result(Evw)
+    function Evw(a2,a4,a6,a8, vw,tau, Ecc,Eca,alpha,nprime) 
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in) :: vw(3,3), tau(3,3), Ecc,Eca,alpha
@@ -160,7 +165,7 @@ contains
                 + alpha*Evw_Tay(vw, tau, a2,a4,       Ecc,Eca,nprime)
     end
     
-    function enhfac_eiej(nlm, e1,e2,e3, Ecc,Eca,alpha,nprime) result(Eeiej)
+    function Eeiej(nlm, e1,e2,e3, Ecc,Eca,alpha,nprime) 
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)

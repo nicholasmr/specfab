@@ -9,9 +9,9 @@ program demo
 
     integer, parameter :: dp = 8
 
-    ! Numerics
-    real, parameter    :: dt = 0.1 * 3.154e+7 ! 1/10 year
-    integer, parameter :: Nt = 500 ! Number of time steps
+    ! Numerics (match the LATROT demo)
+    real, parameter    :: dt = 0.0782404601085629 
+    integer, parameter :: Nt = 50 ! Number of time steps
 
     ! Constants and argv strings    
     integer          :: ii,tt ! loop vars
@@ -24,7 +24,7 @@ program demo
     real(kind=dp)                 :: ugrad(3,3), tau(3,3) ! Large-scale deformation tensors
 
     ! DRX
-    real(kind=dp), parameter :: Gamma0 = 1d-8 ! Sets DRX time scale
+    real(kind=dp), parameter :: Gamma0 = 4d+0 ! Sets DDRX time scale
 
     ! For dumping state to netCDF
     complex(kind=dp), allocatable   :: nlm_save(:,:)

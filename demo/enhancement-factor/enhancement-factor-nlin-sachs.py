@@ -63,7 +63,7 @@ tau_ss_mt = tau0*(mt + mt.T)
 tau_ss_pq = tau0*(pq + pq.T)
 
 L = 10
-nlm_len = sf.init(L) # nlm_len is the number of fabric expansion coefficients (degrees of freedom).
+lm, nlm_len = sf.init(L) # nlm_len is the number of fabric expansion coefficients (degrees of freedom).
 
 #-----------------------
 # MAP
@@ -81,9 +81,9 @@ for nn, nprime in enumerate(nprime_list):
 
     for ii,Eca in enumerate(Eca_list):
         for jj,Ecc in enumerate(Ecc_list):
-            Emm[nn,ii,jj] = sf.enhfac_vw(r2,r4,r6,r8, mm,tau_ps_mm, Ecc,Eca,0,nprime) # enhfac_vw(a2,a4,a6,a8, vw,tau, Ecc,Eca,alpha,nprime)
-            Emt[nn,ii,jj] = sf.enhfac_vw(r2,r4,r6,r8, mt,tau_ss_mt, Ecc,Eca,0,nprime)
-            Epq[nn,ii,jj] = sf.enhfac_vw(r2,r4,r6,r8, pq,tau_ss_pq, Ecc,Eca,0,nprime)
+            Emm[nn,ii,jj] = sf.Evw(r2,r4,r6,r8, mm,tau_ps_mm, Ecc,Eca,0,nprime) # Evw(a2,a4,a6,a8, vw,tau, Ecc,Eca,alpha,nprime)
+            Emt[nn,ii,jj] = sf.Evw(r2,r4,r6,r8, mt,tau_ss_mt, Ecc,Eca,0,nprime)
+            Epq[nn,ii,jj] = sf.Evw(r2,r4,r6,r8, pq,tau_ss_pq, Ecc,Eca,0,nprime)
 
         
 X = np.array([[ Ecc for Ecc in Ecc_list]   for Eca in Eca_list])
