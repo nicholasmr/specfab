@@ -6,6 +6,7 @@ module moments
 
     integer, parameter, private :: dp = 8 ! Default precision
     real, parameter, private    :: Pi = 3.1415927
+    integer, parameter, private :: identity(3,3)  = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
 !    integer, private :: ii
 
 contains      
@@ -22,10 +23,11 @@ contains
     function f_ev_c2(n00,n2m) result(ev)
         implicit none
         complex(kind=dp), intent(in) :: n00, n2m(-2:2)
+        complex(kind=dp) :: n2mhat(0:2)
         real(kind=dp) :: k = 0.0, ev(3,3)
         ev = 0.0
         include "include/ev_c2__body.f90"
-        ev = ev * k/f_ev_c0(n00)
+!        ev = ev * k/f_ev_c0(n00) ! not needed, <c^2> already normalized
     end
     
     function f_ev_c4(n00,n2m,n4m) result(ev)

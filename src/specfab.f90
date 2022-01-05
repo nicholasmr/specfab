@@ -6,6 +6,7 @@ module specfab
     use moments
     use gaunt
     use rheologies
+    use reducedform
 
     implicit none 
 
@@ -15,36 +16,25 @@ module specfab
     complex(kind=dp), parameter, private :: r = (1,0), i = (0,1) ! real and imag units
     integer, private :: ii, jj, kk, ll, mm ! Loop indicies
 
-    ! Expansion series: n(theta,phi) = sum_{l,m}^{Lcap,:} n_l^m Y_l^m(theta,phi) 
+    ! Distribution expansion series: n(theta,phi) = sum_{l,m}^{Lcap,:} n_l^m Y_l^m(theta,phi) 
+    
     ! where "nlm" vector := n_l^m = (n_0^0, n_2^-2, n_2^-1, n_2^0, n_2^1, n_2^2, n_4^-4, ... ) 
     integer, private   :: Lcap    ! Truncation "L" of expansion series (internal copy of what was passed to the init routine).
-    integer            :: nlm_len             ! Total number of expansion coefficients (i.e. DOFs)
-    integer            :: nlm_reduced_len     ! ...same but for "reduced" nlm vector (see below comment on reduced form since ODF is real-valued).
-    integer            :: nlm_reduced_neg_len ! ...same but for negative part of "reduced" nlm vector
-    integer, parameter :: Lcap__max                   = 30 ! Hard limit
-    integer, parameter :: nlm_len_from_L(0:Lcap__max) = [((ll+1)*(ll+2)/2, ll=0, Lcap__max, 1)] ! nlm length for a given Lcap: sum_{l=0}^L (2*l+1) **for even l** = sum_{l=0}^{L/2} (4*l+1) = (L+1)*(L+2)/2
-    integer, parameter :: nlm_len__max                = nlm_len_from_L(Lcap__max)
+    integer            :: nlm_len ! Total number of expansion coefficients (i.e. DOFs)
+    integer, parameter :: Lcap__max               = 30 ! Hard limit
+    integer, parameter :: nlm_lenvec(0:Lcap__max) = [((ll+1)*(ll+2)/2, ll=0, Lcap__max, 1)] ! nlm length for a given Lcap: sum_{l=0}^L (2*l+1) **for even l** = sum_{l=0}^{L/2} (4*l+1) = (L+1)*(L+2)/2
+    integer, parameter :: nlm_lenmax              = nlm_lenvec(Lcap__max)
     
-    ! For converting between full (nlm) and reduced (nlm_reduced) forms of nlm by noting n_l^{-m} = (-1)^m conj(n_l^m) for real-valued ODFs.
-    integer, parameter, private :: nlm_reduced_len_from_L(0:Lcap__max)     = [( (ll+2)**2/4,     ll=0, Lcap__max, 1)] ! nlm length for a given Lcap: sum_{l=0}^L (1*l+1) **for even l** = sum_{l=0}^{L/2} (2*l+1) = (L+2)^2/4
-    integer, parameter, private :: nlm_reduced_neg_len_from_L(0:Lcap__max) = [( ll*(ll+2)/4,     ll=0, Lcap__max, 1)] ! nlm length for a given Lcap: sum_{l=0}^L l       **for even l** = sum_{l=0}^{L/2} (2*l)   = L*(L+2)/4
-    integer, parameter, private :: nlm_reduced_len__max                    = nlm_reduced_len_from_L(Lcap__max)
-    integer, parameter, private :: nlm_reduced_neg_len__max                = nlm_reduced_neg_len_from_L(Lcap__max)
-    integer, parameter, private :: I_full(nlm_len__max)                    = [( (kk+nlm_reduced_len_from_L(ll)-1*ll, kk=ll, 1, -1), (kk+nlm_reduced_len_from_L(ll)-1*ll, kk=0, ll, 1), ll=0, Lcap__max, 2)] ! nlm(1:nlm_len) = Mdiag(1:nlm_len) * nlm_reduced(I_full(1:nlm_len(L))) ...and then nlm(I_reduced_neg(1:nlm_reduced_neg_len(L))) = conj( nlm(I_reduced_neg(1:nlm_reduced_neg_len(L))) )
-    integer, parameter, private :: I_reduced(nlm_reduced_len__max)         = [( (kk+nlm_len_from_L(ll)-ll , kk=0, ll, 1), ll=0, Lcap__max, 2)]     ! nlm_reduced     = nlm(I_reduced(    1:nlm_reduced_len(L))) = (n_0^0, n_2^0, n_2^1, n_2^2, n_4^0, ... ) 
-    integer, parameter, private :: I_reduced_neg(nlm_reduced_neg_len__max) = [( (kk+nlm_len_from_L(ll)-2*ll , kk=0, ll-1, 1), ll=0, Lcap__max, 2)] ! nlm_reduced_neg = nlm(I_reduced_neg(1:nlm_reduced_len(L))) = (n_2^-2, n_2^-1, n_4^-4, n_4^-3, n_4^-2, n_4^-1, n_6^-6, ... ) 
-    integer, parameter, private :: Mdiag(nlm_len__max)                     = [( ((-1)**(mm), mm=ll, 1, -1), (1, kk=0, ll, 1), ll=0, Lcap__max, 2)] ! For adjusting odd negative m values with a factor of -1 (i.e. the (-1)^m factor in n_l^{-m} = (-1)^m conj(n_l^m))
-
     ! (l,m) vector, etc.
-    integer, parameter :: lm(2,nlm_len__max) = reshape([( (ll,mm, mm=-ll,ll), ll=0,  Lcap__max,2)], [2,nlm_len__max]) ! These are the (l,m) values corresponding to the coefficients in "nlm".
+    integer, parameter :: lm(2,nlm_lenmax) = reshape([( (ll,mm, mm=-ll,ll), ll=0,  Lcap__max,2)], [2,nlm_lenmax]) ! These are the (l,m) values corresponding to the coefficients in "nlm".
     integer, parameter :: I_l0=1, I_l2=I_l0+1, I_l4=I_l2+(2*2+1), I_l6=I_l4+(2*4+1), I_l8=I_l6+(2*6+1), I_l10=I_l8+(2*8+1) ! Indices for extracting l=0,2,4,6,8 coefs of nlm
     
     ! Static (constant) matrices used for spectral dynamics
-    real(kind=dp), parameter :: Ldiag(nlm_len__max) = [( -(lm(1,ii)*(lm(1,ii)+1)), ii=1, nlm_len__max )] ! Diagonal entries of Laplacian diffusion operator.
+    real(kind=dp), parameter :: Ldiag(nlm_lenmax) = [( -(lm(1,ii)*(lm(1,ii)+1)), ii=1, nlm_lenmax )] ! Diagonal entries of Laplacian diffusion operator.
 
     ! Enhancement-factor related
     real(kind=dp), private :: ev_c2_iso(3,3), ev_c4_iso(3,3,3,3), ev_c6_iso(3,3,3,3, 3,3), ev_c8_iso(3,3,3,3, 3,3,3,3) ! <c^k> for isotropic n(theta,phi)
-    real(kind=dp), parameter, private :: identity(3,3)  = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
+    integer, parameter, private :: identity(3,3)  = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
     
     ! Optimal n'=1 (lin) grain parameters 
     ! These are the linear mixed Taylor--Sachs best-fit parameters from Rathmann and Lilien (2021)
@@ -69,14 +59,13 @@ subroutine initspecfab(Lcap_)
     ! Needs to be called once before using the module routines.
 
     implicit none    
-    integer, intent(in) :: Lcap_ ! Trauncation "Lcap"
-    complex(kind=dp)    :: nlm_iso(nlm_len__max) = 0.0
+    integer, intent(in) :: Lcap_ ! Truncation "Lcap"
+    complex(kind=dp)    :: nlm_iso(nlm_lenmax) = 0.0
     
     Lcap = Lcap_ ! Save internal copy
-    
-    nlm_len             = nlm_len_from_L(Lcap)             ! Number of DOFs (expansion coefficients) for full nlm vector
-    nlm_reduced_len     = nlm_reduced_len_from_L(Lcap)     ! ...same but for reduced nlm vector
-    nlm_reduced_neg_len = nlm_reduced_neg_len_from_L(Lcap) ! ...same but for negative "m" part of reduced nlm vector
+    nlm_len = nlm_lenvec(Lcap) ! Number of DOFs (expansion coefficients) for full nlm vector
+
+    call initreduced(Lcap) ! Initialize reduced nlm module for 2D (x-z) problems
 
     ! Set gaunt coefficients (overlap integrals involving three spherical harmonics)
     call set_gaunts()
@@ -667,35 +656,6 @@ function quad_tp(M) result (q1m)
     
     ! components (1,-1), (1,0), (1,+1)
     q1m = fsq1*[r*M(y,z)-i*M(x,z), r*sqrt(2.)*M(x,y), -r*M(y,z)-i*M(x,z)]
-end
-
-!---------------------------------
-! REDUCED AND FULL FORM
-!---------------------------------
-
-! The ODF being real implies that n_l^{-m} = (-1)^m conj(n_l^m)
-! Hence, coefficients for negative m can be constructed from the coefficients for m.
-
-function nlm_reduced(nlm_full) 
-
-    implicit none
-
-    complex(kind=dp), intent(in) :: nlm_full(nlm_len)
-    complex(kind=dp)             :: nlm_reduced(nlm_reduced_len)
-    
-    nlm_reduced = nlm_full(I_reduced(1:nlm_reduced_len))
-end
-
-function nlm_full(nlm_reduced) 
-
-    implicit none
-
-    complex(kind=dp), intent(in) :: nlm_reduced(nlm_reduced_len)
-    complex(kind=dp)             :: nlm_full(nlm_len)
-
-    nlm_full(1:nlm_len) = Mdiag(1:nlm_len) * nlm_reduced(I_full(1:nlm_len)) 
-    nlm_full(I_reduced_neg(1:nlm_reduced_neg_len)) = conjg( nlm_full(I_reduced_neg(1:nlm_reduced_neg_len)) )
-
 end
 
 !---------------------------------

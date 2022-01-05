@@ -42,10 +42,12 @@ module specfabpy
         Ldiag__sf => Ldiag, &
         ae2_to_a2__sf => ae2_to_a2, ae4_to_a4__sf => ae4_to_a4, & 
         a4_IBOF__sf => a4_IBOF, &
-        nlm_reduced__sf => nlm_reduced, &
-        nlm_full__sf => nlm_full, &
+        nlm_to_rnlm__sf => nlm_to_rnlm, &
+        rnlm_to_nlm__sf => rnlm_to_nlm, &
+        dndt_to_drndt__sf => dndt_to_drndt, &
         lm__sf => lm, &
-        nlm_len__sf => nlm_len
+        nlm_len__sf => nlm_len, &
+        rnlm_len__sf => rnlm_len
         
     implicit none
     
@@ -370,31 +372,41 @@ contains
     ! AUX
     !---------------------------------
 
-    subroutine get_nlm_reduced_len(nlm_red_len) 
+    subroutine get_rnlm_len(rnlm_len) 
         implicit none
-        integer, intent(out) :: nlm_red_len
+        integer, intent(out) :: rnlm_len
         
-        nlm_red_len = nlm_reduced_len
+        rnlm_len = rnlm_len__sf
     end
 
-    function nlm_reduced(nlm_full, nlm_red_len) ! pass nlm_reduced_len, which can be obtained by calling get_nlm_reduced_len()
+    function nlm_to_rnlm(nlm, rnlm_len) result(rnlm) 
         use specfabpy_const
         implicit none
-        complex(kind=dp), intent(in) :: nlm_full(:)
-        integer, intent(in)          :: nlm_red_len
-        complex(kind=dp)             :: nlm_reduced(nlm_red_len)
+        complex(kind=dp), intent(in) :: nlm(:)
+        integer, intent(in)          :: rnlm_len
+        complex(kind=dp)             :: rnlm(rnlm_len)
         
-        nlm_reduced = nlm_reduced__sf(nlm_full)
+        rnlm = nlm_to_rnlm__sf(nlm)
     end
     
-    function nlm_full(nlm_red, nlm_len) 
+    function rnlm_to_nlm(rnlm, nlm_len) result (nlm)
         use specfabpy_const
         implicit none
-        complex(kind=dp), intent(in) :: nlm_red(:)
+        complex(kind=dp), intent(in) :: rnlm(:)
         integer, intent(in)          :: nlm_len
-        complex(kind=dp)             :: nlm_full(nlm_len)
+        complex(kind=dp)             :: nlm(nlm_len)
         
-        nlm_full = nlm_full__sf(nlm_red)
+        nlm = rnlm_to_nlm__sf(rnlm)
+    end
+    
+    function dndt_to_drndt(dndt, rnlm_len) result (drndt)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: dndt(:,:)
+        integer, intent(in)          :: rnlm_len
+        real(kind=dp)                :: drndt(rnlm_len,rnlm_len)
+        
+        drndt = dndt_to_drndt__sf(dndt)
     end
     
     function DDRX_decayrate(nlm, tau)

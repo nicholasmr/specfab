@@ -1,10 +1,17 @@
-k=Sqrt((2*Pi)/15.)
-ev(1,1)=REAL(((10.0)*n00 + (-2.0)*Sqrt((5.0))*n2m(0) + Sqrt((30.0))*(n2m(-2) + n2m(+2)))/Sqrt((30.0)))
-ev(1,2)=REAL((0,1)*((-1.0)*n2m(-2) + n2m(+2)))
-ev(1,3)=REAL(n2m(-1) + (-1.0)*n2m(+1))
-ev(2,1)=REAL((0,1)*((-1.0)*n2m(-2) + n2m(+2)))
-ev(2,2)=REAL(((10.0)*n00 + (-1.0)*Sqrt((5.0))*((2.0)*n2m(0) + Sqrt((6.0))*(n2m(-2) + n2m(+2))))/Sqrt((30.0)))
-ev(2,3)=REAL((0,1)*((-1.0)*n2m(-1) + (-1.0)*n2m(+1)))
-ev(3,1)=REAL(n2m(-1) + (-1.0)*n2m(+1))
-ev(3,2)=REAL((0,1)*((-1.0)*n2m(-1) + (-1.0)*n2m(+1)))
-ev(3,3)=REAL(Sqrt(0.13333333333333333)*((5.0)*n00 + (2.0)*Sqrt((5.0))*n2m(0)))
+n2mhat(0:2) = n2m(0:2)/n00
+
+ev(1,1) = -0.5d0*sqrt(2.0d0/3)*real(n2mhat(0)) + real(n2mhat(2)) 
+ev(2,2) = -0.5d0*sqrt(2.0d0/3)*real(n2mhat(0)) - real(n2mhat(2)) 
+ev(3,3) =       +sqrt(2.0d0/3)*real(n2mhat(0))
+
+ev(1,2) = -aimag(n2mhat(2))
+ev(2,1) = ev(1,2)
+
+ev(1,3) = -real(n2mhat(1))
+ev(3,1) = ev(1,3)
+
+ev(2,3) = +aimag(n2mhat(1))
+ev(3,2) = ev(2,3)
+
+!k = f_ev_c0(n00) ! already normalized => k/f_ev_c0(n00) = 1
+ev = sqrt(2/15.0d0)*ev + identity/3.0d0

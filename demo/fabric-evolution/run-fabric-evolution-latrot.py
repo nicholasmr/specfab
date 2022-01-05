@@ -52,6 +52,7 @@ if arg_exp == 'ue_zz': ugrad = -1*np.diag([.5, .5, -1])
 if arg_exp == 'cc_zx': ugrad = np.diag([1, 0, -1])
 if arg_exp == 'cc_zy': ugrad = np.diag([0, 1, -1])
 if arg_exp == 'cc_yx': ugrad = np.diag([1, -1, 0])
+if arg_exp == 'cc_xy': ugrad = np.diag([-1, 1, 0])
 
 if arg_exp == 'ss_xz': ugrad = np.array([[0,0,1], [0,0,0], [0,0,0]])
 if arg_exp == 'ss_xy': ugrad = np.array([[0,1,0], [0,0,0], [0,0,0]])
