@@ -1,6 +1,6 @@
 # Spectral orientation fabric model for polycrystals
 A spectral fabric model for polycrystalline materials (e.g. ice, olivine, etc.) that 
-- Can model dynamical processes such as kinematic lattice (c-axis) rotation (Svendsen and
+- Can model dynamic/kinematic processes such as kinematic lattice (c-axis) rotation (Svendsen and
 Hutter, 1996), discontinuous dynamic recrystallization (Placidi and others, 2010), and rotation recrystallization (Gödert, 2003).
 - Can calculate fabric-induced directional viscosities (directional strain-rate enhancement factors) using Sachs/Taylor homogenization schemes.
 - Contains analytical expressions for both forward and inverse anisotropic rheologies such as the transversely isotropic rheology and the orthotropic rheology.
