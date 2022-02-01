@@ -6,7 +6,7 @@ module tensorproducts
 
     integer, parameter, private :: dp = 8 ! Default precision
     real, parameter, private    :: Pi = 3.1415927
-    integer, private            :: ii,jj,kk,ll,mm,nn,oo,pp ! loop indicies
+    integer, private            :: ii,jj,kk,ll,mm,nn,oo,pp ! loop indices
 
 contains      
 

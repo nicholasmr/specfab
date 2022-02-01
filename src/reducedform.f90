@@ -7,8 +7,8 @@ module reducedform
     implicit none 
 
     integer, parameter, private :: dp = 8 ! Default precision
-    integer, private :: ii, jj, kk, ll, mm ! Loop indicies
-    integer, parameter, private :: Lcap__max = 30 ! Hard limit (should be the same value as in specfab.f90)
+    integer, private :: ii, jj, kk, ll, mm ! Loop indices
+    integer, parameter, private :: Lcap__max = 30 ! Hard limit (should be the same value as in dynamics.f90)
     
     !----------
     
@@ -48,100 +48,100 @@ module reducedform
 
 contains      
 
-subroutine initreduced(Lcap_) 
+    subroutine initreduced(Lcap_) 
 
-    ! Needs to be called once before using the module routines.
+        ! Needs to be called once before using the module routines.
 
-    implicit none    
-    integer, intent(in) :: Lcap_ ! Truncation "Lcap"
-    
-    Lcap = Lcap_ ! Save internal copy
-    
-    nlm_len      = nlm_lenvec(Lcap)
-    rnlm_len     = rnlm_all_lenvec(Lcap)
-    rnlm_pos_len = rnlm_pos_lenvec(Lcap)
-    rnlm_neg_len = rnlm_neg_lenvec(Lcap)
-    
-end
+        implicit none    
+        integer, intent(in) :: Lcap_ ! Truncation "Lcap"
+        
+        Lcap = Lcap_ ! Save internal copy
+        
+        nlm_len      = nlm_lenvec(Lcap)
+        rnlm_len     = rnlm_all_lenvec(Lcap)
+        rnlm_pos_len = rnlm_pos_lenvec(Lcap)
+        rnlm_neg_len = rnlm_neg_lenvec(Lcap)
+        
+    end
 
-function dndt_to_drndt(dndt) result (drndt)
-    
-    ! *** Convert dndt_ij (full matrix) to drndt_ij (reduced matrix) such that: d/dt (rnlm)_i = drndt_ij (rnlm)_j
+    function dndt_to_drndt(dndt) result (drndt)
+        
+        ! *** Convert dndt_ij (full matrix) to drndt_ij (reduced matrix) such that: d/dt (rnlm)_i = drndt_ij (rnlm)_j
 
-    ! NOTICE: x-y rotation will make rnlm_j complex valued, in which case drndt_ij does not work as intended (i.e. the full problem involving dndt_ij and nlm_j must be solved).
+        ! NOTICE: x-y rotation will make rnlm_j complex valued, in which case drndt_ij does not work as intended (i.e. the full problem involving dndt_ij and nlm_j must be solved).
 
-    implicit none
+        implicit none
 
-    complex(kind=dp), intent(in) :: dndt(nlm_len,nlm_len)
-    real(kind=dp)                :: drndt(rnlm_len,rnlm_len)
-    integer                      :: kk
+        complex(kind=dp), intent(in) :: dndt(nlm_len,nlm_len)
+        real(kind=dp)                :: drndt(rnlm_len,rnlm_len)
+        integer                      :: kk
 
-    drndt = 0.0d0
+        drndt = 0.0d0
 
-    do ii = 1, rnlm_len
-        do jj = 1, nlm_len
-            
-            kk = I_full(jj)
-            
-            if (lm(2,jj) >= 0) then ! m >= 0
-                drndt(ii,kk) = drndt(ii,kk) + real(dndt(I_all(ii), jj))
-            else ! m < 0
-                if (MOD(lm(2,jj),2) .eq. 0) then ! m even
+        do ii = 1, rnlm_len
+            do jj = 1, nlm_len
+                
+                kk = I_full(jj)
+                
+                if (lm(2,jj) >= 0) then ! m >= 0
                     drndt(ii,kk) = drndt(ii,kk) + real(dndt(I_all(ii), jj))
-                else ! m odd
-                    drndt(ii,kk) = drndt(ii,kk) - real(dndt(I_all(ii), jj))
+                else ! m < 0
+                    if (MOD(lm(2,jj),2) .eq. 0) then ! m even
+                        drndt(ii,kk) = drndt(ii,kk) + real(dndt(I_all(ii), jj))
+                    else ! m odd
+                        drndt(ii,kk) = drndt(ii,kk) - real(dndt(I_all(ii), jj))
+                    end if
                 end if
-            end if
-            
+                
+            end do
         end do
-    end do
-end
+    end
 
-function rnlm_to_nlm(rnlm) result(nlm)
+    function rnlm_to_nlm(rnlm) result(nlm)
 
-    ! *** Convert reduced (rnlm) to full (nlm)
+        ! *** Convert reduced (rnlm) to full (nlm)
 
-    implicit none
+        implicit none
 
-    complex(kind=dp), intent(in) :: rnlm(rnlm_len)
-    complex(kind=dp)             :: nlm(nlm_len)
+        complex(kind=dp), intent(in) :: rnlm(rnlm_len)
+        complex(kind=dp)             :: nlm(nlm_len)
 
-    nlm(1:nlm_len) = Mdiag(1:nlm_len) * rnlm(I_full(1:nlm_len)) 
-    nlm(I_neg(1:rnlm_neg_len)) = conjg( nlm(I_neg(1:rnlm_neg_len)) )
-end
+        nlm(1:nlm_len) = Mdiag(1:nlm_len) * rnlm(I_full(1:nlm_len)) 
+        nlm(I_neg(1:rnlm_neg_len)) = conjg( nlm(I_neg(1:rnlm_neg_len)) )
+    end
 
-function nlm_to_rnlm(nlm) result(rnlm)
+    function nlm_to_rnlm(nlm) result(rnlm)
 
-    ! *** Convert full (nlm) to reduced (rnlm) 
+        ! *** Convert full (nlm) to reduced (rnlm) 
 
-    implicit none
+        implicit none
 
-    complex(kind=dp), intent(in) :: nlm(nlm_len)
-    complex(kind=dp)             :: rnlm(rnlm_len)
-    
-    rnlm = nlm(I_all(1:rnlm_len))
-end
+        complex(kind=dp), intent(in) :: nlm(nlm_len)
+        complex(kind=dp)             :: rnlm(rnlm_len)
+        
+        rnlm = nlm(I_all(1:rnlm_len))
+    end
 
-! *** For validation purposes only ***
+    ! *** For validation purposes only ***
 
-function nlm_to_rnlm_pos(nlm) result(rnlm_pos)
+    function nlm_to_rnlm_pos(nlm) result(rnlm_pos)
 
-    implicit none
+        implicit none
 
-    complex(kind=dp), intent(in) :: nlm(nlm_len)
-    complex(kind=dp)             :: rnlm_pos(rnlm_pos_len)
-    
-    rnlm_pos = nlm(I_pos(1:rnlm_pos_len))
-end
+        complex(kind=dp), intent(in) :: nlm(nlm_len)
+        complex(kind=dp)             :: rnlm_pos(rnlm_pos_len)
+        
+        rnlm_pos = nlm(I_pos(1:rnlm_pos_len))
+    end
 
-function nlm_to_rnlm_neg(nlm) result(rnlm_neg)
+    function nlm_to_rnlm_neg(nlm) result(rnlm_neg)
 
-    implicit none
+        implicit none
 
-    complex(kind=dp), intent(in) :: nlm(nlm_len)
-    complex(kind=dp)             :: rnlm_neg(rnlm_neg_len)
-    
-    rnlm_neg = nlm(I_neg(1:rnlm_neg_len))
-end
+        complex(kind=dp), intent(in) :: nlm(nlm_len)
+        complex(kind=dp)             :: rnlm_neg(rnlm_neg_len)
+        
+        rnlm_neg = nlm(I_neg(1:rnlm_neg_len))
+    end
 
 end module reducedform 

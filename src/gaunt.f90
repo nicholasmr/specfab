@@ -10,8 +10,8 @@ module gaunt
 
 contains
 
-subroutine set_gaunts()
-    include "include/gaunt__body.f90"
-end
+    subroutine set_gaunts()
+        include "include/gaunt__body.f90"
+    end
     
 end module gaunt

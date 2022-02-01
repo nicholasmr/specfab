@@ -4,7 +4,7 @@ module specfabpy_const
 
     implicit none
     integer, parameter :: dp = 8 ! Default precision
-    real, parameter    :: Pi = 3.1415927
+    real, parameter    :: Pi = 3.141592653589793
     integer, parameter :: x = 1, y = 2, z = 3 ! Matrix indices
     
 end module specfabpy_const
@@ -28,26 +28,26 @@ module specfabpy
         eps_of_tau__orthotropic_Martin__sf => eps_of_tau__orthotropic_Martin, &
         tau_of_eps__orthotropic_Pettit__sf => tau_of_eps__orthotropic_Pettit, &
         eps_of_tau__orthotropic_Pettit__sf => eps_of_tau__orthotropic_Pettit, &
-        eps_of_tau__nlin_Sachs__sf => eps_of_tau__nlin_Sachs, &
-        eps_of_tau__lin_TaylorSachs__sf => eps_of_tau__lin_TaylorSachs, &
+        eps_of_tau__linearTaylorSachs__sf => eps_of_tau__linearTaylorSachs, &
         frame__sf => frame, &
+        a4_eigentensors__sf => a4_eigentensors, &
         Eeiej__sf => Eeiej, &
         Evw__sf => Evw, &
-        Eca_opt_lin__sf    => Eca_opt_lin, &
-        Ecc_opt_lin__sf    => Ecc_opt_lin, &
-        alpha_opt_lin__sf  => alpha_opt_lin, &
-        Eca_opt_nlin__sf   => Eca_opt_nlin, &
-        Ecc_opt_nlin__sf   => Ecc_opt_nlin, &
-        alpha_opt_nlin__sf => alpha_opt_nlin, &
         Ldiag__sf => Ldiag, &
         ae2_to_a2__sf => ae2_to_a2, ae4_to_a4__sf => ae4_to_a4, & 
         a4_IBOF__sf => a4_IBOF, &
         nlm_to_rnlm__sf => nlm_to_rnlm, &
         rnlm_to_nlm__sf => rnlm_to_nlm, &
         dndt_to_drndt__sf => dndt_to_drndt, &
-        lm__sf => lm, &
         nlm_len__sf => nlm_len, &
-        rnlm_len__sf => rnlm_len
+        rnlm_len__sf => rnlm_len, &
+        lm__sf => lm, &
+        Eca_opt_lin__sf    => Eca_opt_lin, &
+        Ecc_opt_lin__sf    => Ecc_opt_lin, &
+        alpha_opt_lin__sf  => alpha_opt_lin, &
+        Eca_opt_nlin__sf   => Eca_opt_nlin, &
+        Ecc_opt_nlin__sf   => Ecc_opt_nlin, &
+        alpha_opt_nlin__sf => alpha_opt_nlin
         
     implicit none
     
@@ -151,6 +151,16 @@ contains
         call frame__sf(nlm, ftype, e1,e2,e3, eigvals)
     end
     
+    subroutine a4_eigentensors(nlm, Q1,Q2,Q3,Q4,Q5,Q6, eigvals)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:) 
+        real(kind=dp), intent(out)   :: Q1(3,3),Q2(3,3),Q3(3,3),Q4(3,3),Q5(3,3),Q6(3,3)
+        real(kind=dp), intent(out)   :: eigvals(6)
+        
+        call a4_eigentensors__sf(nlm, Q1,Q2,Q3,Q4,Q5,Q6, eigvals)
+    end
+        
     !------------------
     ! ENHANCEMENT FACTORS
     !------------------
@@ -233,25 +243,15 @@ contains
     !---------------------------------
     ! GRAIN-AVERAGED RHEOLOGY (SACHS, TAYLOR)
     !---------------------------------
-    
-    function eps_of_tau__nlin_Sachs(tau, nlm, Aprime,Ecc,Eca) result(eps_of_tau)
-        use specfabpy_const
-        implicit none
-        real(kind=dp), intent(in)    :: tau(3,3), Aprime, Ecc,Eca
-        complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp)                :: eps_of_tau(3,3)
-    
-        eps_of_tau = eps_of_tau__nlin_Sachs__sf(tau, nlm, Aprime,Ecc,Eca)
-    end
        
-    function eps_of_tau__lin_TaylorSachs(tau, nlm, Aprime,Ecc,Eca,alpha) result(eps_of_tau)
+    function eps_of_tau__linearTaylorSachs(tau, nlm, Aprime,Ecc,Eca,alpha) result(eps_of_tau)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in)    :: tau(3,3), Aprime, Ecc,Eca,alpha
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp)                :: eps_of_tau(3,3)
     
-        eps_of_tau = eps_of_tau__lin_TaylorSachs__sf(tau, nlm, Aprime,Ecc,Eca,alpha)
+        eps_of_tau = eps_of_tau__linearTaylorSachs__sf(tau, nlm, Aprime,Ecc,Eca,alpha)
     end
         
     !---------------------------------

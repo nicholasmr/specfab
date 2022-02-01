@@ -210,3 +210,10 @@ def plot_side(ax, x,y,z, alpha=0, scale=1, lw=1.0, color='k'):
     coll.set_alpha(alpha)
     coll.set_clip_on(False)
     ax.add_collection3d(coll)
+    
+def getPolarAngles(vec):
+    x,y,z = vec
+    phi   = np.rad2deg(np.arctan2(y,x))
+    theta = 90 - np.rad2deg(np.arccos(z))
+    return (theta, phi)
+    

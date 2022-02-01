@@ -101,6 +101,22 @@ for tt in plot_tsteps:
     ax.text(rot0-8, -8, r'$\vu{y}$', horizontalalignment='left', transform=geo)
     ax.text(rot0-90+5, -8, r'$\vu{x}$', horizontalalignment='left', transform=geo)
 
+    # a4 eigen tensors
+    
+    from specfabpy import specfabpy as sf
+    Q1,Q2,Q3,Q4,Q5,Q6, eigvals6 = sf.a4_eigentensors(c[tt,:])
+    _, W1 = np.linalg.eig(Q6)
+    _, W2 = np.linalg.eig(Q5)
+#    print(eigvals6)
+    c0, c1, ms = 'tab:red', 'tab:blue', 7
+    for ii in np.arange(3):
+        ei = W1[:,ii]
+        theta,phi = getPolarAngles(+ei); ax.plot([phi],[theta], marker='s', ms=ms, markerfacecolor='none', markeredgecolor=c0, markeredgewidth=1.0, transform=geo)
+        theta,phi = getPolarAngles(-ei); ax.plot([phi],[theta], marker='s', ms=ms, markerfacecolor='none', markeredgecolor=c0, markeredgewidth=1.0, transform=geo)
+        ei = W2[:,ii]
+        theta,phi = getPolarAngles(+ei); ax.plot([phi],[theta], marker='o', ms=ms, markerfacecolor='none', markeredgecolor=c1, markeredgewidth=1.0, transform=geo)
+        theta,phi = getPolarAngles(-ei); ax.plot([phi],[theta], marker='o', ms=ms, markerfacecolor='none', markeredgecolor=c1, markeredgewidth=1.0, transform=geo)
+
     #----------------------
     # Eigen values
     #----------------------

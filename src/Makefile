@@ -22,11 +22,15 @@ SPECFAB=specfab
 MOMENTS=moments
 GAUNT=gaunt
 TENPROD=tensorproducts
+HOMOGEN=homogenizations
+ENHFAC=enhancementfactors
+MANDEL=mandel
+DYNAMICS=dynamics
 RHEOLOGIES=rheologies
 REDUCED=reducedform
 LAMBDASOLVER=lambdasolver
 
-OBJCORE=$(SPECFAB).o $(TENPROD).o $(MOMENTS).o $(GAUNT).o $(RHEOLOGIES).o $(REDUCED).o $(LAMBDASOLVER).o
+OBJCORE=$(SPECFAB).o $(TENPROD).o $(HOMOGEN).o $(ENHFAC).o $(MANDEL).o $(MOMENTS).o $(GAUNT).o $(DYNAMICS).o $(RHEOLOGIES).o $(REDUCED).o $(LAMBDASOLVER).o
 MODCORE=$(OBJCORE:.o=.mod)
 SRCCORE=$(OBJCORE:.o=.f90)
 
@@ -96,11 +100,15 @@ lib$(SPECFAB).so: $(SRCALL) $(OBJALL)
 $(SPECFAB).o: $(MOMENTS).o $(GAUNT).o $(LAMBDASOLVER).o
 	$(COMPILER) $(OPTS) -c $(TENPROD).f90 
 	$(COMPILER) $(OPTS) -c $(RHEOLOGIES).f90 
+	$(COMPILER) $(OPTS) -c $(HOMOGEN).f90
+	$(COMPILER) $(OPTS) -c $(ENHFAC).f90
+	$(COMPILER) $(OPTS) -c $(DYNAMICS).f90
 	$(COMPILER) $(OPTS) -c $(REDUCED).f90
 	$(COMPILER) $(OPTS) -c $(SPECFAB).f90
 
 $(MOMENTS).o: 
 	@echo "*** Compiling structure tensor expressions and gaunt coefficients... this may take some time but is required only once ***"
+	$(COMPILER) $(OPTS) -c $(MANDEL).f90 
 	$(COMPILER) $(OPTS) -c $(MOMENTS).f90
 
 $(GAUNT).o: 
