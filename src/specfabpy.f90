@@ -428,7 +428,7 @@ contains
         qt = quad_rr(tau)
         
         ! Harmonic interaction weights 
-        include "include/DDRX__body.f90"
+        include "include/ddrx-coupling-weights.f90"
         g = k*g/doubleinner22(tau,tau) ! = D
         
         Davg = doubleinner22(matmul(tau,tau), a2__sf(nlm)) - doubleinner22(tau,doubleinner42(a4__sf(nlm),tau)) ! (tau.tau):a2 - tau:a4:tau 
