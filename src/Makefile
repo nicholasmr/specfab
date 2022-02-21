@@ -1,12 +1,11 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2019-2021
+# N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2019-2022
 
 #-------------------
 # Compiler
 #-------------------
 
-#COMPILER=ifort -free -xHost -shared-intel -align all  -debug all -qopt-report-phase=vec -diag-disable 8291 -diag-disable 8290  
 COMPILER=gfortran -ffree-line-length-none -m64 -Wall -fPIC -Wno-integer-division -Wno-unused-dummy-argument
-OPTS=-O2 -mcmodel=medium -lm -llapack -lblas -lfftw3 
+OPTS=-O2 -mcmodel=medium -lm -llapack 
 OPTSNETCDF=-lnetcdff -I/usr/include -L/usr/lib 
 
 #-------------------
@@ -39,7 +38,6 @@ SRCCORE=$(OBJCORE:.o=.f90)
 #-------------------
 
 PATHM77=include/math77
-#dckder.o
 OBJM77=$(PATHM77)/amach.o $(PATHM77)/derv1.o $(PATHM77)/dnqsol.o $(PATHM77)/dnrm2.o $(PATHM77)/erfin.o $(PATHM77)/ermsg.o $(PATHM77)/ierm1.o $(PATHM77)/ierv1.o
 SRCM77=$(OBJM77:.o=.f)
 
@@ -79,7 +77,7 @@ fabric-evolution-demo: $(SPECFAB).o
 specfabpy: $(SPECFAB).o
 	rm -f specfabpy.pyf
 	f2py --no-lower -m specfabpy -h specfabpy.pyf specfabpy.f90 --quiet 
-	f2py -lm -llapack -lblas -lfftw3 -I. $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" --quiet
+	f2py -lm -llapack -I. $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" --quiet
 	@cp specfabpy.cpython* $(PATHDEMO)/
 	@echo "\n*** Python module (specfabpy.cpython) installed in demo path."
 	@mkdir -p $(PATHFABEVO)/solutions

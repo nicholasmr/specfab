@@ -39,7 +39,7 @@ contains
         real(kind=dp), intent(in) :: ev_c2(3,3), ev_c4(3,3,3,3), ev_c6(3,3,3,3, 3,3), ev_c8(3,3,3,3, 3,3,3,3)
         real(kind=dp), intent(in) :: Ecc, Eca, tau(3,3)
         integer, intent(in)       :: nprime
-        real(kind=dp), parameter  :: d = 3.0
+        real(kind=dp), parameter  :: d = 3.0d0
         real(kind=dp)             :: ev_etac0 = 0, ev_etac2(3,3), ev_etac4(3,3,3,3)
         real(kind=dp)             :: ev_epsprime_Sac(3,3), coefA,coefB,coefC, tausq(3,3), I2
 
@@ -81,7 +81,7 @@ contains
         real(kind=dp), intent(in) :: ev_c2(3,3), ev_c4(3,3,3,3)
         real(kind=dp), intent(in) :: Ecc, Eca, tau(3,3)
         integer, intent(in)       :: nprime ! Dummy variable: <eps'(tau)> with Taylor hypothesis is implemented only for n' = 1.
-        real(kind=dp), parameter  :: d = 3.0
+        real(kind=dp), parameter  :: d = 3.0d0
         real(kind=dp)             :: P(6,6), tau_vec(6,1),  P_reg(6,6),tau_vec_reg(6,1)
         real(kind=dp)             :: ev_epsprime_Tay(3,3), coefA,coefB,coefC
         integer                   :: info

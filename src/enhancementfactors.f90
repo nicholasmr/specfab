@@ -130,7 +130,7 @@ contains
         real(kind=dp), intent(in) :: v(3)
         integer, parameter :: identity(3,3) = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
         real(kind=dp) :: tau_vv(3,3)
-        tau_vv = identity/3 - outerprod(v,v)
+        tau_vv = identity/3.0d0 - outerprod(v,v)
     end
 
     function tau_vw(v,w)

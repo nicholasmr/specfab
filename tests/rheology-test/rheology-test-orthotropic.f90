@@ -2,7 +2,7 @@
 
 program demo
 
-    use specfab    
+    use specfab
     
     implicit none
 

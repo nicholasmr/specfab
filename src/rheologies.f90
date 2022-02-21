@@ -47,8 +47,7 @@ contains
         real(kind=dp), intent(in) :: tau(3,3), A, m(3), Emm, Emt
         integer, intent(in)       :: n
         real(kind=dp)             :: eps(3,3), fluidity, kI,kM,kL, I2,I4,I5, mm(3,3),tausq(3,3)
-        real(kind=dp), parameter  :: d = 3.0
-        real(kind=dp)             :: expo
+        real(kind=dp), parameter  :: d = 3.0d0
         
         call tranisotropic_coefs(Emm,Emt,d,n,1.0d0, kI,kM,kL)
 
@@ -58,8 +57,7 @@ contains
         I4 = doubleinner22(tau,mm)
         I5 = doubleinner22(tausq,mm)
         
-        expo = (n-1)/2
-        fluidity = A*(I2 + kM*I4**2 + 2*kL*I5)**(expo)
+        fluidity = A*(I2 + kM*I4**2 + 2*kL*I5)**((n-1.0d0)/2.0d0)
         eps = fluidity*( tau - kI*I4*identity + kM*I4*mm + kL*(matmul(tau,mm)+matmul(mm,tau)) )
     end
 
@@ -69,8 +67,7 @@ contains
         real(kind=dp), intent(in) :: eps(3,3), A, m(3), Emm, Emt
         integer, intent(in)       :: n
         real(kind=dp)             :: tau(3,3), viscosity, kI,kM,kL, I2,I4,I5, mm(3,3),epssq(3,3)
-        real(kind=dp), parameter  :: d = 3.0
-        real(kind=dp)             :: expo
+        real(kind=dp), parameter  :: d = 3.0d0
 
         call tranisotropic_coefs(Emm,Emt,d,n,-1.0d0, kI,kM,kL)
 
@@ -80,8 +77,7 @@ contains
         I4 = doubleinner22(eps,mm)
         I5 = doubleinner22(epssq,mm)
 
-        expo = (1.0d0-n)/(2.0d0*n)
-        viscosity = A**(-1.0d0/n)*(I2 + kM*I4**2 + 2*kL*I5)**(expo)
+        viscosity = A**(-1.0d0/n)*(I2 + kM*I4**2 + 2*kL*I5)**((1.0d0-n)/(2.0d0*n))
         tau = viscosity*( eps - kI*I4*identity + kM*I4*mm + kL*(matmul(eps,mm)+matmul(mm,eps)) )
     end
 
