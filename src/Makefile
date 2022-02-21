@@ -56,6 +56,13 @@ OBJALL=$(OBJCORE) $(OBJM77)
 MODALL=$(MODCORE)
 SRCALL=$(SRCCORE) $(SRCM77)
 
+#-------------------
+# specfabpy Python versions
+#-------------------
+
+#PYVERS=3.6 3.7 3.8 3.9 3.10 
+PYVERS=3
+
 ########################################
 
 #-------------------
@@ -75,11 +82,14 @@ fabric-evolution-demo: $(SPECFAB).o
 	@echo "cd $(PATHFABEVO); ./run-fabric-evolution-ddrx ss_xz :: simple shear (ss) along the x-z plane"
 
 specfabpy: $(SPECFAB).o
-	rm -f specfabpy.pyf
-	f2py --no-lower -m specfabpy -h specfabpy.pyf specfabpy.f90 --quiet 
-	f2py -lm -llapack -lblas -I. $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" --quiet
+	for pyver in $(PYVERS); do \
+		echo "*** Making specfabpy for python$$pyver"; \
+		rm -f specfabpy.pyf; \
+		python$$pyver -m numpy.f2py --no-lower -m specfabpy -h specfabpy.pyf specfabpy.f90 --quiet; \
+		python$$pyver -m numpy.f2py -lm -llapack -lblas -I. $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" --quiet; \
+	done
 	@cp specfabpy.cpython* $(PATHDEMO)/
-	@echo "\n*** Python module (specfabpy.cpython) installed in demo path."
+	@echo "\n*** Python module (specfabpy) installed in /demo"
 	@mkdir -p $(PATHFABEVO)/solutions
 	@echo "\n*** To get going, try the demo:"
 	@echo "cd $(PATHFABEVO); python3 run-fabric-evolution-latrot.py uc_zz ::: for uniaxial compression (uc) in the vertical (z)"
