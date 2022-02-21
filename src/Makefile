@@ -5,7 +5,7 @@
 #-------------------
 
 COMPILER=gfortran -ffree-line-length-none -m64 -Wall -fPIC -Wno-integer-division -Wno-unused-dummy-argument
-OPTS=-O2 -mcmodel=medium -lm -llapack 
+OPTS=-O2 -mcmodel=medium -lm -llapack -lblas
 OPTSNETCDF=-lnetcdff -I/usr/include -L/usr/lib 
 
 #-------------------
@@ -77,7 +77,7 @@ fabric-evolution-demo: $(SPECFAB).o
 specfabpy: $(SPECFAB).o
 	rm -f specfabpy.pyf
 	f2py --no-lower -m specfabpy -h specfabpy.pyf specfabpy.f90 --quiet 
-	f2py -lm -llapack -I. $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" --quiet
+	f2py -lm -llapack -lblas -I. $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" --quiet
 	@cp specfabpy.cpython* $(PATHDEMO)/
 	@echo "\n*** Python module (specfabpy.cpython) installed in demo path."
 	@mkdir -p $(PATHFABEVO)/solutions
