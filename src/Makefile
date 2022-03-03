@@ -46,7 +46,7 @@ SRCM77=$(OBJM77:.o=.f)
 # Elmer, JOSEF, ...
 #-------------------
 
-ELMERSRCS=$(wildcard $(PATHDEMO)/elmer/elmer*.f90)
+ELMERSRCS=$(wildcard elmer/specfab*.f90)
 ELMERS=$(ELMERSRCS:.f90=)
 
 #-------------------
@@ -105,8 +105,8 @@ aux-tests: $(SPECFAB).o
 lib$(SPECFAB).so: $(SRCALL) $(OBJALL)
 	$(COMPILER) $(OPTS) -shared $(SRCALL) -o $@
 
-$(SPECFAB).o: $(OBJCORE)
-	$(COMPILER) $(OPTS) -c $(SPECFAB).f90
+$(SPECFAB).o: $(SPECFAB).f90 $(OBJCORE) elmer/specfab_elmer.f90 josef/specfab_josef.f90
+	$(COMPILER) $(OPTS) -c $<
 
 $(DEPLESS): %.o: %.f90
 	$(COMPILER) $(OPTS) -c $<
@@ -114,7 +114,7 @@ $(DEPLESS): %.o: %.f90
 $(RHEOLOGIES).o: $(RHEOLOGIES).f90 $(TENPROD).o $(LAMBDASOLVER).o
 	$(COMPILER) $(OPTS) -c $<
 
-$(DYNAMICS).o: $(DYNAMICS).f90 $(TENPROD).o $(MOMENTS).o $(GAUNT).o
+$(DYNAMICS).o: $(DYNAMICS).f90 tensorialdynamics.f90 $(TENPROD).o $(MOMENTS).o $(GAUNT).o
 	$(COMPILER) $(OPTS) -c $<
 
 $(HOMOGEN).o: $(HOMOGEN).f90 $(MOMENTS).o $(RHEOLOGIES).o

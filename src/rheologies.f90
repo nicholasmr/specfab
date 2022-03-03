@@ -167,10 +167,10 @@ contains
         )
     end
 
-    function tau_of_eps__orthotropic_dimless(eps, A,n, m1,m2,m3, Eij) result(tau)
+    function tau_of_eps__orthotropic_dimless(eps, n, m1,m2,m3, Eij) result(tau)
 
         implicit none
-        real(kind=dp), intent(in)     :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        real(kind=dp), intent(in)     :: eps(3,3), m1(3),m2(3),m3(3), Eij(3,3)
         integer, intent(in)           :: n
         real(kind=dp)                 :: tau(3,3)
         real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
