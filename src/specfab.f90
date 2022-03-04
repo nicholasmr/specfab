@@ -11,7 +11,7 @@ module specfab
     use enhancementfactors
     use dynamics
     use rheologies
-    use wavepropagation
+!    use wavepropagation ! in development
     use reducedform
 
     implicit none 

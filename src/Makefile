@@ -86,8 +86,8 @@ specfabpy: $(SPECFAB).o
 	for pyver in $(PYVERS); do \
 		echo "*** Making specfabpy for python$$pyver"; \
 		rm -f specfabpy.pyf; \
-		python$$pyver -m numpy.f2py --no-lower -m specfabpy -h specfabpy.pyf specfabpy.f90 --quiet; \
-		python$$pyver -m numpy.f2py -lm -llapack -lblas -I. $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" --quiet; \
+		python$$pyver -m numpy.f2py --no-lower -m specfabpy -h specfabpy.pyf specfabpy.f90 ; \
+		python$$pyver -m numpy.f2py -lm -llapack -lblas -I. $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" ; \
 	done
 	@cp specfabpy.cpython* $(PATHDEMO)/
 	@echo "\n*** Python module (specfabpy) installed in /demo"
@@ -125,7 +125,6 @@ $(ENHFAC).o: $(ENHFAC).f90 $(MOMENTS).o $(TENPROD).o $(HOMOGEN).o
 	$(COMPILER) $(OPTS) -c $<
 
 $(MOMENTS).o: $(MOMENTS).f90 $(MANDEL).o
-	@echo "*** Compiling structure tensor expressions... this may take some time but is required only once ***"
 	$(COMPILER) $(OPTS) -c $(MOMENTS).f90
 
 $(LAMBDASOLVER).o:
