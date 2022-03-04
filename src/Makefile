@@ -96,6 +96,9 @@ specfabpy: $(SPECFAB).o
 	@echo "cd $(PATHFABEVO); python3 run-fabric-evolution-latrot.py uc_zz ::: for uniaxial compression (uc) in the vertical (z)"
 	@echo "cd $(PATHFABEVO); python3 run-fabric-evolution-latrot.py ss_xz ::: for simple shear (ss) along the x-z plane"
 
+python: specfabpy
+	python setup.py install
+
 rheology-test: $(SPECFAB).o
 	$(COMPILER) $(PATHRHEOTEST)/rheology-test-orthotropic.f90           $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-orthotropic
 	$(COMPILER) $(PATHRHEOTEST)/rheology-test-transverselyisotropic.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-transverselyisotropic

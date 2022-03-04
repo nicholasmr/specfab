@@ -11,13 +11,18 @@ Hutter, 1996), discontinuous dynamic recrystallization (Placidi and others, 2010
 ## Installation
 ### Python module `specfabpy`
 - If you are running Linux, a pre-compiled version is available: `pip3 install numpy --upgrade && pip3 install specfabpy`
-- Else run `make specfabpy` in `/src` (requires LAPACK and BLAS)
+- Otherwise, for a local-only install, run `make specfabpy` in `/src` (requires LAPACK and BLAS)
+- To install for general use (in other folders), run `make python` in `/src`. Note that if you do not have write permissions for your python installation, you can instead run `make specfabpy; python setup.py install --user`.
+
 ### Fortran
-- Fortran module is built by running `make specfab.o`
+- The Fortran module is built by running `make specfab.o`
+
+### Elmer/Ice Interface
+- To interface with Elmer/Ice, you need a shared version of the libraries (built with the same Fortran compiler as Elmer). If needed, edit the compiler in the Makefile, then run `make libspecfab.so`.
 
 ## Demos
 - Basic demos using `specfabpy` can be found on the [Wiki](https://github.com/nicholasmr/specfab/wiki)
-- More demos are located in `/demo`. Note that Fortran demos must be built seperately (see `Makefile`), e.g. `make fabric-evolution-demo` .
+- More demos are located in `/demo`. Note that Fortran demos must be built separately (see `Makefile`), e.g. `make fabric-evolution-demo` .
 
 ## Q&A
 - **Q** What *L* are possible?
