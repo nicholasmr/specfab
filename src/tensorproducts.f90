@@ -1,4 +1,4 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2020
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2020-2022
 
 module tensorproducts 
 
@@ -17,6 +17,14 @@ contains
         real(kind=dp) :: outerprod(3,3)
 !        outerprod = reshape( [( [( a(ii)*b(jj), jj=1,3)], ii=1,3)] , [3,3])
         outerprod = reshape( [( [( a(ii)*b(jj), ii=1,3)], jj=1,3)] , [3,3])
+    end
+    
+    function outerprod6(a,b) 
+        ! a_i b_j = rank-2 tensor
+        implicit none
+        real(kind=dp), intent(in) :: a(6), b(6)
+        real(kind=dp) :: outerprod6(6,6)
+        outerprod6 = reshape( [( [( a(ii)*b(jj), ii=1,6)], jj=1,6)] , [6,6])
     end
 
     function doubleinner22(A,B) 

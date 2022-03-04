@@ -23,7 +23,7 @@ contains
         
         implicit none
         real(kind=dp), intent(in) :: v(6) 
-        real(kind=dp)             :: M(3,3)
+        real(kind=dp)             :: M(3,3) 
         
         M(1,:) = [v(1),   v(6)/s, v(5)/s]
         M(2,:) = [v(6)/s, v(2),   v(4)/s]

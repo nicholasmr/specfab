@@ -41,6 +41,10 @@ module specfabpy
         dndt_to_drndt__sf => dndt_to_drndt, &
         nlm_len__sf => nlm_len, &
         rnlm_len__sf => rnlm_len, &
+        rotate_nlm4__sf => rotate_nlm4, &
+        detQ_coefs__sf => detQ_coefs, &
+        vj__sf => vj, &
+        qj__sf => qj, &
         lm__sf => lm, &
         Eca_opt_lin__sf    => Eca_opt_lin, &
         Ecc_opt_lin__sf    => Ecc_opt_lin, &
@@ -165,16 +169,16 @@ contains
     ! ENHANCEMENT FACTORS
     !------------------
     
-    function Evw(a2,a4,a6,a8, vw,tau, Ecc,Eca,alpha,nprime) 
+    function Evw(nlm, vw,tau, Ecc,Eca,alpha,nprime) 
         use specfabpy_const
         implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), intent(in) :: vw(3,3), tau(3,3), Ecc,Eca,alpha
         integer, intent(in)       :: nprime
-        real(kind=dp)             :: a2(3,3), a4(3,3,3,3), a6(3,3,3,3, 3,3), a8(3,3,3,3, 3,3,3,3)
         real(kind=dp)             :: Evw
         
-        Evw = (1-alpha)*Evw_Sac(vw, tau, a2,a4,a6,a8, Ecc,Eca,nprime) &
-                + alpha*Evw_Tay(vw, tau, a2,a4,       Ecc,Eca,nprime)
+        Evw = (1-alpha)*Evw_Sac(vw, tau, nlm, Ecc,Eca,nprime) &
+                + alpha*Evw_Tay(vw, tau, nlm, Ecc,Eca,nprime)
     end
     
     function Eeiej(nlm, e1,e2,e3, Ecc,Eca,alpha,nprime) 
@@ -369,7 +373,7 @@ contains
     end
     
     !---------------------------------
-    ! AUX
+    ! REDUCED FORM
     !---------------------------------
 
     subroutine get_rnlm_len(rnlm_len) 
@@ -408,6 +412,51 @@ contains
         
         drndt = dndt_to_drndt__sf(dndt)
     end
+    
+    !---------------------------------
+    ! AUX
+    !---------------------------------
+    
+    function rotate_nlm4(nlm4, theta,phi) result (nlm4_rot)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm4(15) ! nlm truncated at L=4
+        real(kind=dp), intent(in)    :: theta, phi 
+        complex(kind=dp)             :: nlm4_rot(15)
+        
+        nlm4_rot = rotate_nlm4__sf(nlm4, theta,phi)
+    end
+    
+    function vj(nlm, theta_n,phi_n, omega, rho, lam,mu,eta1,eta2,eta3)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities (vj) along
+        real(kind=dp), intent(in)    :: omega, rho, lam,mu,eta1,eta2,eta3
+        real(kind=dp)                :: vj(3,size(theta_n)) ! qS1, qS2, qP phase velocities
+
+        vj = vj__sf(nlm, theta_n,phi_n, omega, rho, lam,mu,eta1,eta2,eta3) 
+    end
+    
+    function detQ_coefs(nlm, omega, rho, lam,mu,eta1,eta2,eta3) result(ri)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: omega, rho, lam,mu,eta1,eta2,eta3
+        real(kind=dp)                :: ri(0:6)
+
+        ri = detQ_coefs__sf(nlm, 0.0d0, omega, rho, lam,mu,eta1,eta2,eta3)
+    end
+    
+    function qj(ri) 
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: ri(0:6)
+        complex(kind=dp)          :: qj(3) ! z-comp of wavector (k=[0,0,q]) for qS1, qS2, qP waves
+               
+        qj = qj__sf(ri)
+    end
+
     
     function DDRX_decayrate(nlm, tau)
     

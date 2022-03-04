@@ -84,12 +84,83 @@ contains
             ev_c6 = f_ev_c6(n00,n2m,n4m,n6m)
             ev_c8 = f_ev_c8(n00,n2m,n4m,n6m,n8m)
         else
-            ! Reduced calculation?
+            ! Reduced calculation? Higher-order contributions not needed by caller.
             ev_c6 = 0.0d0
             ev_c8 = 0.0d0
         end if
     end
+    
+    subroutine f_ev_ck_Mandel(nlm, ev_c2_Mandel, ev_c4_Mandel)
+            
+        implicit none
+        
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(inout) :: ev_c2_Mandel(6),ev_c4_Mandel(6,6)
+        complex(kind=dp)             :: n00, n2m(-2:2), n4m(-4:4)
+        
+        n00 = nlm(1)
+        n2m = nlm(I_l2:(I_l4-1))
+        n4m = nlm(I_l4:(I_l6-1))
+        ev_c2_Mandel = mat_to_vec(f_ev_c2(n00,n2m)) ! 6x1
+        ev_c4_Mandel = f_ev_c4_Mandel(n00,n2m,n4m) ! 6x6
+    end
 
+    !---------------------------------
+    ! Indidual <c^k> moments
+    !---------------------------------
+
+    function f_ev_c0(n00) result(ev)
+        ! Integral over orientation distribution = total number of c-axes (grains)
+        complex(kind=dp), intent(in) :: n00
+        real(kind=dp) :: ev
+        ev = REAL(sqrt(4*Pi)*n00)
+    end
+
+    function f_ev_c2(n00,n2m) result(ev)
+        implicit none
+        complex(kind=dp), intent(in) :: n00, n2m(-2:2)
+        complex(kind=dp) :: n2mhat(0:2)
+        real(kind=dp) :: k = 0.0, ev(3,3)
+        ev = 0.0
+        include "include/ev_c2__body.f90"
+!        ev = ev * k/f_ev_c0(n00) ! not needed, <c^2> already normalized
+    end
+    
+    function f_ev_c4(n00,n2m,n4m) result(ev)
+        implicit none
+        complex(kind=dp), intent(in) :: n00, n2m(-2:2), n4m(-4:4)
+        real(kind=dp) :: k = 0.0, ev(3,3, 3,3)
+        ev = 0.0
+        include "include/ev_c4__body.f90"
+        ev = ev * k/f_ev_c0(n00)
+    end
+    
+    function f_ev_c4_Mandel(n00,n2m,n4m) result (ev)
+        implicit none
+        complex(kind=dp), intent(in) :: n00, n2m(-2:2), n4m(-4:4)
+        real(kind=dp) :: k = 0.0, ev(6,6)
+        include "include/ev_c4_Mandel__body.f90"
+        ev = ev * k/f_ev_c0(n00)
+    end
+    
+    function f_ev_c6(n00,n2m,n4m,n6m) result(ev)
+        implicit none
+        complex(kind=dp), intent(in) :: n00, n2m(-2:2), n4m(-4:4), n6m(-6:6)
+        real(kind=dp) :: k = 0.0, ev(3,3, 3,3, 3,3)
+        ev = 0.0
+        include "include/ev_c6__body.f90"
+        ev = ev * k/f_ev_c0(n00)
+    end
+    
+    function f_ev_c8(n00,n2m,n4m,n6m,n8m) result(ev)
+        implicit none
+        complex(kind=dp), intent(in) :: n00, n2m(-2:2), n4m(-4:4), n6m(-6:6), n8m(-8:8)
+        real(kind=dp) :: k = 0.0, ev(3,3, 3,3, 3,3, 3,3)
+        ev = 0.0
+        include "include/ev_c8__body.f90"
+        ev = ev * k/f_ev_c0(n00)
+    end
+    
     !---------------------------------
     ! Fabric eigen frames
     !---------------------------------
@@ -162,54 +233,6 @@ contains
         Q4 = vec_to_mat(M(:,4))
         Q5 = vec_to_mat(M(:,5))
         Q6 = vec_to_mat(M(:,6))
-    end
-
-    !---------------------------------
-    ! Indidual <c^k> moments
-    !---------------------------------
-
-    function f_ev_c0(n00) result(ev)
-        ! Integral over orientation distribution = total number of c-axes (grains)
-        complex(kind=dp), intent(in) :: n00
-        real(kind=dp) :: ev
-        ev = REAL(sqrt(4*Pi)*n00)
-    end
-
-    function f_ev_c2(n00,n2m) result(ev)
-        implicit none
-        complex(kind=dp), intent(in) :: n00, n2m(-2:2)
-        complex(kind=dp) :: n2mhat(0:2)
-        real(kind=dp) :: k = 0.0, ev(3,3)
-        ev = 0.0
-        include "include/ev_c2__body.f90"
-!        ev = ev * k/f_ev_c0(n00) ! not needed, <c^2> already normalized
-    end
-    
-    function f_ev_c4(n00,n2m,n4m) result(ev)
-        implicit none
-        complex(kind=dp), intent(in) :: n00, n2m(-2:2), n4m(-4:4)
-        real(kind=dp) :: k = 0.0, ev(3,3, 3,3)
-        ev = 0.0
-        include "include/ev_c4__body.f90"
-        ev = ev * k/f_ev_c0(n00)
-    end
-    
-    function f_ev_c6(n00,n2m,n4m,n6m) result(ev)
-        implicit none
-        complex(kind=dp), intent(in) :: n00, n2m(-2:2), n4m(-4:4), n6m(-6:6)
-        real(kind=dp) :: k = 0.0, ev(3,3, 3,3, 3,3)
-        ev = 0.0
-        include "include/ev_c6__body.f90"
-        ev = ev * k/f_ev_c0(n00)
-    end
-    
-    function f_ev_c8(n00,n2m,n4m,n6m,n8m) result(ev)
-        implicit none
-        complex(kind=dp), intent(in) :: n00, n2m(-2:2), n4m(-4:4), n6m(-6:6), n8m(-8:8)
-        real(kind=dp) :: k = 0.0, ev(3,3, 3,3, 3,3, 3,3)
-        ev = 0.0
-        include "include/ev_c8__body.f90"
-        ev = ev * k/f_ev_c0(n00)
     end
 
 end module moments

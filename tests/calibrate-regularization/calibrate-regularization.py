@@ -26,7 +26,7 @@ Nc = 50 # Number of "integration time steps" (we consider the analytical solutio
 TEST_GIRDLE = 0 # Validate calibration (for single maximum fabrics) against girdle fabrics.
 
 if not TEST_GIRDLE: 
-    epszz = -0.98 # Target: 2% of initial parcel height
+    epszz = -0.99 # Target: 2% of initial parcel height
     D = np.diag([0.5,0.5,-1]); Dzz = D[2,2];
     
 else:
@@ -49,16 +49,16 @@ W = 0*D # Assume strain-rate tensor is in eigen frame
 
 SOLVE_FOR_NU = 1 and (not TEST_GIRDLE)
 
-L_list = [4,6,8]
-L_list = [8,]
+L_list = [4,6,8,20]
     
 for L in L_list:
 
-    nu0 = 2e0 # init guess
+    nu0 = 1e0 # init guess for iteration
     
-    if L == 4: expo = 1.65
-    if L == 6: expo = 2.35
-    if L == 8: expo = 3.0
+    if L == 4:  expo = 1.65
+    if L == 6:  expo = 2.35
+    if L == 8:  expo = 2.8
+    if L == 20: expo = 3
 
     
     if TEST_GIRDLE:
@@ -172,8 +172,8 @@ for L in L_list:
     ax.set_xlabel('$l$')
     ax.set_ylabel('$S(l)/S(0)$')
     ax.set_ylim([1e-1,1.5])
-    ax.set_xticks(np.arange(0,13,2))
-    ax.set_xlim([0,12])
+    ax.set_xticks(np.arange(0,21,2))
+    ax.set_xlim([0,np.amax([10,L])])
     ax.grid()
     ax.set_title('$L=%i$, $N_c=%i$'%(L, Nc))
     

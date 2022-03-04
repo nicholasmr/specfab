@@ -204,21 +204,26 @@ contains
         
         if (Lcap == 4) then
             expo = 1.65
-            nu   = 2.126845e+00
+            nu   = 2.088913e+00
         end if 
 
         if (Lcap == 6) then
             expo = 2.35
-            nu   = 2.892680e+00
+            nu   = 2.914053e+00
         end if 
         
         if (Lcap == 8) then
-            expo = 3.00
-            nu   = 3.797282e+00
+            expo = 2.80
+            nu   = 4.120216e+00
         end if 
 
-        if (Lcap .gt. 8) then
-    !        print *, 'specfab error: regularization (dndt_ij_REG) is calibrated for the range 4 <= L <= 8, but you are using a larger L. Returning instead the unscaled (but normalized) Laplacian matrix for you to scale yourself.'
+        if (Lcap == 20) then
+            expo = 3.00
+            nu   = 2.007883e+01
+        end if 
+
+        if ((Lcap .gt. 8) .and. (Lcap .lt. 20)) then
+    !        print *, 'specfab error: returning the unscaled (but normalized) Laplacian matrix for you to scale yourself.'
             expo = 1
             scalefac = -1
         else
