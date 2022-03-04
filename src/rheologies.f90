@@ -167,6 +167,30 @@ contains
         )
     end
 
+    function tau_of_eps__orthotropic_dimless(eps, n, m1,m2,m3, Eij) result(tau)
+
+        implicit none
+        real(kind=dp), intent(in)     :: eps(3,3), m1(3),m2(3),m3(3), Eij(3,3)
+        integer, intent(in)           :: n
+        real(kind=dp)                 :: tau(3,3)
+        real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
+        real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
+        real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
+
+        call orthotropic_coefs(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+        call orthotropic_tensors_and_invars(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
+        call orthotropic_auxinvars(J1,J2,J3, J23,J31,J12)
+
+        tau = ( &
+            + lam1/gam * J23 * (identity - 3*M11)/2 &
+            + lam2/gam * J31 * (identity - 3*M22)/2 &
+            + lam3/gam * J12 * (identity - 3*M33)/2 &
+            + 4 * (1/lam4) * J4 * (M23 + transpose(M23))/2 &
+            + 4 * (1/lam5) * J5 * (M31 + transpose(M31))/2 &
+            + 4 * (1/lam6) * J6 * (M12 + transpose(M12))/2 &
+        )
+    end
+
     subroutine orthotropic_coefs(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
 
         implicit none

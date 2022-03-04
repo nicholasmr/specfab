@@ -5,7 +5,7 @@ module mandel
     implicit none 
 
     integer, parameter, private :: dp = 8 ! Default precision
-    real(kind=dp), parameter    :: s = sqrt(2.0d0) 
+    real(kind=dp), parameter, private    :: s = sqrt(2.0d0) 
         
 contains      
 

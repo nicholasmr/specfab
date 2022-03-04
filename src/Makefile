@@ -30,8 +30,9 @@ WAVEPROP=wavepropagation
 REDUCED=reducedform
 LAMBDASOLVER=lambdasolver
 
-OBJCORE=$(SPECFAB).o $(TENPROD).o $(HOMOGEN).o $(ENHFAC).o $(MANDEL).o $(MOMENTS).o $(GAUNT).o $(DYNAMICS).o $(RHEOLOGIES).o $(WAVEPROP).o $(REDUCED).o $(LAMBDASOLVER).o
-MODCORE=$(OBJCORE:.o=.mod)
+DEPLESS=$(TENPROD).o $(MANDEL).o $(REDUCED).o $(GAUNT).o
+WITHDEPS=$(RHEOLOGIES).o $(MOMENTS).o $(LAMBDASOLVER).o $(DYNAMICS).o $(HOMOGEN).o $(ENHFAC).o 
+OBJCORE=$(DEPLESS) $(WITHDEPS)
 SRCCORE=$(OBJCORE:.o=.f90)
 
 #-------------------
@@ -46,16 +47,15 @@ SRCM77=$(OBJM77:.o=.f)
 # Elmer, JOSEF, ...
 #-------------------
 
-ELMERSRCS=$(wildcard $(PATHDEMO)/elmer/elmer*.f90)
+ELMERSRCS=$(wildcard elmer/specfab*.f90)
 ELMERS=$(ELMERSRCS:.f90=)
 
 #-------------------
 # Collect all
 #-------------------
 
-OBJALL=$(OBJCORE) $(OBJM77)
-MODALL=$(MODCORE)
-SRCALL=$(SRCCORE) $(SRCM77)
+OBJALL=$(SPECFAB).o $(OBJCORE) $(OBJM77)
+SRCALL=$(SPECFAB).f90 $(SRCCORE) $(SRCM77)
 
 #-------------------
 # specfabpy Python versions
@@ -106,23 +106,27 @@ aux-tests: $(SPECFAB).o
 lib$(SPECFAB).so: $(SRCALL) $(OBJALL)
 	$(COMPILER) $(OPTS) -shared $(SRCALL) -o $@
 
-$(SPECFAB).o: $(MOMENTS).o $(GAUNT).o $(LAMBDASOLVER).o
-	$(COMPILER) $(OPTS) -c $(TENPROD).f90 
-	$(COMPILER) $(OPTS) -c $(RHEOLOGIES).f90 
-	$(COMPILER) $(OPTS) -c $(WAVEPROP).f90 
-	$(COMPILER) $(OPTS) -c $(HOMOGEN).f90
-	$(COMPILER) $(OPTS) -c $(ENHFAC).f90
-	$(COMPILER) $(OPTS) -c $(DYNAMICS).f90
-	$(COMPILER) $(OPTS) -c $(REDUCED).f90
-	$(COMPILER) $(OPTS) -c $(SPECFAB).f90
+$(SPECFAB).o: $(SPECFAB).f90 $(OBJCORE) elmer/specfab_elmer.f90 josef/specfab_josef.f90
+	$(COMPILER) $(OPTS) -c $<
 
-$(MOMENTS).o: 
-	@echo "*** Compiling structure tensor expressions and gaunt coefficients... this may take some time but is required only once ***"
-	$(COMPILER) $(OPTS) -c $(MANDEL).f90 
+$(DEPLESS): %.o: %.f90
+	$(COMPILER) $(OPTS) -c $<
+
+$(RHEOLOGIES).o: $(RHEOLOGIES).f90 $(TENPROD).o $(LAMBDASOLVER).o
+	$(COMPILER) $(OPTS) -c $<
+
+$(DYNAMICS).o: $(DYNAMICS).f90 tensorialdynamics.f90 $(TENPROD).o $(MOMENTS).o $(GAUNT).o
+	$(COMPILER) $(OPTS) -c $<
+
+$(HOMOGEN).o: $(HOMOGEN).f90 $(MOMENTS).o $(RHEOLOGIES).o
+	$(COMPILER) $(OPTS) -c $<
+
+$(ENHFAC).o: $(ENHFAC).f90 $(MOMENTS).o $(TENPROD).o $(HOMOGEN).o
+	$(COMPILER) $(OPTS) -c $<
+
+$(MOMENTS).o: $(MOMENTS).f90 $(MANDEL).o
+	@echo "*** Compiling structure tensor expressions... this may take some time but is required only once ***"
 	$(COMPILER) $(OPTS) -c $(MOMENTS).f90
-
-$(GAUNT).o: 
-	$(COMPILER) $(OPTS) -c $(GAUNT).f90
 
 $(LAMBDASOLVER).o:
 	rm -f $(OBJM77) $(LAMBDASOLVER).o $(LAMBDASOLVER).mod $(PATHM77)/test
@@ -139,6 +143,8 @@ clear:
 clean: clear
 	rm -f *.o *.mod *.so
 
+all: $(SPECFAB).o lib$(SPECFAB).so
+
 #-------------------
 # Elmer, JOSEF, ...
 #-------------------
@@ -147,5 +153,6 @@ clean: clear
 
 #$(DEMO)/elmer%: $(DEMO)/elmer%.f90 | lib$(SPECFAB).so $(MODCORE)
 #	$(COMPILER) $< $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o $@
+
 
 

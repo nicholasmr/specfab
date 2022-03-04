@@ -52,7 +52,53 @@ function Cmat_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(C)
         + 2/lam6            * outerprod9(vectorize9(M12 + transpose(M12)), vectorize9(M12)) &
     )
 end
-    
+
+subroutine Cmat_inverse_orthotropic_dimless(eps, n, m1,m2,m3, Eij, MinInVar, viscosity, C6)
+    ! Vectorized inverse orthotropic flow law "tau_of_eps__orthotropic()".
+
+    ! Matches the Elmer version in returning a C6(6x6) matrix relating S and D as used in Elmer
+    ! Matches the Elmer factor of 2 on the strainrate
+    ! Also returns the non-dimensional (excluding A_glen)
+    !   orthotropic viscosity following Rathmann and Lilien 2021b
+
+    implicit none
+    real(kind=dp), intent(in)     :: eps(3,3), m1(3),m2(3),m3(3), Eij(3,3), MinInVar
+    integer, intent(in)           :: n
+    real(kind=dp), intent(out)    :: viscosity, C6(6, 6)
+    real(kind=dp)                 :: C(9,9)
+    real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
+    real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
+    real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
+
+    call orthotropic_coefs(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    call orthotropic_tensors_and_invars(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
+    call orthotropic_auxinvars(J1,J2,J3, J23,J31,J12)
+
+    viscosity = ( &
+        + lam1/gam * J23**2 &
+        + lam2/gam * J31**2 & 
+        + lam3/gam * J12**2 &
+        + 4 * (1/lam4) * J4**2 &
+        + 4 * (1/lam5) * J5**2 &
+        + 4 * (1/lam6) * J6**2 &
+    )**((1-n)/(2.d0*n))
+
+    IF (viscosity.LT.MinInVar) viscosity = MinInVar
+    viscosity = (2.0_dp * viscosity) ** ((1.0_dp-n)/(2.0_dp*n))
+
+    C = ( &
+        -3/4.0d0 * lam1/gam * outerprod9(vectorize9(identity - 3*M11), vectorize9(M11)) &
+        -3/4.0d0 * lam2/gam * outerprod9(vectorize9(identity - 3*M22), vectorize9(M22)) &
+        -3/4.0d0 * lam3/gam * outerprod9(vectorize9(identity - 3*M33), vectorize9(M33)) &
+        + 2/lam4            * outerprod9(vectorize9(M23 + transpose(M23)), vectorize9(M23)) &
+        + 2/lam5            * outerprod9(vectorize9(M31 + transpose(M31)), vectorize9(M31)) &
+        + 2/lam6            * outerprod9(vectorize9(M12 + transpose(M12)), vectorize9(M12)) &
+    )
+    C6 = C([1, 5, 9, 2, 6, 3], [1, 5, 9, 2, 6, 3])
+    C6(1:6, 4:6) = C6(1:6, 4:6) + C([1, 5, 9, 2, 6, 3], [4, 8, 7])
+    C6(1:3,1:3) = 2.0_dp * C6(1:3,1:3)
+end    
+
 function a4_IBOF(a2) 
 
     implicit none
