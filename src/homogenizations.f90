@@ -1,4 +1,6 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk>, 2019-2022
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2022
+
+! Bulk polycrystalline homogenization schemes, assuming individual grains have a transversely isotropic constitutive equatuion, both viscously and elastically.
 
 module homogenizations  
 
@@ -54,7 +56,7 @@ contains
             call f_ev_ck_Mandel(nlm, Mv, B) ! Structure tensors in Mandel notation: Mv = ev_c2_Mandel, B = ev_c4_Mandel
             ev_etac0 = 1.0d0
             ev_etac2 = vec_to_mat(Mv) ! = a2 = ev_c2
-            B3 = vec_to_mat(matmul(B,mat_to_vec(tau))) ! = doubleinner42(ev_etac4,tau)
+            B3 = vec_to_mat(matmul(B,mat_to_vec(tau))) ! = a4 : tau = doubleinner42(ev_etac4,tau)
 
         ! Nonlinear orientation-dependent grain fluidity (Johnson's rheology)        
         else if (nprime .eq. 3) then
@@ -73,7 +75,7 @@ contains
             call f_ev_ck_Mandel(nlm, Mv, B) ! Structure tensors in Mandel notation: Mv = ev_c2_Mandel, B = ev_c4_Mandel
             ev_etac0 = I2 * 1.0d0
             ev_etac2 = I2 * vec_to_mat(Mv) ! = I2*a2 = I2*ev_c2
-            B3       = I2 * vec_to_mat(matmul(B,mat_to_vec(tau))) ! = I2 * doubleinner42(ev_etac4,tau)
+            B3       = I2 * vec_to_mat(matmul(B,mat_to_vec(tau))) ! = I2 * a4 : tau = I2 * doubleinner42(ev_etac4,tau)
             
         end if
 
@@ -119,12 +121,14 @@ contains
         L(5,:) = [s*M(1,3), 0.0d0, s*M(1,3), M(1,2), M(1,1)+M(3,3), M(2,3)]
         L(6,:) = [s*M(1,2), s*M(1,2), 0.0d0, M(1,3), M(2,3), M(1,1)+M(2,2)]
         
-        P = identity6 - coefA*outerprod6(identity_vec6,Mv) + coefB*B + coefC*L ! matrix of vectorized bulk rheology: tau = matmul(P, eps)
+        ! Matrix "P" of the vectorized bulk Taylor rheology: tau = matmul(P, eps)
+        P = identity6 - coefA*outerprod6(identity_vec6,Mv) + coefB*B + coefC*L 
         
-        ! Inverse
+        ! Solve inverse problem; we are seeking eps given tau in tau = matmul(P, eps).
         tau_vec(:,1) = mat_to_vec(tau)
         call dposv('L', 6, 1, P, 6, tau_vec, 6, info) ! tau_vec is now "eps_vec" solution. For some reason, "U" does not work.
 
+        ! Ill posed? => Regularization needed.
         if (info /= 0) then
             P_reg       = matmul(TRANSPOSE(P),P) + 1e-6*identity6
             tau_vec_reg = matmul(TRANSPOSE(P),tau_vec)
@@ -135,6 +139,7 @@ contains
             end if
         end if
         
+        ! Revert solution to 3x3
         eps = vec_to_mat(tau_vec)
     end
 

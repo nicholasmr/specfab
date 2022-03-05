@@ -56,7 +56,6 @@ subroutine daidt_REG(eps, a2, a4, da2dt, da4dt)
     
     nlm = 0.0
     nlm(1:(I_l6-1)) = a4_to_nlm(a2, a4) ! tensorial --> spectral, truncated at L=4
-!    ddt_nlm = nu * matmul(dndt_ij_REG(), nlm) ! spectral evolution  --- d/dt nlm_i = M_ij nlm_j
     ddt_nlm = matmul(dndt_ij_REG(eps), nlm) ! spectral evolution  --- d/dt nlm_i = M_ij nlm_j  
     call dndt_to_daidt(ddt_nlm, nlm(1), da2dt, da4dt) ! spectral --> tensorial 
 end

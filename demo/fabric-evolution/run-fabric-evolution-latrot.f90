@@ -12,7 +12,7 @@ program demo
     ! Numerics
     integer, parameter :: Nt = 50  ! Number of time steps
     real, parameter    :: dt = 0.0782404601085629 ! Time-step size (gives a vertical strain of -0.98 for experiment "uc_zz")
-    integer            :: Lcap = 6 ! Spectral truncation (4<=L<=8)
+    integer            :: Lcap = 8 ! Spectral truncation (4<=L<=8)
     
     ! Constants and argv strings    
     integer          :: ii,tt ! loop vars

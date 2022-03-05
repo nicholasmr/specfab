@@ -1,4 +1,17 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk>, 2019-2022
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2022
+
+! Fluid rheologies
+
+!-----------
+! Notation:
+!-----------
+!   eps = Strain-rate tensor (3x3)
+!   tau = Deviatoric stress (3x3)
+!   A   = Strain-rate (flow rate) factor
+!   n   = Nonlinear flow exponent
+!   mi  = Material symmetry axis (axes)
+!   Eij = Directional enhancement factors along "mi"
+!-----------
 
 module rheologies
 
@@ -6,7 +19,7 @@ module rheologies
 
     implicit none 
 
-    integer, parameter, private :: dp = 8 ! Default precision
+    integer, parameter, private       :: dp = 8 ! Default precision
     real(kind=dp), parameter, private :: identity(3,3)  = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
     
 contains      

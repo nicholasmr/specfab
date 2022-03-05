@@ -26,7 +26,7 @@ T_EXP_STR = {T_EXP_CC:'cc', T_EXP_SS:'ss'}
 ### Select experiment
 
 T_EXP = T_EXP_CC
-#T_EXP = T_EXP_SS
+T_EXP = T_EXP_SS
 
 DEBUG = 0
 
@@ -44,7 +44,7 @@ if T_EXP==T_EXP_CC: DDRX_strainthres = -0.7
 # Numerics
 #----------------------
 
-L = 20
+L = 18 
 
 if T_EXP==T_EXP_SS:
     tau0mag = 1.087e6

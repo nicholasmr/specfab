@@ -1,8 +1,8 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2019-2022
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2022
 
 module specfab  
 
-    ! Top level module that includes all functionalities.
+    ! Top level module that includes all functionalities (all submodules).
 
     use tensorproducts
     use mandel
@@ -17,7 +17,7 @@ module specfab
     implicit none 
 
     integer, parameter, private :: dp = 8 ! Default precision
-    integer, private :: ii,jj,ll, mm ! Loop indices
+    integer, private :: ll, mm ! Loop indices
     
     ! Distribution expansion series: n(theta,phi) = sum_{l,m}^{Lcap,:} n_l^m Y_l^m(theta,phi) 
     ! where "nlm" vector := n_l^m = (n_0^0, n_2^-2, n_2^-1, n_2^0, n_2^1, n_2^2, n_4^-4, ... ) 

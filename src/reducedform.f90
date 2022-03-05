@@ -1,4 +1,4 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk>, 2022
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2022
 
 ! For converting between full (nlm) and reduced (rnlm) forms of nlm by noting that real-valued ODFs fulfill: n_l^{-m} = (-1)^m conj(n_l^m) 
 
@@ -48,6 +48,10 @@ module reducedform
 
 contains      
 
+    !---------------------------------
+    ! Init
+    !---------------------------------
+
     subroutine initreduced(Lcap_) 
 
         ! Needs to be called once before using the module routines.
@@ -63,6 +67,10 @@ contains
         rnlm_neg_len = rnlm_neg_lenvec(Lcap)
         
     end
+
+    !---------------------------------
+    ! Convert fabric dynamics operators to work on reduced form of nlm 
+    !---------------------------------
 
     function dndt_to_drndt(dndt) result (drndt)
         
@@ -97,6 +105,10 @@ contains
         end do
     end
 
+    !---------------------------------
+    ! Convert between reduced and full forms
+    !---------------------------------
+
     function rnlm_to_nlm(rnlm) result(nlm)
 
         ! *** Convert reduced (rnlm) to full (nlm)
@@ -122,7 +134,9 @@ contains
         rnlm = nlm(I_all(1:rnlm_len))
     end
 
-    ! *** For validation purposes only ***
+    !---------------------------------
+    ! For validation purposes only
+    !---------------------------------
 
     function nlm_to_rnlm_pos(nlm) result(rnlm_pos)
 

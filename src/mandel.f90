@@ -1,18 +1,22 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk>, 2022
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2022
+
+! Mandel's notation (like the Voigt notation) provides a way to represent symmetric tensors in terms of matrices and vectors.
+! In this compact notation (which exclusively accounts for the independent tensors components), inner products can conveniently be expressed as matrix-vector multiplications.
 
 module mandel 
 
     implicit none 
 
-    integer, parameter, private :: dp = 8 ! Default precision
-    real(kind=dp), parameter, private    :: s = sqrt(2.0d0) 
+    integer, parameter, private       :: dp = 8 ! Default precision
+    real(kind=dp), parameter, private :: s = sqrt(2.0d0) 
         
 contains      
 
     function mat_to_vec(M) result (v)
 
-        implicit none
+        ! 3x3 symmetric matrix to 6x1 Mandel vector
 
+        implicit none
         real(kind=dp), intent(in) :: M(3,3) 
         real(kind=dp)             :: v(6) 
         
@@ -20,6 +24,8 @@ contains
     end
 
     function vec_to_mat(v) result (M)
+        
+        ! 6x1 Mandel vector to symmetric 3x3 matrix
         
         implicit none
         real(kind=dp), intent(in) :: v(6) 
@@ -31,6 +37,8 @@ contains
     end
 
     function a4_to_mat(A) result (M)
+    
+        ! 3x3x3x3 symmetric tensor (e.g. a4) to 6x6 Mandel matrix
 
         implicit none
         real(kind=dp), intent(in) :: A(3,3,3,3) 

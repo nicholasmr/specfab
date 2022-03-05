@@ -74,7 +74,7 @@ a2 = np.array(a2)
 #   Insted, we specify the independent contributions to a^(4) by setting the corresponding n_4^m coefficients, which easily allows for a set of "self-consistent" tensors a^(2) and a^(4).
 
 lm, nlm_len = sf.init(4)
-nlm = np.zeros(nlm_len, dtype=np.complex)
+nlm = np.zeros(nlm_len, dtype=np.complex128)
 nlm[:6] = sf.a2_to_nlm(a2) # get n_2^m spectral coefs from a^(2)
 nlm[11] = 1 # Set some higher-order anisotropy (indices 6 <= i <= 14 are the n_4^m coefs)
 a4 = sf.a4(nlm) 

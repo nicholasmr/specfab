@@ -1,13 +1,8 @@
-include "elmer/include/IBOF.f90"
+! D. A. Lilien, 2019-2022
 
-function outerprod9(a,b) result(outerprod)
-    ! a_i b_j = rank-2 tensor
-    implicit none
-    real(kind=dp), intent(in) :: a(9), b(9)
-    real(kind=dp) :: outerprod(9,9)
-!    outerprod = reshape( [( [( a(ii)*b(jj), jj=1,9)], ii=1,9)] , [9,9])
-    outerprod = reshape( [( [( a(ii)*b(jj), ii=1,9)], jj=1,9)] , [9,9])
-end
+!-------------------
+! AUX
+!-------------------
 
 function vectorize9(M) result(vec)
     implicit none
@@ -15,6 +10,12 @@ function vectorize9(M) result(vec)
     real(kind=dp) :: vec(9)
     vec = reshape(M, [9])
 end
+
+include "elmer/include/IBOF.f90"
+
+!-------------------
+! RHEOLOGIES
+!-------------------
     
 function Cmat_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(C)
 
@@ -59,7 +60,7 @@ subroutine Cmat_inverse_orthotropic_dimless(eps, n, m1,m2,m3, Eij, MinInVar, vis
     ! Matches the Elmer version in returning a C6(6x6) matrix relating S and D as used in Elmer
     ! Matches the Elmer factor of 2 on the strainrate
     ! Also returns the non-dimensional (excluding A_glen)
-    !   orthotropic viscosity following Rathmann and Lilien 2021b
+    !   orthotropic viscosity following Rathmann and Lilien 2022
 
     implicit none
     real(kind=dp), intent(in)     :: eps(3,3), m1(3),m2(3),m3(3), Eij(3,3), MinInVar
@@ -98,6 +99,10 @@ subroutine Cmat_inverse_orthotropic_dimless(eps, n, m1,m2,m3, Eij, MinInVar, vis
     C6(1:6, 4:6) = C6(1:6, 4:6) + C([1, 5, 9, 2, 6, 3], [4, 8, 7])
     C6(1:3,1:3) = 2.0_dp * C6(1:3,1:3)
 end    
+
+!-------------------
+! STRUCTURE TENSORS
+!-------------------
 
 function a4_IBOF(a2) 
 

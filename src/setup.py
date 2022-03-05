@@ -16,7 +16,7 @@ if len(glob.glob('specfabpy.cpython*.so')) == 0:
     print('No compiled specfabpy found. Run `make python`')
 else:
     setup(name='specfabpy',
-          author="Nicholas M. Rathmann",
+          author="Nicholas M. Rathmann and David A. Lilien",
           author_email="rathmann@nbi.ku.dk",
           description="specfab Python module",
           url="https://github.com/nicholasmr/specfab",

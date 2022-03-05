@@ -1,4 +1,6 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2020-2022
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2022
+
+! Calculations of normalized ODF moments (structure tensors) given the spectral expansion coefficieints of an ODF.
 
 module moments 
 
@@ -18,7 +20,7 @@ contains
     !---------------------------------
               
     function a2(nlm) 
-        ! a^(2) := <c^2> shorthand
+        ! a^(2) := <c^2> 
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp)                :: a2(3,3)
@@ -28,7 +30,7 @@ contains
     end
 
     function a4(nlm) 
-        ! a^(4) := <c^4> shorthand
+        ! a^(4) := <c^4> 
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp)                :: a4(3,3,3,3)
@@ -57,12 +59,13 @@ contains
     end
 
     !---------------------------------
-    ! All moments <c^k> (k = 0,2,4,6,8)
+    ! All moments <c^k> (k = 2,4,6,8)
     !---------------------------------
     
     subroutine f_ev_ck(nlm, opt, ev_c2,ev_c4,ev_c6,ev_c8)
         
-        ! "ev_ck" are the structure tensors <c^k> := a^(k) for a given n(theta,phi) prescribed in terms of "nlm"
+        ! "ev_ck" are the structure tensors <c^k> := a^(k) for a given psi(theta,phi) (grain orientation distribution)
+        !    prescribed in terms of the array "nlm" of spectral expansion coefficients.
         
         implicit none
         
@@ -92,6 +95,9 @@ contains
     
     subroutine f_ev_ck_Mandel(nlm, ev_c2_Mandel, ev_c4_Mandel)
             
+        ! a2 and a4 in Mandel's notation. 
+        ! Mandel's notation should be used whereever possible for performance.
+            
         implicit none
         
         complex(kind=dp), intent(in) :: nlm(:)
@@ -101,8 +107,8 @@ contains
         n00 = nlm(1)
         n2m = nlm(I_l2:(I_l4-1))
         n4m = nlm(I_l4:(I_l6-1))
-        ev_c2_Mandel = mat_to_vec(f_ev_c2(n00,n2m)) ! 6x1
-        ev_c4_Mandel = f_ev_c4_Mandel(n00,n2m,n4m) ! 6x6
+        ev_c2_Mandel = mat_to_vec(f_ev_c2(n00,n2m)) ! 6x1 Mandel vector of a2
+        ev_c4_Mandel = f_ev_c4_Mandel(n00,n2m,n4m)  ! 6x6 Mandel matrix of a4
     end
 
     !---------------------------------
@@ -110,7 +116,7 @@ contains
     !---------------------------------
 
     function f_ev_c0(n00) result(ev)
-        ! Integral over orientation distribution = total number of c-axes (grains)
+        ! Integral over orientation distribution = total number of c-axes (grains) = N
         complex(kind=dp), intent(in) :: n00
         real(kind=dp) :: ev
         ev = REAL(sqrt(4*Pi)*n00)
@@ -120,7 +126,8 @@ contains
         implicit none
         complex(kind=dp), intent(in) :: n00, n2m(-2:2)
         complex(kind=dp) :: n2mhat(0:2)
-        real(kind=dp) :: k = 0.0, ev(3,3)
+!        real(kind=dp) :: k = 0.0
+        real(kind=dp) :: ev(3,3)
         ev = 0.0
         include "include/ev_c2__body.f90"
 !        ev = ev * k/f_ev_c0(n00) ! not needed, <c^2> already normalized
@@ -135,7 +142,7 @@ contains
         ev = ev * k/f_ev_c0(n00)
     end
     
-    function f_ev_c4_Mandel(n00,n2m,n4m) result (ev)
+    function f_ev_c4_Mandel(n00,n2m,n4m) result(ev)
         implicit none
         complex(kind=dp), intent(in) :: n00, n2m(-2:2), n4m(-4:4)
         real(kind=dp) :: k = 0.0, ev(6,6)

@@ -1,4 +1,6 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk>, 2019-2022
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2022
+
+! Fabric (ODF) dynamics in spectral orientation space.
 
 module dynamics  
 
@@ -54,7 +56,7 @@ contains
         ! Lattice rotation
         !------------------
 
-        ! Returns matrix dndt_ij such that d/dt (nlm)_i = dndt_ij (nlm)_j
+        ! Returns matrix (dndt)_ij such that d/dt (nlm)_i = (dndt)_ij (nlm)_j
 
         implicit none
 
@@ -120,7 +122,7 @@ contains
         !----------------------------------------------- 
         
         ! Nucleation and migration recrystalization modeled as a decay process (Placidi et al., 2010).
-        ! Returns matrix dndt_ij such that d/dt (nlm)_i = dndt_ij (nlm)_j
+        ! Returns matrix (dndt)_ij such that d/dt (nlm)_i = (dndt)_ij (nlm)_j
         ! NOTICE: This is Gamma/Gamma_0. The caller must multiply by an appropriate DDRX rate factor, Gamma_0(T,tau,eps,...).
         
         implicit none
@@ -175,7 +177,7 @@ contains
         !--------------------------------------------
         
         ! Rotation recrystalization (polygonization) as a Laplacian diffusion process (Godert, 2003).
-        ! Returns matrix dndt_ij such that d/dt (nlm)_i = dndt_ij (nlm)_j
+        ! Returns matrix (dndt)_ij such that d/dt (nlm)_i = (dndt)_ij (nlm)_j
         ! NOTICE: This gives the unscaled effect of CDRX. The caller must multiply by an appropriate CDRX rate factor (scale) that should depend on temperature, stress, etc.
 
         implicit none
@@ -193,8 +195,8 @@ contains
         ! Regularization 
         !----------------
         
-        ! Returns matrix dndt_ij such that d/dt (nlm)_i = dndt_ij (nlm)_j
-        ! NOTICE: Calibrated for 4 <= L <= 8. For larger L, the caller  must specify an appropriate scaling.
+        ! Returns matrix (dndt)_ij such that d/dt (nlm)_i = (dndt)_ij (nlm)_j
+        ! NOTICE: Calibrated for 4 <= L <= 8 and L=20. For different L, the caller must specify an appropriate scaling.
         ! Calibration is provided by the script in tests/calibrate-regularization.
         
         implicit none

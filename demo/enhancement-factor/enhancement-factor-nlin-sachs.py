@@ -1,10 +1,11 @@
 #!/usr/bin/python3
-# N. M. Rathmann, 2019-2021
+# N. M. Rathmann <rathmann@nbi.ku.dk>, 2019-2022
 
 import numpy as np
 from numpy import cos, sin, rad2deg, deg2rad
 import sys, os, code # code.interact(local=locals())
 from scipy.interpolate import interp1d
+import scipy.special as sp
 
 sys.path.insert(0, '..')
 from specfabpy import specfabpy as sf 
@@ -51,12 +52,6 @@ m, t = np.array([0,0,1]), np.array([1,0,0])
 p, q = (m+t)/np.sqrt(2), (m-t)/np.sqrt(2)
 mm, mt, pq = np.tensordot(m,m, axes=0), np.tensordot(m,t, axes=0), np.tensordot(p,q, axes=0)
 
-r2 = np.tensordot(m,m, axes=0)
-r4 = np.tensordot(r2,r2, axes=0)
-r6 = np.tensordot(r4,r2, axes=0)
-r8 = np.tensordot(r4,r4, axes=0)
-moments = (r2,r4,r6,r8)
-
 tau0 = 1 # results are independant of the stress magnitude
 tau_ps_mm = tau0*(np.identity(3)/3 - mm) 
 tau_ss_mt = tau0*(mt + mt.T) 
@@ -64,6 +59,11 @@ tau_ss_pq = tau0*(pq + pq.T)
 
 L = 10
 lm, nlm_len = sf.init(L) # nlm_len is the number of fabric expansion coefficients (degrees of freedom).
+nlm = np.zeros((nlm_len), dtype=np.complex128)
+Lrange = np.arange(0,L+1,2) # 0, 2, 4, 6, ...
+llrange = [int(ll*(ll+1)/2) for ll in Lrange] # indices 0, 3, 10, ....
+for ii, lli in enumerate(llrange):
+    nlm[lli] = sp.sph_harm(0, Lrange[ii], 0,0) # expansion coefficients for a delta function
 
 #-----------------------
 # MAP
@@ -81,9 +81,9 @@ for nn, nprime in enumerate(nprime_list):
 
     for ii,Eca in enumerate(Eca_list):
         for jj,Ecc in enumerate(Ecc_list):
-            Emm[nn,ii,jj] = sf.Evw(r2,r4,r6,r8, mm,tau_ps_mm, Ecc,Eca,0,nprime) # Evw(a2,a4,a6,a8, vw,tau, Ecc,Eca,alpha,nprime)
-            Emt[nn,ii,jj] = sf.Evw(r2,r4,r6,r8, mt,tau_ss_mt, Ecc,Eca,0,nprime)
-            Epq[nn,ii,jj] = sf.Evw(r2,r4,r6,r8, pq,tau_ss_pq, Ecc,Eca,0,nprime)
+            Emm[nn,ii,jj] = sf.Evw(nlm, mm,tau_ps_mm, Ecc,Eca,0,nprime) # Evw(a2,a4,a6,a8, vw,tau, Ecc,Eca,alpha,nprime)
+            Emt[nn,ii,jj] = sf.Evw(nlm, mt,tau_ss_mt, Ecc,Eca,0,nprime)
+            Epq[nn,ii,jj] = sf.Evw(nlm, pq,tau_ss_pq, Ecc,Eca,0,nprime)
 
         
 X = np.array([[ Ecc for Ecc in Ecc_list]   for Eca in Eca_list])

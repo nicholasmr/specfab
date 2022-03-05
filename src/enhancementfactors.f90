@@ -1,4 +1,6 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk>, 2019-2022
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2022
+
+! Stran-rate enhancement factors relying on the Sachs and Taylor homogenization assumptions.
 
 module enhancementfactors  
 
@@ -58,8 +60,8 @@ contains
 
     function Eeiej(nlm, e1,e2,e3, Ecc,Eca,alpha,nprime) result (Eij)
 
-        ! Enhancement factors in directions (ei,ej), not necessarily a2 eigen directions
-        ! (3x3 symmetric matrix of enhancement factors)
+        ! Enhancement factors in directions (ei,ej), *not* necessarily a2 eigen directions.
+        ! Returns a 3x3 symmetric matrix of enhancement factors.
 
         implicit none
 

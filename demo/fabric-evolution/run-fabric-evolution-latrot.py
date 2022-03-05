@@ -24,7 +24,7 @@ arg_exp = sys.argv[1] # Velocity gradient experiment
 
 Nt = 50 # Number of time steps
 dt = 0.0782404601085629 # Time-step size (gives a vertical strain of -0.98 for experiment "uc_zz")
-L = 6 # Spectral truncation (4<=L<=8)
+L = 8 # Spectral truncation (4<=L<=8)
 
 #----------------------
 # Grain parameters

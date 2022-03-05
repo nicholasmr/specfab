@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# N. M. Rathmann <rathmann@nbi.ku.dk>, 2019-2021
+# N. M. Rathmann <rathmann@nbi.ku.dk>, 2019-2022
 
 import numpy as np
 import sys, os, code # code.interact(local=locals())
@@ -58,24 +58,20 @@ m, t = np.array([0,0,1]), np.array([1,0,0])
 p, q = (m+t)/np.sqrt(2), (m-t)/np.sqrt(2)
 mm, mt, pq = np.tensordot(m,m, axes=0), np.tensordot(m,t, axes=0), np.tensordot(p,q, axes=0)
 
-r2 = np.tensordot(m,m, axes=0)
-r4 = np.tensordot(r2,r2, axes=0)
-r6 = np.tensordot(r4,r2, axes=0)
-r8 = np.tensordot(r4,r4, axes=0)
-moments = (r2,r4,r6,r8)
-
 tau_ps_mm = 1*(np.identity(3)-3*mm) 
 tau_ss_mt = 1*(mt + np.transpose(mt)) 
 tau_ss_pq = 1*(pq + np.transpose(pq))
 
-L = 10
+L = 4
 lm, nlm_len = sf.init(L) # nlm_len is the number of fabric expansion coefficients (degrees of freedom).
+a2 = np.tensordot(m,m, axes=0)
+a4 = np.tensordot(a2,a2, axes=0)
+nlm = sf.a4_to_nlm(a2,a4)
 
 #-----------------------
 # Enhancement factor maps
 #-----------------------
 
-#f = 8 if PRODUCTION else 2
 f = 10 if PRODUCTION else 2
 
 Eca_list = np.logspace(-0,4,f*10) # shear along basal plane
@@ -101,18 +97,18 @@ Emm_alpha,  Emt_alpha,  Epq_alpha  = np.zeros(size), np.zeros(size), np.zeros(si
 for ii,Eca in enumerate(Eca_list):
 
     for jj,Ecc in enumerate(Ecc_list):
-        Emm_Sachs[ii,jj] = sf.Evw(r2,r4,r6,r8, mm,tau_ps_mm, Ecc,Eca,0,nprime)
-        Emt_Sachs[ii,jj] = sf.Evw(r2,r4,r6,r8, mt,tau_ss_mt, Ecc,Eca,0,nprime)
-        Epq_Sachs[ii,jj] = sf.Evw(r2,r4,r6,r8, pq,tau_ss_pq, Ecc,Eca,0,nprime)
+        Emm_Sachs[ii,jj] = sf.Evw(nlm, mm,tau_ps_mm, Ecc,Eca,0,nprime)
+        Emt_Sachs[ii,jj] = sf.Evw(nlm, mt,tau_ss_mt, Ecc,Eca,0,nprime)
+        Epq_Sachs[ii,jj] = sf.Evw(nlm, pq,tau_ss_pq, Ecc,Eca,0,nprime)
         #       
-        Emm_Taylor[ii,jj] = sf.Evw(r2,r4,r6,r8, mm,tau_ps_mm, Ecc,Eca,1,nprime)
-        Emt_Taylor[ii,jj] = sf.Evw(r2,r4,r6,r8, mt,tau_ss_mt, Ecc,Eca,1,nprime)
-        Epq_Taylor[ii,jj] = sf.Evw(r2,r4,r6,r8, pq,tau_ss_pq, Ecc,Eca,1,nprime)
+        Emm_Taylor[ii,jj] = sf.Evw(nlm, mm,tau_ps_mm, Ecc,Eca,1,nprime)
+        Emt_Taylor[ii,jj] = sf.Evw(nlm, mt,tau_ss_mt, Ecc,Eca,1,nprime)
+        Epq_Taylor[ii,jj] = sf.Evw(nlm, pq,tau_ss_pq, Ecc,Eca,1,nprime)
         
     for kk,alpha in enumerate(alpha_list):
-        Emm_alpha[ii,kk] = sf.Evw(r2,r4,r6,r8, mm,tau_ps_mm, 1,Eca,alpha,nprime)
-        Emt_alpha[ii,kk] = sf.Evw(r2,r4,r6,r8, mt,tau_ss_mt, 1,Eca,alpha,nprime)
-        Epq_alpha[ii,kk] = sf.Evw(r2,r4,r6,r8, pq,tau_ss_pq, 1,Eca,alpha,nprime)
+        Emm_alpha[ii,kk] = sf.Evw(nlm, mm,tau_ps_mm, 1,Eca,alpha,nprime)
+        Emt_alpha[ii,kk] = sf.Evw(nlm, mt,tau_ss_mt, 1,Eca,alpha,nprime)
+        Epq_alpha[ii,kk] = sf.Evw(nlm, pq,tau_ss_pq, 1,Eca,alpha,nprime)
         
 Xe = np.array([[ Ecc for Ecc in Ecc_list]   for Eca in Eca_list])
 Xa = np.array([[ alp for alp in alpha_list] for Eca in Eca_list])
