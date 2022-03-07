@@ -45,6 +45,9 @@ module specfabpy
 !        detQ_coefs__sf => detQ_coefs, &
 !        vj__sf => vj, &
 !        qj__sf => qj, &
+        Gamma0__sf => Gamma0, &
+        apply_bounds__sf => apply_bounds, &
+        Sl__sf => Sl, &
         lm__sf => lm, &
         Eca_opt_lin__sf    => Eca_opt_lin, &
         Ecc_opt_lin__sf    => Ecc_opt_lin, &
@@ -489,6 +492,35 @@ contains
         
         ! Calculate D - <D>
         DDRX_decayrate = g 
+    end
+    
+    function Gamma0(eps, T, A, Q)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: eps(3,3) ! strain-rate tensor
+        real(kind=dp), intent(in) :: T, A, Q
+        real(kind=dp)             :: Gamma0
+        
+        Gamma0 = Gamma0__sf(eps, T, A, Q)
+    end
+    
+    function apply_bounds(nlm) result (nlm_bounded)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        complex(kind=dp)             :: nlm_bounded(size(nlm))
+    
+        nlm_bounded = apply_bounds__sf(nlm)
+    end
+    
+    function Sl(nlm, l)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        integer, intent(in)          :: l
+        real(kind=dp)                :: Sl
+       
+       Sl = Sl__sf(nlm, l) 
     end
     
     !---------------------------------

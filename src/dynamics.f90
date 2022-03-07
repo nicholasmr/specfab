@@ -169,6 +169,29 @@ contains
             dndt_ij_DDRX_src(ii,1:nlm_len) = matmul(GC(ii,:nlm_len,:), g)
         end do
     end
+    
+    function Gamma0(eps, T, A, Q)
+        
+        !-----------------------------------------------
+        ! DDRX rate factor modelled as an Arrhenius activation process
+        !----------------------------------------------- 
+        
+        ! eps = strain rate tensor 
+        ! T   = temperature (deg. K)
+        ! A   = rate factor magnitude
+        ! Q   = activation energy
+        
+        implicit none
+
+        real(kind=dp), intent(in) :: eps(3,3) ! strain-rate tensor
+        real(kind=dp), intent(in) :: T, A, Q
+        real(kind=dp)             :: Gamma0, epssq(3,3), I2
+        real(kind=dp), parameter  :: gasconst = 8.31446261815324
+        
+        epssq = matmul(eps,eps)
+        I2 = sqrt(0.5d0*(epssq(1,1)+epssq(2,2)+epssq(3,3))) ! = sqrt(0.5* eps:eps)
+        Gamma0 = A * I2 * exp(-Q/(gasconst*T))
+    end
 
     function dndt_ij_CDRX()
 
@@ -205,23 +228,23 @@ contains
         real(kind=dp)             :: nu, expo, scalefac
         
         if (Lcap == 4) then
-            expo = 1.65
-            nu   = 2.088913e+00
+            expo = 1.500
+            nu   = 2.652266e+00
         end if 
 
         if (Lcap == 6) then
-            expo = 2.35
-            nu   = 2.914053e+00
+            expo = 2.000
+            nu   = 3.923652e+00
         end if 
         
         if (Lcap == 8) then
-            expo = 2.80
-            nu   = 4.120216e+00
+            expo = 3.000
+            nu   = 3.755041e+00
         end if 
 
         if (Lcap == 20) then
-            expo = 3.00
-            nu   = 2.007883e+01
+            expo = 3.000
+            nu   = 1.495197e+01
         end if 
 
         if ((Lcap .gt. 8) .and. (Lcap .lt. 20)) then
@@ -243,6 +266,58 @@ contains
     !---------------------------------
 
     include "tensorialdynamics.f90"
+
+    !---------------------------------
+    ! BOUNDS AND POWER SPECTRUM
+    !---------------------------------
+
+    function apply_bounds(nlm) result (nlm_bounded)
+    
+        ! The entries of nlm are bounded in the sense that the corresponding angular power spectrum, S(l), 
+        ! must not exceed that of the delta function (perfect single maximum). 
+        ! This function adjusts nlm *if needed* such that nlm is consistent with delta function bounds for components l=2,4 (for all m).
+        ! For transient problems, this usually (combined with regularization) gives numerically stable and well-behaved fabric evolution.
+        
+        implicit none
+
+        complex(kind=dp), intent(in) :: nlm(nlm_len)
+        complex(kind=dp)             :: nlm_bounded(nlm_len)
+        real(kind=dp)                :: S0, S2_rel, S4_rel 
+        
+        nlm_bounded = nlm
+            
+        S0 = real(nlm(1))**2 ! m=0 components are real by definition
+        S2_rel = Sl(nlm,2)/S0
+        S4_rel = Sl(nlm,4)/S0
+        
+        if (S2_rel > 1.0d0) then
+            ! if S(2) > S_delta(2), then scale n2m such that S(2) = S_delta(2) (ensures a2 eigen values are correctly bounded: 0 <= lam1,lam2,lam3 <= 1)
+            nlm_bounded(I_l2:(I_l4-1)) = nlm(I_l2:(I_l4-1)) / sqrt(S2_rel) 
+        end if
+        
+        if (S4_rel > 1.0d0) then
+            ! if S(4) > S_delta(4), then scale n4m such that S(4) = S_delta(4)
+            nlm_bounded(I_l4:(I_l6-1)) = nlm(I_l4:(I_l6-1)) / sqrt(S4_rel)
+        end if
+    end
+
+    function Sl(nlm, l)
+    
+        ! Angular power spectrum at degree l
+        
+        implicit none
+
+        complex(kind=dp), intent(in) :: nlm(nlm_len)
+        integer, intent(in)          :: l
+        real(kind=dp)                :: Sl
+        complex(kind=dp)             :: nlm_sub(2*l+1)
+        integer                      :: I0, I1
+        
+        I1 = (l+1)*(l+2)/2      ! number of coefs if L=l
+        I0 = I1 - (2*l+1) + 1   ! 2*l+1 coefs (possible m) for a given l
+        nlm_sub(:) = nlm(I0:I1) ! nlm subrange with all "m" components for "l"
+        Sl = 1.0d0/(2*l+1) * real( dot_product(nlm_sub, conjg(nlm_sub)) ) ! is real by definition
+    end
 
     !---------------------------------
     ! QUADRICS

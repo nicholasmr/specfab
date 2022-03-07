@@ -1,4 +1,4 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk>, 2021
+# N. M. Rathmann <rathmann@nbi.ku.dk>, 2021-2022
 
 import sys, os, copy, code # code.interact(local=locals())
 import numpy as np
@@ -15,51 +15,69 @@ from matplotlib import rcParams, rc
 import warnings
 warnings.filterwarnings("ignore")
 
-#get_ipython().magic('clear')
-
 #---------------------
 # Setup
 #---------------------
 
-Nc = 50 # Number of "integration time steps" (we consider the analytical solution here).
+### Settings
+SOLVE_FOR_NU = 1  # Run minimization to determine regularization magnitude per L
+APPLY_BOUNDS = 1  # Test effect of applying bounds to solution (after solving for nu without bounds enabled)
+TEST_GIRDLE  = 0  # Validate calibration (for single maximum fabrics) against girdle fabrics.
 
-TEST_GIRDLE = 0 # Validate calibration (for single maximum fabrics) against girdle fabrics.
+L_list = [4,6,8,20]
+#L_list = [6,]
 
+### Mode of deformation
 if not TEST_GIRDLE: 
-    epszz = -0.99 # Target: 2% of initial parcel height
-    D = np.diag([0.5,0.5,-1]); Dzz = D[2,2];
+    epszz = -0.99 # Target: 1% of initial parcel height
+    D = np.diag([0.5,0.5,-1]);
     
 else:
     epszz = 10 # Target: 10 times taller parcel compared to initial parcel height
-    D = -np.diag([0.5,0.5,-1]); Dzz = D[2,2];
+    D = -np.diag([0.5,0.5,-1]); 
 
+Dzz = D[2,2]; # size of compressive strain-rate
+W = 0*D # Assume strain-rate tensor is in eigen frame
+
+### Rotate compressive axis
+latrot = np.deg2rad(0)
+print('Strain-rate tensor sym. axis has orientation theta=%.4f deg.'%(np.rad2deg(latrot)))
+c, s = np.cos(latrot), np.sin(latrot)
+R = np.matrix([[c,0,s],[0,1,0],[-s,0,c]])
+D = np.matmul(np.matmul(R,D),R.T)
+
+### Numerics
+Nc = 50 # Number of "integration time steps" (we consider the analytical solution here).
 te = 1/Dzz # characteristic time, t_e
 t_epszz = te*np.log(epszz + 1)
 dt = t_epszz/Nc # time step size for thresshold strain epszz in "Nc" time steps 
-
 tsteps = np.arange(Nc+1) # list of steps
 epszz_t = np.exp(tsteps*dt/te)-1 # list of strains
-print(Nc,dt)
-
-W = 0*D # Assume strain-rate tensor is in eigen frame
+print('Nc=%i, dt=%.4e s'%(Nc,dt))
 
 #---------------------
 # Initial guess, nu0
 #---------------------
 
-SOLVE_FOR_NU = 1 and (not TEST_GIRDLE)
-
-L_list = [4,6,8,20]
+SOLVE_FOR_NU = SOLVE_FOR_NU and (not TEST_GIRDLE) # don't solve for nu for other modes of deformation than unconfined uniaxial compression.
     
 for L in L_list:
 
-    nu0 = 1e0 # init guess for iteration
-    
-    if L == 4:  expo = 1.65
-    if L == 6:  expo = 2.35
-    if L == 8:  expo = 2.8
-    if L == 20: expo = 3
+    if L == 4:  
+        expo = 1.5
+        nu0 = 1 # init guess for iteration
 
+    if L == 6:  
+        expo = 2.0
+        nu0 = 1 # init guess for iteration
+       
+    if L == 8:
+        expo = 3 # 2.8
+        nu0 = 4e+0 # init guess for iteration
+        
+    if L == 20: 
+        expo = 3
+        nu0 = 3e+0 # init guess for iteration
     
     if TEST_GIRDLE:
         if L == 4: nu0 = 2.126845e+00
@@ -70,14 +88,14 @@ for L in L_list:
     # Init specfab
     #---------------------
     
-    lm, nlm_len  = sf.init(L)
-    nlm      = np.zeros((nlm_len, Nc+1), dtype=np.complex128)
+    lm, nlm_len = sf.init(L)
+    nlm = np.zeros((nlm_len, Nc+1), dtype=np.complex128)
     nlm[0,:] = 1/np.sqrt(4*np.pi) # Init with isotropy
     nlm0 = nlm[:,0].copy()
     
-    M = sf.dndt_LATROT(nlm0, D, W) # strain-rate assumed constant
+    M = sf.dndt_LATROT(nlm0, D, W) # strain-rate assumed constant for calibration experiments
     if 0 and TEST_GIRDLE: # test specfab implemention of solution.
-        print("*** USING SPECFAB'S dndt_REG() (i.e. verifying implementation)")
+        print("*** USING SPECFAB'S dndt_REG() (verifying fortran implementation)")
         nu0 = 1
         R = sf.dndt_REG(nlm0, D) 
     else:
@@ -89,85 +107,93 @@ for L in L_list:
     #---------------------
     # Solution
     #---------------------
+
+    def f_nlm(nu_, Nc_, apply_bounds=0):
     
-    def f_nlm(nu_, Nc_):
-        if 0: # Analytical solution
+        if 0: # Analytical solution (matrix exponentiation)
+        
             w, V = LA.eig(M + nu_*R)
             t = dt*Nc_
             H = np.matmul(V,np.matmul(np.diag(np.exp(t * w)), LA.inv(V)))
+            
             return np.matmul(H, nlm0), w
+            
         else: # Numerical (Euler) solution
+        
             nlm_prev = nlm0.copy()
             for ii in np.arange(Nc_):
                 nlm_next = nlm_prev + dt*np.matmul(M + nu_*R,nlm_prev)
+                if apply_bounds: nlm_next = sf.apply_bounds(nlm_next)
                 nlm_prev = nlm_next.copy()
+                
             return nlm_next, 0
         
     #---------------------
-    # Power spectrum, S(l)
+    # Delta function power spectrum, S_dirac(l)
     #---------------------
     
-    Lrange = np.arange(0,L+1,2) # 0, 2, 4, 6, ...
-    llrange = [int(ll*(ll+1)/2) for ll in Lrange] # indices 0, 3, 10, ....
-    powerspectrum = lambda l,cl0: 1/(2*l+1) * np.abs(cl0)**2
-    Sl0 = powerspectrum(0, nlm0[0])   
-    def Sl(nlm): return 1/Sl0 * np.array([ powerspectrum(L,nlm[llrange[ii]]) for ii, L in enumerate(Lrange) ]) 
-    
     nlm_dirac = nlm0.copy()
-    for ii, lli in enumerate(llrange):
-        nlm_dirac[lli] = sp.sph_harm(0, Lrange[ii], 0,0)
-    Sl_dirac = Sl(nlm_dirac)
+    for ii, (l,m) in enumerate(lm.T): nlm_dirac[ii] = sp.sph_harm(m,l, 0,latrot)
+    Lrange = np.arange(0,L+1,2) # 0, 2, 4, 6, ...
+    Sl_dirac = np.array([sf.Sl(nlm_dirac, l) for l in Lrange])
+    Sl_dirac /= Sl_dirac[0] # normalize
+    print('S_dirac(l) (for l=0,2,...,L) = ', Sl_dirac)
     
     #---------------------
     # Minimization problem, J(nu)
     #---------------------
-    
-    I = llrange[0:2] # require nlm entries 1 (=n20), 2 (=n40) closely match the delta function solution.
-    #print(Lrange[I])
+
+    llrange = [int(ll*(ll+1)/2) for ll in Lrange] # indices 0, 3, 10, ....    
+    I = llrange[1:2] # require nlm entries 1 (=n20), 2 (=n40) closely match the delta function solution.
+    tol = 0.99
     
     def J(nu_test, *args):
         (Nc_, ) = args
         nlm, _ = f_nlm(nu_test[0], Nc_)
-        err = np.abs(nlm-nlm_dirac)[I]
-        return np.sum(err) # = J
+        abserr = np.abs( np.real(nlm - tol*nlm_dirac)[I] )
+        return np.sum(abserr)
     
     #---------------------
-    # Solve problem
+    # Estimate nu by solving inverse problem
     #---------------------
     
     if not SOLVE_FOR_NU:
         nu = nu0    
-        print('*** SPECIFIED nu0, nu = ', nu0, nu)
+        print('*** TESTING GUESS nu0, nu = ', nu0, nu)
         
     else:
-        res = minimize(J, nu0, method='L-BFGS-B', args=(Nc), options={'disp': False})
+        print('*** INVERTING for nu by minimizing the error in component with index = ', I, 'with tolerence = %.4f'%(tol))
+        res = minimize(J, nu0, method='CG', args=(Nc), options={'disp': False})
         nu = res.x[0]
         print(res)
         print('*** SOLVED (nu0=%.3e):'%(nu0))
-        print('\texpo = %.2f'%(expo))
-        print('\tnu   = %e'%(nu))
+        print('        if (Lcap == %i) then'%(L))
+        print('            expo = %.3f'%(expo))
+        print('            nu   = %e'%(nu))
         
     #---------------------
     # Sample solution
     #---------------------
         
-    for nn in np.arange(Nc): nlm[:,1+nn], _ = f_nlm(nu, nn+1)
+    for nn in np.arange(Nc): nlm[:,1+nn], _ = f_nlm(nu, nn+1, apply_bounds=APPLY_BOUNDS)
     
     #---------------------
     # Plot results
     #---------------------
     
-    scale=0.9
+    scale=0.825
     fig = plt.figure(figsize=(11*scale,7*scale))
-    gs = gridspec.GridSpec(2, 3, height_ratios=[1,0.7])
+    gs = gridspec.GridSpec(2, 3, height_ratios=[1,0.6])
     
     #---------------------
     
     ax = fig.add_subplot(gs[0,0])
     for nn in tsteps:
-        h = ax.semilogy(Lrange, Sl(nlm[:,nn]))
+        Sl_model = np.array([sf.Sl(nlm[:,nn], l) for l in Lrange]) 
+        Sl_model /= Sl_model[0] # normalize
+        h = ax.semilogy(Lrange, Sl_model)
         
-    ax.semilogy(Lrange, Sl_dirac, '--k', lw=1.5, label='$\delta(\\vu{r}-\\vu{z})$')  
+    ax.semilogy(Lrange, Sl_dirac, '--k', lw=1.5, label='$\psi=\delta$')  
     
     ax.set_xlabel('$l$')
     ax.set_ylabel('$S(l)/S(0)$')
@@ -175,7 +201,8 @@ for L in L_list:
     ax.set_xticks(np.arange(0,21,2))
     ax.set_xlim([0,np.amax([10,L])])
     ax.grid()
-    ax.set_title('$L=%i$, $N_c=%i$'%(L, Nc))
+    ax.set_title('Pwr spec. :: $L=%i$, $N_c=%i$'%(L, Nc))
+    ax.legend()
     
     #---------------------
     
@@ -190,25 +217,31 @@ for L in L_list:
         Eeiej[:,:,nn] = np.transpose(sf.Eeiej(c, e1,e2,e3, Ecc_lin, Eca_lin, alpha_lin, nprime))
     
     ax = fig.add_subplot(gs[0,2])
-    ax.plot(epszz_t, eigvals[0,:])
-    ax.plot(epszz_t, eigvals[1,:])
-    ax.plot(epszz_t, eigvals[2,:])
-    ax.set_ylabel('$a_i$')
-    ax.set_xlabel('$\epsilon_{zz}$')
+    ax.plot(epszz_t, eigvals[0,:], '-',  c='tab:red',   lw=2, label=r'$\lambda_1$')
+    ax.plot(epszz_t, eigvals[1,:], '-',  c='tab:blue',  lw=2, label=r'$\lambda_2$')
+    ax.plot(epszz_t, eigvals[2,:], '--', c='tab:green', lw=2, label=r'$\lambda_3$')
+    ax.set_ylabel(r'$\bf{a}^{(2)}$ eigen values')
+    ax.set_xlabel(r'$\epsilon_{zz}$')
     ax.set_ylim([0,1])
     ax.set_xlim(epszz_t[[0,-1]])
+    ax.legend()
     ax.grid()
+    ax.set_title('Eigen values')
+    print('eigvals for last step are: ', eigvals[:,-1])
     
     #---------------------
     
     ax = fig.add_subplot(gs[0,1])
-    ax.semilogy(epszz_t, Eeiej[-1,-1])
-    ax.semilogy(epszz_t, Eeiej[0,-1])
+    ax.semilogy(epszz_t, Eeiej[0,0], '-',  c='tab:red',   label=r'$E_{11}$')
+    ax.semilogy(epszz_t, Eeiej[2,2], '--', c='tab:blue',  label=r'$E_{33}$')
+    ax.semilogy(epszz_t, Eeiej[0,2], '-',  c='tab:green', label=r'$E_{13}$')
     ax.set_ylim([1e-2,1e1])
     ax.set_xlim(epszz_t[[0,-1]])
     ax.set_ylabel('$E_{ij}$')
     ax.set_xlabel('$\epsilon_{zz}$')
+    ax.legend()
     ax.grid()
+    ax.set_title('Eigen enhancements')
     
     #---------------------
     
@@ -223,10 +256,11 @@ for L in L_list:
         epszz_nn = np.exp(dt*nn/te) - 1
         plot_ODF(nlm[:nlm_len, nn], lm, ax=ax_ODF[ii], cmap='Greys', cblabel=r'$\psi(\epsilon_{zz}=%.2f)$'%(epszz_nn), latres=40)
         ax_ODF[ii].set_global()
-    
+        if latrot==0: ax_ODF[ii].plot([0],[90], marker=r'$e_1$', ms=9, c='tab:orange', transform=geo) 
     #---------------------
     
     gs.tight_layout(fig)
     fname = '%s_L%i.png'%('girdle' if TEST_GIRDLE else 'smax', L)
     print('*** Saving summary %s'%(fname))
-    plt.savefig(fname, dpi=150)
+    plt.savefig(fname, dpi=250)
+    

@@ -1,7 +1,7 @@
 ! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2022
 
 ! Mandel's notation (like the Voigt notation) provides a way to represent symmetric tensors in terms of matrices and vectors.
-! In this compact notation (which exclusively accounts for the independent tensors components), inner products can conveniently be expressed as matrix-vector multiplications.
+! In this compact notation (which exclusively accounts for the independent tensor components), inner products can conveniently be expressed as matrix-vector multiplications.
 
 module mandel 
 
