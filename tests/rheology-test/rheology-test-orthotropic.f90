@@ -170,6 +170,20 @@ program demo
     print *, '...an arbitrary, non-trivial stress tensor:'
     call test_vectorized_rheology(0.1*tau_vw(x1,x2) + 0.33*tau_vw(x2,x3) + 0.51*tau_vw(x1,x2) + 0.43*tau_vv(x3), A, n, m1,m2,m3, Eij) 
     
+    print *, ' '
+    print *, '--------------------------------------------------------'    
+    print *, 'Test *Mandel* vectorized inverse rheology: mandelvec(tau)_i = C_ij mandelvec(eps)_j'
+    print *, '--------------------------------------------------------'
+    print *, '...compression and shear stress tensors w.r.t m_1, m_2, and m_3:'
+    call test_mandelvectorized_rheology(tau_vv(x1), A, n, m1,m2,m3, Eij) 
+    call test_mandelvectorized_rheology(tau_vv(x2), A, n, m1,m2,m3, Eij) 
+    call test_mandelvectorized_rheology(tau_vv(x3), A, n, m1,m2,m3, Eij) 
+    call test_mandelvectorized_rheology(tau_vw(x1,x2), A, n, m1,m2,m3, Eij) 
+    call test_mandelvectorized_rheology(tau_vw(x1,x3), A, n, m1,m2,m3, Eij) 
+    call test_mandelvectorized_rheology(tau_vw(x2,x3), A, n, m1,m2,m3, Eij) 
+    print *, '...an arbitrary, non-trivial stress tensor:'
+    call test_mandelvectorized_rheology(0.1*tau_vw(x1,x2) + 0.33*tau_vw(x2,x3) + 0.51*tau_vw(x1,x2) + 0.43*tau_vv(x3), A, n, m1,m2,m3, Eij) 
+    
     
 contains
 
@@ -295,6 +309,27 @@ subroutine test_vectorized_rheology(eps, A, n, m1,m2,m3, Eij)
     print *, 'tau(eps0)        = ', tau
     print *, 'tau_vec(eps0)    = ', tau_vec
     print *, 'norm2(abs(diff)) = ', norm2(abs(tau - reshape(tau_vec,[3,3])))
+    print *, '----------------'
+        
+end
+    
+subroutine test_mandelvectorized_rheology(eps, A, n, m1,m2,m3, Eij) 
+
+    implicit none
+
+    integer, parameter        :: dp = 8
+    real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+    integer, intent(in)       :: n
+    real(kind=dp)             :: tau(3,3), tauv(3,3), C(6,6)
+
+    tau = tau_of_eps__orthotropic(    eps, A, n, m1,m2,m3, Eij)
+    C   = Cmandel_inverse_orthotropic(eps, A, n, m1,m2,m3, Eij)
+    tauv = vec_to_mat(matmul(C, mat_to_vec(eps))) 
+
+    print *, 'eps0             = ', eps
+    print *, 'tau(eps0)        = ', tau
+    print *, 'tauv(eps0)       = ', tauv
+    print *, 'norm2(abs(diff)) = ', norm2(abs(tau-tauv))
     print *, '----------------'
         
 end

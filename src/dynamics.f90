@@ -1,6 +1,6 @@
 ! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2022
 
-! Fabric (ODF) dynamics in spectral orientation space.
+! Fabric (ODF) dynamics in spectral space.
 
 module dynamics  
 
@@ -131,12 +131,21 @@ contains
         real(kind=dp), intent(in)    :: tau(3,3) ! Deviatoric stress tensor
         complex(kind=dp)             :: dndt_ij_DDRX(nlm_len,nlm_len)
         real(kind=dp)                :: Davg
+        real(kind=dp)                :: tausq(3,3), trtausq ! tau.tau, tau:tau
+        real(kind=dp)                :: a4v(6,6), a2v(6), tauv(6), a4tauv(6)
 
         dndt_ij_DDRX = dndt_ij_DDRX_src(tau)
 
+        tauv = mat_to_vec(tau) ! 6x1 Mandel vector        
+        tausq = matmul(tau,tau) ! = tau.tau
+        trtausq = tausq(1,1) + tausq(2,2) + tausq(3,3) ! = tr(tau.tau) = tau:tau
+        
+        call f_ev_ck_Mandel(nlm, a2v, a4v) ! Structure tensors in Mandel notation
+        a4tauv = matmul(a4v,tauv) ! = a4:tau in Mandel notation (6x1 vector)
+
         ! Add add (nonlinear) sink term <D> to all diagonal entries such that dndt_ij = Gamma_ij/Gamma0 = (D_ij - <D>*I_ij)/(tau:tau) (where I is the identity)
-        Davg = doubleinner22(matmul(tau,tau), a2(nlm)) - doubleinner22(tau,doubleinner42(a4(nlm),tau)) ! (tau.tau):a2 - tau:a4:tau 
-        Davg = Davg/doubleinner22(tau,tau) ! normalize
+        Davg = dot_product(mat_to_vec(tausq),a2v) - dot_product(tauv,a4tauv) ! = (tau.tau):a2 - tau:a4:tau 
+        Davg = Davg/trtausq ! normalize by tau:tau
         do ii = 1, nlm_len    
             dndt_ij_DDRX(ii,ii) = dndt_ij_DDRX(ii,ii) - Davg 
         end do
@@ -228,13 +237,15 @@ contains
         real(kind=dp)             :: nu, expo, scalefac
         
         if (Lcap == 4) then
-            expo = 1.500
-            nu   = 2.652266e+00
+            expo = 1.55d0
+            nu   = 2.9d0
         end if 
 
         if (Lcap == 6) then
-            expo = 2.000
-            nu   = 3.923652e+00
+!            expo = 2.000
+!            nu   = 3.923652e+00
+            expo = 1.25d0
+            nu   = 3.6d0
         end if 
         
         if (Lcap == 8) then
@@ -273,8 +284,7 @@ contains
 
     function apply_bounds(nlm) result (nlm_bounded)
     
-        ! The entries of nlm are bounded in the sense that the corresponding angular power spectrum, S(l), 
-        ! must not exceed that of the delta function (perfect single maximum). 
+        ! The entries of nlm are bounded in the sense that the corresponding angular power spectrum, S(l), must not exceed that of the delta function (perfect single maximum). 
         ! This function adjusts nlm *if needed* such that nlm is consistent with delta function bounds for components l=2,4 (for all m).
         ! For transient problems, this usually (combined with regularization) gives numerically stable and well-behaved fabric evolution.
         

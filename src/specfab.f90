@@ -45,8 +45,8 @@ contains
         nlm_len = nlm_lenvec(Lcap) ! Number of DOFs (expansion coefficients) for full nlm vector
 
         call initreduced(Lcap) ! Initialize reduced nlm (rnlm) module for 2D x-z problems
-        call initdynamics(Lcap) 
-        call initenhancementfactors(Lcap)
+        call initdynamics(Lcap)
+        call inithomogenizations(Lcap) ! Set isotropic structure tensors
         
     end
 

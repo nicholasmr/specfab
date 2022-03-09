@@ -11,32 +11,8 @@ module enhancementfactors
     implicit none 
 
     integer, parameter, private :: dp = 8 ! Default precision
-    real,    parameter, private :: Pi = 3.141592653589793
-    
-    integer, private       :: Lcap
-    complex(kind=dp)       :: nlm_iso(1+5+9+13+17) ! nlm for L=8 is needed
-    real(kind=dp), private :: ev_c2_iso(3,3), ev_c4_iso(3,3,3,3), ev_c6_iso(3,3,3,3, 3,3), ev_c8_iso(3,3,3,3, 3,3,3,3) ! <c^k> for isotropic n(theta,phi)
     
 contains      
-
-    !---------------------------------
-    ! INIT
-    !---------------------------------
-       
-    subroutine initenhancementfactors(Lcap_)
-
-        ! Needs to be called once before using the module routines.
-
-        implicit none    
-        integer, intent(in) :: Lcap_ ! Truncation "Lcap"
-                
-        Lcap = Lcap_ ! Save internal copy
-
-        ! Calculate structure tensors for an isotropic fabric
-        nlm_iso(:) = 0.0d0
-        nlm_iso(1) = 1/Sqrt(4*Pi) ! Normalized ODF 
-        call f_ev_ck(nlm_iso, 'f', ev_c2_iso,ev_c4_iso,ev_c6_iso,ev_c8_iso) ! a^(k) (k=2,4,6,8) for an isotropic fabric
-    end
 
     !---------------------------------
     ! ENHANCEMENT-FACTORS
@@ -96,8 +72,8 @@ contains
         integer, intent(in)          :: nprime
         real(kind=dp)                :: Evw
         
-        Evw = doubleinner22(ev_epsprime_Sac(tau, nlm,     Ecc,Eca,nprime), vw) / &
-              doubleinner22(ev_epsprime_Sac(tau, nlm_iso, Ecc,Eca,nprime), vw)
+        Evw = doubleinner22(ev_epsprime_Sac(           tau, nlm, Ecc,Eca,nprime), vw) / &
+              doubleinner22(ev_epsprime_Sac__isotropic(tau,      Ecc,Eca,nprime), vw)
     end
 
     function Evw_Tay(vw, tau, nlm, Ecc,Eca, nprime) result (Evw)
@@ -108,9 +84,9 @@ contains
         real(kind=dp), intent(in)    :: Ecc, Eca, vw(3,3), tau(3,3)
         integer, intent(in)          :: nprime
         real(kind=dp)                :: Evw
-        
-        Evw = doubleinner22(ev_epsprime_Tay(tau, nlm,     Ecc,Eca,nprime), vw) / &
-              doubleinner22(ev_epsprime_Tay(tau, nlm_iso, Ecc,Eca,nprime), vw)
+
+        Evw = doubleinner22(ev_epsprime_Tay(           tau, nlm, Ecc,Eca,nprime), vw) / &
+              doubleinner22(ev_epsprime_Tay__isotropic(tau,      Ecc,Eca,nprime), vw)
     end
 
     !---------------------------------

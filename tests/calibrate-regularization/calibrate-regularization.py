@@ -21,11 +21,11 @@ warnings.filterwarnings("ignore")
 
 ### Settings
 SOLVE_FOR_NU = 1  # Run minimization to determine regularization magnitude per L
-APPLY_BOUNDS = 1  # Test effect of applying bounds to solution (after solving for nu without bounds enabled)
+APPLY_BOUNDS = 0  # Test effect of applying bounds to solution (after solving for nu without bounds enabled)
 TEST_GIRDLE  = 0  # Validate calibration (for single maximum fabrics) against girdle fabrics.
 
 L_list = [4,6,8,20]
-#L_list = [6,]
+L_list = [20,]
 
 ### Mode of deformation
 if not TEST_GIRDLE: 
@@ -64,12 +64,20 @@ SOLVE_FOR_NU = SOLVE_FOR_NU and (not TEST_GIRDLE) # don't solve for nu for other
 for L in L_list:
 
     if L == 4:  
-        expo = 1.5
-        nu0 = 1 # init guess for iteration
+#        expo = 1.5
+#        nu0 = 1 # init guess for iteration
+
+        SOLVE_FOR_NU = 0
+        expo = 1.55
+        nu0 = 2.9 # init guess for iteration
 
     if L == 6:  
-        expo = 2.0
-        nu0 = 1 # init guess for iteration
+        #expo = 2.0
+        #nu0 = 1 # init guess for iteration
+
+        SOLVE_FOR_NU = 0
+        expo = 1.25
+        nu0 = 3.6
        
     if L == 8:
         expo = 3 # 2.8
@@ -260,7 +268,7 @@ for L in L_list:
     #---------------------
     
     gs.tight_layout(fig)
-    fname = '%s_L%i.png'%('girdle' if TEST_GIRDLE else 'smax', L)
+    fname = 'calibrate-regularization-%s-L%i.png'%('girdle' if TEST_GIRDLE else 'singlemax', L)
     print('*** Saving summary %s'%(fname))
     plt.savefig(fname, dpi=250)
     

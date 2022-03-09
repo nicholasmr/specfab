@@ -24,7 +24,7 @@ program demo
     real(kind=dp)                 :: ugrad(3,3), tau(3,3) ! Large-scale deformation tensors
 
     ! DRX
-    real(kind=dp), parameter :: Gamma0 = 4d+0 ! Sets DDRX time scale
+    real(kind=dp), parameter :: Gam0 = 4d+0 ! Set DDRX rate factor, Gamma0
 
     ! For dumping state to netCDF
     complex(kind=dp), allocatable   :: nlm_save(:,:)
@@ -134,12 +134,12 @@ program demo
         !print *, a4_to_nlm(f_a2(nlm), f_a4(nlm))
         
         ! Spectral expansion
-        dndt = Gamma0 * dndt_ij_DDRX(nlm, tau) ! Tau is assumed constant, but since DRX rate depends on the state itself (i.e. DRX is nonlinear), it must be called for each time step.
+        dndt = Gam0 * dndt_ij_DDRX(nlm, tau) ! Tau is assumed constant, but since DRX rate depends on the state itself (i.e. DRX is nonlinear), it must be called for each time step.
         nlm_save(:,tt) = nlm + dt * matmul(dndt, nlm) ! Spectral coefs evolve by a linear transformation
         a2_true_save(:,:,tt) = f_a2(nlm)
 
         ! Tensorial expansion
-        call daidt_DDRX(tau, Gamma0, a2, a4, da2dt, da4dt) ! Sets rate-of-change matrices da2dt and da4dt
+        call daidt_DDRX(tau, Gam0, a2, a4, da2dt, da4dt) ! Sets rate-of-change matrices da2dt and da4dt
         a2_save(:,:,tt)     = a2 + dt*da2dt 
         a4_save(:,:,:,:,tt) = a4 + dt*da4dt
         
