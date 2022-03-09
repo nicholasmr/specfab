@@ -121,6 +121,15 @@ contains
         dndt_DDRX_src = dndt_ij_DDRX_src(tau)
     end
     
+    function dndt_CDRX(nlm)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        complex(kind=dp)             :: dndt_CDRX(size(nlm),size(nlm))
+        
+        dndt_CDRX = dndt_ij_CDRX()
+    end
+    
     function dndt_REG(nlm, eps)
         use specfabpy_const
         implicit none
