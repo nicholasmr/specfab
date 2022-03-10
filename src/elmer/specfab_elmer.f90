@@ -114,18 +114,22 @@ function Cmandel_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(Cmandel)
 end
 
 subroutine Cmat_inverse_orthotropic_dimless(eps, n, m1,m2,m3, Eij, MinInVar, viscosity, C6)
-    ! Vectorized inverse orthotropic flow law "tau_of_eps__orthotropic()".
 
-    ! Matches the Elmer version in returning a C6(6x6) matrix relating S and D as used in Elmer
-    ! Matches the Elmer factor of 2 on the strainrate
-    ! Also returns the non-dimensional (excluding A_glen)
-    !   orthotropic viscosity following Rathmann and Lilien 2022
+    ! Vectorized inverse orthotropic flow law "tau_of_eps__orthotropic()" in Mandel's form.
+    
+    ! Returns 6x6 matrix "Cmandel" such that: 
+    !       mat_to_vec(tau) = matmul(Cmandel, mat_to_vec(eps))
+    ! where 
+    !       mat_to_vec(H) = [H_xx, H_yy, H_zz, sqrt(2)*H_yz, sqrt(2)*H_xz, sqrt(2)*H_xy] 
+    ! is a 6x1 Mandel vector (see mandel.f90).
+    
+    ! To get the usual 3x3 form of tau, use: tau = vec_to_mat( matmul(Cmandel, mat_to_vec(eps)) )
 
     implicit none
-    real(kind=dp), intent(in)     :: eps(3,3), m1(3),m2(3),m3(3), Eij(3,3), MinInVar
+    real(kind=dp), intent(in)     :: m1(3),m2(3),m3(3), Eij(3,3), MinInVar
+    real(kind=dp), intent(out)    :: viscosity, C6(6,6) 
     integer, intent(in)           :: n
-    real(kind=dp), intent(out)    :: viscosity, C6(6, 6)
-    real(kind=dp)                 :: C(9,9)
+    real(kind=dp)                 :: eps(3,3), Cmandel(6,6)
     real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
     real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
     real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
@@ -141,23 +145,24 @@ subroutine Cmat_inverse_orthotropic_dimless(eps, n, m1,m2,m3, Eij, MinInVar, vis
         + 4 * (1/lam4) * J4**2 &
         + 4 * (1/lam5) * J5**2 &
         + 4 * (1/lam6) * J6**2 &
-    )**((1-n)/(2.d0*n))
+    )
 
     IF (viscosity.LT.MinInVar) viscosity = MinInVar
     viscosity = (2.0_dp * viscosity) ** ((1.0_dp-n)/(2.0_dp*n))
 
-    C = ( &
-        -3/4.0d0 * lam1/gam * outerprod9(vectorize9(identity - 3*M11), vectorize9(M11)) &
-        -3/4.0d0 * lam2/gam * outerprod9(vectorize9(identity - 3*M22), vectorize9(M22)) &
-        -3/4.0d0 * lam3/gam * outerprod9(vectorize9(identity - 3*M33), vectorize9(M33)) &
-        + 2/lam4            * outerprod9(vectorize9(M23 + transpose(M23)), vectorize9(M23)) &
-        + 2/lam5            * outerprod9(vectorize9(M31 + transpose(M31)), vectorize9(M31)) &
-        + 2/lam6            * outerprod9(vectorize9(M12 + transpose(M12)), vectorize9(M12)) &
+    Cmandel = ( &
+        -3/4.0d0 * lam1/gam * outerprod_to_Mandel(identity-3*M11,M11) &
+        -3/4.0d0 * lam2/gam * outerprod_to_Mandel(identity-3*M22,M22) &
+        -3/4.0d0 * lam3/gam * outerprod_to_Mandel(identity-3*M33,M33) &
+        + 1/lam4 * outerprod_to_Mandel(M23+transpose(M23), M23+transpose(M23)) &
+        + 1/lam5 * outerprod_to_Mandel(M31+transpose(M31), M31+transpose(M31)) &
+        + 1/lam6 * outerprod_to_Mandel(M12+transpose(M12), M12+transpose(M12)) &
     )
-    C6 = C([1, 5, 9, 2, 6, 3], [1, 5, 9, 2, 6, 3])
-    C6(1:6, 4:6) = C6(1:6, 4:6) + C([1, 5, 9, 2, 6, 3], [4, 8, 7])
-    C6(1:3,1:3) = 2.0_dp * C6(1:3,1:3)
-end    
+    C6 = CMandel([1, 2, 3, 6, 4, 5], [1, 2, 3, 6, 4, 5])
+    C6(1:3, 1:3) = 2.0_dp * C6(1:3, 1:3)
+    C6(4:6, 1:3) = C6(4:6, 1:3) / sqrt(2.0_dp)
+    C6(1:3, 4:6) = C6(1:3, 4:6) * sqrt(2.0_dp)
+end
 
 !-------------------
 ! STRUCTURE TENSORS
@@ -220,7 +225,6 @@ function a4_to_ae4(a4) result(ae4)
     ae4(8) = a4(2,2,2,3)
     ae4(9) = a4(1,2,2,2)
 end
-
 
 function ae2_to_a2(ae2) result(a2)
 
