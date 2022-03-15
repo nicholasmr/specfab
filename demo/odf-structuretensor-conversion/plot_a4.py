@@ -34,7 +34,7 @@ def a4plot(a2,a4):
 
     # Determine spectral coefs from a^(2) and a^(4)
     lm, nlm_len = sf.init(4)
-    nlm = sf.a4_to_nlm(a2, a4)
+    nlm = sf.a4_to_nlm(a4)
 
     # Check that re-calculating a2,a4 from nlm indeed gives arguments passed to a4plot()
     #print(1/np.sqrt(4*np.pi), nlm)

@@ -1,4 +1,6 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk>, 2022
+# N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2022
+
+# Calibrate DDRX activation function energy (Q) and prefactor (A) by reproducing Dome C (EDC) fabric profile.
 
 import sys, os, copy, code # code.interact(local=locals())
 import numpy as np
@@ -23,7 +25,7 @@ L_list = [8,]
 
 Nt = 200 # Number of integration steps
 
-WITH_CDRX = 1
+WITH_CDRX = 0
 
 for L in L_list:
 
@@ -31,7 +33,7 @@ for L in L_list:
     # Gamma_0 
     #---------------------
 
-    Q = 1e5 # activation energy
+    Q = 1e5 # Activation energy
 
     if L == 4:
         A = 5.0e20 
@@ -53,8 +55,8 @@ for L in L_list:
     if PROFILE == 'EDC':
         file = open("DOME_C.dump",'rb')
         (fab,temp,aux) = pickle.load(file)
-        n20_0 = 0.14 # intial fabric
-        strain_zz_stop=-0.96 # stop early, fabric only measure at EDC until roughly this point.
+        n20_0 = 0.14 # initial fabric state of parcel (only l,m=2,0 component is assumed nonzero)
+        strain_zz_stop=-0.96 # stop integration at this vertical parcel strain. Fabric is only measured until the depth corresponding to this vertical strain.
 
     # Geometry
     z_bed = -aux['H'] # depth of bed
@@ -63,18 +65,20 @@ for L in L_list:
     H = z1-z0 # ice column height as seen by parcel model
     print('z_bed, H = %f, %f'%(z_bed, H))
 
-    # Fabric
+    # Measured fabric
     lami_meas, z_meas = fab['eig'], fab['z']
 
     # Temperature interpolant
     T, zT = temp['T'], temp['z']
-    f_T = interp1d(zT,T)
+    f_T = interp1d(zT,T) # C. Ritz (pers. comm.)
 
     # Accumulation rate
-    b = aux['b']
+    #b = aux['b'] # present day
+    b = 0.0153 # average over core (D. Lilien)
+    print('b = %3e m/yr'%(b))
 
     #---------------------
-    # Pure shear deformation 
+    # Pure shear deformation mode
     #---------------------
 
     class PureShear():
@@ -85,14 +89,14 @@ for L in L_list:
         def F(self, t):      return np.diag(np.power(self.lam(t),self.Fpow)) # Deformation tensor
         def strain(self, t): return 0.5*( self.F(t) + np.transpose(self.F(t)) ) - np.diag([1,1,1]) # Strain tensor
         def strainzz2time(self,strain_zz): return -self.t_e*np.log(strain_zz+1) # time it takes to reach "strain_zz" strain with timescale t_e.
-        def D(self): return 1/self.t_e * np.diag(self.Fpow) # Strain rate. Note that F is constructed such that W and eps are time-independant.
-        def W(self): return np.diag([0,0,0]) # Spin
+        def D(self): return 1/self.t_e * np.diag(self.Fpow) # Strain rate. Note that F is constructed such that W and D are time-independant.
+        def W(self): return np.diag([0,0,0]) # Spin (zero when no shear)
 
     #---------------------
     # Ice parcel model
     #---------------------
         
-    # Assumes depth-constant (unconfined) vertical compression: the Nye's classical dome model.
+    # Assumes depth-constant (unconfined) vertical compression: the classical Nye model of a dome.
     b /= yr2s
     t_e = 1/(b/H) # e-folding time for uniaxial compression (strainrate_zz = MeanAccum/H)
     ps = PureShear(t_e, r=0.0, ax='z') # r=0 => unconfined
@@ -105,56 +109,64 @@ for L in L_list:
     z_sf = H*(strain_zz+1) - H # Vertical parcel strains correspond to these depths
     z_sf += -z0 # effective offset of parcel model
 
-    # Initialize arrays
+    # Initialize structure
     lm, nlm_len = sf.init(L)
     nlm = np.zeros((Nt, nlm_len), dtype=np.complex64) # array of expansion coefficients
     nlm[0,0] = 1/np.sqrt(4*np.pi) # normalized distribution
-    nlm[0,3] = n20_0 # initial single max strength (fitted to match eigen value profile)
+    nlm[0,3] = n20_0 # initial single max strength (manually fitted to match eigenvalue profile)
     lami_sf = np.zeros((Nt, 3)) # array of modelled eigen values
-    lami_sf[0,:] = np.diag(sf.a2(nlm[0,:])) # a2 already diagional (in eigenbasis) for this mode of deformation, so simply extract the diagonal values
-    gam, lam = np.zeros((Nt)), np.zeros((Nt))
+    lami_sf[0,:] = np.diag(sf.a2(nlm[0,:])) # a2 already diagional for this mode of deformation, so simply extract the diagonal values
+    #
+    gam = np.zeros((Nt)) # DDRX rate factor magnitude
+    lam = np.zeros((Nt)) # CDRX rate factor magnitude
         
     # Euler integration of fabric model
     D, W = ps.D(), ps.W() # strain-rate and spin tensors for mode of deformation
-    T = f_T(z_sf)
-    gam[0] = sf.Gamma0(D, c2k(T[0]), A, Q)
+    T = f_T(z_sf) # Temperature at modelled parcel depths 
+    
     def f_lam(D,T):
-        m_lam, b_lam = 1.26e-3, 0.206
+        m_lam, b_lam = 1.26e-3, 0.206 # Richards et al. (2021), Lilien et al. (2022) values
         eps_E = np.sqrt(0.5*np.einsum('ij,ji',D,D)) # sqrt(0.5 * D:D)
         return eps_E * (m_lam*T + b_lam)
+
     lam[0] = f_lam(D,T[0])
+    gam[0] = sf.Gamma0(D, c2k(T[0]), A, Q)
     
     with Bar('dt=%.3fyr, Nt=%i :: L=%i (nlm_len=%i) ::'%(dt*s2yr,Nt,L,nlm_len), max=Nt-1, fill='#', suffix='%(percent).1f%% - %(eta)ds') as bar:
         for nn in np.arange(1,Nt):
         
             nlm_prev = nlm[nn-1,:]
             
-            M_LATROT = sf.dndt_LATROT(nlm_prev, D, W) # Lattice rotation operator (nlm_len x nlm_len matrix)
+            # Lattice rotation operator (nlm_len x nlm_len matrix)
+            M_LATROT = sf.dndt_LATROT(nlm_prev, D, W) 
 
-            S = D.copy() # S remains coaxial with D for this mode of deformation, so we need not calculate S from the bulk flow law (which in turn requires calculating the enhancement factors from the modelled fabric)
-            gam[nn] = sf.Gamma0(D, c2k(T[nn]), A, Q) # DDRX decary rate magnitude
-            M_DDRX = gam[nn] * sf.dndt_DDRX(nlm_prev, S) # DDRX operator (nlm_len x nlm_len matrix)
+            # DDRX operator (nlm_len x nlm_len matrix)
+            S = D.copy() # S (dev. stress tensor) remains coaxial with D (strain-rate tensor) for this mode of deformation, so we need not calculate S from the bulk flow law (which in turn requires calculating the enhancement factors from the modelled fabric)
+            gam[nn] = sf.Gamma0(D, c2k(T[nn]), A, Q) # DDRX decay rate magnitude
+            M_DDRX = gam[nn] * sf.dndt_DDRX(nlm_prev, S) # DDRX operator
 
+            # CDRX operator (nlm_len x nlm_len matrix)
             if WITH_CDRX:
                 lam[nn] = f_lam(D,T[nn]) 
-                M_CDRX = lam[nn]*sf.dndt_CDRX(nlm_prev) # CDRX operator (nlm_len x nlm_len matrix)
+                M_CDRX = lam[nn]*sf.dndt_CDRX(nlm_prev) 
             else:
                 M_CDRX = 0*M_DDRX
 
-            M_REG = sf.dndt_REG(nlm_prev, D) # Regularization operator (nlm_len x nlm_len matrix)
+            # Regularization operator (nlm_len x nlm_len matrix)
+            M_REG = sf.dndt_REG(nlm_prev, D) 
 
-            M = M_LATROT + M_DDRX + M_CDRX + M_REG # Total fabric evolution operator (matrix)
+            # Total fabric evolution 
+            M = M_LATROT + M_DDRX + M_CDRX + M_REG # net operator
             nlm[nn,:] = nlm_prev + dt*np.matmul(M, nlm_prev) # Forward Euler step
+            nlm[nn,:] = sf.apply_bounds(nlm[nn,:]) # Apply spectral bounds, if needed 
             
-            nlm[nn,:] = sf.apply_bounds(nlm[nn,:])    # Apply spectral bounds if needed 
+            lami_sf[nn,:] = np.diag(sf.a2(nlm[nn,:])) # a2 already diagional for this mode of deformation, so simply extract the diagonal values
             
-            lami_sf[nn,:] = np.diag(sf.a2(nlm[nn,:])) # a2 already diagional (in eigen basis) for this mode of deformation, so simply extract the diagonal values
+            bar.next() # update progress bar
             
-            bar.next()
-            
-    ### Estimate numerical accuracy 
+    # Estimate numerical accuracy 
     diff_abs = np.abs(100*(nlm[:,0]-nlm[0,0])/nlm[0,0])
-    print(r'Numerical error: max(n00(t) - n00(t=0)) [%] = ', np.amax(diff_abs))
+    print(r'Numerical error estimate: max(n00(t) - n00(t=0)) [%] = ', np.amax(diff_abs))
 
     #--------------
     # Plot results

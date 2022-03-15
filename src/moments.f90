@@ -45,16 +45,18 @@ contains
         implicit none
         real(kind=dp), intent(in) :: a2(3,3)
         complex(kind=dp)          :: nlm(1+5)
-        nlm = 0.0 ! init
+        nlm = (0.0, 0.0) ! init
         include "include/a2_to_nlm__body.f90"
     end
 
-    function a4_to_nlm(a2, a4) result(nlm)
-        ! Get n_2^m and n_4^m from a^(2) and a^(4)
+    function a4_to_nlm(a4) result(nlm)
+        ! Get n_2^m and n_4^m from a^(4)
         implicit none
-        real(kind=dp), intent(in) :: a2(3,3), a4(3,3,3,3)
+        real(kind=dp), intent(in) :: a4(3,3,3,3)
         complex(kind=dp)          :: nlm(1+5+9)
+        real(kind=dp)             :: a4Mandel(6,6)        
         nlm = 0.0 ! init
+        a4Mandel = a4_to_mat(a4) ! 6x6 Mandel matrix of a4
         include "include/a4_to_nlm__body.f90"
     end
 
@@ -155,7 +157,7 @@ contains
         complex(kind=dp), intent(in) :: n00, n2m(-2:2), n4m(-4:4), n6m(-6:6)
         real(kind=dp) :: k = 0.0, ev(3,3, 3,3, 3,3)
         ev = 0.0
-        include "include/ev_c6__body.f90"
+!        include "include/ev_c6__body.f90"
         ev = ev * k/f_ev_c0(n00)
     end
     
@@ -164,7 +166,7 @@ contains
         complex(kind=dp), intent(in) :: n00, n2m(-2:2), n4m(-4:4), n6m(-6:6), n8m(-8:8)
         real(kind=dp) :: k = 0.0, ev(3,3, 3,3, 3,3, 3,3)
         ev = 0.0
-        include "include/ev_c8__body.f90"
+!        include "include/ev_c8__body.f90"
         ev = ev * k/f_ev_c0(n00)
     end
     

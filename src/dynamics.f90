@@ -364,5 +364,24 @@ contains
         ! components (1,-1), (1,0), (1,+1)
         q1m = fsq1*[r*M(y,z)-i*M(x,z), r*sqrt(2.)*M(x,y), -r*M(y,z)-i*M(x,z)]
     end
+    
+    !---------------------------------
+    ! AUX
+    !---------------------------------
+    
+    function rotate_nlm4(nlm4, theta,phi) result (nlm4_rot)
+    
+        implicit none
+
+        complex(kind=dp), intent(in) :: nlm4(15) ! nlm truncated at L=4
+        real(kind=dp), intent(in)    :: theta, phi 
+        complex(kind=dp)             :: nlm4_rot(15) !, n2m_rot(5), n4m_rot(9)
+        complex(kind=dp)             :: D2mn(-2:2,-2:2), D4mn(-4:4,-4:4)
+    
+        include "include/Dlmn.f90"
+        nlm4_rot(I_l0) = nlm4(I_l0)
+        nlm4_rot(I_l2:(I_l4-1)) = matmul(D2mn, nlm4(I_l2:(I_l4-1)))
+        nlm4_rot(I_l4:(I_l6-1)) = matmul(D4mn, nlm4(I_l4:(I_l6-1)))
+    end
 
 end module dynamics

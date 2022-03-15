@@ -41,7 +41,7 @@ module specfabpy
         dndt_to_drndt__sf => dndt_to_drndt, &
         nlm_len__sf => nlm_len, &
         rnlm_len__sf => rnlm_len, &
-!        rotate_nlm4__sf => rotate_nlm4, &
+        rotate_nlm4__sf => rotate_nlm4, &
 !        detQ_coefs__sf => detQ_coefs, &
 !        vj__sf => vj, &
 !        qj__sf => qj, &
@@ -236,24 +236,24 @@ contains
         call f_ev_ck(nlm, 'f', a2,a4,a6,a8) ! recall notation: ai := a^(i) := ev_ci := <c^i> 
     end
     
-    function a2_to_nlm(a2) 
+    function a2_to_nlm(a2) result(nlm)
         use specfabpy_const
         implicit none
-        integer, parameter        :: nlmlen = 1+5
         real(kind=dp), intent(in) :: a2(3,3)
-        real(kind=dp)             :: a2_to_nlm(nlmlen)
+        integer, parameter        :: nlmlen = 1+5
+        complex(kind=dp)          :: nlm(nlmlen)
 
-        a2_to_nlm = a2_to_nlm__sf(a2)
+        nlm = a2_to_nlm__sf(a2)
     end
         
-    function a4_to_nlm(a2,a4)
+    function a4_to_nlm(a4) result(nlm)
         use specfabpy_const
         implicit none
+        real(kind=dp), intent(in) :: a4(3,3,3,3)
         integer, parameter        :: nlmlen = 1+5+9
-        real(kind=dp), intent(in) :: a2(3,3), a4(3,3,3,3)
-        real(kind=dp)             :: a4_to_nlm(nlmlen)
+        complex(kind=dp)          :: nlm(nlmlen)
         
-        a4_to_nlm = a4_to_nlm__sf(a2,a4)
+        nlm = a4_to_nlm__sf(a4)
     end
     
     !---------------------------------
@@ -429,16 +429,16 @@ contains
     ! AUX
     !---------------------------------
     
-!    function rotate_nlm4(nlm4, theta,phi) result (nlm4_rot)
-!        use specfabpy_const
-!        implicit none
-!        complex(kind=dp), intent(in) :: nlm4(15) ! nlm truncated at L=4
-!        real(kind=dp), intent(in)    :: theta, phi 
-!        complex(kind=dp)             :: nlm4_rot(15)
-!        
-!        nlm4_rot = rotate_nlm4__sf(nlm4, theta,phi)
-!    end
-!    
+    function rotate_nlm4(nlm4, theta,phi) result (nlm4_rot)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm4(15) ! nlm truncated at L=4
+        real(kind=dp), intent(in)    :: theta, phi 
+        complex(kind=dp)             :: nlm4_rot(15)
+        
+        nlm4_rot = rotate_nlm4__sf(nlm4, theta,phi)
+    end
+    
 !    function vj(nlm, theta_n,phi_n, omega, rho, lam,mu,eta1,eta2,eta3)
 !        use specfabpy_const
 !        implicit none

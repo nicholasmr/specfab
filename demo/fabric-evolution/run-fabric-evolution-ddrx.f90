@@ -131,7 +131,7 @@ program demo
         !print *,'*** nlm consistency check ***'
         !print *, nlm
         !print *, a2_to_nlm(f_a2(nlm))
-        !print *, a4_to_nlm(f_a2(nlm), f_a4(nlm))
+        !print *, a4_to_nlm(f_a4(nlm))
         
         ! Spectral expansion
         dndt = Gam0 * dndt_ij_DDRX(nlm, tau) ! Tau is assumed constant, but since DRX rate depends on the state itself (i.e. DRX is nonlinear), it must be called for each time step.

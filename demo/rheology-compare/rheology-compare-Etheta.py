@@ -38,7 +38,7 @@ c_vert = np.array([0,0,1], dtype=np.complex128)
 a2_true = np.tensordot(c_vert,  c_vert,  axes=0)
 a4_true = np.tensordot(a2_true, a2_true, axes=0)
 
-nlm = sf.a4_to_nlm(a2_true, a4_true)
+nlm = sf.a4_to_nlm(a4_true)
 a2,a4,a6,a8 = sf.ai(nlm)
 #print(a2_true)
 #print(a2)

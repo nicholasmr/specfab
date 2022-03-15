@@ -66,7 +66,7 @@ L = 4
 lm, nlm_len = sf.init(L) # nlm_len is the number of fabric expansion coefficients (degrees of freedom).
 a2 = np.tensordot(m,m, axes=0)
 a4 = np.tensordot(a2,a2, axes=0)
-nlm = sf.a4_to_nlm(a2,a4)
+nlm = sf.a4_to_nlm(a4)
 
 #-----------------------
 # Enhancement factor maps
