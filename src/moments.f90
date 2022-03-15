@@ -157,7 +157,7 @@ contains
         complex(kind=dp), intent(in) :: n00, n2m(-2:2), n4m(-4:4), n6m(-6:6)
         real(kind=dp) :: k = 0.0, ev(3,3, 3,3, 3,3)
         ev = 0.0
-!        include "include/ev_c6__body.f90"
+        include "include/ev_c6__body.f90"
         ev = ev * k/f_ev_c0(n00)
     end
     
@@ -166,7 +166,7 @@ contains
         complex(kind=dp), intent(in) :: n00, n2m(-2:2), n4m(-4:4), n6m(-6:6), n8m(-8:8)
         real(kind=dp) :: k = 0.0, ev(3,3, 3,3, 3,3, 3,3)
         ev = 0.0
-!        include "include/ev_c8__body.f90"
+        include "include/ev_c8__body.f90"
         ev = ev * k/f_ev_c0(n00)
     end
     
