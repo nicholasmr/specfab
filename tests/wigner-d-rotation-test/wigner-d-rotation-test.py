@@ -12,9 +12,8 @@ from specfabpy import specfabpy as sf
 L = 4
 lm, nlm_len = sf.init(L)
 nlm = np.zeros((3, nlm_len), dtype=np.complex64) # The expansion coefficients
-
-nlm[0,0] = 1/np.sqrt(4*np.pi) # normalized ODF
-nlm[0,3] = 0.25 # vertical single max (nonzero n_2^0 component)
+a2 = np.diag([0.0,0.0,1.0]) # any second-order structure tensor (not necessarily diagonal)
+nlm[0,0:6] = sf.a2_to_nlm(a2) # l=2 expansion coefficients for corresponding ODF (a2 is normalized)
 
 # Wigner D rotation of nlm, implemented in specfab only for components l<=4
 lat = np.deg2rad(-45)
@@ -46,11 +45,11 @@ def plot_axes(ax, geo):
     ax.plot([90],[0], marker=r'$y$', ms=7, c=cax, transform=geo) # y axis
     ax.plot([0],[90], marker=r'$z$', ms=7, c=cax, transform=geo) # z axis
 
-dpi, scale = 250, 2.5
+dpi, scale = 150, 2.2
 fig = plt.figure(figsize=(3*scale,1.4*scale))
 gs = gridspec.GridSpec(1,3)
 a = 0.03
-gs.update(left=a, right=1-a, bottom=0.20, wspace=0.1)
+gs.update(left=a, right=1-a, bottom=0.175, wspace=0.1)
 
 geo = ccrs.Geodetic()
 rot = 45 # view angle
@@ -66,16 +65,19 @@ ax1.set_global(); ax2.set_global(); ax3.set_global()
 
 plot_ODF(nlm[0,:], lm, ax=ax1, cmap='Greys', cblabel=r'$\psi/N$')
 plot_axes(ax1, geo)
+ax1.set_title('nlm')
 
 plot_ODF(nlm[1,:], lm, ax=ax2, cmap='Greys', cblabel=r'$\psi/N$')
 plot_axes(ax2, geo)
+ax2.set_title('nlm_rot1')
 
 plot_ODF(nlm[2,:], lm, ax=ax3, cmap='Greys', cblabel=r'$\psi/N$')
 plot_axes(ax3, geo)
+ax3.set_title('nlm_rot2')
 
 # Save figure
 fout = 'wigner-d-rotation-test.png'
 print('Saving %s'%(fout))
-plt.savefig(fout, dpi=200)
+plt.savefig(fout, dpi=dpi)
 plt.close()
 
