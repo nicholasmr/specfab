@@ -1,4 +1,4 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk>, 2021
+# N. M. Rathmann <rathmann@nbi.ku.dk>, 2021-2022
 
 import sys, os, copy, code # code.interact(local=locals())
 import numpy as np
@@ -6,7 +6,7 @@ import scipy.special as sp
 
 sys.path.insert(0, '..')
 from header import *
-from specfabpy import specfabpy as sf # To use specfabpy compile the specfab Python module by running "make specfabpy"
+from specfabpy import specfabpy as sf
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -37,6 +37,7 @@ DEBUG = 0
 nglen = 3
 Aglen = 3.5e-26 # A(T=-25 deg.)
 Gamma0 = 1*6e-6
+
 if T_EXP==T_EXP_SS: DDRX_strainthres = 5.5
 if T_EXP==T_EXP_CC: DDRX_strainthres = -0.7 
 
@@ -107,7 +108,7 @@ print(strain[ODF_tsteps])
 #----------------------
 
 lm, nlm_len = sf.init(L)
-nlm      = np.zeros((Nt,nlm_len), dtype=np.complex64) # The expansion coefficients
+nlm = np.zeros((Nt,nlm_len), dtype=np.complex64) # The expansion coefficients
 nlm[0,0] = 1/np.sqrt(4*np.pi) # Init with isotropy (Normalized such that N(t=0) = 1)
 
 #----------------------
@@ -143,7 +144,7 @@ with Bar('dt=%.3fyr, Nt=%i :: L=%i (nlm_len=%i) ::'%(dt/year2sec,Nt,L,nlm_len), 
         Y_P[ttp,:,:] = sf.eps_of_tau__orthotropic_Pettit(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:])
         Y_M[ttp,:,:] = sf.eps_of_tau__orthotropic_Martin(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:])
  
-        # Verify enhancement factors are correct
+        # Verify enhancement factors are correctly reproduced *if* deformation was coaxial with eigenframe
         if False:
             ei = np.zeros((3,3))
             ei[0,:] = e1[ttp,:]; ei[1,:] = e2[ttp,:]; ei[2,:] = e3[ttp,:];
@@ -194,17 +195,11 @@ color_M = 'k'
 
 scale = 0.87
 
-#fig = plt.figure(figsize=(8.0*scale,7.5*scale), constrained_layout=False)
-#gs = gridspec.GridSpec(3, 2, height_ratios=[1,0.55,0.85])
-#gs.update(hspace=0.44, wspace=0.26, left=0.1, right=0.96, top=0.98, bottom=0.08)
-
 fig = plt.figure(figsize=(7.0*scale,5*scale), constrained_layout=False)
 gs = gridspec.GridSpec(2, 2, height_ratios=[1,0.55])
 gs.update(hspace=0.53, wspace=0.26, left=0.10, right=0.97, top=0.98, bottom=0.12)
 
 ax_Y   = fig.add_subplot(gs[0, :])
-#ax_E   = fig.add_subplot(gs[-1, 0])
-#ax_eig = fig.add_subplot(gs[-1, 1])
 
 gs_parcels = gridspec.GridSpecFromSubplotSpec(1, len(ODF_tsteps), subplot_spec=gs[1,:], width_ratios=[1,1,1,1], hspace=0.6, wspace=+0.2)
 inclination = 50 # view angle
@@ -279,40 +274,6 @@ ax_Y.set_ylim(ylims)
 dx, y0 = 0.016, ylims[-1]-1.1*dylim
 ax_Y.text(DDRX_strainthres*(1-dx), y0, r'{\bf Lattice rotation}', color=color_blue,    horizontalalignment='right', verticalalignment='center', fontsize=FSSMALL)
 ax_Y.text(DDRX_strainthres*(1+dx), y0, r'{\bf DDRX}',             color=color_darkred, horizontalalignment='left', verticalalignment='center', fontsize=FSSMALL)
-
-#### Plot enahancement factors          
-
-#ax_E.plot(X, Eij[:,0,2],  '--', color='k',  label=r'$E_{13}$')
-#ax_E.plot(X, Eij[:,0,1],  ':',  color='k',  label=r'$E_{12}$')
-#ax_E.plot(X, Eij[:,0,0],  '-',  color='k',  label=r'$E_{11}$')
-#ax_E.set_xlabel(r'$\epsilon$')
-#ax_E.set_xticks(strainMinorTicks, minor=True)  
-#ax_E.set_xlim(xlims)
-#ax_E.set_ylabel(r'$E_{ij}$')
-#ylims = [0,2.5]
-#ax_E.set_yticks(np.arange(ylims[0],ylims[-1]+1e-4,1))
-#ax_E.set_yticks(np.arange(ylims[0],ylims[-1]+1e-4,0.5), minor=True)
-#ax_E.set_ylim(ylims)
-##ax_E.grid()
-#leg = ax_E.legend(loc=3 if T_EXP==T_EXP_CC else 5, **legkwargs)
-#leg.get_frame().set_linewidth(0.8);
-#writeSubplotLabel(ax_E,2,r'{\bf f}')
-
-#### Plot fabric eigenvalues
-
-#ax_eig.plot(X, eig[:,0],  '-',  color='k',  label=r'$\lambda_1$')
-#ax_eig.plot(X, eig[:,1],  '--', color='k',  label=r'$\lambda_2$')
-#ax_eig.plot(X, eig[:,2],  ':',  color='k',  label=r'$\lambda_3$')
-#ax_eig.set_xlabel(r'$\epsilon$')
-#ax_eig.set_xticks(strainMinorTicks, minor=True)  
-#ax_eig.set_xlim(xlims)
-#ax_eig.set_ylabel(r'$\lambda_i$')
-#ax_eig.set_yticks([0,0.5,1])
-#ax_eig.set_yticks(np.arange(0,1.1,0.1), minor=True)
-#ax_eig.set_ylim([0,1])
-##ax_eig.grid()
-#ax_eig.legend(loc=1 if T_EXP==T_EXP_CC else 5, **legkwargs)
-#writeSubplotLabel(ax_eig,2,r'{\bf g}')
 
 ### Plot ODFs
 
