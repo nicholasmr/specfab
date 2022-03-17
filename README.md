@@ -5,6 +5,9 @@ Hutter, 1996), discontinuous dynamic recrystallization (Placidi and others, 2010
 - Can calculate fabric-induced directional viscosities (directional strain-rate enhancement factors) using Sachs/Taylor homogenization schemes.
 - Contains analytical expressions for both forward and inverse anisotropic rheologies such as the transversely isotropic rheology and the orthotropic rheology.
 
+## Tutorials, python examples, and documentation
+See the [specfab Wiki](https://github.com/nicholasmr/specfab/wiki)
+
 ## Demo of lattice rotation and resulting strain-rate enhancement factors
 ![image](demo/cube-crush-animation/cube-crush.gif)
 
@@ -19,10 +22,6 @@ Hutter, 1996), discontinuous dynamic recrystallization (Placidi and others, 2010
 
 ### Elmer/Ice Interface
 - To interface with Elmer/Ice, you need a shared version of the libraries (built with the same Fortran compiler as Elmer). If needed, edit the compiler in the Makefile, then run `make libspecfab.so`.
-
-## Demos
-- Basic demos using `specfabpy` can be found on the [Wiki](https://github.com/nicholasmr/specfab/wiki)
-- More demos are located in `/demo`. Note that Fortran demos must be built separately (see `Makefile`), e.g. `make fabric-evolution-demo` .
 
 ## Q&A
 - **Q** What *L* are possible?
