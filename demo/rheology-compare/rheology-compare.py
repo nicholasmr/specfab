@@ -26,7 +26,7 @@ T_EXP_STR = {T_EXP_CC:'cc', T_EXP_SS:'ss'}
 ### Select experiment
 
 T_EXP = T_EXP_CC
-T_EXP = T_EXP_SS
+#T_EXP = T_EXP_SS
 
 DEBUG = 0
 
@@ -298,12 +298,15 @@ for ii,nn in enumerate(ODF_tsteps):
     if ii==0:
         mrk='X'
         ms=4.5
-        ax.plot([0],[90],mrk, ms=ms, c=colax, transform=geo)
-        ax.plot([rot0-90],[0],mrk, ms=ms,  c=colax, transform=geo)
-        ax.plot([rot0],[0],mrk, ms=ms,  c=colax, transform=geo)
-        ax.text(rot0-80, 65, r'$\vu{z}$', c=colax, horizontalalignment='left', transform=geo)
-        ax.text(rot0-90+12, -5, r'$\vu{x}$', c=colax, horizontalalignment='left', transform=geo)
-        ax.text(rot0-23, -5, r'$\vu{y}$', c=colax, horizontalalignment='left', transform=geo)
+#        ax.plot([0],[90],mrk, ms=ms, c=colax, transform=geo)
+#        ax.plot([rot0-90],[0],mrk, ms=ms,  c=colax, transform=geo)
+#        ax.plot([rot0],[0],mrk, ms=ms,  c=colax, transform=geo)
+#        ax.text(rot0-80, 65, r'$\vu{z}$', c=colax, horizontalalignment='left', transform=geo)
+#        ax.text(rot0-90+12, -5, r'$\vu{x}$', c=colax, horizontalalignment='left', transform=geo)
+#        ax.text(rot0-23, -5, r'$\vu{y}$', c=colax, horizontalalignment='left', transform=geo)
+        ax.text(rot0-40, 90-8, r'$\vu{z}$', c=colax, horizontalalignment='center', transform=geo)
+        ax.text(rot0-90, -3, r'$\vu{x}$', c=colax, horizontalalignment='center', transform=geo)
+        ax.text(rot0-0, -3, r'$\vu{y}$', c=colax, horizontalalignment='center', transform=geo)
     
     if ii>0:    
         color, ms = color_darkred, 7

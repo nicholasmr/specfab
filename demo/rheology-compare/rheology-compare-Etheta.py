@@ -18,6 +18,8 @@ year2sec = 31556926;
 #----------------------
 
 nglen = 3
+nglenalt = 4 # for comparison with the recent popular alternative flow exponent
+
 Aglen = 3.5e-26 # A(T=-25 deg.)
 angles = np.deg2rad(np.linspace(0,90,50))
 Nt = len(angles)
@@ -49,7 +51,7 @@ print('a2 error: ', np.sum(np.abs(a4_true-a4)))
 # Integrate
 #----------------------
 
-Eang = np.zeros((Nt,3), dtype=np.float64)
+Eang = np.zeros((Nt,5), dtype=np.float64)
 e1,e2,e3 = np.array([0,0,1]), np.array([1,0,0]), np.array([0,1,0])
 
 def f_tau(mag, ang):
@@ -74,10 +76,18 @@ for kk, ang in enumerate(angles):
     eps_P = sf.eps_of_tau__orthotropic_Pettit(tau, Aglen,nglen, e1,e2,e3, Eij)
     eps_M = sf.eps_of_tau__orthotropic_Martin(tau, Aglen,nglen, e1,e2,e3, Eij)
     
+    eps_Galt = sf.eps_of_tau__isotropic(         tau, Aglen,nglenalt)
+    eps_Ralt = sf.eps_of_tau__orthotropic(       tau, Aglen,nglenalt, e1,e2,e3, Eij)
+    eps_Malt = sf.eps_of_tau__orthotropic_Martin(tau, Aglen,nglenalt, e1,e2,e3, Eij)
+        
     eps_G_vw = np.tensordot(eps_G, vw, axes=2)
     Eang[kk,0] = np.tensordot(eps_R, vw, axes=2)/eps_G_vw
     Eang[kk,1] = np.tensordot(eps_P, vw, axes=2)/eps_G_vw
     Eang[kk,2] = np.tensordot(eps_M, vw, axes=2)/eps_G_vw
+    
+    eps_Galt_vw = np.tensordot(eps_Galt, vw, axes=2)
+    Eang[kk,3] = np.tensordot(eps_Ralt, vw, axes=2)/eps_Galt_vw
+    Eang[kk,4] = np.tensordot(eps_Malt, vw, axes=2)/eps_Galt_vw
 
 #----------------------
 # Plot
@@ -102,10 +112,13 @@ SL_1944m = np.array([ [90,0.24], [90,0.26],   [55,9], [45,6], [45,6.5]]).T
 SL_2006m = np.array([ [0,0.03], [15,0.56], [26,2.8], [45,13], [60,17], [70,3.9], [75, 1.4], [90,0.13] ]).T
 
 X = np.rad2deg(angles)
-ax_E.semilogy(X, Eang[:,0], '-',  color='k',  label=r'Unapprox.')
-ax_E.semilogy(X, Eang[:,2], '--', color='k',  label=r'Martin')
-ax_E.semilogy(X, Eang[:,1], ':',  color='k',  label=r'Pettit')
-ms = 6.25
+ax_E.semilogy(X, Eang[:,0], '-',  color='k',    label=r'Unapprox., $n=3$')
+ax_E.semilogy(X, Eang[:,3], '-',  color='0.65', label=r'Unapprox., $n=4$')
+ax_E.semilogy(X, Eang[:,2], '--', color='k',    label=r'Martin, $n=3$')
+ax_E.semilogy(X, Eang[:,4], '--', color='0.65', label=r'Martin, $n=4$')
+ax_E.semilogy(X, Eang[:,1], ':',  color='k',    label=r'Pettit, any $n$')
+
+ms = 6.6
 fc='none'
 #colors = ['#ff7f00', '#1f78b4', '#33a02c']
 colors = ['k', 'k', 'k']
@@ -120,8 +133,8 @@ ax_E.set_xlim([0,90])
 ax_E.set_ylabel(r'$\dot{\epsilon}_{vv}/\dot{\epsilon}_{vv}^{\mathrm{Glen}}$')
 ax_E.set_ylim([1e-2,2e1])
 #ax_E.grid()
-legkwargs = {'frameon':True, 'fancybox':False, 'edgecolor':'k', 'framealpha':0.75, 'ncol':2, 'columnspacing':0.6, 'handlelength':1.3, 'handletextpad':0.5, 'labelspacing':0.25, 'fontsize':FSSMALL-0.5}
-leg = ax_E.legend(**legkwargs)
+legkwargs = {'frameon':True, 'fancybox':False, 'edgecolor':'k', 'framealpha':0.75, 'ncol':1, 'columnspacing':0.6, 'handlelength':1.3, 'handletextpad':0.5, 'labelspacing':0.25, 'fontsize':FSSMALL-1.0}
+leg = ax_E.legend(**legkwargs, bbox_to_anchor=(0.61,0.54))
 leg.get_frame().set_linewidth(0.8);
 
 ### Save figure
