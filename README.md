@@ -1,4 +1,7 @@
 # Spectral orientation fabric model for polycrystals
+
+<img src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/logo.jpg" width="200">
+
 A spectral fabric model for polycrystalline materials (e.g. ice, olivine, etc.) that 
 - Can model fabric processes such as kinematic lattice (c-axis) rotation (Svendsen and
 Hutter, 1996), discontinuous dynamic recrystallization (Placidi and others, 2010), and rotation recrystallization (Gödert, 2003).
