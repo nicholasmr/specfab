@@ -1,6 +1,6 @@
 ! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2022
 
-! Bulk polycrystalline homogenization schemes, assuming individual grains have a transversely isotropic constitutive equatuion, both viscously and elastically.
+! Bulk polycrystalline homogenization schemes, assuming individual grains have a transversely isotropic constitutive equation, both viscously and elastically.
 
 module homogenizations  
 
@@ -8,11 +8,13 @@ module homogenizations
     use mandel
     use moments
     use rheologies
+    use elasticities
 
     implicit none 
 
     integer, parameter, private :: dp = 8 ! Default precision
-    integer, parameter :: identity(3,3) = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
+!    integer, parameter :: identity(3,3) = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
+    real(kind=dp), parameter :: identity(3,3) = reshape([1.0d0,0.0d0,0.0d0, 0.0d0,1.0d0,0.0d0, 0.0d0,0.0d0,1.0d0], [3,3])
     
     ! Optimal n'=1 (lin) grain parameters 
     ! These are the linear mixed Taylor--Sachs best-fit parameters from Rathmann and Lilien (2021)
@@ -32,6 +34,14 @@ module homogenizations
     complex(kind=dp)       :: nlm_iso(1+5+9+13+17) ! nlm for L=8 is needed
     real(kind=dp), private :: ev_c2_iso(3,3), ev_c4_iso(3,3,3,3), ev_c6_iso(3,3,3,3, 3,3), ev_c8_iso(3,3,3,3, 3,3,3,3) ! <c^k> for isotropic n(theta,phi)
     real(kind=dp), private :: ev_c4_iso_Mandel(6,6) 
+        
+    real(kind=dp), private, parameter  :: identity_vec6(6) =  [1,1,1, 0,0,0] ! = mat_to_vec(identity)
+    real(kind=dp), private, parameter  :: identity6(6,6) = reshape([1, 0, 0, 0, 0, 0, &
+                                                                    0, 1, 0, 0, 0, 0, & 
+                                                                    0, 0, 1, 0, 0, 0, & 
+                                                                    0, 0, 0, 1, 0, 0, & 
+                                                                    0, 0, 0, 0, 1, 0, & 
+                                                                    0, 0, 0, 0, 0, 1], [6,6])
         
 contains      
 
@@ -56,7 +66,7 @@ contains
     end
 
     !---------------------------------
-    ! FLUID
+    ! VISCOUS
     !---------------------------------
 
     function ev_epsprime_Sac(tau, nlm, Ecc,Eca,nprime) result(eps)
@@ -127,27 +137,12 @@ contains
         real(kind=dp)             :: eps(3,3), coefA,coefB,coefC
         integer                   :: info
     !    integer :: ipiv(9), work
-
-        real(kind=dp), parameter  :: identity_vec6(6) =  [1,1,1, 0,0,0] ! = mat_to_vec(identity)
-        real(kind=dp), parameter  :: identity6(6,6) = reshape([1, 0, 0, 0, 0, 0, &
-                                                               0, 1, 0, 0, 0, 0, & 
-                                                               0, 0, 1, 0, 0, 0, & 
-                                                               0, 0, 0, 1, 0, 0, & 
-                                                               0, 0, 0, 0, 1, 0, & 
-                                                               0, 0, 0, 0, 0, 1], [6,6])
                                                                
         call tranisotropic_coefs(Ecc,Eca,d,nprime,-1.0d0, coefA,coefB,coefC)
         
         call f_ev_ck_Mandel(nlm, a2v, a4v) ! Structure tensors in Mandel notation: a2v = ev_c2_Mandel, B = ev_c4_Mandel
         a2mat = vec_to_mat(a2v) ! = a2
-                                                
-        ! L in Mandel notation
-        L(1,:) = [2*a2mat(1,1), 0.0d0, 0.0d0, 0.0d0, s*a2mat(1,3), s*a2mat(1,2)]
-        L(2,:) = [0.0d0, 2*a2mat(2,2), 0.0d0, s*a2mat(2,3), 0.0d0, s*a2mat(1,2)]
-        L(3,:) = [0.0d0, 0.0d0, 2*a2mat(3,3), s*a2mat(2,3), s*a2mat(1,3), 0.0d0]
-        L(4,:) = [0.0d0, s*a2mat(2,3), s*a2mat(2,3), a2mat(2,2)+a2mat(3,3), a2mat(1,2), a2mat(1,3)]
-        L(5,:) = [s*a2mat(1,3), 0.0d0, s*a2mat(1,3), a2mat(1,2), a2mat(1,1)+a2mat(3,3), a2mat(2,3)]
-        L(6,:) = [s*a2mat(1,2), s*a2mat(1,2), 0.0d0, a2mat(1,3), a2mat(2,3), a2mat(1,1)+a2mat(2,2)]
+        L = anticommutator_Mandel(a2mat)
         
         ! Matrix "P" of the vectorized bulk Taylor rheology: tau = matmul(P, eps)
         P = identity6 - coefA*outerprod6(identity_vec6,a2v) + coefB*a4v + coefC*L 
@@ -236,10 +231,70 @@ contains
         eps = tau/(1 + 2.0d0/15*coefB + 2.0d0/3*coefC) ! Unlike the Taylor homogenization with an arbitrary anisotropy, when isotropic the analytical inverse is easy to derive.
     end
     
+    function anticommutator_Mandel(a2mat) result(L)
+    
+        implicit none
+        
+        real(kind=dp), intent(in) :: a2mat(3,3)
+        real(kind=dp)             :: L(6,6)
+        real(kind=dp), parameter  :: s = sqrt(2.0)
+                                                
+        ! L in Mandel notation
+        L(1,:) = [2*a2mat(1,1), 0.0d0, 0.0d0, 0.0d0, s*a2mat(1,3), s*a2mat(1,2)]
+        L(2,:) = [0.0d0, 2*a2mat(2,2), 0.0d0, s*a2mat(2,3), 0.0d0, s*a2mat(1,2)]
+        L(3,:) = [0.0d0, 0.0d0, 2*a2mat(3,3), s*a2mat(2,3), s*a2mat(1,3), 0.0d0]
+        L(4,:) = [0.0d0, s*a2mat(2,3), s*a2mat(2,3), a2mat(2,2)+a2mat(3,3), a2mat(1,2), a2mat(1,3)]
+        L(5,:) = [s*a2mat(1,3), 0.0d0, s*a2mat(1,3), a2mat(1,2), a2mat(1,1)+a2mat(3,3), a2mat(2,3)]
+        L(6,:) = [s*a2mat(1,2), s*a2mat(1,2), 0.0d0, a2mat(1,3), a2mat(2,3), a2mat(1,1)+a2mat(2,2)]
+    end
+    
     !---------------------------------
-    ! SOLID
+    ! ELASTIC
     !---------------------------------
 
-    ! N/A
+    function ev_sigprime_Reuss(strain, nlm, lam,mu, Elam,Emu,Egam) result(stress)
+        
+        ! sig(<eps>) given nlm
+        
+        implicit none
+        
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: strain(3,3)
+        real(kind=dp), intent(in)    :: lam,mu, Elam,Emu,Egam ! monocrystal parameters
+        real(kind=dp)                :: stress(3,3) ! sigma
+
+        real(kind=dp) :: k1,k2,k3,k4,k5 ! aux params
+        real(kind=dp) :: a2mat(3,3), a2v(6), a4v(6,6)
+        real(kind=dp) :: P(6,6), L(6,6), strain_vec(6,1) !,  P_reg(6,6),strain_vec_reg(6,1)
+        integer       :: info
+
+        call elastic_tranisotropic_params__strain(lam,mu,Elam,Emu,Egam, k1,k2,k3,k4,k5)
+        
+        call f_ev_ck_Mandel(nlm, a2v, a4v) ! Structure tensors in Mandel notation: a2v = ev_c2_Mandel, B = ev_c4_Mandel
+        a2mat = vec_to_mat(a2v) ! = a2
+        L = anticommutator_Mandel(a2mat)
+        
+        ! Matrix "P" of the vectorized bulk Reuss rheology: strain = matmul(P, stress)
+        P = k1*outerprod6(identity_vec6,identity_vec6) + k2*identity6 &
+            + k3*(outerprod6(identity_vec6,a2v) + outerprod6(a2v,identity_vec6)) + k4*a4v + k5*L 
+
+        ! Solve *inverse* problem; we are seeking stress given strain in strain = matmul(P, stress).
+        strain_vec(:,1) = mat_to_vec(strain)
+        call dposv('L', 6, 1, P, 6, strain_vec, 6, info) ! strain_vec is now "stress_vec" solution. For some reason, "U" does not work.
+
+        ! Ill posed? => Regularization needed.
+        if (info /= 0) then
+!            P_reg          = matmul(TRANSPOSE(P),P) + 1e-6*identity6
+!            strain_vec_reg = matmul(TRANSPOSE(P),strain_vec)
+!            call dposv('L', 6, 1, P_reg, 6, strain_vec_reg, 6, info)
+!            strain_vec = strain_vec_reg
+!            if (info /= 0) then
+                stop 'specfab error: Reuss elasticity-matrix inversion failed! Please check the ODF (nlm) is correct.'
+!            end if
+        end if
+        
+        ! Revert solution to 3x3
+        stress = vec_to_mat(strain_vec)
+    end
 
 end module homogenizations 

@@ -326,7 +326,7 @@ contains
         I1 = (l+1)*(l+2)/2      ! number of coefs if L=l
         I0 = I1 - (2*l+1) + 1   ! 2*l+1 coefs (possible m) for a given l
         nlm_sub(:) = nlm(I0:I1) ! nlm subrange with all "m" components for "l"
-        Sl = 1.0d0/(2*l+1) * real( dot_product(nlm_sub, conjg(nlm_sub)) ) ! is real by definition
+        Sl = 1.0d0/(2*l+1) * sum(abs(nlm_sub)**2) 
     end
 
     !---------------------------------

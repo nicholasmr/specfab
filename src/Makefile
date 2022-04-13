@@ -1,4 +1,4 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2019-2022
+# N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2022
 
 #-------------------
 # Compiler
@@ -26,12 +26,14 @@ ENHFAC=enhancementfactors
 MANDEL=mandel
 DYNAMICS=dynamics
 RHEOLOGIES=rheologies
+ELASTICITIES=elasticities
 WAVEPROP=wavepropagation
 REDUCED=reducedform
 LAMBDASOLVER=lambdasolver
 
 DEPLESS=$(TENPROD).o $(MANDEL).o $(REDUCED).o $(GAUNT).o
-WITHDEPS=$(RHEOLOGIES).o $(MOMENTS).o $(LAMBDASOLVER).o $(DYNAMICS).o $(HOMOGEN).o $(ENHFAC).o 
+WITHDEPS=$(RHEOLOGIES).o $(ELASTICITIES).o $(MOMENTS).o $(LAMBDASOLVER).o $(DYNAMICS).o $(HOMOGEN).o $(ENHFAC).o $(WAVEPROP).o
+# 
 OBJCORE=$(DEPLESS) $(WITHDEPS)
 SRCCORE=$(OBJCORE:.o=.f90)
 
@@ -86,8 +88,8 @@ specfabpy: $(SPECFAB).o
 	for pyver in $(PYVERS); do \
 		echo "*** Making specfabpy for python$$pyver"; \
 		rm -f specfabpy.pyf; \
-		python$$pyver -m numpy.f2py --no-lower -m specfabpy -h specfabpy.pyf specfabpy.f90 ; \
-		python$$pyver -m numpy.f2py -lm -llapack -lblas -I. $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" ; \
+		python$$pyver -m numpy.f2py --no-lower -m specfabpy -h specfabpy.pyf specfabpy.f90 --quiet; \
+		python$$pyver -m numpy.f2py -lm -llapack -lblas -I. $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" --quiet; \
 	done
 	@cp specfabpy.cpython* $(PATHDEMO)/
 	@echo "\n*** Python module (specfabpy) installed in /demo"
@@ -100,8 +102,9 @@ python: specfabpy
 	python setup.py install
 
 rheology-test: $(SPECFAB).o
-	$(COMPILER) $(PATHRHEOTEST)/rheology-test-orthotropic.f90           $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-orthotropic
-	$(COMPILER) $(PATHRHEOTEST)/rheology-test-transverselyisotropic.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-transverselyisotropic
+	$(COMPILER) $(PATHRHEOTEST)/rheology-test-orthotropic.f90             $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-orthotropic
+	$(COMPILER) $(PATHRHEOTEST)/rheology-test-transverselyisotropic.f90   $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-transverselyisotropic
+	$(COMPILER) $(PATHRHEOTEST)/elasticity-test-transverselyisotropic.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/elasticity-test-transverselyisotropic
 
 aux-tests: $(SPECFAB).o
 	$(COMPILER) $(PATHTEST)/reduced-coef-test/reduced-coef-test.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHTEST)/reduced-coef-test/reduced-coef-test
@@ -118,10 +121,13 @@ $(DEPLESS): %.o: %.f90
 $(RHEOLOGIES).o: $(RHEOLOGIES).f90 $(TENPROD).o $(LAMBDASOLVER).o
 	$(COMPILER) $(OPTS) -c $<
 
+$(ELASTICITIES).o: $(ELASTICITIES).f90 $(TENPROD).o
+	$(COMPILER) $(OPTS) -c $<
+
 $(DYNAMICS).o: $(DYNAMICS).f90 tensorialdynamics.f90 $(TENPROD).o $(MOMENTS).o $(GAUNT).o
 	$(COMPILER) $(OPTS) -c $<
 
-$(HOMOGEN).o: $(HOMOGEN).f90 $(MOMENTS).o $(RHEOLOGIES).o
+$(HOMOGEN).o: $(HOMOGEN).f90 $(MOMENTS).o $(RHEOLOGIES).o $(ELASTICITIES).o
 	$(COMPILER) $(OPTS) -c $<
 
 $(ENHFAC).o: $(ENHFAC).f90 $(MOMENTS).o $(TENPROD).o $(HOMOGEN).o
@@ -129,6 +135,9 @@ $(ENHFAC).o: $(ENHFAC).f90 $(MOMENTS).o $(TENPROD).o $(HOMOGEN).o
 
 $(MOMENTS).o: $(MOMENTS).f90 $(MANDEL).o
 	$(COMPILER) $(OPTS) -c $(MOMENTS).f90
+
+$(WAVEPROP).o: $(WAVEPROP).f90 $(MOMENTS).o $(MANDEL).o $(TENPROD).o $(ELASTICITIES).o $(HOMOGEN).o
+	$(COMPILER) $(OPTS) -c $<
 
 $(LAMBDASOLVER).o:
 	rm -f $(OBJM77) $(LAMBDASOLVER).o $(LAMBDASOLVER).mod $(PATHM77)/test

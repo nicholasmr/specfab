@@ -114,17 +114,17 @@ SL_2006m = np.array([ [0,0.03], [15,0.56], [26,2.8], [45,13], [60,17], [70,3.9],
 X = np.rad2deg(angles)
 ax_E.semilogy(X, Eang[:,0], '-',  color='k',    label=r'Unapprox., $n=3$')
 ax_E.semilogy(X, Eang[:,3], '-',  color='0.65', label=r'Unapprox., $n=4$')
-ax_E.semilogy(X, Eang[:,2], '--', color='k',    label=r'Martin, $n=3$')
-ax_E.semilogy(X, Eang[:,4], '--', color='0.65', label=r'Martin, $n=4$')
-ax_E.semilogy(X, Eang[:,1], ':',  color='k',    label=r'Pettit, any $n$')
+ax_E.semilogy(X, Eang[:,2], '--', color='k',    label=r'M09, $n=3$')
+ax_E.semilogy(X, Eang[:,4], '--', color='0.65', label=r'M09, $n=4$')
+ax_E.semilogy(X, Eang[:,1], ':',  color='k',    label=r'P07, any $n$')
 
 ms = 6.6
 fc='none'
 #colors = ['#ff7f00', '#1f78b4', '#33a02c']
 colors = ['k', 'k', 'k']
-ax_E.semilogy(SL_1890m[0,:], SL_1890m[1,:], '^', fillstyle=fc, markersize=ms, color=colors[2],  label=r'DYE 3, 1890m', clip_on=False)
-ax_E.semilogy(SL_1944m[0,:], SL_1944m[1,:], 's', fillstyle=fc, markersize=ms, color=colors[1],  label=r'DYE 3, 1944m', clip_on=False)
-ax_E.semilogy(SL_2006m[0,:], SL_2006m[1,:], 'o', fillstyle=fc, markersize=ms, color=colors[0],  label=r'DYE 3, 2006m', clip_on=False)
+ax_E.semilogy(SL_1890m[0,:], SL_1890m[1,:], '^', fillstyle=fc, markersize=ms, color=colors[2],  label=r'Dye 3, 1890m', clip_on=False)
+ax_E.semilogy(SL_1944m[0,:], SL_1944m[1,:], 's', fillstyle=fc, markersize=ms, color=colors[1],  label=r'Dye 3, 1944m', clip_on=False)
+ax_E.semilogy(SL_2006m[0,:], SL_2006m[1,:], 'o', fillstyle=fc, markersize=ms, color=colors[0],  label=r'Dye 3, 2006m', clip_on=False)
 ax_E.set_xlabel(r'$\theta$')
 xticks = np.arange(0,90+1e-5,5)
 ax_E.set_xticks(xticks[::3])  

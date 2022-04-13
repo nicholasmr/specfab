@@ -26,7 +26,7 @@ T_EXP_STR = {T_EXP_CC:'cc', T_EXP_SS:'ss'}
 ### Select experiment
 
 T_EXP = T_EXP_CC
-#T_EXP = T_EXP_SS
+T_EXP = T_EXP_SS
 
 DEBUG = 0
 
@@ -248,8 +248,8 @@ print('(Martin-True)_{-1}=%.2f'%(delta_Martin[-1]))
 print('(Pettit-True)_{-1}=%.2f'%(delta_Pettit[-1]))
 Yall = np.vstack((Yn_R,Yn_P,Yn_M))
 ax_Y.plot(X, Yn_R, '-',  color=color_R, label=r"Unapprox.")
-ax_Y.plot(X, Yn_M, '--', color=color_M, label=r"Martin")
-ax_Y.plot(X, Yn_P, ':',  color=color_P, label=r"Pettit")
+ax_Y.plot(X, Yn_M, '--', color=color_M, label=r"M09")
+ax_Y.plot(X, Yn_P, ':',  color=color_P, label=r"P07")
 ax_Y.set_xlabel(r'$\epsilon$')
 ax_Y.set_xticks(strainMinorTicks, minor=True)  
 ax_Y.set_xlim(xlims)

@@ -1,4 +1,4 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2019-2021
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2022
 
 module specfabpy_const
 
@@ -18,6 +18,7 @@ module specfabpy
         a4__sf => a4, &
         a2_to_nlm__sf => a2_to_nlm, &
         a4_to_nlm__sf => a4_to_nlm, &
+        a4_to_mat__sf => a4_to_mat, &
         tau_of_eps__isotropic__sf => tau_of_eps__isotropic, &
         eps_of_tau__isotropic__sf => eps_of_tau__isotropic, &
         tau_of_eps__tranisotropic__sf => tau_of_eps__tranisotropic, &
@@ -42,9 +43,10 @@ module specfabpy
         nlm_len__sf => nlm_len, &
         rnlm_len__sf => rnlm_len, &
         rotate_nlm4__sf => rotate_nlm4, &
-!        detQ_coefs__sf => detQ_coefs, &
-!        vj__sf => vj, &
-!        qj__sf => qj, &
+        elastic_phase_velocities__sf => elastic_phase_velocities, &
+        Qnorm__sf => Qnorm, &
+        detQ_polycoefs__sf => detQ_polycoefs, &
+        elastic_tranisotropic__etai_to_Ei__sf => elastic_tranisotropic__etai_to_Ei, &
         Gamma0__sf => Gamma0, &
         apply_bounds__sf => apply_bounds, &
         Sl__sf => Sl, &
@@ -256,6 +258,15 @@ contains
         nlm = a4_to_nlm__sf(a4)
     end
     
+   function a4_to_mat(A) result (M)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: A(3,3,3,3)
+        real(kind=dp)             :: M(6,6)
+        
+        M = a4_to_mat__sf(A)
+    end
+        
     !---------------------------------
     ! GRAIN-AVERAGED RHEOLOGY (SACHS, TAYLOR)
     !---------------------------------
@@ -439,37 +450,45 @@ contains
         nlm4_rot = rotate_nlm4__sf(nlm4, theta,phi)
     end
     
-!    function vj(nlm, theta_n,phi_n, omega, rho, lam,mu,eta1,eta2,eta3)
-!        use specfabpy_const
-!        implicit none
-!        complex(kind=dp), intent(in) :: nlm(:)
-!        real(kind=dp), intent(in)    :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities (vj) along
-!        real(kind=dp), intent(in)    :: omega, rho, lam,mu,eta1,eta2,eta3
-!        real(kind=dp)                :: vj(3,size(theta_n)) ! qS1, qS2, qP phase velocities
+    function elastic_phase_velocities(nlm, alpha, lam,mu,Elam,Emu,Egam, omega,rho, theta_n,phi_n) result(vj)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: alpha, lam,mu,Elam,Emu,Egam, omega,rho
+        real(kind=dp), intent(in)    :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities (vj) along
+        real(kind=dp)                :: vj(3,size(theta_n)) ! qS1, qS2, qP phase velocities
 
-!        vj = vj__sf(nlm, theta_n,phi_n, omega, rho, lam,mu,eta1,eta2,eta3) 
-!    end
-!    
-!    function detQ_coefs(nlm, omega, rho, lam,mu,eta1,eta2,eta3) result(ri)
-!        use specfabpy_const
-!        implicit none
-!        complex(kind=dp), intent(in) :: nlm(:)
-!        real(kind=dp), intent(in)    :: omega, rho, lam,mu,eta1,eta2,eta3
-!        real(kind=dp)                :: ri(0:6)
+        vj = elastic_phase_velocities__sf(nlm, alpha, lam,mu,Elam,Emu,Egam, omega,rho, theta_n,phi_n) 
+    end
+  
+    function Qnorm(nlm, alpha, lam,mu,Elam,Emu,Egam) result(Qn)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: alpha, lam,mu,Elam,Emu,Egam
+        real(kind=dp)                :: Qn(3,3)
 
-!        ri = detQ_coefs__sf(nlm, 0.0d0, omega, rho, lam,mu,eta1,eta2,eta3)
-!    end
-!    
-!    function qj(ri) 
-!        use specfabpy_const
-!        implicit none
-!        real(kind=dp), intent(in) :: ri(0:6)
-!        complex(kind=dp)          :: qj(3) ! z-comp of wavector (k=[0,0,q]) for qS1, qS2, qP waves
-!               
-!        qj = qj__sf(ri)
-!    end
-
+        Qn = Qnorm__sf(nlm, alpha, lam,mu,Elam,Emu,Egam)
+    end
     
+    function detQ_polycoefs(Qn, omega, rho) result(ri)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in)    :: Qn(3,3), omega, rho
+        real(kind=dp)                :: ri(0:6)
+
+        ri = detQ_polycoefs__sf(Qn, omega, rho)
+    end
+  
+    subroutine elastic_tranisotropic__etai_to_Ei(lam,mu,eta1,eta2,eta3, Elam,Emu,Egam)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in)  :: lam,mu, eta1,eta2,eta3
+        real(kind=dp), intent(out) :: Elam,Emu,Egam
+
+        call elastic_tranisotropic__etai_to_Ei__sf(lam,mu,eta1,eta2,eta3, Elam,Emu,Egam)
+    end
+  
     function DDRX_decayrate(nlm, tau)
     
         use specfabpy_const
