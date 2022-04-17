@@ -2,8 +2,8 @@
 
 import sys, os, copy, code # code.interact(local=locals())
 import numpy as np
-from numpy import linalg as LA
-from scipy.optimize import minimize
+#from numpy import linalg as LA
+#from scipy.optimize import minimize
 
 sys.path.insert(0, '../../demo')
 from header import *
