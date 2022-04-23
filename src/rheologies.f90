@@ -226,6 +226,7 @@ contains
         lam6 = 2* Eij(1,2)**Eexpo
         
         gam = -(E11n**2 + E22n**2 + E33n**2) + 2*(E11n*E22n + E11n*E33n + E22n*E33n)
+        gam = abs(gam) 
     end
 
     subroutine orthotropic_tensors_and_invars(X, m1,m2,m3, M11,M22,M33,M23,M31,M12, I1,I2,I3,I4,I5,I6)
