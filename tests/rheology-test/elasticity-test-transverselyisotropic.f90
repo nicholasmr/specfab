@@ -7,8 +7,7 @@ program demo
     implicit none
 
     integer, parameter :: dp = 8
-    real(kind=dp)      :: mu,lam, eta1,eta2,eta3, m(3)
-    real(kind=dp)      :: Elam,Emu,Egam, eta1_check,eta2_check,eta3_check ! for verifying conversion between aniso params etai <--> Ei
+    real(kind=dp)      :: mu,lam, Elam,Emu,Egam, m(3),t(3), mm(3,3),mt(3,3)
 
     ! For testing Reuss homogenization
     complex(kind=dp)   :: nlm(15)
@@ -19,22 +18,36 @@ program demo
     
     call initspecfab(4) ! Not going to use specfab, but is good practice to initialize it even when using static routines (as is the case here).
    
-    ! Monocrystal parameters
-    mu   = mu_Bennet68
-    lam  = lam_Bennet68
-    eta1 = eta1_Bennet68
-    eta2 = eta2_Bennet68
-    eta3 = eta3_Bennet68
-    call elastic_tranisotropic__etai_to_Ei(lam,mu,eta1,eta2,eta3, Elam,Emu,Egam)
-    call elastic_tranisotropic__Ei_to_etai(lam,mu,Elam,Emu,Egam, eta1_check,eta2_check,eta3_check)
-    print *, 'Anisotropic params (Bennet 1968): eta1, eta2, eta3 = ', eta1, eta2, eta3
-    print *, 'Anisotropic params (from etai):   Elam, Emu, Egam  = ', Elam, Emu, Egam
-    print *, 'Anisotropic params (from Ei):     eta1, eta2, eta3 = ', eta1_check, eta2_check, eta3_check
+    ! Monocrystal elastic parameters
+    mu   = mu_B68
+    lam  = lam_B68
+    Emu  = Emu_B68
+    Elam = Elam_B68
+    Egam = Egam_B68
 
     ! Symmetry axis 
     m = x1
     m = [+1.0d0/sqrt(2.0d0), 0.0d0, 1.0d0/sqrt(2.0d0)] ! Alternative (45 deg rotated)
    
+    t = x2
+    
+    !-------------------------------------------------------------------
+    ! Test elasticity structure is correct
+    !-------------------------------------------------------------------
+    
+    print *, '--------------------------------------------------------'    
+    print *, 'Test that enhancement factors are correctly recovered'
+    print *, '--------------------------------------------------------'
+        
+    mm = outerprod(m,m)
+    mt = outerprod(m,t) + outerprod(t,m)
+    print *, 'sig_{tt}/sig_{tt}^{iso} (strain=mm) = ', stress_ratio(mm, lam,mu,Elam,Emu,Egam,m, t,t), ' --- should be E_lam = ', Elam
+    print *, 'sig_{mt}/sig_{mt}^{iso} (strain=mt) = ', stress_ratio(mt, lam,mu,Elam,Emu,Egam,m, m,t), ' --- should be E_mu  = ', Emu
+    print *, 'sig_{mm}/sig_{mm}^{iso} (strain=mm) = ', stress_ratio(mm, lam,mu,Elam,Emu,Egam,m, m,m), ' --- should be E_gam = ', Egam
+   
+    print *, "... where m, t = "
+    print *, m
+    print *, t
    
     !-------------------------------------------------------------------
     ! Test inverse rheology --> check that eps_in = eps(tau(eps_in))
@@ -146,6 +159,18 @@ program demo
     call test_Q(nlm, lam,mu,Elam,Emu,Egam) 
 
 contains
+
+function stress_ratio(strain, lam,mu, Elam,Emu,Egam,m, v,w) 
+
+    implicit none
+
+    integer, parameter        :: dp = 8
+    real(kind=dp), intent(in) :: strain(3,3), lam,mu, Elam,Emu,Egam,m(3), v(3),w(3)
+    real(kind=dp)             :: stress_ratio
+
+    stress_ratio = doubleinner22(stress_of_strain__tranisotropic(strain, lam,mu, Elam,Emu,Egam,m), outerprod(v,w)) / &
+                   doubleinner22(stress_of_strain__tranisotropic(strain, lam,mu, 1.0d0,1.0d0,1.0d0,m), outerprod(v,w))
+end
 
 subroutine tau_of_eps_of_tau(tau_in, lam,mu,Elam,Emu,Egam,m) 
 

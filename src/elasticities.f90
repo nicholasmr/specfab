@@ -11,11 +11,12 @@ module elasticities
     integer, parameter, private       :: dp = 8 ! Default precision
     real(kind=dp), parameter, private :: identity(3,3)  = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
     
-    real(kind=dp), parameter :: lam_Bennet68  = 7.15d9
-    real(kind=dp), parameter :: mu_Bennet68   = 3.455d9
-    real(kind=dp), parameter :: eta1_Bennet68 = 5.3e9
-    real(kind=dp), parameter :: eta2_Bennet68 = -1.27e9
-    real(kind=dp), parameter :: eta3_Bennet68 = -3.95e8    
+    ! Bennett (1968) parameters
+    real(kind=dp), parameter :: lam_B68  = 7.15d9
+    real(kind=dp), parameter :: mu_B68   = 3.455d9
+    real(kind=dp), parameter :: Elam_B68 = 0.8223776223776224
+    real(kind=dp), parameter :: Emu_B68  = 0.8856729377713459
+    real(kind=dp), parameter :: Egam_B68 = 1.0839260312944523
     
 contains      
 
@@ -96,27 +97,21 @@ contains
         k5 = (1-Emu)/(2*Emu*mu)
     end
 
-    subroutine elastic_tranisotropic__etai_to_Ei(lam,mu,eta1,eta2,eta3, Elam,Emu,Egam)
+    subroutine Cij_to_Lame__traniso(C11,C33,C55,C12,C13, lam,mu,Elam,Emu,Egam)
+
+        ! Unique coefficients of stiffness matrix --> Lame parameters
 
         implicit none
-        real(kind=dp), intent(in)  :: lam,mu, eta1,eta2,eta3
-        real(kind=dp), intent(out) :: Elam,Emu,Egam
+        real(kind=dp), intent(in)  :: C11,C33,C55,C12,C13
+        real(kind=dp), intent(out) :: lam,mu, Elam,Emu,Egam
+        real(kind=dp)              :: C66
 
-        Elam = (lam+eta2)/lam
-        Emu  = (mu+eta3)/mu
-        Egam = (lam+2*mu + eta1 + 2*eta2 + 4*eta3)/(lam+2*mu)
+        C66 = (C11-C12)/2
+        lam  = C12
+        mu   = C66
+        Elam = C13/C12
+        Emu  = C55/C66
+        Egam = C33/C11
     end
-
-
-    subroutine elastic_tranisotropic__Ei_to_etai(lam,mu,Elam,Emu,Egam, eta1,eta2,eta3)
-
-        implicit none
-        real(kind=dp), intent(in)  :: lam,mu, Elam,Emu,Egam
-        real(kind=dp), intent(out) :: eta1,eta2,eta3
-
-        eta1 = lam + 2*mu + Egam*(lam+2*mu) - 2*Elam*lam -4*Emu*mu
-        eta2 = -(1-Elam)*lam
-        eta3 = -(1-Emu)*mu
-    end
-
+    
 end module elasticities

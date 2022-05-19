@@ -54,7 +54,7 @@ program demo
     m3 = [-sin(rotang), 0.0d0, cos(rotang)] 
     
     !-------------------------------------------------------------------
-    ! Test orthtropic viscosity structure is correct
+    ! Test viscosity structure is correct
     !-------------------------------------------------------------------
     
     A = 3.5d0 ! Rate factor (arbitrary value)

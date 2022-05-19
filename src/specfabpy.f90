@@ -1,5 +1,7 @@
 ! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2022
 
+! This file is a wrapper for the Fortran routines to be provided in specfabpy
+
 module specfabpy_const
 
     implicit none
@@ -9,54 +11,58 @@ module specfabpy_const
     
 end module specfabpy_const
 
-
 module specfabpy
     
     use specfabpy_const
+    
     use specfab, &
-        a2__sf => a2, &
-        a4__sf => a4, &
-        a2_to_nlm__sf => a2_to_nlm, &
-        a4_to_nlm__sf => a4_to_nlm, &
-        a4_to_mat__sf => a4_to_mat, &
-        tau_of_eps__isotropic__sf => tau_of_eps__isotropic, &
-        eps_of_tau__isotropic__sf => eps_of_tau__isotropic, &
-        tau_of_eps__tranisotropic__sf => tau_of_eps__tranisotropic, &
-        eps_of_tau__tranisotropic__sf => eps_of_tau__tranisotropic, &
-        tau_of_eps__orthotropic__sf => tau_of_eps__orthotropic, &
-        eps_of_tau__orthotropic__sf => eps_of_tau__orthotropic, &
-        tau_of_eps__orthotropic_Martin__sf => tau_of_eps__orthotropic_Martin, &
-        eps_of_tau__orthotropic_Martin__sf => eps_of_tau__orthotropic_Martin, &
-        tau_of_eps__orthotropic_Pettit__sf => tau_of_eps__orthotropic_Pettit, &
-        eps_of_tau__orthotropic_Pettit__sf => eps_of_tau__orthotropic_Pettit, &
+
+        ! Structure tensors 
+        a2__sf => a2, a4__sf => a4, & 
+        a2_to_nlm__sf => a2_to_nlm, a4_to_nlm__sf => a4_to_nlm, & ! Canonical representations
+        ae2_to_a2__sf => ae2_to_a2, ae4_to_a4__sf => ae4_to_a4, & ! Elmer representations
+        a4_to_mat__sf => a4_to_mat, & ! a4 in Mandel notation
+        a4_eigentensors__sf => a4_eigentensors, & ! 3x3 eigentensors of a4
+        a4_IBOF__sf => a4_IBOF, & ! From Elmer        
+        
+        ! Rheologies
+        tau_of_eps__isotropic__sf     => tau_of_eps__isotropic,     eps_of_tau__isotropic__sf     => eps_of_tau__isotropic, &
+        tau_of_eps__tranisotropic__sf => tau_of_eps__tranisotropic, eps_of_tau__tranisotropic__sf => eps_of_tau__tranisotropic, &
+        tau_of_eps__orthotropic__sf   => tau_of_eps__orthotropic,   eps_of_tau__orthotropic__sf   => eps_of_tau__orthotropic, &
+        tau_of_eps__orthotropic_Martin__sf => tau_of_eps__orthotropic_Martin, eps_of_tau__orthotropic_Martin__sf => eps_of_tau__orthotropic_Martin, &
+        tau_of_eps__orthotropic_Pettit__sf => tau_of_eps__orthotropic_Pettit, eps_of_tau__orthotropic_Pettit__sf => eps_of_tau__orthotropic_Pettit, &
         eps_of_tau__linearTaylorSachs__sf => eps_of_tau__linearTaylorSachs, &
-        frame__sf => frame, &
-        a4_eigentensors__sf => a4_eigentensors, &
-        Eeiej__sf => Eeiej, &
-        Evw__sf => Evw, &
-        Ldiag__sf => Ldiag, &
-        ae2_to_a2__sf => ae2_to_a2, ae4_to_a4__sf => ae4_to_a4, & 
-        a4_IBOF__sf => a4_IBOF, &
-        nlm_to_rnlm__sf => nlm_to_rnlm, &
-        rnlm_to_nlm__sf => rnlm_to_nlm, &
-        dndt_to_drndt__sf => dndt_to_drndt, &
-        nlm_len__sf => nlm_len, &
-        rnlm_len__sf => rnlm_len, &
-        rotate_nlm4__sf => rotate_nlm4, &
+        
+        ! Elasticities 
+        stress_of_strain__tranisotropic__sf => stress_of_strain__tranisotropic, &
+        strain_of_stress__tranisotropic__sf => strain_of_stress__tranisotropic, &
         elastic_phase_velocities__sf => elastic_phase_velocities, &
         Qnorm__sf => Qnorm, &
-        detQ_polycoefs__sf => detQ_polycoefs, &
-        elastic_tranisotropic__etai_to_Ei__sf => elastic_tranisotropic__etai_to_Ei, &
-        Gamma0__sf => Gamma0, &
-        apply_bounds__sf => apply_bounds, &
-        Sl__sf => Sl, &
+        
+        ! Fluid enhancement factors
+        frame__sf => frame, &
+        Eeiej__sf => Eeiej, &
+        Evw__sf   => Evw, &
+
+        ! Optimal transversely isotropic (monocrystal) fluid enhancement factors for ice grains 
+        Eca_opt_lin__sf  => Eca_opt_lin,  Ecc_opt_lin__sf  => Ecc_opt_lin,  alpha_opt_lin__sf  => alpha_opt_lin, &
+        Eca_opt_nlin__sf => Eca_opt_nlin, Ecc_opt_nlin__sf => Ecc_opt_nlin, alpha_opt_nlin__sf => alpha_opt_nlin, &
+        
+        ! nlm and rnlm 
         lm__sf => lm, &
-        Eca_opt_lin__sf    => Eca_opt_lin, &
-        Ecc_opt_lin__sf    => Ecc_opt_lin, &
-        alpha_opt_lin__sf  => alpha_opt_lin, &
-        Eca_opt_nlin__sf   => Eca_opt_nlin, &
-        Ecc_opt_nlin__sf   => Ecc_opt_nlin, &
-        alpha_opt_nlin__sf => alpha_opt_nlin
+        nlm_len__sf => nlm_len, rnlm_len__sf => rnlm_len, &
+        nlm_to_rnlm__sf => nlm_to_rnlm, rnlm_to_nlm__sf => rnlm_to_nlm, &
+        dndt_to_drndt__sf => dndt_to_drndt, &
+        rotate_nlm4__sf => rotate_nlm4, &
+        Sl__sf => Sl, & ! Power spectrum
+        
+        ! Numerics
+        Ldiag__sf => Ldiag, &
+        apply_bounds__sf => apply_bounds, & 
+
+        ! Fabric processes
+        Gamma0__sf => Gamma0
+
         
     implicit none
     
@@ -64,6 +70,7 @@ module specfabpy
     real(kind=dp), parameter :: Eca_opt_lin   = Eca_opt_lin__sf
     real(kind=dp), parameter :: Ecc_opt_lin   = Ecc_opt_lin__sf
     real(kind=dp), parameter :: alpha_opt_lin = alpha_opt_lin__sf
+    
     ! Optimal n'=3 (nlin) grain parameters 
     real(kind=dp), parameter :: Eca_opt_nlin   = Eca_opt_nlin__sf
     real(kind=dp), parameter :: Ecc_opt_nlin   = Ecc_opt_nlin__sf
@@ -396,6 +403,63 @@ contains
     end
     
     !---------------------------------
+    ! TRANSVERSELY ISOTROPIC ELASTICITY 
+    !---------------------------------
+    
+    function stress_of_strain__tranisotropic(strain, lam,mu, Elam,Emu,Egam,m) result(stress)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: strain(3,3), lam,mu, Elam,Emu,Egam,m(3)
+        real(kind=dp)             :: stress(3,3)
+        
+        stress = stress_of_strain__tranisotropic__sf(strain, lam,mu, Elam,Emu,Egam,m)
+    end
+    
+    function strain_of_stress__tranisotropic(stress, lam,mu, Elam,Emu,Egam,m) result(strain)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: stress(3,3), lam,mu, Elam,Emu,Egam,m(3)
+        real(kind=dp)             :: strain(3,3)
+        
+        strain = strain_of_stress__tranisotropic__sf(stress, lam,mu, Elam,Emu,Egam,m)
+    end
+    
+    subroutine Cij_to_Lame(C11,C33,C55,C12,C13, lam,mu,Elam,Emu,Egam)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in)  :: C11,C33,C55,C12,C13
+        real(kind=dp), intent(out) :: lam,mu, Elam,Emu,Egam
+        
+        call Cij_to_Lame__traniso(C11,C33,C55,C12,C13, lam,mu,Elam,Emu,Egam)
+    end
+    
+    !---------------------------------
+    ! ELASTIC PHASE VELOCITIES
+    !---------------------------------
+    ! For a composite material consisting of transversely isotropic elements
+    
+    function elastic_phase_velocities(nlm, alpha, lam,mu,Elam,Emu,Egam, omega,rho, theta_n,phi_n) result(vj)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: alpha, lam,mu,Elam,Emu,Egam, omega,rho
+        real(kind=dp), intent(in)    :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities (vj) along
+        real(kind=dp)                :: vj(3,size(theta_n)) ! qS1, qS2, qP phase velocities
+
+        vj = elastic_phase_velocities__sf(nlm, alpha, lam,mu,Elam,Emu,Egam, omega,rho, theta_n,phi_n) 
+    end
+  
+    function Qnorm(nlm, alpha, lam,mu,Elam,Emu,Egam) result(Qn)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: alpha, lam,mu,Elam,Emu,Egam
+        real(kind=dp)                :: Qn(3,3)
+
+        Qn = Qnorm__sf(nlm, alpha, lam,mu,Elam,Emu,Egam)
+    end
+    
+    !---------------------------------
     ! REDUCED FORM
     !---------------------------------
 
@@ -448,45 +512,6 @@ contains
         complex(kind=dp)             :: nlm4_rot(15)
         
         nlm4_rot = rotate_nlm4__sf(nlm4, theta,phi)
-    end
-    
-    function elastic_phase_velocities(nlm, alpha, lam,mu,Elam,Emu,Egam, omega,rho, theta_n,phi_n) result(vj)
-        use specfabpy_const
-        implicit none
-        complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp), intent(in)    :: alpha, lam,mu,Elam,Emu,Egam, omega,rho
-        real(kind=dp), intent(in)    :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities (vj) along
-        real(kind=dp)                :: vj(3,size(theta_n)) ! qS1, qS2, qP phase velocities
-
-        vj = elastic_phase_velocities__sf(nlm, alpha, lam,mu,Elam,Emu,Egam, omega,rho, theta_n,phi_n) 
-    end
-  
-    function Qnorm(nlm, alpha, lam,mu,Elam,Emu,Egam) result(Qn)
-        use specfabpy_const
-        implicit none
-        complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp), intent(in)    :: alpha, lam,mu,Elam,Emu,Egam
-        real(kind=dp)                :: Qn(3,3)
-
-        Qn = Qnorm__sf(nlm, alpha, lam,mu,Elam,Emu,Egam)
-    end
-    
-    function detQ_polycoefs(Qn, omega, rho) result(ri)
-        use specfabpy_const
-        implicit none
-        real(kind=dp), intent(in)    :: Qn(3,3), omega, rho
-        real(kind=dp)                :: ri(0:6)
-
-        ri = detQ_polycoefs__sf(Qn, omega, rho)
-    end
-  
-    subroutine elastic_tranisotropic__etai_to_Ei(lam,mu,eta1,eta2,eta3, Elam,Emu,Egam)
-        use specfabpy_const
-        implicit none
-        real(kind=dp), intent(in)  :: lam,mu, eta1,eta2,eta3
-        real(kind=dp), intent(out) :: Elam,Emu,Egam
-
-        call elastic_tranisotropic__etai_to_Ei__sf(lam,mu,eta1,eta2,eta3, Elam,Emu,Egam)
     end
   
     function DDRX_decayrate(nlm, tau)

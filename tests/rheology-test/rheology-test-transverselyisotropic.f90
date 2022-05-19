@@ -39,7 +39,7 @@ program demo
 !    t = [0.0d0, 1.0d0, 0.0d0]
     
     !-------------------------------------------------------------------
-    ! Test orthtropic viscosity structure is correct
+    ! Test viscosity structure is correct
     !-------------------------------------------------------------------
     
     A = 3.5d0 ! Rate factor (arbitrary value)

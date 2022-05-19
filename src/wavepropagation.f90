@@ -68,9 +68,9 @@ contains
 
         implicit none
         
-        real(kind=dp), intent(in)    :: Qn(3,3), omega, rho ! Qn = Qnorm
-        real(kind=dp)                :: ri(0:6) ! polynomial coefs
-        real(kind=dp)                :: w, I1,I2,I3
+        real(kind=dp), intent(in) :: Qn(3,3), omega, rho ! Qn = Qnorm
+        real(kind=dp)             :: ri(0:6) ! polynomial coefs
+        real(kind=dp)             :: w, I1,I2,I3
         
         w = omega**2 * rho
         
