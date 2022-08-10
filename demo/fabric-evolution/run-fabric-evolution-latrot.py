@@ -136,6 +136,10 @@ for tt in np.arange(0,Nt):
     Eeiej_nlin[tt,:,:] = np.transpose(sf.Eeiej(c, e1[tt,:],e2[tt,:],e3[tt,:], Ecc_nlin, Eca_nlin, alpha_nlin, nprime))
     Epipj_nlin[tt,:,:] = np.transpose(sf.Eeiej(c, p1[tt,:],p2[tt,:],p3[tt,:], Ecc_nlin, Eca_nlin, alpha_nlin, nprime))
     
+#print('l=0 coefs:', nlm[:,0])
+#print(r'last - first l=0 coef (%) = ', 100*(nlm[-1,0]-nlm[0,0])/nlm[0,0])
+#print(r'max(ii - first) l=0 coef (%) = ', np.amax(np.abs(100*(nlm[:,0]-nlm[0,0])/nlm[0,0])))
+
 #----------------------
 # Save
 #----------------------

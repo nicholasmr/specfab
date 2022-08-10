@@ -21,10 +21,11 @@ program demo
     complex(kind=dp)   :: rnlm0(rnlmlen) = 9999.0d0
     complex(kind=dp)   :: rnlm1(rnlmlen) = 9999.0d0
 
-    complex(kind=dp)   :: nlm_re_cmp(nlmlen) = 9999.0d0
+!    complex(kind=dp)   :: nlm_re_cmp(nlmlen) = 9999.0d0
 
     real(kind=dp)    :: eps(3,3), omg(3,3), ugrad(3,3)
-    complex(kind=dp) :: dndt(nlmlen,nlmlen), drndt(rnlmlen,rnlmlen)
+    complex(kind=dp) :: M(nlmlen,nlmlen) !, drndt(rnlmlen,rnlmlen)
+    real(kind=dp), dimension(rnlmlen,rnlmlen) :: Mrr,Mii,Mri,Mir
 
     call initreduced(L) 
     
@@ -32,8 +33,12 @@ program demo
 
     ! Fill nlm with some random values
     do ii = 1, nlmlen ! loop over unique values  
-        nlm0(ii) = complex(ii, 10*ii) ! insert some arbitrary values
-        nlm_re_cmp(ii) = complex(ii, 0) ! used to test drndt below
+        ! insert some arbitrary values
+        if (lm(2,ii) .eq. 0) then
+            nlm0(ii) = complex(ii, 0) ! m=0 components are always real
+        else
+            nlm0(ii) = complex(ii, 10*ii) 
+        end if
     end do            
 
     ! *** Test 1: extract the parts _all, _pos, _neg 
@@ -74,29 +79,57 @@ program demo
     print *, '... last line (nlm2) should equal the third line (nlm1) for both real and imaginary parts. If so, the reduced (rnlm) <--> full (nlm) conversion works.'
     print *, ' '
 
-    ! *** Test 3: dndt_ij --> drndt_ij
+    ! *** Test 3: M --> M* decomposition
     ! Test using lattice rotation
     
     print *, '------------------------------'    
-    print *, '*** Test dndt_ij <--> drndt_ij (assumes the operand rnlm is real valued)'
+    print *, '*** Test M --> (Mrr,Mri,Mir,Mii) decomposition'
     print *, '------------------------------'  
     
     ! Some random strain-rate tensor
-    ugrad = reshape([1.,0.,0., 0.,0.,0., 0.,0.,-1.], [3, 3]) + reshape([0.,0.,-1., 0.,0.,0., 1.,0.,0.], [3, 3]) ! NOTE x-y rotation will make rnlm complex valued, in which case drndt does not work as intended (i.e. the full dndt must be used).
+    ugrad = reshape([0.75,0.,0., 0.,0.25,0., 0.,0.,-1.], [3, 3]) ! vertical compression
+    ugrad = ugrad + reshape([0.,0.,-1., 0.,0.,0., +1.,0.,0.], [3, 3]) ! x-z shear
+    ugrad = ugrad + reshape([0.,-1.,0., +1.,0.,0., 0.,0.,0.], [3, 3]) ! x-y shear
+    ugrad = ugrad + reshape([0.,0.,0., 0.,0.,-1., 0.,+1.,0.], [3, 3]) ! y-z shear
     eps = (ugrad+transpose(ugrad))/2 ! strain-rate
     omg = (ugrad-transpose(ugrad))/2 ! spin
     
     call initspecfab(L) 
-    dndt  = dndt_ij_LATROT(eps,omg, 0*eps,0d0,0d0,0d0, 1d0) 
-    drndt = dndt_to_drndt(dndt)
-    
-    nlm_re_cmp = rnlm_to_nlm(nlm_to_rnlm(nlm_re_cmp)) ! the random (real-valued) (this is needed to that -m components are equal to the (negative) +m components.
-    print *, 'nlm_re_cmp and nlm_to_rnlm(nlm_re_cmp) used for test are (MUST be real valued):'
-    print *, nlm_re_cmp
-    print *, nlm_to_rnlm(nlm_re_cmp)
+    M  = dndt_ij_LATROT(eps,omg, 0*eps,0d0,0d0,0d0, 1d0) 
+    call reduce_M(M, Mrr,Mri,Mir,Mii) ! Any x-y rotation will make nlm (rnlm) complex valued, all four Mrr,Mri,Mir,Mii must be considere (else Mrr suffices)
+!    drndt = dndt_to_drndt(dndt)
+!    print *, drndt - Mrr
+   
+    nlm0  = nlm2 ! Test fabric. Must be has correctly conjugate components for -m modes, hence we use nlm2
+    rnlm0 = nlm_to_rnlm(nlm0) ! reduced form
+    print *, 'nlm0 and rnlm0=nlm_to_rnlm(nlm0) used for test are:'
+    print *, nlm0
+    print *, rnlm0
     print *, 'Testing... '
-    print *, 'nlm_to_rnlm(matmul(dndt, nlm_re_cmp))  = ', nlm_to_rnlm(matmul(dndt, nlm_re_cmp))
-    print *, 'matmul(drndt, nlm_to_rnlm(nlm_re_cmp)) = ', matmul(drndt, nlm_to_rnlm(nlm_re_cmp))
+    nlm1  = matmul(M, nlm0) ! true d(nlm)/dt
+    rnlm1 = matmul(Mrr,real(rnlm0)) + matmul(Mri,aimag(rnlm0))  + complex(0,1)*( matmul(Mir,real(rnlm0)) + matmul(Mii,aimag(rnlm0)) ) ! d(rnlm)/dt
+    print *, '             matmul(M, nlm0)                  = ', nlm1
+    print *, 'rnlm_to_nlm( matmul(Mrr, real(rnlm0)) + ... ) = ', rnlm_to_nlm(rnlm1)
+    print *, 'Difference  = ', nlm1 - rnlm_to_nlm(rnlm1)
+    
+!    print *, '... and with old reduced mat.     = ', matmul(drndt, rnlm0)
+    
+!    ! Some random strain-rate tensor
+!    ugrad = reshape([1.,0.,0., 0.,0.,0., 0.,0.,-1.], [3, 3]) + reshape([0.,0.,-1., 0.,0.,0., 1.,0.,0.], [3, 3]) ! NOTE x-y rotation will make rnlm complex valued, in which case drndt does not work as intended (i.e. the full dndt must be used).
+!    eps = (ugrad+transpose(ugrad))/2 ! strain-rate
+!    omg = (ugrad-transpose(ugrad))/2 ! spin
+!    
+!    call initspecfab(L) 
+!    dndt  = dndt_ij_LATROT(eps,omg, 0*eps,0d0,0d0,0d0, 1d0) 
+!    drndt = dndt_to_drndt(dndt)
+!    
+!    nlm_re_cmp = rnlm_to_nlm(nlm_to_rnlm(nlm_re_cmp)) ! the random (real-valued) (this is needed to that -m components are equal to the (negative) +m components.
+!    print *, 'nlm_re_cmp and nlm_to_rnlm(nlm_re_cmp) used for test are (MUST be real valued):'
+!    print *, nlm_re_cmp
+!    print *, nlm_to_rnlm(nlm_re_cmp)
+!    print *, 'Testing... '
+!    print *, 'nlm_to_rnlm(matmul(dndt, nlm_re_cmp))  = ', nlm_to_rnlm(matmul(dndt, nlm_re_cmp))
+!    print *, 'matmul(drndt, nlm_to_rnlm(nlm_re_cmp)) = ', matmul(drndt, nlm_to_rnlm(nlm_re_cmp))
     
 end program
 

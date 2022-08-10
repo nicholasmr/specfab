@@ -49,6 +49,39 @@ contains
         viscosity = A**(-1.0d0/n) * (doubleinner22(eps,eps))**((1.0d0-n)/(2.0d0*n))
         tau = viscosity * eps
     end
+    
+
+    !---------------------------------
+    ! COMPRESSIBLE (POROUS) ISOTROPIC RHEOLOGY
+    !---------------------------------
+
+    function eps_of_sig__isotropic(sig, A,n, fa,fb) result(eps)
+
+        implicit none
+        real(kind=dp), intent(in)     :: sig(3,3), A, fa,fb
+        integer, intent(in)           :: n
+        real(kind=dp)                 :: eps(3,3), fluidity, sigtr, I2
+
+        sigtr = sig(1,1)+sig(2,2)+sig(3,3)
+        I2 = doubleinner22(sig,sig)
+        
+        fluidity = A * (fa*(I2-(sigtr**2)/3) + 2.0d0/3*fb*(sigtr/3)**2)**((n-1.0d0)/2.0d0)
+        eps = fluidity * ( fa*(sig - (sigtr/3)*identity) + 2.0d0/3*fb*(sigtr/3)*(identity/3) )
+    end
+
+    function sig_of_eps__isotropic(eps, A,n, fa,fb) result(sig)
+
+        implicit none
+        real(kind=dp), intent(in)     :: eps(3,3), A, fa,fb
+        integer, intent(in)           :: n
+        real(kind=dp)                 :: sig(3,3), viscosity, epstr, J2
+
+        epstr = eps(1,1)+eps(2,2)+eps(3,3)
+        J2 = doubleinner22(eps,eps)
+        
+        viscosity = A**(-1.0d0/n) * ( 1/fa*(J2 - (epstr**2)/3) + 3.0d0**3/2*1/fb*(epstr/3)**2)**((1.0d0-n)/(2.0d0*n))
+        sig = viscosity * ( 1/fa*(eps - (epstr/3)*identity) + 3.0d0**3/2*1/fb*(epstr/3)*(identity/3) )
+    end
 
     !---------------------------------
     ! TRANSVERSELY ISOTROPIC RHEOLOGY

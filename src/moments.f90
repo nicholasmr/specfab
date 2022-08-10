@@ -12,6 +12,7 @@ module moments
     real, parameter, private    :: Pi = 3.141592653589793
     integer, parameter, private :: identity(3,3)  = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
     integer, parameter          :: I_l0=1, I_l2=I_l0+1, I_l4=I_l2+(2*2+1), I_l6=I_l4+(2*4+1), I_l8=I_l6+(2*6+1), I_l10=I_l8+(2*8+1) ! Indices for extracting l=0,2,4,6,8 coefs of nlm
+    integer, parameter          :: I_l12=I_l10+(2*10+1), I_l14=I_l12+(2*12+1), I_l16=I_l14+(2*14+1), I_l18=I_l16+(2*16+1), I_l20=I_l18+(2*18+1)
 
 contains      
 

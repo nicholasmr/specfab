@@ -63,7 +63,7 @@ SRCALL=$(SPECFAB).f90 $(SRCCORE) $(SRCM77)
 # specfabpy Python versions
 #-------------------
 
-#PYVERS=3.6 3.7 3.8 3.9 3.10 
+#PYVERS=3.6 3.7 3.8 3.9 3.10 3.11
 PYVERS=3
 
 ########################################
@@ -105,6 +105,7 @@ rheology-test: $(SPECFAB).o
 	$(COMPILER) $(PATHRHEOTEST)/rheology-test-orthotropic.f90             $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-orthotropic
 	$(COMPILER) $(PATHRHEOTEST)/rheology-test-transverselyisotropic.f90   $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-transverselyisotropic
 	$(COMPILER) $(PATHRHEOTEST)/elasticity-test-transverselyisotropic.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/elasticity-test-transverselyisotropic
+	$(COMPILER) $(PATHRHEOTEST)/rheology-test-isotropic-porous.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-isotropic-porous
 
 aux-tests: $(SPECFAB).o
 	$(COMPILER) $(PATHTEST)/reduced-coef-test/reduced-coef-test.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHTEST)/reduced-coef-test/reduced-coef-test

@@ -53,7 +53,9 @@ module specfabpy
         nlm_len__sf => nlm_len, rnlm_len__sf => rnlm_len, &
         nlm_to_rnlm__sf => nlm_to_rnlm, rnlm_to_nlm__sf => rnlm_to_nlm, &
         dndt_to_drndt__sf => dndt_to_drndt, &
+        reduce_M__sf => reduce_M, &
         rotate_nlm4__sf => rotate_nlm4, &
+        rotate_nlm__sf => rotate_nlm, &
         Sl__sf => Sl, & ! Power spectrum
         
         ! Numerics
@@ -500,6 +502,16 @@ contains
         drndt = dndt_to_drndt__sf(dndt)
     end
     
+    subroutine reduce_M(M,rnlm_len, Mrr,Mri,Mir,Mii)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in)                             :: M(:,:)
+        integer, intent(in)                                      :: rnlm_len
+        real(kind=dp), intent(out), dimension(rnlm_len,rnlm_len) :: Mrr,Mri,Mir,Mii
+        
+        call reduce_M__sf(M, Mrr,Mri,Mir,Mii)
+    end
+    
     !---------------------------------
     ! AUX
     !---------------------------------
@@ -512,6 +524,16 @@ contains
         complex(kind=dp)             :: nlm4_rot(15)
         
         nlm4_rot = rotate_nlm4__sf(nlm4, theta,phi)
+    end
+    
+    function rotate_nlm(nlm, theta,phi) result (nlm_rot)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:) ! nlm truncated at L=4
+        real(kind=dp), intent(in)    :: theta, phi 
+        complex(kind=dp)             :: nlm_rot(size(nlm))
+        
+        nlm_rot = rotate_nlm__sf(nlm, theta,phi)
     end
   
     function DDRX_decayrate(nlm, tau)

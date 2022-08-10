@@ -134,18 +134,20 @@ contains
         real(kind=dp)                :: tausq(3,3), trtausq ! tau.tau, tau:tau
         real(kind=dp)                :: a4v(6,6), a2v(6), tauv(6), a4tauv(6)
 
+        ! Get linear source term
         dndt_ij_DDRX = dndt_ij_DDRX_src(tau)
 
-        tauv = mat_to_vec(tau) ! 6x1 Mandel vector        
+        ! Calculate nonlinear sink term, <D>
         tausq = matmul(tau,tau) ! = tau.tau
         trtausq = tausq(1,1) + tausq(2,2) + tausq(3,3) ! = tr(tau.tau) = tau:tau
-        
         call f_ev_ck_Mandel(nlm, a2v, a4v) ! Structure tensors in Mandel notation
+        tauv = mat_to_vec(tau) ! 6x1 Mandel vector        
         a4tauv = matmul(a4v,tauv) ! = a4:tau in Mandel notation (6x1 vector)
-
-        ! Add add (nonlinear) sink term <D> to all diagonal entries such that dndt_ij = Gamma_ij/Gamma0 = (D_ij - <D>*I_ij)/(tau:tau) (where I is the identity)
         Davg = dot_product(mat_to_vec(tausq),a2v) - dot_product(tauv,a4tauv) ! = (tau.tau):a2 - tau:a4:tau 
         Davg = Davg/trtausq ! normalize by tau:tau
+        
+        ! Add source and sink terms
+        ! I.e. add <D> to all diagonal entries such that dndt_ij := Gamma_ij/Gamma0 = (D_ij - <D>*I_ij)/(tau:tau) (where I is the identity)
         do ii = 1, nlm_len    
             dndt_ij_DDRX(ii,ii) = dndt_ij_DDRX(ii,ii) - Davg 
         end do
@@ -175,7 +177,7 @@ contains
         g = k*g ! common prefactor
         g = g/doubleinner22(tau,tau) ! normalize (can be done already here since it is a constant prefactor for dndt_ij_DDRX_src)
         do ii = 1, nlm_len    
-            dndt_ij_DDRX_src(ii,1:nlm_len) = matmul(GC(ii,:nlm_len,:), g)
+            dndt_ij_DDRX_src(ii,1:nlm_len) = matmul(GC(ii,:nlm_len,1:SHI_DDRX), g) ! len(g)=SHI_DDRX
         end do
     end
     
@@ -378,10 +380,36 @@ contains
         complex(kind=dp)             :: nlm4_rot(15) !, n2m_rot(5), n4m_rot(9)
         complex(kind=dp)             :: D2mn(-2:2,-2:2), D4mn(-4:4,-4:4)
     
-        include "include/Dlmn.f90"
+        include "include/Dlmn_L4.f90"
         nlm4_rot(I_l0) = nlm4(I_l0)
         nlm4_rot(I_l2:(I_l4-1)) = matmul(D2mn, nlm4(I_l2:(I_l4-1)))
         nlm4_rot(I_l4:(I_l6-1)) = matmul(D4mn, nlm4(I_l4:(I_l6-1)))
+    end
+    
+    function rotate_nlm(nlm, theta,phi) result (nlm_rot)
+    
+        implicit none
+
+        complex(kind=dp), intent(in) :: nlm(nlm_len) ! nlm truncated at L=12
+        real(kind=dp), intent(in)    :: theta, phi 
+        complex(kind=dp)             :: nlm_rot(nlm_len)
+        integer, parameter           :: Lmax_wignerD = 12
+        complex(kind=dp)             :: D2mn(-2:2,-2:2), D4mn(-4:4,-4:4), D6mn(-6:6,-6:6), D8mn(-8:8,-8:8), D10mn(-10:10,-10:10), D12mn(-12:12,-12:12) !, D14mn(-14:14,-14:14)
+        integer, parameter           :: nlm_lenvec(0:Lcap__max) = [((ll+1)*(ll+2)/2, ll=0, Lcap__max, 1)] ! nlm length for a given Lcap
+    
+        include "include/Dlmn.f90"
+        nlm_rot(I_l0) = nlm(I_l0)
+        if (nlm_len .ge. nlm_lenvec(2))  nlm_rot(I_l2:(I_l4-1))   = matmul(D2mn,  nlm(I_l2:(I_l4-1)))
+        if (nlm_len .ge. nlm_lenvec(4))  nlm_rot(I_l4:(I_l6-1))   = matmul(D4mn,  nlm(I_l4:(I_l6-1)))
+        if (nlm_len .ge. nlm_lenvec(6))  nlm_rot(I_l6:(I_l8-1))   = matmul(D6mn,  nlm(I_l6:(I_l8-1)))
+        if (nlm_len .ge. nlm_lenvec(8))  nlm_rot(I_l8:(I_l10-1))  = matmul(D8mn,  nlm(I_l8:(I_l10-1)))
+        if (nlm_len .ge. nlm_lenvec(10)) nlm_rot(I_l10:(I_l12-1)) = matmul(D10mn, nlm(I_l10:(I_l12-1)))
+        if (nlm_len .ge. nlm_lenvec(12)) nlm_rot(I_l12:(I_l14-1)) = matmul(D12mn, nlm(I_l12:(I_l14-1)))
+!       if (nlm_len .ge. nlm_lenvec(6)) nlm_rot(I_l14:(I_l16-1)) = matmul(D14mn, nlm(I_l14:(I_l16-1)))
+
+        if (nlm_len .gt. nlm_lenvec(Lmax_wignerD)) then
+            print *, 'specfab error: L > L_max for rotating nlm with wigner D matrices'
+        end if
     end
 
 end module dynamics

@@ -7,19 +7,25 @@ sys.path.insert(0, '../../demo')
 from header import *
 from specfabpy import specfabpy as sf
 
-### Rotate ODF for L=<4
+### Rotate ODF for L<=12
 
-L = 4
+L = 12
 lm, nlm_len = sf.init(L)
 nlm = np.zeros((3, nlm_len), dtype=np.complex64) # The expansion coefficients
-a2 = np.diag([0.0,0.0,1.0]) # any second-order structure tensor (not necessarily diagonal)
-nlm[0,0:6] = sf.a2_to_nlm(a2) # l=2 expansion coefficients for corresponding ODF (a2 is normalized)
+
+if 0:
+    a2 = np.diag([0.0,0.0,1.0]) # any second-order structure tensor (not necessarily diagonal)
+    nlm[0,0:6] = sf.a2_to_nlm(a2) # l=2 expansion coefficients for corresponding ODF (a2 is normalized)
+else:
+    nlm[0,0] = 1/np.sqrt(4*np.pi)
+#    nlm[0,nlm_len-13] = 0.25
+    nlm[0,nlm_len-(2*12+1)-(2*10+1)-0*(2*8+1)-0*(2*6+1)-0*(2*4+1)] = 0.3
 
 # Wigner D rotation of nlm, implemented in specfab only for components l<=4
 lat = np.deg2rad(-45)
 lon = np.deg2rad(45)
-nlm[1,:] = sf.rotate_nlm4(nlm[0,:], lat, 0) # first rotate around y axis in x--z plane
-nlm[2,:] = sf.rotate_nlm4(nlm[1,:], 0, lon) # next rotate around z axis in x--y plane 
+nlm[1,:] = sf.rotate_nlm(nlm[0,:], lat, 0) # first rotate around y axis in x--z plane
+nlm[2,:] = sf.rotate_nlm(nlm[1,:], 0, lon) # next rotate around z axis in x--y plane 
             
 # Print nlm
 np.set_printoptions(precision=4)

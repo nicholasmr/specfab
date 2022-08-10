@@ -72,6 +72,115 @@ contains
     ! Convert fabric dynamics operators to work on reduced form of nlm 
     !---------------------------------
 
+    subroutine reduce_M(M, Mrr, Mri, Mir, Mii)
+        
+        ! *** Reduce full fabric matrix M to Mrr, Mri, Mii, Mir such that: 
+        ! 
+        !   d/dt (rnlm)_i = drndt_ij (rnlm)_j
+        ! 
+        ! where n := nlm (fabric state vector)
+        
+        implicit none
+
+        complex(kind=dp), intent(in)                             :: M(nlm_len,nlm_len)
+        real(kind=dp), intent(out), dimension(rnlm_len,rnlm_len) :: Mrr, Mri, Mir, Mii 
+        complex(kind=dp)                                         :: Z(rnlm_len,2)
+        real(kind=dp), dimension(rnlm_len)                       :: Vp,Vn, Qp,Qn
+        integer                                                  :: s, m_jj, jj_p,jj_n
+!        integer                                                  :: m_ii, ii_p,ii_n
+        
+        Mrr = 0.0d0
+        Mri = 0.0d0
+        Mir = 0.0d0
+        Mii = 0.0d0
+
+        do jj = 1, rnlm_len
+
+            m_jj = rlm(2,jj) ! +m value               
+            jj_p = I_all(jj)         ! +m entry in full array
+            jj_n = jj_p - (2*m_jj+0) ! -m entry in full array
+
+            Z = M(I_all(1:rnlm_len), [jj_p,jj_n])
+            Vp = real( Z(:,1))
+            Qp = aimag(Z(:,1))
+            Vn = real( Z(:,2))
+            Qn = aimag(Z(:,2))
+            
+            s = -1 ! sign if m is odd
+            if (MOD(m_jj,2) .eq. 0) s = +1 ! sign if m is even
+            if (jj_p .eq. jj_n) s = 0 ! prevent counting m=0 modes twice
+
+            Mrr(:,jj) = Mrr(:,jj) + Vp + s*Vn
+            Mri(:,jj) = Mri(:,jj) - Qp + s*Qn
+            Mir(:,jj) = Mir(:,jj) + Qp + s*Qn
+            Mii(:,jj) = Mii(:,jj) + Vp - s*Vn
+        end do
+
+
+!        do ii = 1, rnlm_len
+
+!            ii_p = I_all(ii)
+!                    
+!            do jj = 1, rnlm_len
+
+!                m_jj = rlm(2,jj)                
+!                jj_p = I_all(jj) ! +m entry
+!                jj_n = jj_p - (2*m_jj+0) ! -m entry
+
+!                Zij = M(ii_p,:)
+!                Vij_p = real( Zij(jj_p))
+!                Qij_p = aimag(Zij(jj_p))
+!                Vij_n = real( Zij(jj_n))
+!                Qij_n = aimag(Zij(jj_n))
+!                
+!                s = -1 ! sign if m is odd
+!                if (MOD(m_jj,2) .eq. 0) s = +1 ! sign if m is even
+!                if (jj_p .eq. jj_n) s=0 ! prevent counting m=0 modes twice
+
+!                !print *, ii, jj, ' --------- ', '(',rlm(1,ii),',',m_ii,',',lm(2,ii_n),')', ', (',rlm(1,jj),',', m_jj,',',lm(2,jj_n),')', s
+!                
+!                Mrr(ii,jj) = Mrr(ii,jj) + Vij_p + s*Vij_n
+!                Mri(ii,jj) = Mri(ii,jj) - Qij_p + s*Qij_n
+!                Mir(ii,jj) = Mir(ii,jj) + Qij_p + s*Qij_n
+!                Mii(ii,jj) = Mii(ii,jj) + Vij_p - s*Vij_n
+!                
+!            end do
+!        end do
+
+!        do ii = 1, rnlm_len
+
+!            m_ii = rlm(2,ii)
+!            ii_p = I_all(ii)
+!            ii_n = ii_p - (2*m_ii+0)
+!                    
+!            do jj = 1, rnlm_len
+
+!                m_jj = rlm(2,jj)                
+!                jj_p = I_all(jj) ! +m entry
+!                jj_n = jj_p - (2*m_jj+0) ! -m entry
+
+!                Vij_p = real( M(ii_p,jj_p))
+!                Qij_p = aimag(M(ii_p,jj_p))
+!                Vij_n = real( M(ii_p,jj_n))
+!                Qij_n = aimag(M(ii_p,jj_n))
+!                
+!                s = -1 ! sign if m is odd
+!                if (MOD(m_jj,2) .eq. 0) s = +1 ! sign if m is even
+
+!                if (jj_p .eq. jj_n) s=0 ! prevent counting m=0 modes twice
+
+!                print *, ii, jj, ' --------- ', '(',rlm(1,ii),',',m_ii,',',lm(2,ii_n),')', ', (',rlm(1,jj),',', m_jj,',',lm(2,jj_n),')', s
+!                
+!                Mrr(ii,jj) = Mrr(ii,jj) + Vij_p + s*Vij_n
+!                Mri(ii,jj) = Mri(ii,jj) - Qij_p + s*Qij_n
+!                Mir(ii,jj) = Mir(ii,jj) + Qij_p + s*Qij_n
+!                Mii(ii,jj) = Mii(ii,jj) + Vij_p - s*Vij_n
+!                
+!            end do
+!        end do
+
+    end
+
     function dndt_to_drndt(dndt) result (drndt)
         
         ! *** Convert dndt_ij (full matrix) to drndt_ij (reduced matrix) such that: d/dt (rnlm)_i = drndt_ij (rnlm)_j
