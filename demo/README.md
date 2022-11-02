@@ -1,6 +1,6 @@
 # Model code published in litterature
 
-`inverse-elastic-problem`: Rathmann et al. (2022), in press.
+`inverse-elastic-problem`: Rathmann et al. (2022), RSPA, in press.
 
 `rheology-compare`: Rathmann and Lilien (2022), JOG, doi:10.1017/jog.2022.33
 
