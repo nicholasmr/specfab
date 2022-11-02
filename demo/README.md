@@ -1,4 +1,4 @@
-# Model code published in litterature
+# Published model code
 
 `inverse-elastic-problem`: Rathmann et al. (2022), RSPA, in press.
 
