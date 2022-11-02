@@ -255,12 +255,22 @@ contains
             nu   = 3.755041e+00
         end if 
 
+!        if (Lcap == 8) then
+!            expo = 1.500
+!            nu   = 6.500000e+00
+!        end if 
+
+        if (Lcap == 10) then
+            expo = 1.700
+            nu   = 9e+0
+        end if 
+        
         if (Lcap == 20) then
             expo = 3.000
             nu   = 1.495197e+01
         end if 
 
-        if ((Lcap .gt. 8) .and. (Lcap .lt. 20)) then
+        if ((Lcap .gt. 12) .and. (Lcap .lt. 20)) then
     !        print *, 'specfab error: returning the unscaled (but normalized) Laplacian matrix for you to scale yourself.'
             expo = 1
             scalefac = -1

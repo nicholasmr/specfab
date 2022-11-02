@@ -144,7 +144,7 @@ class PureShear():
     def F(self, t):      return np.diag(np.power(self.lam(t),self.Fpow))
     
     def strain(self, t): return 0.5*( self.F(t) + np.transpose(self.F(t)) ) - np.diag([1,1,1])
-    #def epszz2time(self,epszz): return -self.t_e*np.log(epszz+1) # time it takes to reach "eps_zz" strain with t_e char. timescale
+    def strainzz2time(self,strainzz): return -self.t_c*np.log(strainzz+1) # time it takes to reach "eps_zz" strain with t_c char. timescale
 
     # Note that F is constructed such that W and eps are time-independant.
     def D(self): return 1/self.t_c * np.diag(self.Fpow)

@@ -25,7 +25,8 @@ APPLY_BOUNDS = 0  # Test effect of applying bounds to solution (after solving fo
 TEST_GIRDLE  = 0  # Validate calibration (for single maximum fabrics) against girdle fabrics.
 
 L_list = [4,6,8,20]
-L_list = [20,]
+L_list = [8,10,12,]
+#L_list = [10,]
 
 ### Mode of deformation
 if not TEST_GIRDLE: 
@@ -80,8 +81,22 @@ for L in L_list:
         nu0 = 3.6
        
     if L == 8:
-        expo = 3 # 2.8
-        nu0 = 4e+0 # init guess for iteration
+#        expo = 3 # 2.8
+#        nu0 = 4e+0 # init guess for iteration
+        expo = 1.5 # 2.8
+        nu0 = 6.5e+0 # init guess for iteration
+        
+    if L == 10:
+#        expo = 1.6
+#        nu0 = 8e+0 # init guess for iteration
+        expo = 1.7
+        nu0 = 9e+0 # init guess for iteration
+        
+    if L == 12:
+        expo = 1.7
+        nu0 = 9e+0 # init guess for iteration
+#        expo = 1.6
+#        nu0 = 9e+0 # init guess for iteration
         
     if L == 20: 
         expo = 3
