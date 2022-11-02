@@ -2,7 +2,7 @@
 
 A spectral orientation fabric model for polycrystalline materials that:
 - Can model fabric processes such as lattice (c-axis) rotation, discontinuous dynamic recrystallization, and rotation recrystallization.
-- Can calculate fabric-induced directional viscosities (enhancement factors) using Sachs/Taylor homogenization schemes.
+- Can calculate fabric-induced directional viscosities (enhancement factors) using Sachs/Taylor homogenizations.
 - Can calculate elastic P- and S-wave velocities using Voigt/Reuss homogenization schemes.
 - Contains analytical expressions for both forward and inverse orthotropic and tranversely isotropic rheologies.
 
@@ -21,7 +21,7 @@ See the [specfab Wiki](https://github.com/nicholasmr/specfab/wiki)
 
 ## Documentation
 
-| Component | Publication |
+| Component | Reference |
 | :--- | :--- |
 | Lattice rotation | [Rathmann et al. (2021)](https://doi.org/10.1017/jog.2020.117) |
 | Discontinuous dynamic recrystallization | [Rathmann and Lilien (2021)](https://doi.org/10.1017/jog.2021.88) |
