@@ -1,10 +1,10 @@
 ## The model
 
 A spectral orientation fabric model for polycrystalline materials that:
-- Can model fabric processes such as lattice (c-axis) rotation, discontinuous dynamic recrystallization, and rotation recrystallization.
+- Can model lattice (c-axis) rotation, discontinuous dynamic recrystallization, and rotation recrystallization.
 - Can calculate fabric-induced directional viscosities (enhancement factors) using Sachs/Taylor homogenizations.
-- Can calculate elastic P- and S-wave velocities using Voigt/Reuss homogenization schemes.
-- Contains analytical expressions for both forward and inverse orthotropic and tranversely isotropic rheologies.
+- Can calculate elastic P- and S-wave velocities using Voigt/Reuss homogenizations.
+- Contains expressions for both forward and inverse orthotropic and tranversely isotropic rheologies.
 
 ![image](demo/cube-crush-animation/cube-crush.gif)
 
