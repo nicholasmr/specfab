@@ -11,11 +11,12 @@ A spectral orientation fabric model for polycrystalline materials that:
 ## Examples of use
 See the [specfab Wiki](https://github.com/nicholasmr/specfab/wiki)
 
-## Installation
+## Installing
 
 | Enviroment | How to |
 | :--- | :--- |
-| Python | - If you are running Linux, a pre-compiled version is available: `pip3 install numpy --upgrade && pip3 install specfabpy` <br> - Otherwise, for a local-only install, run `make specfabpy` in `/src` (requires LAPACK and BLAS) <br>- To install for general use (in other folders), run `make python` in `/src`. Note that if you do not have write permissions for your python installation, you can instead run `make specfabpy; python setup.py install --user` |
+| Python | A pre-compiled version is available on Linux: `pip3 install numpy --upgrade && pip3 install specfabpy` |
+| Compile Python module |- For a local-only install, run `make specfabpy` in `/src` (requires LAPACK and BLAS) <br>- To install for general use (in other folders), run `make python` in `/src`. Note that if you do not have write permissions for your python installation, you can instead run `make specfabpy; python setup.py install --user`|
 | Fortran | The Fortran module is built by running `make specfab.o` |
 | Elmer/Ice Interface | To interface with Elmer/Ice, you need a shared version of the libraries (built with the same Fortran compiler as Elmer). If needed, edit the compiler in the Makefile, then run `make libspecfab.so` |
 
@@ -30,7 +31,7 @@ See the [specfab Wiki](https://github.com/nicholasmr/specfab/wiki)
 See also the [Wiki](https://github.com/nicholasmr/specfab/wiki)
 
 ## Q&A
-- **Q** What *L* are possible?
-  - **A** Any 4<=*L*<=20. If higher *L* are required:
-    1. `cd src/include && python3 make_gaunt_coefs.py L` (replacing *L*)
-    2. `make clean && make`
+
+| **Q** | **A** |
+| :--- | :--- |
+| What $L$ are possible? | Any $4<=L<=20$. If higher $L$ are required: <br>1. `cd src/include && python3 make_gaunt_coefs.py L` (replacing `L`) <br>2. `make clean && make` |
