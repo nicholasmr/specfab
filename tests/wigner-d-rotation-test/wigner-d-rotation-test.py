@@ -21,7 +21,7 @@ else:
 #    nlm[0,nlm_len-13] = 0.25
     nlm[0,nlm_len-(2*12+1)-(2*10+1)-0*(2*8+1)-0*(2*6+1)-0*(2*4+1)] = 0.3
 
-# Wigner D rotation of nlm, implemented in specfab only for components l<=4
+# Wigner D rotation of nlm, implemented in specfab only for components l<=12
 lat = np.deg2rad(-45)
 lon = np.deg2rad(45)
 nlm[1,:] = sf.rotate_nlm(nlm[0,:], lat, 0) # first rotate around y axis in x--z plane

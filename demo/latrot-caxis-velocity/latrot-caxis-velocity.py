@@ -9,7 +9,7 @@ from header import *
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-#---------
+### High res
 
 mul = 10
 theta = np.linspace(0, np.pi, 20*mul)   
@@ -20,9 +20,22 @@ cv = np.array([np.cos(p2)*np.sin(t2), np.sin(p2)*np.sin(t2), +np.cos(t2)])
 tv = np.array([np.cos(p2)*np.cos(t2), np.sin(p2)*np.cos(t2), -np.sin(t2)]) 
 pv = np.array([-np.sin(p2), np.cos(p2), 0*p2]) 
 
-#---------
+### Low res
+
+mul = 1.0
+theta_ = np.linspace(0, np.pi, int(10*mul))   
+phi_   = np.linspace(0, 2*np.pi, int(20*mul))
+p2_, t2_ = np.meshgrid(phi_, theta_)
+
+cv_ = np.array([np.cos(p2_)*np.sin(t2_), np.sin(p2_)*np.sin(t2_), +np.cos(t2_)]) 
+tv_ = np.array([np.cos(p2_)*np.cos(t2_), np.sin(p2_)*np.cos(t2_), -np.sin(t2_)]) 
+pv_ = np.array([-np.sin(p2_), np.cos(p2_), 0*p2_]) 
+
+### Functions
 
 def plot(ugrad, ax, titlestr='', speedthres=0):
+
+    ### Contour high res
 
     D, W = (ugrad + ugrad.T)/2, (ugrad - ugrad.T)/2
 
@@ -33,16 +46,29 @@ def plot(ugrad, ax, titlestr='', speedthres=0):
     v = np.einsum('ijk,ijk->jk', cdot, tv)
     speed = np.linalg.norm(cdot, axis=0)
     u[speed<speedthres] = np.nan
-    
-#        u = np.einsum('ijk,il,ljk->jk', pv,W,cv) - np.einsum('ijk,il,ljk->jk', pv,D,cv) 
-#        u = np.divide(u, np.sin(t2)+0e-9)
-#        v = np.einsum('ijk,il,ljk->jk', tv,W,cv) - np.einsum('ijk,il,ljk->jk', tv,D,cv) 
 
     lvls = np.linspace(0,0.8,5)
     x, y = np.rad2deg(p2), np.rad2deg(t2 - np.pi/2) 
     F = speed/np.linalg.norm(ugrad)
     hdistr = ax.contourf(x,y, F, transform=ccrs.PlateCarree(), extend='max', cmap='YlOrBr', levels=lvls)
-    ax.streamplot(x,y,u,v, color='0', linewidth=0.9, density=[0.45,0.65], arrowsize=1,  transform=geo)
+#    ax.streamplot(x,y,u,v, color='0', linewidth=0.9, density=[0.45,0.65], arrowsize=1,  transform=geo)
+
+    ### Quiver, low res
+
+    cdot_ = np.einsum('ij,jkl->ikl', W, cv_) - np.einsum('ij,jkl->ikl', D, cv_) \
+         + np.einsum('ijk,ljk,lm,mjk->ijk', cv_,cv_,D,cv_)
+         
+    u_ = np.einsum('ijk,ijk->jk', cdot_, pv_)
+    v_ = np.einsum('ijk,ijk->jk', cdot_, tv_)
+    speed_ = np.linalg.norm(cdot_, axis=0)
+    u_[speed_<speedthres] = np.nan
+
+    cquiv = 'k' # #b2182b       
+#    cquiv = '#a50f15' # #b2182b
+    lvls = np.linspace(0,0.8,5)
+    x_, y_ = np.rad2deg(p2_), np.rad2deg(t2_ - np.pi/2) 
+    QV1 = ax.quiver(x_,y_,u_,v_, scale=7.5, width=0.012, color=cquiv, transform=geo)
+    plt.quiverkey(QV1, 0.95, 0.00, 1, r'$\dot{\vb{c}}$', labelpos='E', coordinates='axes', labelsep=0.05)
 
     kwargs_gridlines = {'ylocs':np.arange(-90,90+30,30), 'xlocs':np.arange(0,360+45,45), 'linewidth':0.5, 'color':'black', 'alpha':0.25, 'linestyle':'-'}
     gl = ax.gridlines(crs=ccrs.PlateCarree(), **kwargs_gridlines)
@@ -52,7 +78,7 @@ def plot(ugrad, ax, titlestr='', speedthres=0):
     cb1.ax.xaxis.set_ticks(lvls, minor=True)
     ax.set_title(titlestr, fontsize=FS, pad=10)
 
-#---------
+### Plot
 
 inclination = 45 # view angle
 rot0 = -90
