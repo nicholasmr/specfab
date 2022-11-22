@@ -39,15 +39,15 @@ class SyntheticFabric():
         self.lm, self.nlm_len = sf.init(self.L) 
         self.nlm_dummy = np.zeros((self.nlm_len), dtype=np.complex64) 
             
-    def dndt_REG(self, D):
+    def M_REG(self, D):
 
         if self.L <= 8:
-            dndt_REG = sf.dndt_REG(self.nlm_dummy, D)        
+            M_REG = sf.M_REG(self.nlm_dummy, D)        
         else:
             nu0, expo = 10, 2
-            dndt_REG = dndt_REG_custom(nu0, expo, D, sf) # from header.py
+            M_REG = M_REG_custom(nu0, expo, D, sf) # from header.py
     
-        return dndt_REG 
+        return M_REG 
     
     ####################################
 
@@ -121,9 +121,9 @@ class SyntheticFabric():
 #            tt = Nt0-ii
             tt = ii
             D_, W_ = D[tt,:,:], W[tt,:,:]
-            dndt = sf.dndt_LATROT(nlm_prev, D_,W_) # Lattice rotation
-            dndt += self.dndt_REG(D_) # Regularization
-            nlm_list[tt,:] = nlm_prev + dt * np.matmul(dndt, nlm_prev)
+            M = sf.M_LROT(nlm_prev, D_,W_) # Lattice rotation
+            M += self.M_REG(D_) # Regularization
+            nlm_list[tt,:] = nlm_prev + dt * np.matmul(M, nlm_prev)
             nlm_prev = nlm_list[tt,:]
             Eij[tt,:,:] = sf.Eeiej(nlm_prev, e1,e2,e3, Ecc,Eca,alpha,nprime) 
             _,_,_, eigvals[tt,:] = sf.frame(nlm_prev, 'e')
@@ -133,9 +133,9 @@ class SyntheticFabric():
         for ii in np.arange(Nt1+1):
             tt = Nt0+ii
             D_, W_ = D[tt,:,:], W[tt,:,:]
-            dndt = sf.dndt_LATROT(nlm_prev, D_,W_) # Lattice rotation
-            dndt += nu0 * sf.dndt_REG(nlm_prev, D_) # Regularization
-            nlm_list[tt,:] = nlm_prev + dt * np.matmul(dndt, nlm_prev)
+            M = sf.M_LROT(nlm_prev, D_,W_) # Lattice rotation
+            M += nu0 * sf.M_REG(nlm_prev, D_) # Regularization
+            nlm_list[tt,:] = nlm_prev + dt * np.matmul(M, nlm_prev)
             nlm_prev = nlm_list[tt,:]
             Eij[tt,:,:] = sf.Eeiej(nlm_prev, e1,e2,e3, Ecc,Eca,alpha,nprime) 
             _,_,_, eigvals[tt,:] = sf.frame(nlm_prev, 'e')
@@ -193,8 +193,8 @@ class SyntheticFabric():
             axE.plot(strainvec[I], Eij[I,1,STRESSAXPERP], '-.k', lw=lw, label=r'$E_{yz}$')
             axE.plot(strainvec[I], Eij[I,STRESSAX,STRESSAX], '--k',  lw=lw, label=r'$E_{zz}$' if STRESSDIRECTION == 'z' else r'$E_{xx}$')
             axE.plot(strainvec[I], Eij[I,STRESSAXPERP,STRESSAXPERP], ':k',  lw=lw, label=r'$E_{xx}$' if STRESSDIRECTION == 'z' else r'$E_{zz}$')
-            axE.text(0.1, 1.50, '{\\bf Softer than}\n{\\bf isotropy}', fontsize=FS-2.5, color='#08519c', ha='center', ma='center')
-            axE.text(0.1, 0.25, '{\\bf Harder than}\n{\\bf isotropy}', fontsize=FS-2.5, color='#a50f15', ha='center', ma='center')
+            axE.text(0.02, 1.50, '{\\bf Softer than}\n{\\bf isotropy}', fontsize=FS-2.5, color='#08519c', ha='center', ma='center')
+            axE.text(0.02, 0.20, '{\\bf Harder than}\n{\\bf isotropy}', fontsize=FS-2.5, color='#a50f15', ha='center', ma='center')
 
             dx=1
             axE.set_xticks(np.arange(xlims[0],xlims[1]+dx, dx))

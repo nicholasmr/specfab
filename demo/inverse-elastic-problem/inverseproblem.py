@@ -11,6 +11,7 @@ import math
 import numpy as np 
 import numpy.linalg as linalg
 from scipy.optimize import minimize
+sys.path.insert(0, '..')
 from specfabpy import specfabpy as sf 
 
 """
@@ -120,7 +121,7 @@ lm_L4 = np.array([(0,0), (2,-2),(2,-1),(2,0),(2,1),(2,2), (4,-4),(4,-3),(4,-2),(
 def get_vjmap(nlm, alpha, g, rho, theta, phi, freq=10):
     (lam,mu,Elam,Emu,Egam) = g
     omega = 2*np.pi * freq # 2*pi * freq, but freq does not matter for results!
-    vj_flat = sf.elastic_phase_velocities(nlm, alpha, lam,mu,Elam,Emu,Egam, omega, rho, theta,phi)
+    vj_flat = sf.Vi_elastic(nlm, alpha, lam,mu,Elam,Emu,Egam, omega, rho, theta,phi)
     vS1_true = vj_flat[0,:]
     vS2_true = vj_flat[1,:]
     vP_true  = vj_flat[2,:]

@@ -95,10 +95,8 @@ program demo
     omg = (ugrad-transpose(ugrad))/2 ! spin
     
     call initspecfab(L) 
-    M  = dndt_ij_LATROT(eps,omg, 0*eps,0d0,0d0,0d0, 1d0) 
+    M  = M_LROT(eps,omg, 0*eps,0d0,0d0,0d0, 1d0) 
     call reduce_M(M, Mrr,Mri,Mir,Mii) ! Any x-y rotation will make nlm (rnlm) complex valued, all four Mrr,Mri,Mir,Mii must be considere (else Mrr suffices)
-!    drndt = dndt_to_drndt(dndt)
-!    print *, drndt - Mrr
    
     nlm0  = nlm2 ! Test fabric. Must be has correctly conjugate components for -m modes, hence we use nlm2
     rnlm0 = nlm_to_rnlm(nlm0) ! reduced form
@@ -111,25 +109,6 @@ program demo
     print *, '             matmul(M, nlm0)                  = ', nlm1
     print *, 'rnlm_to_nlm( matmul(Mrr, real(rnlm0)) + ... ) = ', rnlm_to_nlm(rnlm1)
     print *, 'Difference  = ', nlm1 - rnlm_to_nlm(rnlm1)
-    
-!    print *, '... and with old reduced mat.     = ', matmul(drndt, rnlm0)
-    
-!    ! Some random strain-rate tensor
-!    ugrad = reshape([1.,0.,0., 0.,0.,0., 0.,0.,-1.], [3, 3]) + reshape([0.,0.,-1., 0.,0.,0., 1.,0.,0.], [3, 3]) ! NOTE x-y rotation will make rnlm complex valued, in which case drndt does not work as intended (i.e. the full dndt must be used).
-!    eps = (ugrad+transpose(ugrad))/2 ! strain-rate
-!    omg = (ugrad-transpose(ugrad))/2 ! spin
-!    
-!    call initspecfab(L) 
-!    dndt  = dndt_ij_LATROT(eps,omg, 0*eps,0d0,0d0,0d0, 1d0) 
-!    drndt = dndt_to_drndt(dndt)
-!    
-!    nlm_re_cmp = rnlm_to_nlm(nlm_to_rnlm(nlm_re_cmp)) ! the random (real-valued) (this is needed to that -m components are equal to the (negative) +m components.
-!    print *, 'nlm_re_cmp and nlm_to_rnlm(nlm_re_cmp) used for test are (MUST be real valued):'
-!    print *, nlm_re_cmp
-!    print *, nlm_to_rnlm(nlm_re_cmp)
-!    print *, 'Testing... '
-!    print *, 'nlm_to_rnlm(matmul(dndt, nlm_re_cmp))  = ', nlm_to_rnlm(matmul(dndt, nlm_re_cmp))
-!    print *, 'matmul(drndt, nlm_to_rnlm(nlm_re_cmp)) = ', matmul(drndt, nlm_to_rnlm(nlm_re_cmp))
     
 end program
 

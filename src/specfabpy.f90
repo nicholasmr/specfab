@@ -16,6 +16,12 @@ module specfabpy
     use specfabpy_const
     
     use specfab, &
+    
+        ! Fabric processes
+        M_LROT__sf => M_LROT, &
+        M_DDRX__sf => M_DDRX, M_DDRX_src__sf => M_DDRX_src, & 
+        M_CDRX__sf => M_CDRX, &
+        M_REG__sf  => M_REG, &
 
         ! Structure tensors 
         a2__sf => a2, a4__sf => a4, & 
@@ -36,7 +42,7 @@ module specfabpy
         ! Elasticities 
         stress_of_strain__tranisotropic__sf => stress_of_strain__tranisotropic, &
         strain_of_stress__tranisotropic__sf => strain_of_stress__tranisotropic, &
-        elastic_phase_velocities__sf => elastic_phase_velocities, &
+        Vi_elastic__sf => Vi_elastic, &
         Qnorm__sf => Qnorm, &
         
         ! Fluid enhancement factors
@@ -52,9 +58,7 @@ module specfabpy
         lm__sf => lm, &
         nlm_len__sf => nlm_len, rnlm_len__sf => rnlm_len, &
         nlm_to_rnlm__sf => nlm_to_rnlm, rnlm_to_nlm__sf => rnlm_to_nlm, &
-        dndt_to_drndt__sf => dndt_to_drndt, &
         reduce_M__sf => reduce_M, &
-        rotate_nlm4__sf => rotate_nlm4, &
         rotate_nlm__sf => rotate_nlm, &
         Sl__sf => Sl, & ! Power spectrum
         
@@ -102,53 +106,53 @@ contains
     ! FABRIC DYNAMICS
     !---------------------------------
     
-    function dndt_LATROT(nlm, eps,omg) 
+    function M_LROT(nlm, eps,omg) 
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), intent(in)    :: eps(3,3), omg(3,3)
-        complex(kind=dp)             :: dndt_LATROT(size(nlm),size(nlm))
+        complex(kind=dp)             :: M_LROT(size(nlm),size(nlm))
         
-        dndt_LATROT = dndt_ij_LATROT(eps,omg, 0*eps,0d0,1d0,1d0, 1d0) ! only the Taylor model is provided for the python interface
+        M_LROT = M_LROT__sf(eps,omg, 0*eps,0d0,1d0,1d0, 1d0) ! only the Taylor model is provided for the python interface
     end
     
-    function dndt_DDRX(nlm, tau)
+    function M_DDRX(nlm, tau)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), intent(in)    :: tau(3,3)
-        complex(kind=dp)             :: dndt_DDRX(size(nlm),size(nlm))
+        complex(kind=dp)             :: M_DDRX(size(nlm),size(nlm))
         
-        dndt_DDRX = dndt_ij_DDRX(nlm, tau)
+        M_DDRX = M_DDRX__sf(nlm, tau)
     end
 
-    function dndt_DDRX_src(nlmlen, tau)
+    function M_DDRX_src(nlmlen, tau)
         use specfabpy_const
         implicit none
         integer, intent(in)       :: nlmlen
         real(kind=dp), intent(in) :: tau(3,3)
-        complex(kind=dp)          :: dndt_DDRX_src(nlmlen,nlmlen)
+        complex(kind=dp)          :: M_DDRX_src(nlmlen,nlmlen)
         
-        dndt_DDRX_src = dndt_ij_DDRX_src(tau)
+        M_DDRX_src = M_DDRX_src__sf(tau)
     end
     
-    function dndt_CDRX(nlm)
+    function M_CDRX(nlm)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
-        complex(kind=dp)             :: dndt_CDRX(size(nlm),size(nlm))
+        complex(kind=dp)             :: M_CDRX(size(nlm),size(nlm))
         
-        dndt_CDRX = dndt_ij_CDRX()
+        M_CDRX = M_CDRX__sf()
     end
     
-    function dndt_REG(nlm, eps)
+    function M_REG(nlm, eps)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), intent(in)    :: eps(3,3)
-        real(kind=dp)                :: dndt_REG(size(nlm),size(nlm))
+        real(kind=dp)                :: M_REG(size(nlm),size(nlm))
         
-        dndt_REG = dndt_ij_REG(eps) 
+        M_REG = M_REG__sf(eps) 
     end    
     
     function Lmat(nlm)
@@ -430,7 +434,7 @@ contains
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in)  :: C11,C33,C55,C12,C13
-        real(kind=dp), intent(out) :: lam,mu, Elam,Emu,Egam
+        real(kind=dp), intent(out) :: lam,mu, Elam,Emu,Egam ! Lame parameters and their directional enhancements
         
         call Cij_to_Lame__traniso(C11,C33,C55,C12,C13, lam,mu,Elam,Emu,Egam)
     end
@@ -438,17 +442,17 @@ contains
     !---------------------------------
     ! ELASTIC PHASE VELOCITIES
     !---------------------------------
-    ! For a composite material consisting of transversely isotropic elements
+    ! For a composite material consisting of transversely isotropic grains
     
-    function elastic_phase_velocities(nlm, alpha, lam,mu,Elam,Emu,Egam, omega,rho, theta_n,phi_n) result(vj)
+    function Vi_elastic(nlm, alpha, lam,mu,Elam,Emu,Egam, omega,rho, theta_n,phi_n) result(Vi)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), intent(in)    :: alpha, lam,mu,Elam,Emu,Egam, omega,rho
         real(kind=dp), intent(in)    :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities (vj) along
-        real(kind=dp)                :: vj(3,size(theta_n)) ! qS1, qS2, qP phase velocities
+        real(kind=dp)                :: Vi(3,size(theta_n)) ! qS1, qS2, qP phase velocities
 
-        vj = elastic_phase_velocities__sf(nlm, alpha, lam,mu,Elam,Emu,Egam, omega,rho, theta_n,phi_n) 
+        Vi = Vi_elastic__sf(nlm, alpha, lam,mu,Elam,Emu,Egam, omega,rho, theta_n,phi_n) 
     end
   
     function Qnorm(nlm, alpha, lam,mu,Elam,Emu,Egam) result(Qn)
@@ -492,16 +496,6 @@ contains
         nlm = rnlm_to_nlm__sf(rnlm)
     end
     
-    function dndt_to_drndt(dndt, rnlm_len) result (drndt)
-        use specfabpy_const
-        implicit none
-        complex(kind=dp), intent(in) :: dndt(:,:)
-        integer, intent(in)          :: rnlm_len
-        real(kind=dp)                :: drndt(rnlm_len,rnlm_len)
-        
-        drndt = dndt_to_drndt__sf(dndt)
-    end
-    
     subroutine reduce_M(M,rnlm_len, Mrr,Mri,Mir,Mii)
         use specfabpy_const
         implicit none
@@ -516,20 +510,10 @@ contains
     ! AUX
     !---------------------------------
     
-    function rotate_nlm4(nlm4, theta,phi) result (nlm4_rot)
-        use specfabpy_const
-        implicit none
-        complex(kind=dp), intent(in) :: nlm4(15) ! nlm truncated at L=4
-        real(kind=dp), intent(in)    :: theta, phi 
-        complex(kind=dp)             :: nlm4_rot(15)
-        
-        nlm4_rot = rotate_nlm4__sf(nlm4, theta,phi)
-    end
-    
     function rotate_nlm(nlm, theta,phi) result (nlm_rot)
         use specfabpy_const
         implicit none
-        complex(kind=dp), intent(in) :: nlm(:) ! nlm truncated at L=4
+        complex(kind=dp), intent(in) :: nlm(:) 
         real(kind=dp), intent(in)    :: theta, phi 
         complex(kind=dp)             :: nlm_rot(size(nlm))
         

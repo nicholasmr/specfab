@@ -138,25 +138,25 @@ for L in L_list:
             nlm_prev = nlm[nn-1,:]
             
             # Lattice rotation operator (nlm_len x nlm_len matrix)
-            M_LATROT = sf.dndt_LATROT(nlm_prev, D, W) 
+            M_LROT = sf.M_LROT(nlm_prev, D, W) 
 
             # DDRX operator (nlm_len x nlm_len matrix)
             S = D.copy() # S (dev. stress tensor) remains coaxial with D (strain-rate tensor) for this mode of deformation, so we need not calculate S from the bulk flow law (which in turn requires calculating the enhancement factors from the modelled fabric)
             gam[nn] = sf.Gamma0(D, c2k(T[nn]), A, Q) # DDRX decay rate magnitude
-            M_DDRX = gam[nn] * sf.dndt_DDRX(nlm_prev, S) # DDRX operator
+            M_DDRX = gam[nn] * sf.M_DDRX(nlm_prev, S) # DDRX operator
 
             # CDRX operator (nlm_len x nlm_len matrix)
             if WITH_CDRX:
                 lam[nn] = f_lam(D,T[nn]) 
-                M_CDRX = lam[nn]*sf.dndt_CDRX(nlm_prev) 
+                M_CDRX = lam[nn]*sf.M_CDRX(nlm_prev) 
             else:
                 M_CDRX = 0*M_DDRX
 
             # Regularization operator (nlm_len x nlm_len matrix)
-            M_REG = sf.dndt_REG(nlm_prev, D) 
+            M_REG = sf.M_REG(nlm_prev, D) 
 
             # Total fabric evolution 
-            M = M_LATROT + M_DDRX + M_CDRX + M_REG # net operator
+            M = M_LROT + M_DDRX + M_CDRX + M_REG # net operator
             nlm[nn,:] = nlm_prev + dt*np.matmul(M, nlm_prev) # Forward Euler step
             nlm[nn,:] = sf.apply_bounds(nlm[nn,:]) # Apply spectral bounds, if needed 
             

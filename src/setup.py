@@ -20,7 +20,7 @@ else:
           author_email="rathmann@nbi.ku.dk",
           description="specfab Python module",
           url="https://github.com/nicholasmr/specfab",
-          version='2022.11.3',
+          version='2022.11.23',
           packages=['.'],
           package_data={'': ['specfabpy.cpython*.so']},
           )

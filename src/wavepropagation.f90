@@ -22,7 +22,7 @@ contains
     ! ELASTIC
     !---------------------------------
 
-    function elastic_phase_velocities(nlm, alpha, lam,mu,Elam,Emu,Egam, omega,rho, theta_n,phi_n) result (vj)
+    function Vi_elastic(nlm, alpha, lam,mu,Elam,Emu,Egam, omega,rho, theta_n,phi_n) result (vj)
     
         ! Elastic phase velocities (qP, qS1, qS2) given ODF in terms of nlm and propagation directions (theta_n,phi_n) 
     

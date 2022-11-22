@@ -76,9 +76,10 @@ contains
         
         ! *** Reduce full fabric matrix M to Mrr, Mri, Mii, Mir such that: 
         ! 
-        !   d/dt (rnlm)_i = drndt_ij (rnlm)_j
+        !   d(rnlm)/dt =                  matmul(Mrr,real(rnlm)) + matmul(Mri,aimag(rnlm))  
+        !                + complex(0,1)*( matmul(Mir,real(rnlm)) + matmul(Mii,aimag(rnlm)) ) 
         ! 
-        ! where n := nlm (fabric state vector)
+        ! where rnlm is the reduced state vector
         
         implicit none
 
@@ -87,7 +88,6 @@ contains
         complex(kind=dp)                                         :: Z(rnlm_len,2)
         real(kind=dp), dimension(rnlm_len)                       :: Vp,Vn, Qp,Qn
         integer                                                  :: s, m_jj, jj_p,jj_n
-!        integer                                                  :: m_ii, ii_p,ii_n
         
         Mrr = 0.0d0
         Mri = 0.0d0
@@ -116,103 +116,41 @@ contains
             Mii(:,jj) = Mii(:,jj) + Vp - s*Vn
         end do
 
+    end
+
+!   *** DEPRECATED, USE reduce_M() ***
+!    function dndt_to_drndt(dndt) result (drndt)
+!        
+!        ! *** Convert dndt_ij (full matrix) to drndt_ij (reduced matrix) such that: d/dt (rnlm)_i = drndt_ij (rnlm)_j
+
+!        ! NOTICE: x-y rotation will make rnlm_j complex valued, in which case drndt_ij does not work as intended (i.e. the full problem involving dndt_ij and nlm_j must be solved).
+
+!        implicit none
+
+!        complex(kind=dp), intent(in) :: dndt(nlm_len,nlm_len)
+!        real(kind=dp)                :: drndt(rnlm_len,rnlm_len)
+!        integer                      :: kk
+
+!        drndt = 0.0d0
 
 !        do ii = 1, rnlm_len
-
-!            ii_p = I_all(ii)
-!                    
-!            do jj = 1, rnlm_len
-
-!                m_jj = rlm(2,jj)                
-!                jj_p = I_all(jj) ! +m entry
-!                jj_n = jj_p - (2*m_jj+0) ! -m entry
-
-!                Zij = M(ii_p,:)
-!                Vij_p = real( Zij(jj_p))
-!                Qij_p = aimag(Zij(jj_p))
-!                Vij_n = real( Zij(jj_n))
-!                Qij_n = aimag(Zij(jj_n))
+!            do jj = 1, nlm_len
 !                
-!                s = -1 ! sign if m is odd
-!                if (MOD(m_jj,2) .eq. 0) s = +1 ! sign if m is even
-!                if (jj_p .eq. jj_n) s=0 ! prevent counting m=0 modes twice
-
-!                !print *, ii, jj, ' --------- ', '(',rlm(1,ii),',',m_ii,',',lm(2,ii_n),')', ', (',rlm(1,jj),',', m_jj,',',lm(2,jj_n),')', s
+!                kk = I_full(jj)
 !                
-!                Mrr(ii,jj) = Mrr(ii,jj) + Vij_p + s*Vij_n
-!                Mri(ii,jj) = Mri(ii,jj) - Qij_p + s*Qij_n
-!                Mir(ii,jj) = Mir(ii,jj) + Qij_p + s*Qij_n
-!                Mii(ii,jj) = Mii(ii,jj) + Vij_p - s*Vij_n
+!                if (lm(2,jj) >= 0) then ! m >= 0
+!                    drndt(ii,kk) = drndt(ii,kk) + real(dndt(I_all(ii), jj))
+!                else ! m < 0
+!                    if (MOD(lm(2,jj),2) .eq. 0) then ! m even
+!                        drndt(ii,kk) = drndt(ii,kk) + real(dndt(I_all(ii), jj))
+!                    else ! m odd
+!                        drndt(ii,kk) = drndt(ii,kk) - real(dndt(I_all(ii), jj))
+!                    end if
+!                end if
 !                
 !            end do
 !        end do
-
-!        do ii = 1, rnlm_len
-
-!            m_ii = rlm(2,ii)
-!            ii_p = I_all(ii)
-!            ii_n = ii_p - (2*m_ii+0)
-!                    
-!            do jj = 1, rnlm_len
-
-!                m_jj = rlm(2,jj)                
-!                jj_p = I_all(jj) ! +m entry
-!                jj_n = jj_p - (2*m_jj+0) ! -m entry
-
-!                Vij_p = real( M(ii_p,jj_p))
-!                Qij_p = aimag(M(ii_p,jj_p))
-!                Vij_n = real( M(ii_p,jj_n))
-!                Qij_n = aimag(M(ii_p,jj_n))
-!                
-!                s = -1 ! sign if m is odd
-!                if (MOD(m_jj,2) .eq. 0) s = +1 ! sign if m is even
-
-!                if (jj_p .eq. jj_n) s=0 ! prevent counting m=0 modes twice
-
-!                print *, ii, jj, ' --------- ', '(',rlm(1,ii),',',m_ii,',',lm(2,ii_n),')', ', (',rlm(1,jj),',', m_jj,',',lm(2,jj_n),')', s
-!                
-!                Mrr(ii,jj) = Mrr(ii,jj) + Vij_p + s*Vij_n
-!                Mri(ii,jj) = Mri(ii,jj) - Qij_p + s*Qij_n
-!                Mir(ii,jj) = Mir(ii,jj) + Qij_p + s*Qij_n
-!                Mii(ii,jj) = Mii(ii,jj) + Vij_p - s*Vij_n
-!                
-!            end do
-!        end do
-
-    end
-
-    function dndt_to_drndt(dndt) result (drndt)
-        
-        ! *** Convert dndt_ij (full matrix) to drndt_ij (reduced matrix) such that: d/dt (rnlm)_i = drndt_ij (rnlm)_j
-
-        ! NOTICE: x-y rotation will make rnlm_j complex valued, in which case drndt_ij does not work as intended (i.e. the full problem involving dndt_ij and nlm_j must be solved).
-
-        implicit none
-
-        complex(kind=dp), intent(in) :: dndt(nlm_len,nlm_len)
-        real(kind=dp)                :: drndt(rnlm_len,rnlm_len)
-        integer                      :: kk
-
-        drndt = 0.0d0
-
-        do ii = 1, rnlm_len
-            do jj = 1, nlm_len
-                
-                kk = I_full(jj)
-                
-                if (lm(2,jj) >= 0) then ! m >= 0
-                    drndt(ii,kk) = drndt(ii,kk) + real(dndt(I_all(ii), jj))
-                else ! m < 0
-                    if (MOD(lm(2,jj),2) .eq. 0) then ! m even
-                        drndt(ii,kk) = drndt(ii,kk) + real(dndt(I_all(ii), jj))
-                    else ! m odd
-                        drndt(ii,kk) = drndt(ii,kk) - real(dndt(I_all(ii), jj))
-                    end if
-                end if
-                
-            end do
-        end do
-    end
+!    end
 
     !---------------------------------
     ! Convert between reduced and full forms

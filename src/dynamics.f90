@@ -50,19 +50,19 @@ contains
     ! FABRIC DYNAMICS
     !---------------------------------
 
-    function dndt_ij_LATROT(eps,omg, tau,Aprime,Ecc,Eca, beta)  
+    function M_LROT(eps,omg, tau,Aprime,Ecc,Eca, beta)  
 
         !------------------
         ! Lattice rotation
         !------------------
 
-        ! Returns matrix (dndt)_ij such that d/dt (nlm)_i = (dndt)_ij (nlm)_j
+        ! Returns matrix M such that d/dt (nlm)_i = M_ij (nlm)_j
 
         implicit none
 
         real(kind=dp), intent(in) :: eps(3,3), omg(3,3), tau(3,3) ! strain-rate (eps), spin (omg), dev. stress (tau)
         real(kind=dp), intent(in) :: Aprime, Ecc, Eca, beta
-        complex(kind=dp)          :: dndt_ij_LATROT(nlm_len,nlm_len), qe(-2:2), qt(-2:2), qo(-1:1)
+        complex(kind=dp)          :: M_LROT(nlm_len,nlm_len), qe(-2:2), qt(-2:2), qo(-1:1)
         integer, parameter        :: SHI_LATROT = 6 ! Scope of harmonic interactions (in wave space) for LATROT
         complex(kind=dp), dimension(SHI_LATROT) :: g0,     gz,     gn,     gp
         complex(kind=dp), dimension(SHI_LATROT) :: g0_rot, gz_rot, gn_rot, gp_rot
@@ -111,31 +111,31 @@ contains
         end if 
 
         do ii = 1, nlm_len
-            dndt_ij_LATROT(ii,1:nlm_len) = -1*( matmul(GC(ii,1:nlm_len,1:SHI_LATROT),g0) + matmul(GCm(ii,1:nlm_len,1:SHI_LATROT),gz) + matmul(GC_m1(ii,1:nlm_len,1:SHI_LATROT),gn) + matmul(GC_p1(ii,1:nlm_len,1:SHI_LATROT),gp) )    
+            M_LROT(ii,1:nlm_len) = -1*( matmul(GC(ii,1:nlm_len,1:SHI_LATROT),g0) + matmul(GCm(ii,1:nlm_len,1:SHI_LATROT),gz) + matmul(GC_m1(ii,1:nlm_len,1:SHI_LATROT),gn) + matmul(GC_p1(ii,1:nlm_len,1:SHI_LATROT),gp) )    
         end do
     end
 
-    function dndt_ij_DDRX(nlm, tau)
+    function M_DDRX(nlm, tau)
 
         !-----------------------------------------------
         ! Discontinuous dynamic recrystallization (DDRX)
         !----------------------------------------------- 
         
         ! Nucleation and migration recrystalization modeled as a decay process (Placidi et al., 2010).
-        ! Returns matrix (dndt)_ij such that d/dt (nlm)_i = (dndt)_ij (nlm)_j
+        ! Returns matrix M such that d/dt (nlm)_i = M_ij (nlm)_j
         ! NOTICE: This is Gamma/Gamma_0. The caller must multiply by an appropriate DDRX rate factor, Gamma_0(T,tau,eps,...).
         
         implicit none
 
         complex(kind=dp), intent(in) :: nlm(nlm_len)
         real(kind=dp), intent(in)    :: tau(3,3) ! Deviatoric stress tensor
-        complex(kind=dp)             :: dndt_ij_DDRX(nlm_len,nlm_len)
+        complex(kind=dp)             :: M_DDRX(nlm_len,nlm_len)
         real(kind=dp)                :: Davg
         real(kind=dp)                :: tausq(3,3), trtausq ! tau.tau, tau:tau
         real(kind=dp)                :: a4v(6,6), a2v(6), tauv(6), a4tauv(6)
 
         ! Get linear source term
-        dndt_ij_DDRX = dndt_ij_DDRX_src(tau)
+        M_DDRX = M_DDRX_src(tau)
 
         ! Calculate nonlinear sink term, <D>
         tausq = matmul(tau,tau) ! = tau.tau
@@ -147,13 +147,13 @@ contains
         Davg = Davg/trtausq ! normalize by tau:tau
         
         ! Add source and sink terms
-        ! I.e. add <D> to all diagonal entries such that dndt_ij := Gamma_ij/Gamma0 = (D_ij - <D>*I_ij)/(tau:tau) (where I is the identity)
+        ! I.e. add <D> to all diagonal entries such that M_ij := Gamma_ij/Gamma0 = (D_ij - <D>*I_ij)/(tau:tau) (where I is the identity)
         do ii = 1, nlm_len    
-            dndt_ij_DDRX(ii,ii) = dndt_ij_DDRX(ii,ii) - Davg 
+            M_DDRX(ii,ii) = M_DDRX(ii,ii) - Davg 
         end do
     end
 
-    function dndt_ij_DDRX_src(tau)  
+    function M_DDRX_src(tau)  
 
         !------------------
         ! DDRX source term
@@ -162,7 +162,7 @@ contains
         implicit none
 
         real(kind=dp), intent(in) :: tau(3,3) ! dev. stress tensor
-        complex(kind=dp)          :: dndt_ij_DDRX_src(nlm_len,nlm_len), qt(-2:2)
+        complex(kind=dp)          :: M_DDRX_src(nlm_len,nlm_len), qt(-2:2)
         integer, parameter        :: SHI_DDRX = 1+5+9 ! Scope of harmonic interactions (in wave space) for DDRX
         real(kind=dp)             :: k
         complex(kind=dp)          :: g(SHI_DDRX)
@@ -175,9 +175,9 @@ contains
 
         ! D
         g = k*g ! common prefactor
-        g = g/doubleinner22(tau,tau) ! normalize (can be done already here since it is a constant prefactor for dndt_ij_DDRX_src)
+        g = g/doubleinner22(tau,tau) ! normalize (can be done already here since it is a constant prefactor for M_DDRX_src)
         do ii = 1, nlm_len    
-            dndt_ij_DDRX_src(ii,1:nlm_len) = matmul(GC(ii,:nlm_len,1:SHI_DDRX), g) ! len(g)=SHI_DDRX
+            M_DDRX_src(ii,1:nlm_len) = matmul(GC(ii,:nlm_len,1:SHI_DDRX), g) ! len(g)=SHI_DDRX
         end do
     end
     
@@ -204,38 +204,38 @@ contains
         Gamma0 = A * I2 * exp(-Q/(gasconst*T))
     end
 
-    function dndt_ij_CDRX()
+    function M_CDRX()
 
         !--------------------------------------------
         ! Continuous dynamic recrystalization (CDRX)
         !--------------------------------------------
         
         ! Rotation recrystalization (polygonization) as a Laplacian diffusion process (Godert, 2003).
-        ! Returns matrix (dndt)_ij such that d/dt (nlm)_i = (dndt)_ij (nlm)_j
+        ! Returns matrix M such that d/dt (nlm)_i = M_ij (nlm)_j
         ! NOTICE: This gives the unscaled effect of CDRX. The caller must multiply by an appropriate CDRX rate factor (scale) that should depend on temperature, stress, etc.
 
         implicit none
-        real(kind=dp) :: dndt_ij_CDRX(nlm_len,nlm_len)
+        real(kind=dp) :: M_CDRX(nlm_len,nlm_len)
 
-        dndt_ij_CDRX = 0.0
+        M_CDRX = 0.0
         do ii = 1, nlm_len 
-            dndt_ij_CDRX(ii,ii) = Ldiag(ii) ! Laplacian
+            M_CDRX(ii,ii) = Ldiag(ii) ! Laplacian
         end do  
     end
 
-    function dndt_ij_REG(eps) 
+    function M_REG(eps) 
 
         !----------------
         ! Regularization 
         !----------------
         
-        ! Returns matrix (dndt)_ij such that d/dt (nlm)_i = (dndt)_ij (nlm)_j
+        ! Returns matrix M such that d/dt (nlm)_i = M_ij (nlm)_j
         ! NOTICE: Calibrated for 4 <= L <= 8 and L=20. For different L, the caller must specify an appropriate scaling.
         ! Calibration is provided by the script in tests/calibrate-regularization.
         
         implicit none
         real(kind=dp), intent(in) :: eps(3,3)
-        real(kind=dp)             :: dndt_ij_REG(nlm_len,nlm_len)
+        real(kind=dp)             :: M_REG(nlm_len,nlm_len)
         real(kind=dp)             :: nu, expo, scalefac
         
         if (Lcap == 4) then
@@ -278,9 +278,9 @@ contains
             scalefac = -nu * norm2(reshape(eps,[size(eps)])) 
         end if
         
-        dndt_ij_REG = 0.0
+        M_REG = 0.0
         do ii = 1, nlm_len 
-            dndt_ij_REG(ii,ii) = scalefac * abs( Ldiag(ii)/(Lcap*(Lcap+1)) )**expo 
+            M_REG(ii,ii) = scalefac * abs( Ldiag(ii)/(Lcap*(Lcap+1)) )**expo 
         end do
     end
 

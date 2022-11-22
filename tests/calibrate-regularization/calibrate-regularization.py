@@ -116,11 +116,11 @@ for L in L_list:
     nlm[0,:] = 1/np.sqrt(4*np.pi) # Init with isotropy
     nlm0 = nlm[:,0].copy()
     
-    M = sf.dndt_LATROT(nlm0, D, W) # strain-rate assumed constant for calibration experiments
+    M = sf.M_LROT(nlm0, D, W) # strain-rate assumed constant for calibration experiments
     if 0 and TEST_GIRDLE: # test specfab implemention of solution.
-        print("*** USING SPECFAB'S dndt_REG() (verifying fortran implementation)")
+        print("*** USING SPECFAB'S M_REG() (verifying fortran implementation)")
         nu0 = 1
-        R = sf.dndt_REG(nlm0, D) 
+        R = sf.M_REG(nlm0, D) 
     else:
         L_ = sf.Lmat(nlm0)/(L*(L+1)) # normalized laplacian matrix
         R = -LA.norm(D) * np.power(np.abs(L_), expo)

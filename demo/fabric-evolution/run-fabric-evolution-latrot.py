@@ -98,11 +98,11 @@ for tt in np.arange(1,Nt):
 
     nlm_prev = nlm[tt-1,:]
 
-    dndt_LATROT = sf.dndt_LATROT(nlm_prev, eps,omg) # Here we consider constant large-scale velocity gradients, **but if for any practical time-varying scenario dndt_ij should be calculated inside the loop below!**
-    dndt_REG    = sf.dndt_REG(nlm_prev, eps)
-    dndt        = dndt_LATROT + dndt_REG
+    M_LROT = sf.M_LROT(nlm_prev, eps,omg) # Here we consider constant large-scale velocity gradients, **but if for any practical time-varying scenario M_ij should be calculated inside the loop below!**
+    M_REG  = sf.M_REG(nlm_prev, eps)
+    M      = M_LROT + M_REG
 
-    nlm[tt,:] = nlm_prev + dt*np.matmul(dndt, nlm_prev)
+    nlm[tt,:] = nlm_prev + dt*np.matmul(M, nlm_prev)
 
 #----------------------
 # Aux state vars

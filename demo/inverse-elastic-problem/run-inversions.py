@@ -1,7 +1,8 @@
 # Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2022
 
 """
-Main script for producing the plots and tables published in Rathmann et al. (2022)
+Main script for producing the plots and tables published in Rathmann et al. (2022).
+Results may vary slightly depending on numpy and scipy versions.
 """
 
 import copy, sys, code # code.interact(local=locals())
@@ -58,7 +59,7 @@ beta = [1,1,1]
 
 # Lagrange multipliers for imposing inequality constraints a_1>0 and \tilde{a}_1>0
 eta = {\
-    '003': [0, 1.5e3], \
+    '003': [0, 1.4e3], \
     '007': [0, 2.5e3], \
     '010': [0, 0.5e3], \
 }

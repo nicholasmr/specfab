@@ -167,14 +167,14 @@ with Bar('dt=%.3fyr, Nt=%i :: L=%i (nlm_len=%i) ::'%(dt/year2sec,Nt,L,nlm_len), 
         ### Fabric evolution
         
         if np.abs(strain[tt]) <= np.abs(DDRX_strainthres):
-            dndt = sf.dndt_LATROT(c, eps, omg) 
+            M = sf.M_LROT(c, eps, omg) 
         else:
-            dndt = Gamma0 * sf.dndt_DDRX(c, tau0) 
+            M = Gamma0 * sf.M_DDRX(c, tau0) 
             
         nu0, expo = 10, 2
-        dndt += dndt_REG_custom(nu0, expo, eps, sf) # from header.py
+        M += M_REG_custom(nu0, expo, eps, sf) # from header.py
         
-        nlm[tt,:] = c + dt*np.matmul(dndt, c)
+        nlm[tt,:] = c + dt*np.matmul(M, c)
         
         bar.next()
 

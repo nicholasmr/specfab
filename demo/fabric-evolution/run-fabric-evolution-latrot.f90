@@ -19,7 +19,7 @@ program demo
     character(len=5) :: arg_exp ! experiment type (see below)
 
     ! Fabric state and evolution
-    complex(kind=dp), allocatable :: nlm(:), dndt(:,:), dndt_ROT(:,:), dndt_REG(:,:) ! Series expansion coefs and evolution matrix
+    complex(kind=dp), allocatable :: nlm(:), M(:,:) ! Series expansion coefs and evolution matrix
     real(kind=dp)                 :: ugrad(3,3), eps(3,3), omg(3,3) ! Large-scale deformation
 
     ! For dumping state to netCDF
@@ -98,10 +98,7 @@ program demo
     allocate(nlm(nlm_len))
     nlm = [(0,ii=1,nlm_len)] ! Expansion coefs "n_l^m" are saved in the 1D array "nlm". Corresponding (l,m) values for the i'th coef (i.e. nlm(i)) are (l,m) = (lm(1,i),lm(2,i))
     allocate(nlm_save(nlm_len,Nt))
-    allocate(dndt(nlm_len,nlm_len))
-    allocate(dndt_ROT(nlm_len,nlm_len))
-    allocate(dndt_REG(nlm_len,nlm_len))    
-
+    allocate(M(nlm_len,nlm_len))
     
     select case (arg_exp)
         case ('rr_xz','rr_xy','rr_yz')
@@ -121,14 +118,12 @@ program demo
     !-------------------------------------------------------------------
 
     call savestate(nlm, 1) ! Save initial state    
-    dndt_ROT = dndt_ij_LATROT(eps,omg, 0*eps,0d0,0d0,0d0, 1d0) ! Assume constant strain-rate and spin with Taylor style plastic spin for lattice rotation (beta=1).
-    dndt_REG = dndt_ij_REG(eps) ! Regularization
-!    dndt_REG = 5 * dndt_ij_CDRX() ! Rotation recrystalization
+    M = M_LROT(eps,omg, 0*eps,0d0,0d0,0d0, 1d0) ! Assume constant strain-rate and spin with Taylor style plastic spin for lattice rotation (beta=1).
+    M = M + M_REG(eps) ! Regularization
             
     do tt = 2, Nt
 !        write(*,"(A9,I3)") '*** Step ', tt
-        dndt = dndt_ROT + dndt_REG 
-        nlm = nlm + dt * matmul(dndt, nlm) ! Spectral coefficients evolve by a linear transformation
+        nlm = nlm + dt * matmul(M, nlm) ! Spectral coefficients evolve by a linear transformation
         call savestate(nlm, tt)
     end do
     

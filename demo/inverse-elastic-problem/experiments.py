@@ -13,6 +13,7 @@ from scipy.optimize import minimize
 
 from Cij import * # elastic constants
 from inverseproblem import get_vjmap, f_J
+sys.path.insert(0, '..')
 from specfabpy import specfabpy as sf 
 
 from plottools import cart2sph
@@ -77,7 +78,7 @@ class Lutz_etal_2022:
         
         def J_phi(deltaphi, *args):
             theta,phi, nlm_obs, g,rho,alpha,beta = args
-            (vP,vS1,vS2) = get_vjmap(sf.rotate_nlm4(nlm_obs, 0,deltaphi), alpha, g,rho, theta, phi)
+            (vP,vS1,vS2) = get_vjmap(sf.rotate_nlm(nlm_obs, 0,deltaphi), alpha, g,rho, theta, phi)
             return f_J((vP-vP_obs, vS1-vS1_obs, vS2-vS2_obs), beta, len(phi)) 
         
         (nlm_obs, qlat,qlon) = self.get_nlm_raw(exprnum, weighted=weighted, deltaphi=0) # unrotated ODF 

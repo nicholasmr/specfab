@@ -42,10 +42,10 @@ c_purple = '#6a51a3'
 c_brown  = '#b15928'
 c_gray   = 'gray'
 
-def dndt_REG_custom(nu, expo, eps, sfobj):
+def M_REG_custom(nu, expo, eps, sfobj):
     nlm_len = int( (sfobj.Lcap+1)*(sfobj.Lcap+2)/2 )
     nlm_dummy = np.zeros((nlm_len), dtype=np.complex64)
-    return -nu * np.linalg.norm(eps) * np.power(np.abs(sfobj.dndt_REG(nlm_dummy, eps)), expo)
+    return -nu * np.linalg.norm(eps) * np.power(np.abs(sfobj.M_REG(nlm_dummy, eps)), expo)
 
 def discretize_ODF(nlm, lm, latres=60):
 

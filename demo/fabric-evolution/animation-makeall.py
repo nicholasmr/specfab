@@ -58,9 +58,9 @@ for ii, Mtype in enumerate(Mtypes):
         ### Euler integration
         for tt in np.arange(1,Nt):
             nlm_prev = nlm[ii,jj,tt-1,:]
-            if Mtype == 'LROT': M = sf.dndt_LATROT(nlm_prev, D,W) + sf.dndt_REG(nlm_prev, D)
-            if Mtype == 'DDRX': M = Gamma0 * sf.dndt_DDRX(nlm_prev, S)
-            if Mtype == 'CDRX': M = Lam*sf.dndt_CDRX(nlm_prev)
+            if Mtype == 'LROT': M = sf.M_LROT(nlm_prev, D,W) + sf.M_REG(nlm_prev, D)
+            if Mtype == 'DDRX': M = Gamma0 * sf.M_DDRX(nlm_prev, S)
+            if Mtype == 'CDRX': M = Lam*sf.M_CDRX(nlm_prev)
             nlm[ii,jj,tt,:] = nlm_prev + dt*np.matmul(M, nlm_prev)
         
 ### Plot

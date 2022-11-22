@@ -19,7 +19,7 @@ program demo
 
     ! Fabric state and evolution
     integer, parameter            :: Lcap = 4 ! Expansion series truncation
-    complex(kind=dp), allocatable :: nlm(:), nlmiso(:), dndt(:,:) ! Series expansion coefs and evolution matrix
+    complex(kind=dp), allocatable :: nlm(:), nlmiso(:), M(:,:) ! Series expansion coefs and evolution matrix
     real(kind=dp)                 :: a2(3,3), a4(3,3,3,3), da2dt(3,3), da4dt(3,3,3,3)
     real(kind=dp)                 :: ugrad(3,3), tau(3,3) ! Large-scale deformation tensors
 
@@ -92,7 +92,7 @@ program demo
     call initspecfab(Lcap) ! nlm_len is now defined (number of expansion coeffcients, i.e. #DOFs)
 
     allocate(nlm_save(nlm_len,Nt))
-    allocate(dndt(nlm_len,nlm_len))
+    allocate(M(nlm_len,nlm_len))
     
     allocate(nlm(nlm_len))
     allocate(nlmiso(nlm_len))
@@ -134,8 +134,8 @@ program demo
         !print *, a4_to_nlm(f_a4(nlm))
         
         ! Spectral expansion
-        dndt = Gam0 * dndt_ij_DDRX(nlm, tau) ! Tau is assumed constant, but since DRX rate depends on the state itself (i.e. DRX is nonlinear), it must be called for each time step.
-        nlm_save(:,tt) = nlm + dt * matmul(dndt, nlm) ! Spectral coefs evolve by a linear transformation
+        M = Gam0 * M_DDRX(nlm, tau) ! Tau is assumed constant, but since DDRX rate depends on the state itself (i.e. DDRX is nonlinear), it must be called for each time step.
+        nlm_save(:,tt) = nlm + dt * matmul(M, nlm) ! Spectral coefs evolve by a linear transformation
         a2_true_save(:,:,tt) = f_a2(nlm)
 
         ! Tensorial expansion

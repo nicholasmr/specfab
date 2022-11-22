@@ -180,7 +180,7 @@ if 0:
     nlm[0] = 1/np.sqrt(4*np.pi)
     alpha, omega = 1, 2*np.pi * 10 # Reuss-Voigt weight, wave ang. freq.
     theta, phi = 0,0 # propagation direction (doesn't matter, considering an isotropic fabric)
-    vj_flat = sf.elastic_phase_velocities(nlm, alpha, lam,mu,Elam,Emu,Egam, omega, rhoi, theta,phi)
+    vj_flat = sf.Vi_elastic(nlm, alpha, lam,mu,Elam,Emu,Egam, omega, rhoi, theta,phi)
     vP,vS1,vS2  = vj_flat[2,0], vj_flat[0,0], vj_flat[1,0]
 
     # Compare...
