@@ -24,6 +24,12 @@ warnings.filterwarnings("ignore")
 
 # plot colors (colorbrewer)
 colorax = c_dred
+colorbg = "#f7f6ee"
+
+Nc = 120 # Total number of integration steps taken
+Nt0, Nt1 = Nc, int(Nc*0.5)
+Nt = Nt0 + Nt1
+Nts = 10 # still frames
 
 class SyntheticFabric():
     
@@ -58,7 +64,6 @@ class SyntheticFabric():
             STRESSAX = 2
             STRESSAXPERP = 0
 
-        Nc = 120 # Total number of integration steps taken
         epszz = -0.95 # Target: 5% of initial parcel height
         D = np.diag([0.5,0.5,-1]); Dzz = D[2,2];
         te = 1/Dzz # characteristic time, t_e
@@ -66,10 +71,7 @@ class SyntheticFabric():
         dt = t_epszz/Nc # time step size for thresshold strain epszz in "Nc" time steps 
         #tsteps = np.arange(Nc+1) # list of steps
         #epszz_t = np.exp(tsteps*dt/te)-1 # list of strains
-    
-        Nt0, Nt1 = Nc, int(Nc*0.5)
-        Nt = Nt0 + Nt1
-        
+
         ### Construct strain-rate and spin tensor histories
         
         D = np.zeros((Nt+1,3,3)) # strain-rate
@@ -88,16 +90,18 @@ class SyntheticFabric():
         for ii in np.arange(Nt0+1):
             t = ii*dt
             PS = PureShear(-te, 0, ax=STRESSDIRECTION)
-            strainvec[Nt0-ii] = PS.strain(t)[STRESSAX,STRESSAX]
-            xyz0[Nt0-ii,:] = np.matmul(PS.F(t), xyz0_init)
-            W[Nt0-ii,:,:], D[Nt0-ii,:,:] = PS.W(), PS.D()            
+            ii_ = ii # Nt0-ii
+            strainvec[ii_] = PS.strain(t)[STRESSAX,STRESSAX]
+            xyz0[ii_,:] = np.matmul(PS.F(t), xyz0_init)
+            W[ii_,:,:], D[ii_,:,:] = PS.W(), PS.D()            
 
         for ii in np.arange(Nt1+1):
             t = ii*dt
             PS = PureShear(+te, 0, ax=STRESSDIRECTION)
-            strainvec[Nt0+ii] = PS.strain(t)[STRESSAX,STRESSAX]
-            xyz0[Nt0+ii,:] = np.matmul(PS.F(t), xyz0_init)
-            W[Nt0+ii,:,:], D[Nt0+ii,:,:] = PS.W(), PS.D()            
+            ii_ = ii+Nt0
+            strainvec[ii_] = PS.strain(t)[STRESSAX,STRESSAX]
+            xyz0[ii_,:] = np.matmul(PS.F(t), xyz0_init)
+            W[ii_,:,:], D[ii_,:,:] = PS.W(), PS.D()            
 
         #print(Nt, Nt1,Nt0, strainvec)
 
@@ -114,7 +118,8 @@ class SyntheticFabric():
         nlm_prev = nlm_list[Nt,:].copy()
         nu0 = 1
         for ii in np.arange(Nt0+1):
-            tt = Nt0-ii
+#            tt = Nt0-ii
+            tt = ii
             D_, W_ = D[tt,:,:], W[tt,:,:]
             dndt = sf.dndt_LATROT(nlm_prev, D_,W_) # Lattice rotation
             dndt += self.dndt_REG(D_) # Regularization
@@ -137,15 +142,19 @@ class SyntheticFabric():
         
         ### Plot
         
-        steps = [0, int(Nt/2),Nt]
-        steps = [0,Nt0,Nt]
+#        steps = [0, int(Nt/2),Nt]
+#        steps = [0,Nt0,Nt]
         m = 1
         steps = np.hstack((np.arange(0,Nt0,m),np.arange(Nt0,Nt+1,m))) 
         
         for ii in steps:
             
+#            if ii <= Nt0: continue;
+#            if ii <= Nt-2*Nts: continue;
+            continue
+            
             scale = 0.4
-            fig = plt.figure(figsize=(13*scale,10*scale))
+            fig = plt.figure(figsize=(13*scale,10*scale), facecolor=colorbg)
             
             gs_master = gridspec.GridSpec(1, 2, width_ratios=[0.8,1])
             gs_master.update(top=0.91, bottom=0.13, left=0.095, right=1-0.05, hspace=-0.05, wspace=-0.075)
@@ -176,10 +185,14 @@ class SyntheticFabric():
  
             lw = 1.5
             axE.plot(strainvec[[ii,ii]], ylims, '-', c='0.5', lw=lw)
-            axE.plot(strainvec, Eij[:,STRESSAXPERP,STRESSAX], '-k', lw=lw, label=r'$E_{xz}$')
-            axE.plot(strainvec, Eij[:,1,STRESSAXPERP], '-.k', lw=lw, label=r'$E_{yz}$')
-            axE.plot(strainvec, Eij[:,STRESSAX,STRESSAX], '--k',  lw=lw, label=r'$E_{zz}$' if STRESSDIRECTION == 'z' else r'$E_{xx}$')
-            axE.plot(strainvec, Eij[:,STRESSAXPERP,STRESSAXPERP], ':k',  lw=lw, label=r'$E_{xx}$' if STRESSDIRECTION == 'z' else r'$E_{zz}$')
+            I = np.concatenate((np.arange(Nt0-1,-1,-1), np.arange(Nt0,Nt+1,1)))
+#            print(I)
+#            print(strainvec[I])
+#            print(len(I),Nt+1)
+            axE.plot(strainvec[I], Eij[I,STRESSAXPERP,STRESSAX], '-k', lw=lw, label=r'$E_{xz}$')
+            axE.plot(strainvec[I], Eij[I,1,STRESSAXPERP], '-.k', lw=lw, label=r'$E_{yz}$')
+            axE.plot(strainvec[I], Eij[I,STRESSAX,STRESSAX], '--k',  lw=lw, label=r'$E_{zz}$' if STRESSDIRECTION == 'z' else r'$E_{xx}$')
+            axE.plot(strainvec[I], Eij[I,STRESSAXPERP,STRESSAXPERP], ':k',  lw=lw, label=r'$E_{xx}$' if STRESSDIRECTION == 'z' else r'$E_{zz}$')
             axE.text(0.1, 1.50, '{\\bf Softer than}\n{\\bf isotropy}', fontsize=FS-2.5, color='#08519c', ha='center', ma='center')
             axE.text(0.1, 0.25, '{\\bf Harder than}\n{\\bf isotropy}', fontsize=FS-2.5, color='#a50f15', ha='center', ma='center')
 
@@ -195,53 +208,50 @@ class SyntheticFabric():
             
             axE.set_xlabel(r'$\epsilon_{zz}$' if STRESSDIRECTION == 'z' else r'$\epsilon_{xx}$')
             axE.set_ylabel('$E_{ij}$')
-            axE.set_title('Directional enhancement factors', pad=8, fontsize=FS)
+            axE.set_title('Enhancement factors', pad=8, fontsize=FS)
             #
             legkwargs = {'frameon':True, 'fancybox':False, 'edgecolor':'k', 'handlelength':1.9, 'labelspacing':0.2}
-            hleg = axE.legend(loc=1, **legkwargs)
+            hleg = axE.legend(loc=1, fontsize=FS-0.5, **legkwargs)
             hleg.get_frame().set_linewidth(0.7);
             
             ###
             
             x0, y0, dy = -0.125, -0.38, 0.09
-            axE.text(1.47, 1.05, r'{\bf Lattice rotation demo}', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
-            axE.text(x0, y0, r'{\bf References:}', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
-            axE.text(x0, y0-1*dy, r'Rathmann et al. (2021)', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
-            axE.text(x0, y0-2*dy, r'Rathmann and Lilien (2021)', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
+#            axE.text(1.47, 1.05, r'{\bf Lattice rotation demo}', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
+            axE.text(x0, y0, r'{\bf specfab}', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
+            axE.text(x0, y0-1*dy, r'github.com/nicholasmr/specfab', transform=axE.transAxes, fontsize=FS-2, horizontalalignment='left')
+#            axE.text(x0, y0-2*dy, r'Rathmann et al.', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
             
             x0, y0, dy = +1.875, -0.15, 0.08
-            axE.text(x0,y0+3*dy, r'Eigenvalues:', transform=axE.transAxes, fontsize=FS-1, ha='left')
+#            axE.text(x0,y0+3*dy, r'Eigenvalues:', transform=axE.transAxes, fontsize=FS-1, ha='left')
             axE.text(x0,y0+2*dy, r'$\lambda_1 = %.2f$'%(eigvals[ii,0]), transform=axE.transAxes, fontsize=FS-1, ha='left')
             axE.text(x0,y0+1*dy, r'$\lambda_2 = %.2f$'%(eigvals[ii,1]), transform=axE.transAxes, fontsize=FS-1, ha='left')
             axE.text(x0,y0+0*dy, r'$\lambda_3 = %.2f$'%(eigvals[ii,2]), transform=axE.transAxes, fontsize=FS-1, ha='left')
             
             plot_parcel(axParcel, xyz0[ii,:], 0,0,0, color='0.5', colorax=colorax, scale=0.60, plotaxlbls=True)
             plot_ODF(nlm_list[ii,:], self.lm, ax=axODF, rot0=rot0, cblabel='ODF')        
+            axParcel.set_facecolor(colorbg)
         
             mrk='.'
             ms=5
-            axODF.plot([0],[90],mrk, ms=ms, c=colorax, transform=geo)
-            axODF.plot([rot0-90],[0],mrk, ms=ms,  c=colorax, transform=geo)
-            axODF.plot([rot0],[0],mrk, ms=ms,  c=colorax, transform=geo)
-            axODF.text(rot0-80, 70, r'$\vu{z}$', c=colorax, horizontalalignment='left', transform=geo)
-            axODF.text(rot0-90+8, -5, r'$\vu{x}$', c=colorax, horizontalalignment='left', transform=geo)
-            axODF.text(rot0-15, -5, r'$\vu{y}$', c=colorax, horizontalalignment='left', transform=geo)
+#            axODF.plot([0],[90],mrk, ms=ms, c=colorax, transform=geo)
+#            axODF.plot([rot0-90],[0],mrk, ms=ms,  c=colorax, transform=geo)
+#            axODF.plot([rot0],[0],mrk, ms=ms,  c=colorax, transform=geo)
+            axODF.text(rot0-85, 82, r'$\vu{z}$', c=colorax, horizontalalignment='left', transform=geo)
+            axODF.text(rot0-90-8*1, -8, r'$\vu{x}$', c=colorax, horizontalalignment='left', transform=geo)
+            axODF.text(rot0-5*1, -5, r'$\vu{y}$', c=colorax, horizontalalignment='left', transform=geo)
             
             ###
 
-            print('Saving %i'%(ii))        
             if ii <= Nt0:
-                fout1 = 'frames/frame%04i.png'%(Nt0-ii)
-                fout2 = 'frames/frame%04i.png'%(Nt0+ii)
-                plt.savefig(fout1, dpi=300)
-                os.system('cp %s %s'%(fout1,fout2))
+                fout = 'frames/frame%04i.png'%(ii+Nts)
+                plt.savefig(fout, dpi=300)
 
             if ii > Nt0:
-                fout1 = 'frames/frame%04i.png'%(Nt0 +ii)
-                fout2 = 'frames/frame%04i.png'%(2*Nt - (ii-Nt0))
-                plt.savefig(fout1, dpi=300)
-                print('2*Nt=%i :: %i :: %i'%(2*Nt, Nt0 +ii, 2*Nt - (ii-Nt0)))
-                os.system('cp %s %s'%(fout1,fout2))
+                fout = 'frames/frame%04i.png'%(ii+Nts*3-1)
+                plt.savefig(fout, dpi=300)
+
+            print('Saving %i :: %s'%(ii,fout))    
 
             plt.close()
     
@@ -251,11 +261,19 @@ os.system('mkdir -p frames')
 synthfab = SyntheticFabric()
 synthfab.make_profile()    
 
-os.system('ffmpeg -y -f image2 -framerate 50 -stream_loop 1 -i frames/frame%04d.png -vcodec libx264 -crf 20  -pix_fmt yuv420p cube-crush.avi')
+k = Nt0+2*Nts
+for ii in np.concatenate((np.arange(0,Nts), k+np.arange(0,Nts))):
+    os.system('cp frames/frame%04d.png frames/frame%04d.png'%(Nts, ii))
+
+for ii in np.arange(0,Nts+1): os.system('cp frames/frame%04d.png frames/frame%04d.png'%(Nt0+Nts-1, Nt0+Nts+ii))
+for ii in np.arange(0,Nts+1): os.system('cp frames/frame%04d.png frames/frame%04d.png'%(Nt+3*Nts-1, Nt+3*Nts+ii))
+
+os.system('ffmpeg -y -f image2 -framerate 50 -stream_loop 0 -i frames/frame%04d.png -vcodec libx264 -crf 20  -pix_fmt yuv420p cube-crush.avi')
 
 # Make GIF
 if 1:
     os.system('ffmpeg -y -f image2 -framerate 50 -stream_loop 0 -i frames/frame%04d.png -vcodec libx264 -crf 20  -pix_fmt yuv420p cube-crush-for-gif.avi')
-    os.system('ffmpeg -i cube-crush-for-gif.avi -vf "fps=25,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 cube-crush.gif')
+    os.system('rm cube-crush.gif')
+    os.system('ffmpeg -i cube-crush-for-gif.avi -vf "fps=22,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 cube-crush.gif')
     os.system('rm cube-crush-for-gif.avi')    
        
