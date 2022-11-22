@@ -34,4 +34,4 @@ See also the [Wiki](https://github.com/nicholasmr/specfab/wiki)
 
 | **Q** | **A** |
 | :--- | :--- |
-| What $L$ are possible? | Any $4<=L<=20$. If higher $L$ are required: <br>1. `cd src/include && python3 make_gaunt_coefs.py L` (replacing `L`) <br>2. `make clean && make` |
+| What $L$ are possible? | Any $4\leq L\leq 20$. If higher $L$ are required: <br>1. `cd src/include && python3 make_gaunt_coefs.py L` (replacing `L`) <br>2. `make clean && make` |
