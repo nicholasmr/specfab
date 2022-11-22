@@ -27,9 +27,9 @@ colorax = c_dred
 colorbg = "#f7f6ee"
 
 Nc = 120 # Total number of integration steps taken
-Nt0, Nt1 = Nc, int(Nc*0.5)
+Nt0, Nt1 = Nc, int(Nc*0.8)
 Nt = Nt0 + Nt1
-Nts = 10 # still frames
+Nts = 15 # still frames
 
 class SyntheticFabric():
     
@@ -96,7 +96,7 @@ class SyntheticFabric():
             W[ii_,:,:], D[ii_,:,:] = PS.W(), PS.D()            
 
         for ii in np.arange(Nt1+1):
-            t = ii*dt
+            t = ii*(dt*0.65)
             PS = PureShear(+te, 0, ax=STRESSDIRECTION)
             ii_ = ii+Nt0
             strainvec[ii_] = PS.strain(t)[STRESSAX,STRESSAX]
@@ -151,7 +151,7 @@ class SyntheticFabric():
             
 #            if ii <= Nt0: continue;
 #            if ii <= Nt-2*Nts: continue;
-            continue
+#            continue
             
             scale = 0.4
             fig = plt.figure(figsize=(13*scale,10*scale), facecolor=colorbg)
@@ -208,7 +208,7 @@ class SyntheticFabric():
             
             axE.set_xlabel(r'$\epsilon_{zz}$' if STRESSDIRECTION == 'z' else r'$\epsilon_{xx}$')
             axE.set_ylabel('$E_{ij}$')
-            axE.set_title('Enhancement factors', pad=8, fontsize=FS)
+            axE.set_title('Enhancement factors', pad=8, fontsize=FS-0.5)
             #
             legkwargs = {'frameon':True, 'fancybox':False, 'edgecolor':'k', 'handlelength':1.9, 'labelspacing':0.2}
             hleg = axE.legend(loc=1, fontsize=FS-0.5, **legkwargs)
@@ -217,10 +217,10 @@ class SyntheticFabric():
             ###
             
             x0, y0, dy = -0.125, -0.38, 0.09
-#            axE.text(1.47, 1.05, r'{\bf Lattice rotation demo}', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
+#            axE.text(1.47, 1.05, r'{\bf Lattice rotation demo}', transform=axE.transAxes, fontsize=FS-1.5, horizontalalignment='left')
             axE.text(x0, y0, r'{\bf specfab}', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
-            axE.text(x0, y0-1*dy, r'github.com/nicholasmr/specfab', transform=axE.transAxes, fontsize=FS-2, horizontalalignment='left')
-#            axE.text(x0, y0-2*dy, r'Rathmann et al.', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
+            axE.text(x0, y0-1*dy, r'github.com/nicholasmr/specfab', transform=axE.transAxes, fontsize=FS-1.5, horizontalalignment='left')
+            axE.text(x0, y0-2.0*dy, r'Lattice rotation demo', transform=axE.transAxes, fontsize=FS-1.5, horizontalalignment='left')
             
             x0, y0, dy = +1.875, -0.15, 0.08
 #            axE.text(x0,y0+3*dy, r'Eigenvalues:', transform=axE.transAxes, fontsize=FS-1, ha='left')
