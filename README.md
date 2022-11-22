@@ -1,4 +1,4 @@
-## The model
+## specfab
 
 A spectral orientation fabric model for polycrystalline materials that:
 - Can model lattice (c-axis) rotation, discontinuous dynamic recrystallization, and rotation recrystallization.
