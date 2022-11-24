@@ -31,8 +31,8 @@ phi   = np.deg2rad(45 * 1)
 # Rotate nlm using Wigner's D matrix
 #----------------------
 
-nlm_wig = sf.rotate_nlm4(nlm_0, -theta, 0) # vert
-nlm_wig = sf.rotate_nlm4(nlm_wig, 0, phi) # horiz
+nlm_wig = sf.rotate_nlm(nlm_0, -theta, 0) # vert
+nlm_wig = sf.rotate_nlm(nlm_wig, 0, phi) # horiz
 a2_wig = sf.a2(nlm_wig)
 a4_wig = sf.a4(nlm_wig)
 

@@ -22,14 +22,14 @@ contains
     ! ELASTIC
     !---------------------------------
 
-    function Vi_elastic(nlm, alpha, lam,mu,Elam,Emu,Egam, omega,rho, theta_n,phi_n) result (vj)
+    function Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta_n,phi_n) result (vj)
     
         ! Elastic phase velocities (qP, qS1, qS2) given ODF in terms of nlm and propagation directions (theta_n,phi_n) 
     
         implicit none
         
         complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp), intent(in)    :: alpha, lam,mu,Elam,Emu,Egam, omega,rho
+        real(kind=dp), intent(in)    :: alpha, lam,mu,Elam,Emu,Egam, rho
         real(kind=dp), intent(in)    :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities (vj) along
 
         real(kind=dp)                :: vj(3,size(theta_n)) ! qS1, qS2, qP phase velocities
@@ -38,8 +38,11 @@ contains
         real(kind=dp)                :: Qn(3,3), ri(0:6) ! Qn = Qnorm
         complex(kind=dp)             :: a,b,denom,D, x1,x2,x3 ! vars for polynomial solver
         complex(kind=dp)             :: qj(3) ! z-comp of wavector, k=[0,0,q], for qS1, qS2, qP waves
+        real(kind=dp)                :: omega ! Wave angular velocity 
         
-        nlm4 = nlm(:(I_l6-1)) ! l=0,2,4 coef array
+        nlm4 = nlm(:(I_l6-1)) ! l=0,2,4 coefficients
+        
+        omega = 1.0d0 ! Eigenvalues of problem are rho*V^2 where V=omega/k, so the problem does not, in fact, depend on omega. It is included here anyway for readability (and because of the way the analytical solutions were solved for in Mathematica).
         
         do nn = 1,size(theta_n)
             nlm4_rot = rotate_nlm4(nlm4, -theta_n(nn), -phi_n(nn)) ! negative angles because we are are rotating the specified direction (back) into the vertical orientation

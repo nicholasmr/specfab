@@ -178,10 +178,10 @@ if 0:
     lm, nlm_len = sf.init(4) # L=4 suffices for this purpose
     nlm = np.zeros(nlm_len)
     nlm[0] = 1/np.sqrt(4*np.pi)
-    alpha, omega = 1, 2*np.pi * 10 # Reuss-Voigt weight, wave ang. freq.
+    alpha = 1 # Reuss-Voigt weight
     theta, phi = 0,0 # propagation direction (doesn't matter, considering an isotropic fabric)
-    vj_flat = sf.Vi_elastic(nlm, alpha, lam,mu,Elam,Emu,Egam, omega, rhoi, theta,phi)
-    vP,vS1,vS2  = vj_flat[2,0], vj_flat[0,0], vj_flat[1,0]
+    vi = sf.Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rhoi, theta,phi)
+    vP,vS1,vS2  = vi[2,0], vi[0,0], vi[1,0]
 
     # Compare...
     print(vS_est,vS_est, vS1,vS2)

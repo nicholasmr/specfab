@@ -7,7 +7,8 @@ module reducedform
     implicit none 
 
     integer, parameter, private :: dp = 8 ! Default precision
-    integer, private :: ii, jj, kk, ll, mm ! Loop indices
+!    integer, private :: ii, jj, kk, ll, mm ! Loop indices
+    integer, private :: jj, kk, ll, mm ! Loop indices (ii not used)
     integer, parameter, private :: Lcap__max = 30 ! Hard limit (should be the same value as in dynamics.f90)
     
     !----------
@@ -43,7 +44,7 @@ module reducedform
 !    integer, parameter :: rI_pos(rnlm_pos_lenmax) = [( (kk+rnlm_all_lenvec(ll), kk=-ll+1, 0, 1), ll=0, Lcap__max, 2)] ! rnlm(rI_pos(1:rnlm_pos_len)) = (n_2^1, n_2^2, n_4^1, n_4^2, n_4^3, n_4^4, ...)
 
     ! (l,m) list
-    integer, parameter, private :: lm(2,nlm_lenmax)   = reshape([( (ll,mm, mm=-ll,ll), ll=0,  Lcap__max,2)], [2,nlm_lenmax])  ! These are the (l,m) values corresponding to the coefficients in "nlm". (copied from specfab.f90)
+!    integer, parameter, private :: lm(2,nlm_lenmax)   = reshape([( (ll,mm, mm=-ll,ll), ll=0,  Lcap__max,2)], [2,nlm_lenmax])  ! These are the (l,m) values corresponding to the coefficients in "nlm". (copied from specfab.f90). Not used, so outcommented to avoid compiler warnings.
     integer, parameter          :: rlm(2,rnlm_lenmax) = reshape([( (ll,mm, mm=0,ll),   ll=0,  Lcap__max,2)], [2,rnlm_lenmax]) ! These are the (l,m) values corresponding to the coefficients in rnlm.
 
 contains      

@@ -59,7 +59,7 @@ class InverseProblem:
         # Cost function        
         def J_g(g, *args):
             vi_obs,nlm_obs,theta,phi, alpha,rho, beta,scalevec = args
-            (vP, vS1, vS2) = get_vjmap(nlm_obs, alpha, scalevec*g, rho, theta, phi)
+            (vP, vS1, vS2) = get_vi_map(nlm_obs, alpha, scalevec*g, rho, theta, phi)
             (vP_obs,vS1_obs,vS2_obs) = vi_obs # unpack
             return f_J((vP-vP_obs, vS1-vS1_obs, vS2-vS2_obs), beta, len(phi)) 
 
@@ -68,7 +68,7 @@ class InverseProblem:
         scalevec = np.array([scale0,scale0, 1,1,1]) # scale "p" during cost-function minimization to not encounter numerical accuracy errors (lam and mu are ~1e9, whereas Ei are ~ 1e0)        
         res = minimize(J_g, g0/scalevec, (vi_obs,nlm_obs,theta,phi, alpha, self.rho, beta, scalevec), method=self.method, options={'disp':self.verbose, 'gtol': self.gtol0})
         g = scalevec*res.x
-        vi_g = get_vjmap(nlm_obs, alpha, g, self.rho, theta, phi) # predicted velocities using best fit params
+        vi_g = get_vi_map(nlm_obs, alpha, g, self.rho, theta, phi) # predicted velocities using best fit params
         dvi_g = get_dvi(vi_g)
         return (g, vi_g, dvi_g)
 
@@ -84,7 +84,7 @@ class InverseProblem:
             vi_obs,theta,phi, alpha,g,rho, beta,eta, use_angular_anomalies = args    
             nlm = x_to_nlm(x[:-2])
             s1,s2 = x[-2],x[-1] # slack variables
-            vi = get_vjmap(nlm, alpha,g,rho, theta,phi)
+            vi = get_vi_map(nlm, alpha,g,rho, theta,phi)
             misfit_vector = get_dvi(vi) - get_dvi(vi_obs) if use_angular_anomalies else vi - vi_obs # dvi = delta vi = vi - <vi>
             J_V = f_J(misfit_vector, beta, len(phi))
                         
@@ -107,7 +107,7 @@ class InverseProblem:
         res = minimize(J_nlm, x0, (vi_obs,theta,phi, alpha,g,self.rho, beta,eta, use_angular_anomalies), \
                             method=self.method, options={'disp':self.verbose, 'gtol': self.gtol1,})
         nlm_infr = x_to_nlm(res.x[:-2]) # two last values are the slack variables
-        vi_infr = get_vjmap(nlm_infr, alpha, g, self.rho, theta, phi) # predicted velocities using best fit ODF
+        vi_infr = get_vi_map(nlm_infr, alpha, g, self.rho, theta, phi) # predicted velocities using best fit ODF
         dvi_infr = get_dvi(vi_infr)
         return (nlm_infr, vi_infr, dvi_infr)
 
@@ -118,13 +118,11 @@ Shared structure and routines
 
 lm_L4 = np.array([(0,0), (2,-2),(2,-1),(2,0),(2,1),(2,2), (4,-4),(4,-3),(4,-2),(4,-1),(4,0),(4,+1),(4,+2),(4,+3),(4,+4)]).T 
 
-def get_vjmap(nlm, alpha, g, rho, theta, phi, freq=10):
+def get_vi_map(nlm, alpha, g, rho, theta, phi):
+    # specfabpy wrapper
     (lam,mu,Elam,Emu,Egam) = g
-    omega = 2*np.pi * freq # 2*pi * freq, but freq does not matter for results!
-    vj_flat = sf.Vi_elastic(nlm, alpha, lam,mu,Elam,Emu,Egam, omega, rho, theta,phi)
-    vS1_true = vj_flat[0,:]
-    vS2_true = vj_flat[1,:]
-    vP_true  = vj_flat[2,:]
+    vi = sf.Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta,phi)
+    vS1_true, vS2_true, vP_true = vi[0,:], vi[1,:], vi[2,:]
     return np.array([vP_true, vS1_true, vS2_true])
 
 def get_dvi(vi):

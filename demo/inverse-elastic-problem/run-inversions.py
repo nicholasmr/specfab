@@ -1,7 +1,8 @@
 # Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2022
 
 """
-Main script for producing the plots and tables published in Rathmann et al. (2022).
+Main script for producing the plots and tables published in Rathmann et al. (2022), doi:10.1098/rspa.2022.0574  
+
 Results may vary slightly depending on numpy and scipy versions.
 """
 
@@ -237,7 +238,7 @@ for ii, exprnum in enumerate(EXPERIMENTS):
     axS2.errorbar(phideg, vS2_obs, yerr=vS2_obs_sig, **errbarkwargs)
 
     # Predicted velocities using observed ODF and g_B68
-    vi_pB68 = get_vjmap(nlm_obs, alpha, g_B68, rho, theta, phi) 
+    vi_pB68 = get_vi_map(nlm_obs, alpha, g_B68, rho, theta, phi) 
     axP.plot( phideg, vi_pB68[0], '--', c=c_pB68, label=r'Prediction given $\vb{g}_{\mathrm{B68}}$ and $\hat{\vb*{\psi}}_{\mathrm{obs}}$')
     axS1.plot(phideg, vi_pB68[1], '--', c=c_pB68)
     axS2.plot(phideg, vi_pB68[2], '--', c=c_pB68) 

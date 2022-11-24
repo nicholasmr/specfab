@@ -125,8 +125,8 @@ for ii, exprkey in enumerate(EXPERIMENTS):
     #--------------------
     
     nlm = expr['nlm']
-    vi_xy = get_vjmap(nlm, alpha,g_B68,rho, theta_xy,phi_xy) # forward modelled velocities
-    vi_xz = get_vjmap(nlm, alpha,g_B68,rho, theta_xz,phi_xz) # forward modelled velocities
+    vi_xy = get_vi_map(nlm, alpha,g_B68,rho, theta_xy,phi_xy) # forward modelled velocities
+    vi_xz = get_vi_map(nlm, alpha,g_B68,rho, theta_xz,phi_xz) # forward modelled velocities
 
     print('*** Inferring ODF given V and g...')
     observations_xy = (vi_xy,theta_xy,phi_xy)
@@ -228,8 +228,8 @@ for ii, exprkey in enumerate(EXPERIMENTS):
     axS2.plot(phideg, vS2_xz, c=cl_xz, **kwargs)
 
     # Predicted velocities using observed ODF and g_B68
-    vi_xy_est = get_vjmap(nlm_xy_est, alpha, g_B68, rho, theta_xy, phi_xy) 
-    vi_xz_est = get_vjmap(nlm_xz_est, alpha, g_B68, rho, theta_xz, phi_xz) 
+    vi_xy_est = get_vi_map(nlm_xy_est, alpha, g_B68, rho, theta_xy, phi_xy) 
+    vi_xz_est = get_vi_map(nlm_xz_est, alpha, g_B68, rho, theta_xz, phi_xz) 
     axP.plot( phideg, vi_xy_est[0], '--', c=c_xy, label=r'Inferred ODF, $x$--$y$ plane')
     axP.plot( phideg, vi_xz_est[0], '--', c=c_xz, label=r'Inferred ODF, $x$--$z$ plane')
     axS1.plot(phideg, vi_xy_est[1], '--', c=c_xy)

@@ -42,7 +42,7 @@ module specfabpy
         ! Elasticities 
         stress_of_strain__tranisotropic__sf => stress_of_strain__tranisotropic, &
         strain_of_stress__tranisotropic__sf => strain_of_stress__tranisotropic, &
-        Vi_elastic__sf => Vi_elastic, &
+        Vi_elastic_tranisotropic__sf => Vi_elastic_tranisotropic, &
         Qnorm__sf => Qnorm, &
         
         ! Fluid enhancement factors
@@ -444,15 +444,15 @@ contains
     !---------------------------------
     ! For a composite material consisting of transversely isotropic grains
     
-    function Vi_elastic(nlm, alpha, lam,mu,Elam,Emu,Egam, omega,rho, theta_n,phi_n) result(Vi)
+    function Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta_n,phi_n) result(Vi)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp), intent(in)    :: alpha, lam,mu,Elam,Emu,Egam, omega,rho
+        real(kind=dp), intent(in)    :: alpha, lam,mu,Elam,Emu,Egam, rho
         real(kind=dp), intent(in)    :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities (vj) along
         real(kind=dp)                :: Vi(3,size(theta_n)) ! qS1, qS2, qP phase velocities
 
-        Vi = Vi_elastic__sf(nlm, alpha, lam,mu,Elam,Emu,Egam, omega,rho, theta_n,phi_n) 
+        Vi = Vi_elastic_tranisotropic__sf(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta_n,phi_n) 
     end
   
     function Qnorm(nlm, alpha, lam,mu,Elam,Emu,Egam) result(Qn)
