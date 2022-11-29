@@ -71,14 +71,14 @@ for kk, ang in enumerate(angles):
 
     Eij = np.transpose(sf.Eeiej(nlm, e1,e2,e3, Ecc, Eca, alpha, nprime))
     tau, vw = f_tau(1, ang)
-    eps_G = sf.eps_of_tau__isotropic(         tau, Aglen,nglen)
-    eps_R = sf.eps_of_tau__orthotropic(       tau, Aglen,nglen, e1,e2,e3, Eij)
-    eps_P = sf.eps_of_tau__orthotropic_Pettit(tau, Aglen,nglen, e1,e2,e3, Eij)
-    eps_M = sf.eps_of_tau__orthotropic_Martin(tau, Aglen,nglen, e1,e2,e3, Eij)
+    eps_G = sf.rheo_fwd_isotropic(         tau, Aglen,nglen)
+    eps_R = sf.rheo_fwd_orthotropic(       tau, Aglen,nglen, e1,e2,e3, Eij)
+    eps_P = sf.rheo_fwd_orthotropic_Pettit(tau, Aglen,nglen, e1,e2,e3, Eij)
+    eps_M = sf.rheo_fwd_orthotropic_Martin(tau, Aglen,nglen, e1,e2,e3, Eij)
     
-    eps_Galt = sf.eps_of_tau__isotropic(         tau, Aglen,nglenalt)
-    eps_Ralt = sf.eps_of_tau__orthotropic(       tau, Aglen,nglenalt, e1,e2,e3, Eij)
-    eps_Malt = sf.eps_of_tau__orthotropic_Martin(tau, Aglen,nglenalt, e1,e2,e3, Eij)
+    eps_Galt = sf.rheo_fwd_isotropic(         tau, Aglen,nglenalt)
+    eps_Ralt = sf.rheo_fwd_orthotropic(       tau, Aglen,nglenalt, e1,e2,e3, Eij)
+    eps_Malt = sf.rheo_fwd_orthotropic_Martin(tau, Aglen,nglenalt, e1,e2,e3, Eij)
         
     eps_G_vw = np.tensordot(eps_G, vw, axes=2)
     Eang[kk,0] = np.tensordot(eps_R, vw, axes=2)/eps_G_vw

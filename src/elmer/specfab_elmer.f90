@@ -34,7 +34,7 @@ include "elmer/include/IBOF.f90"
     
 function Cmat_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(C)
 
-    ! Vectorized inverse orthotropic flow law "tau_of_eps__orthotropic()".
+    ! Vectorized inverse orthotropic flow law "tau_of_eps_orthotropic()".
     ! Returns 9x9 matrix "C" such that vec(tau) = matmul(C, vec(eps)), where vec(tau) and vec(eps) are 9x1 column vectors.
 
     implicit none
@@ -46,9 +46,9 @@ function Cmat_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(C)
     real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
     real(kind=dp)                 :: viscosity
 
-    call rheo_params__orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-    call rheo_structs__orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
-    call rheo_auxinvars__orthotropic(J1,J2,J3, J23,J31,J12)
+    call rheo_params_orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    call rheo_structs_orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
+    call rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
 
     viscosity = A**(-1.d0/n) * ( &
         + lam1/gam * J23**2 &
@@ -71,7 +71,7 @@ end
 
 function Cmandel_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(Cmandel)
 
-    ! Vectorized inverse orthotropic flow law "tau_of_eps__orthotropic()" in Mandel's form.
+    ! Vectorized inverse orthotropic flow law "tau_of_eps_orthotropic()" in Mandel's form.
     
     ! Returns 6x6 matrix "Cmandel" such that: 
     !       mat_to_vec(tau) = matmul(Cmandel, mat_to_vec(eps))
@@ -90,9 +90,9 @@ function Cmandel_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(Cmandel)
     real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
     real(kind=dp)                 :: viscosity
 
-    call rheo_params__orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-    call rheo_structs__orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
-    call rheo_auxinvars__orthotropic(J1,J2,J3, J23,J31,J12)
+    call rheo_params_orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    call rheo_structs_orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
+    call rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
 
     viscosity = A**(-1.d0/n) * ( &
         + lam1/gam * J23**2 &
@@ -115,7 +115,7 @@ end
 
 subroutine Cmat_inverse_orthotropic_dimless(eps, n, m1,m2,m3, Eij, MinInVar, viscosity, C6)
 
-    ! Vectorized inverse orthotropic flow law "tau_of_eps__orthotropic()" in Mandel's form.
+    ! Vectorized inverse orthotropic flow law "tau_of_eps_orthotropic()" in Mandel's form.
     
     ! Returns 6x6 matrix "Cmandel" such that: 
     !       mat_to_vec(tau) = matmul(Cmandel, mat_to_vec(eps))
@@ -134,9 +134,9 @@ subroutine Cmat_inverse_orthotropic_dimless(eps, n, m1,m2,m3, Eij, MinInVar, vis
     real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
     real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
 
-    call rheo_params__orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-    call rheo_structs__orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
-    call rheo_auxinvars__orthotropic(J1,J2,J3, J23,J31,J12)
+    call rheo_params_orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    call rheo_structs_orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
+    call rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
 
     viscosity = ( &
         + lam1/gam * J23**2 &

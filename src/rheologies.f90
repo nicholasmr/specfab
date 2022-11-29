@@ -28,7 +28,7 @@ contains
     ! ISOTROPIC RHEOLOGY
     !---------------------------------
 
-    function rheo_fwd__isotropic(tau, A,n) result(eps)
+    function rheo_fwd_isotropic(tau, A,n) result(eps)
 
         implicit none
         real(kind=dp), intent(in)     :: tau(3,3), A
@@ -39,7 +39,7 @@ contains
         eps = fluidity * tau
     end
 
-    function rheo_rev__isotropic(eps, A,n) result(tau)
+    function rheo_rev_isotropic(eps, A,n) result(tau)
 
         implicit none
         real(kind=dp), intent(in)     :: eps(3,3), A
@@ -55,7 +55,7 @@ contains
     ! COMPRESSIBLE (POROUS) ISOTROPIC RHEOLOGY
     !---------------------------------
 
-    function rheo_fwd__isotropic_compressible(sig, A,n, fa,fb) result(eps)
+    function rheo_fwd_isotropic_compressible(sig, A,n, fa,fb) result(eps)
 
         implicit none
         real(kind=dp), intent(in)     :: sig(3,3), A, fa,fb
@@ -69,7 +69,7 @@ contains
         eps = fluidity * ( fa*(sig - (sigtr/3)*identity) + 2.0d0/3*fb*(sigtr/3)*(identity/3) )
     end
 
-    function rheo_rev__isotropic_compressible(eps, A,n, fa,fb) result(sig)
+    function rheo_rev_isotropic_compressible(eps, A,n, fa,fb) result(sig)
 
         implicit none
         real(kind=dp), intent(in)     :: eps(3,3), A, fa,fb
@@ -87,7 +87,7 @@ contains
     ! TRANSVERSELY ISOTROPIC RHEOLOGY
     !---------------------------------
 
-    function rheo_fwd__tranisotropic(tau, A,n, m,Emm,Emt) result(eps)
+    function rheo_fwd_tranisotropic(tau, A,n, m,Emm,Emt) result(eps)
 
         implicit none
         real(kind=dp), intent(in) :: tau(3,3), A, m(3), Emm, Emt
@@ -95,7 +95,7 @@ contains
         real(kind=dp)             :: eps(3,3), fluidity, kI,kM,kL, I2,I4,I5, mm(3,3),tausq(3,3)
         real(kind=dp), parameter  :: d = 3.0d0
         
-        call rheo_params__tranisotropic(Emm,Emt,d,n,1.0d0, kI,kM,kL)
+        call rheo_params_tranisotropic(Emm,Emt,d,n,1.0d0, kI,kM,kL)
 
         mm = outerprod(m,m)
         tausq = matmul(tau,tau)    
@@ -107,7 +107,7 @@ contains
         eps = fluidity*( tau - kI*I4*identity + kM*I4*mm + kL*(matmul(tau,mm)+matmul(mm,tau)) )
     end
 
-    function rheo_rev__tranisotropic(eps, A,n, m,Emm,Emt) result(tau)
+    function rheo_rev_tranisotropic(eps, A,n, m,Emm,Emt) result(tau)
 
         implicit none
         real(kind=dp), intent(in) :: eps(3,3), A, m(3), Emm, Emt
@@ -115,7 +115,7 @@ contains
         real(kind=dp)             :: tau(3,3), viscosity, kI,kM,kL, I2,I4,I5, mm(3,3),epssq(3,3)
         real(kind=dp), parameter  :: d = 3.0d0
 
-        call rheo_params__tranisotropic(Emm,Emt,d,n,-1.0d0, kI,kM,kL)
+        call rheo_params_tranisotropic(Emm,Emt,d,n,-1.0d0, kI,kM,kL)
 
         mm = outerprod(m,m)
         epssq = matmul(eps,eps)    
@@ -127,7 +127,7 @@ contains
         tau = viscosity*( eps - kI*I4*identity + kM*I4*mm + kL*(matmul(eps,mm)+matmul(mm,eps)) )
     end
 
-    subroutine rheo_params__tranisotropic(Emm,Emt,d,n,expo, kI,kM,kL)
+    subroutine rheo_params_tranisotropic(Emm,Emt,d,n,expo, kI,kM,kL)
 
         implicit none
         real(kind=dp), intent(in)  :: Emm,Emt,expo,d
@@ -146,7 +146,7 @@ contains
     ! ORTHOTROPIC RHEOLOGY
     !---------------------------------
 
-    function rheo_fwd__orthotropic(tau, A,n, m1,m2,m3, Eij) result(eps)
+    function rheo_fwd_orthotropic(tau, A,n, m1,m2,m3, Eij) result(eps)
 
         implicit none
         real(kind=dp), intent(in)     :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
@@ -157,8 +157,8 @@ contains
         real(kind=dp)                 :: I1,I2,I3,I4,I5,I6
         real(kind=dp)                 :: fluidity
 
-        call rheo_params__orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-        call rheo_structs__orthotropic(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12, I1,I2,I3,I4,I5,I6)
+        call rheo_params_orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+        call rheo_structs_orthotropic(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12, I1,I2,I3,I4,I5,I6)
 
         fluidity = A * ( &
             + lam1 * I1**2 &
@@ -179,7 +179,7 @@ contains
         )
     end
 
-    function rheo_rev__orthotropic(eps, A,n, m1,m2,m3, Eij) result(tau)
+    function rheo_rev_orthotropic(eps, A,n, m1,m2,m3, Eij) result(tau)
 
         implicit none
         real(kind=dp), intent(in)     :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
@@ -190,9 +190,9 @@ contains
         real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
         real(kind=dp)                 :: viscosity
 
-        call rheo_params__orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-        call rheo_structs__orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
-        call rheo_auxinvars__orthotropic(J1,J2,J3, J23,J31,J12)
+        call rheo_params_orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+        call rheo_structs_orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
+        call rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
 
         viscosity = A**(-1.d0/n) * ( &
             + lam1/gam * J23**2 &
@@ -213,7 +213,7 @@ contains
         )
     end
 
-    function rheo_rev__orthotropic_dimless(eps, n, m1,m2,m3, Eij) result(tau)
+    function rheo_rev_orthotropic_dimless(eps, n, m1,m2,m3, Eij) result(tau)
 
         implicit none
         real(kind=dp), intent(in)     :: eps(3,3), m1(3),m2(3),m3(3), Eij(3,3)
@@ -223,9 +223,9 @@ contains
         real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
         real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
 
-        call rheo_params__orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-        call rheo_structs__orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
-        call rheo_auxinvars__orthotropic(J1,J2,J3, J23,J31,J12)
+        call rheo_params_orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+        call rheo_structs_orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
+        call rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
 
         tau = ( &
             + lam1/gam * J23 * (identity - 3*M11)/2 &
@@ -237,7 +237,7 @@ contains
         )
     end
 
-    subroutine rheo_params__orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    subroutine rheo_params_orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
 
         implicit none
         real(kind=dp), intent(in)  :: Eij(3,3)
@@ -262,7 +262,7 @@ contains
         gam = abs(gam) 
     end
 
-    subroutine rheo_structs__orthotropic(X, m1,m2,m3, M11,M22,M33,M23,M31,M12, I1,I2,I3,I4,I5,I6)
+    subroutine rheo_structs_orthotropic(X, m1,m2,m3, M11,M22,M33,M23,M31,M12, I1,I2,I3,I4,I5,I6)
 
         implicit none    
         real(kind=dp), intent(in)  :: X(3,3), m1(3),m2(3),m3(3)
@@ -292,7 +292,7 @@ contains
         I6 = X12 ! I6 := (X12 + X21)/2 (but X is symmetric)
     end
 
-    subroutine rheo_auxinvars__orthotropic(J1,J2,J3, J23,J31,J12)
+    subroutine rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
 
         implicit none    
         real(kind=dp), intent(in)  :: J1,J2,J3
@@ -308,7 +308,7 @@ contains
     ! ... with Pettit's hypothesis that the *fluidity* is orientation independant.
     !---------------------------------
 
-    function rheo_fwd__orthotropic_Pettit(tau, A,n, m1,m2,m3, Eij) result(eps)
+    function rheo_fwd_orthotropic_Pettit(tau, A,n, m1,m2,m3, Eij) result(eps)
 
         implicit none
         real(kind=dp), intent(in)     :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
@@ -319,8 +319,8 @@ contains
         real(kind=dp)                 :: I1,I2,I3,I4,I5,I6
         real(kind=dp)                 :: fluidity
 
-        call rheo_params__orthotropic(Eij, 1, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-        call rheo_structs__orthotropic(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12, I1,I2,I3,I4,I5,I6)
+        call rheo_params_orthotropic(Eij, 1, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+        call rheo_structs_orthotropic(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12, I1,I2,I3,I4,I5,I6)
 
         fluidity = A * (doubleinner22(tau,tau))**((n-1)/2.0d0) ! Pettit's hypothesis: fluidity = Glen's isotropic fluidity 
         
@@ -334,7 +334,7 @@ contains
         )
     end
 
-    function rheo_rev__orthotropic_Pettit(eps, A,n, m1,m2,m3, Eij) result(tau)
+    function rheo_rev_orthotropic_Pettit(eps, A,n, m1,m2,m3, Eij) result(tau)
 
         implicit none
         real(kind=dp), intent(in)     :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
@@ -345,9 +345,9 @@ contains
         real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
         real(kind=dp)                 :: viscosity 
 
-        call rheo_params__orthotropic(Eij, 1, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-        call rheo_structs__orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
-        call rheo_auxinvars__orthotropic(J1,J2,J3, J23,J31,J12)
+        call rheo_params_orthotropic(Eij, 1, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+        call rheo_structs_orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
+        call rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
 
         viscosity = A**(-1.d0/n) * ( &
             + 3.0d0/2 * lam1**2/gam**2 * J23**2 &
@@ -376,7 +376,7 @@ contains
     ! ... with Martin's hypothesis that the *viscosity* is orientation independant.
     !---------------------------------
 
-    function rheo_fwd__orthotropic_Martin(tau, A,n, m1,m2,m3, Eij) result(eps)
+    function rheo_fwd_orthotropic_Martin(tau, A,n, m1,m2,m3, Eij) result(eps)
 
         implicit none
         real(kind=dp), intent(in)     :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
@@ -388,8 +388,8 @@ contains
         real(kind=dp)                 :: fluidity 
         real(kind=dp)                 :: c1,c2,c3, fc
 
-        call rheo_params__orthotropic_Martin(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-        call rheo_structs__orthotropic(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12, I1,I2,I3,I4,I5,I6)
+        call rheo_params_orthotropic_Martin(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+        call rheo_structs_orthotropic(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12, I1,I2,I3,I4,I5,I6)
 
         fc = 1.0d0/16 
         c1 = fc * 4*(2*lam1**2 + lam1*(lam2+lam3) - lam2*lam3)
@@ -415,7 +415,7 @@ contains
         )
     end
 
-    function rheo_rev__orthotropic_Martin(eps, A,n, m1,m2,m3, Eij) result(tau)
+    function rheo_rev_orthotropic_Martin(eps, A,n, m1,m2,m3, Eij) result(tau)
 
         implicit none
         real(kind=dp), intent(in)     :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
@@ -426,9 +426,9 @@ contains
         real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
         real(kind=dp)                 :: viscosity
 
-        call rheo_params__orthotropic_Martin(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-        call rheo_structs__orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
-        call rheo_auxinvars__orthotropic(J1,J2,J3, J23,J31,J12)
+        call rheo_params_orthotropic_Martin(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+        call rheo_structs_orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
+        call rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
 
         viscosity = A**(-1.0d0/n) * (doubleinner22(eps,eps))**((1.0d0-n)/(2.0d0*n)) ! Martin's hypothesis: viscosity = Glen's isotropic viscosity
 
@@ -443,7 +443,7 @@ contains
 
     end
 
-    subroutine rheo_params__orthotropic_Martin(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    subroutine rheo_params_orthotropic_Martin(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
 
         use lambdasolver
         

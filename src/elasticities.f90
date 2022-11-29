@@ -24,7 +24,7 @@ contains
     ! TRANSVERSELY ISOTROPIC ELASTICITY
     !---------------------------------
 
-    function elas_rev__tranisotropic(strain, lam,mu, Elam,Emu,Egam,m) result(stress)
+    function elas_rev_tranisotropic(strain, lam,mu, Elam,Emu,Egam,m) result(stress)
 
         implicit none
         real(kind=dp), intent(in) :: strain(3,3), lam,mu, Elam,Emu,Egam,m(3)
@@ -32,12 +32,12 @@ contains
         real(kind=dp)             :: mm(3,3),L(3,3), J1,J4
         real(kind=dp)             :: k1,k2,k3,k4,k5
 
-        call elas_revparams__tranisotropic(lam,mu,Elam,Emu,Egam, k1,k2,k3,k4,k5)                
-        call elas_structs__tranisotropic(strain,m, mm,L,J1,J4)
+        call elas_revparams_tranisotropic(lam,mu,Elam,Emu,Egam, k1,k2,k3,k4,k5)                
+        call elas_structs_tranisotropic(strain,m, mm,L,J1,J4)
         stress = k1*J1*identity + k2*strain + k3*(J4*identity + J1*mm) + k4*J4*mm + k5*L
     end
 
-    function elas_fwd__tranisotropic(stress, lam,mu, Elam,Emu,Egam,m) result(strain)
+    function elas_fwd_tranisotropic(stress, lam,mu, Elam,Emu,Egam,m) result(strain)
 
         implicit none
         real(kind=dp), intent(in) :: stress(3,3), lam,mu, Elam,Emu,Egam,m(3)
@@ -45,14 +45,14 @@ contains
         real(kind=dp)             :: mm(3,3),L(3,3), I1,I4
         real(kind=dp)             :: k1,k2,k3,k4,k5
         
-        call elas_fwdparams__tranisotropic(lam,mu,Elam,Emu,Egam, k1,k2,k3,k4,k5)
-        call elas_structs__tranisotropic(stress,m, mm,L,I1,I4)
+        call elas_fwdparams_tranisotropic(lam,mu,Elam,Emu,Egam, k1,k2,k3,k4,k5)
+        call elas_structs_tranisotropic(stress,m, mm,L,I1,I4)
         strain = k1*I1*identity + k2*stress + k3*(I4*identity + I1*mm) + k4*I4*mm + k5*L 
     end
 
     !--- AUX ---
 
-    subroutine elas_structs__tranisotropic(X,m, mm,L,I1,I4)
+    subroutine elas_structs_tranisotropic(X,m, mm,L,I1,I4)
 
         implicit none
         real(kind=dp), intent(in)  :: X(3,3), m(3)
@@ -64,7 +64,7 @@ contains
         I4 = doubleinner22(X,mm)
     end
     
-    subroutine elas_revparams__tranisotropic(lam,mu,Elam,Emu,Egam, k1,k2,k3,k4,k5)
+    subroutine elas_revparams_tranisotropic(lam,mu,Elam,Emu,Egam, k1,k2,k3,k4,k5)
 
         implicit none
         real(kind=dp), intent(in)  :: lam,mu, Elam,Emu,Egam
@@ -80,7 +80,7 @@ contains
         k5 = - 2*mu*(1-Emu)
     end
     
-    subroutine elas_fwdparams__tranisotropic(lam,mu,Elam,Emu,Egam, k1,k2,k3,k4,k5)
+    subroutine elas_fwdparams_tranisotropic(lam,mu,Elam,Emu,Egam, k1,k2,k3,k4,k5)
 
         implicit none
         real(kind=dp), intent(in)  :: lam,mu, Elam,Emu,Egam
@@ -97,7 +97,7 @@ contains
         k5 = (1-Emu)/(2*Emu*mu)
     end
 
-    subroutine Cij_to_Lame__tranisotropic(C11,C33,C55,C12,C13, lam,mu,Elam,Emu,Egam)
+    subroutine Cij_to_Lame_tranisotropic(C11,C33,C55,C12,C13, lam,mu,Elam,Emu,Egam)
 
         ! Unique coefficients of stiffness matrix --> Lame parameters
 

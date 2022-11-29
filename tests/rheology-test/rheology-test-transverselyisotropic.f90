@@ -85,8 +85,8 @@ function eps_ratio(tau, A,n, m,Emm,Emt, v,w)
     integer, intent(in)       :: n
     real(kind=dp)             :: eps_ratio
 
-    eps_ratio = doubleinner22(rheo_fwd__tranisotropic(tau, A,n, m,Emm,Emt), outerprod(v,w)) / &
-                doubleinner22(rheo_fwd__isotropic(    tau, A,n),            outerprod(v,w))
+    eps_ratio = doubleinner22(rheo_fwd_tranisotropic(tau, A,n, m,Emm,Emt), outerprod(v,w)) / &
+                doubleinner22(rheo_fwd_isotropic(    tau, A,n),            outerprod(v,w))
 end
 
 subroutine tau_of_eps_of_tau(tau_in, A,n, m,Emm,Emt) 
@@ -98,8 +98,8 @@ subroutine tau_of_eps_of_tau(tau_in, A,n, m,Emm,Emt)
     integer, intent(in)       :: n
     real(kind=dp)             :: eps(3,3), tau(3,3)
 
-    eps = rheo_fwd__tranisotropic(tau_in,  A,n, m,Emm,Emt)
-    tau = rheo_rev__tranisotropic(eps,     A,n, m,Emm,Emt)
+    eps = rheo_fwd_tranisotropic(tau_in,  A,n, m,Emm,Emt)
+    tau = rheo_rev_tranisotropic(eps,     A,n, m,Emm,Emt)
     
     print *, 'tau0             = ', tau_in
     print *, 'tau(eps(tau0))   = ', tau

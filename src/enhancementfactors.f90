@@ -72,8 +72,8 @@ contains
         integer, intent(in)          :: nprime
         real(kind=dp)                :: Evw
         
-        Evw = doubleinner22(rheo_fwd__tranisotropic_sachshomo(           tau, nlm, Ecc,Eca,nprime), vw) / &
-              doubleinner22(rheo_fwd__tranisotropic_sachshomo__isotropic(tau,      Ecc,Eca,nprime), vw)
+        Evw = doubleinner22(rheo_fwd_tranisotropic_sachshomo(           tau, nlm, Ecc,Eca,nprime), vw) / &
+              doubleinner22(rheo_fwd_tranisotropic_sachshomo__isotropic(tau,      Ecc,Eca,nprime), vw)
     end
 
     function Evw_taylor(vw, tau, nlm, Ecc,Eca, nprime) result (Evw)
@@ -85,8 +85,8 @@ contains
         integer, intent(in)          :: nprime
         real(kind=dp)                :: Evw
 
-        Evw = doubleinner22(rheo_fwd__tranisotropic_taylorhomo(           tau, nlm, Ecc,Eca,nprime), vw) / &
-              doubleinner22(rheo_fwd__tranisotropic_taylorhomo__isotropic(tau,      Ecc,Eca,nprime), vw)
+        Evw = doubleinner22(rheo_fwd_tranisotropic_taylorhomo(           tau, nlm, Ecc,Eca,nprime), vw) / &
+              doubleinner22(rheo_fwd_tranisotropic_taylorhomo__isotropic(tau,      Ecc,Eca,nprime), vw)
     end
     
     !---------------------------------

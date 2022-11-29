@@ -50,14 +50,14 @@ L = 18
 if T_EXP==T_EXP_SS:
     tau0mag = 1.087e6
     tau0 = tau0mag * np.matrix([[0,0,1],[0,0,0],[1,0,0]]) # Pa
-    ugrad0 = 2*sf.rheo_fwd__isotropic(tau0, Aglen,nglen)[0,2]
+    ugrad0 = 2*sf.rheo_fwd_isotropic(tau0, Aglen,nglen)[0,2]
     Nt = 2 * 200
                 
 if T_EXP==T_EXP_CC:
     tau0mag = 10e5
     r = 1
     tau0 = tau0mag * np.diag([-(1+r)/2., -(1-r)/2., 1]) # Pa
-    ugrad0 = 2*sf.rheo_fwd__isotropic(tau0, Aglen,nglen)[2,2]
+    ugrad0 = 2*sf.rheo_fwd_isotropic(tau0, Aglen,nglen)[2,2]
     Nt = 3 * 200
         
 t_c = 1/ugrad0
@@ -121,7 +121,7 @@ eig = np.zeros(vecdim, dtype=np.float64)
 Eij = np.zeros((Nt,3,3), dtype=np.float64)
 
 # G=Glen, R=Rathmann & Lilien, P=Pettit, M=Martin
-Y_G = sf.rheo_fwd__isotropic(tau0, Aglen,nglen)
+Y_G = sf.rheo_fwd_isotropic(tau0, Aglen,nglen)
 Y_R, Y_P, Y_M = np.zeros((Nt,3,3), dtype=np.float64), np.zeros((Nt,3,3), dtype=np.float64), np.zeros((Nt,3,3), dtype=np.float64)
 
 # Euler integration 
@@ -140,9 +140,9 @@ with Bar('dt=%.3fyr, Nt=%i :: L=%i (nlm_len=%i) ::'%(dt/year2sec,Nt,L,nlm_len), 
         Eij[ttp,:,:] = np.transpose(sf.Eeiej(c, e1[ttp,:],e2[ttp,:],e3[ttp,:], Ecc_lin, Eca_lin, alpha_lin, nprime))
         
         ### Y for fabric at constant strain rate
-        Y_R[ttp,:,:] = sf.rheo_fwd__orthotropic(       tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:])
-        Y_P[ttp,:,:] = sf.rheo_fwd__orthotropic_Pettit(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:])
-        Y_M[ttp,:,:] = sf.rheo_fwd__orthotropic_Martin(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:])
+        Y_R[ttp,:,:] = sf.rheo_fwd_orthotropic(       tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:])
+        Y_P[ttp,:,:] = sf.rheo_fwd_orthotropic_Pettit(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:])
+        Y_M[ttp,:,:] = sf.rheo_fwd_orthotropic_Martin(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:])
  
         # Verify enhancement factors are correctly reproduced *if* deformation was coaxial with eigenframe
         if False:
@@ -155,10 +155,10 @@ with Bar('dt=%.3fyr, Nt=%i :: L=%i (nlm_len=%i) ::'%(dt/year2sec,Nt,L,nlm_len), 
                 eij = np.tensordot(ei[ii,:],ei[jj,:],axes=0)
                 tau0 = eij+eij.T if ii != jj else np.eye(3)/3-eij
                 Eij_ = Eij[ttp,ii,jj]
-                Y_G_ = np.tensordot(sf.rheo_fwd__isotropic(tau0, Aglen,nglen), eij, axes=2)
-                Eij_R = np.tensordot(sf.rheo_fwd__orthotropic(       tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:]), eij, axes=2) / Y_G_
-                Eij_P = np.tensordot(sf.rheo_fwd__orthotropic_Pettit(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:]), eij, axes=2) / Y_G_
-                Eij_M = np.tensordot(sf.rheo_fwd__orthotropic_Martin(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:]), eij, axes=2) / Y_G_
+                Y_G_ = np.tensordot(sf.rheo_fwd_isotropic(tau0, Aglen,nglen), eij, axes=2)
+                Eij_R = np.tensordot(sf.rheo_fwd_orthotropic(       tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:]), eij, axes=2) / Y_G_
+                Eij_P = np.tensordot(sf.rheo_fwd_orthotropic_Pettit(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:]), eij, axes=2) / Y_G_
+                Eij_M = np.tensordot(sf.rheo_fwd_orthotropic_Martin(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:]), eij, axes=2) / Y_G_
                 print("(i,j)=(%i,%i) :: Eij_R/Eij = %.3e --- Eij_P/Eij = %.3e --- Eij_M/Eij = %.3e :: Eij = %.3e"%(ii,jj, Eij_R/Eij_, Eij_P/Eij_, Eij_M/Eij_, Eij_))
             print("\n")
  
