@@ -26,14 +26,14 @@ from plottools import * # For plotting ODFs etc.
 VERBOSE_STATUS    = 1 # Verbose status 
 VERBOSE_INVERSION = 0 # Verbose inversion 
 
-MAKE_GAW_STATS = 1
+MAKE_GAW_STATS = 0
 
 #--------------------
 # Lutz et al. (2022) experiments to process
 #--------------------
 
 EXPERIMENTS = [3,7,10]
-#EXPERIMENTS = [7,] # debug
+EXPERIMENTS = [7,] # debug
 
 #--------------------       
 # Monocrystal and homogenization parameters
@@ -181,7 +181,7 @@ for ii, exprnum in enumerate(EXPERIMENTS):
 
     gs_master = gridspec.GridSpec(2, 1, height_ratios=[1,0.3]) 
     a=0.11
-    gs_master.update(top=0.99, bottom=0.07, left=a, right=1-a*0.25, hspace=0.4)
+    gs_master.update(top=0.975, bottom=0.07, left=a, right=1-a*0.25, hspace=0.4)
 
     gs = gridspec.GridSpecFromSubplotSpec(3, 1, subplot_spec=gs_master[0,0], hspace=0.25)
     axP  = fig.add_subplot(gs[0,:])
@@ -215,17 +215,17 @@ for ii, exprnum in enumerate(EXPERIMENTS):
 
     # Titles
     pad = 10
-    axODF_obs.set_title(r'Observed, $\hat{\vb*{\psi}}_{\mathrm{obs}}$', pad=pad, fontsize=FS)
+    axODF_obs.set_title(r'observed, $\hat{\vb*{\psi}}_{\mathrm{obs}}$', pad=pad, fontsize=FS)
     axODF_B68.set_title('$\\hat{\\vb*{\psi}}$ inferred\n given $\\vb{g}_{\\mathrm{B68}}$', pad=pad, fontsize=FS)
     axODF_R22.set_title('$\\hat{\\vb*{\psi}}$ inferred\n given $\\vb{g}_{\\mathrm{opt}}$', pad=pad, fontsize=FS)
 
     # Panel no.
-    kwargs_ODFpanelno = {'frameon':True, 'alpha':1.0, 'fontsize':FS}
+    kwargs_ODFpanelno = {'frameon':False, 'alpha':1.0, 'fontsize':FS}
     dx = +0.14 
-    yloc=1.125 + 1*0.26
-    writeSubplotLabel(axODF_obs, 2, r'{\bf d}', bbox=(-0.46+dx,yloc), **kwargs_ODFpanelno)
-    writeSubplotLabel(axODF_B68, 2, r'{\bf e}', bbox=(-0.31+dx,yloc), **kwargs_ODFpanelno)
-    writeSubplotLabel(axODF_R22, 2, r'{\bf f}', bbox=(-0.28+dx,yloc), **kwargs_ODFpanelno)
+    yloc=1.125 + 2*0.26
+    writeSubplotLabel(axODF_obs, 2, r'(\textit{d})', bbox=(-0.35+dx,yloc), **kwargs_ODFpanelno)
+    writeSubplotLabel(axODF_B68, 2, r'(\textit{e})', bbox=(-0.35+dx,yloc), **kwargs_ODFpanelno)
+    writeSubplotLabel(axODF_R22, 2, r'(\textit{f})', bbox=(-0.35+dx,yloc), **kwargs_ODFpanelno)
 
     ### Velocity anomalies
 
@@ -233,13 +233,13 @@ for ii, exprnum in enumerate(EXPERIMENTS):
 
     # Measured
     errbarkwargs = {'fmt':'o', 'c':c_obs, 'capsize':1.5, 'ms':4.5, 'lw':1, 'zorder':0}
-    axP.errorbar( phideg, vP_obs,  yerr=vP_obs_sig,  label=r'Observed', **errbarkwargs)
+    axP.errorbar( phideg, vP_obs,  yerr=vP_obs_sig,  label=r'observed', **errbarkwargs)
     axS1.errorbar(phideg, vS1_obs, yerr=vS1_obs_sig, **errbarkwargs)
     axS2.errorbar(phideg, vS2_obs, yerr=vS2_obs_sig, **errbarkwargs)
 
     # Predicted velocities using observed ODF and g_B68
     vi_pB68 = get_vi_map(nlm_obs, alpha, g_B68, rho, theta, phi) 
-    axP.plot( phideg, vi_pB68[0], '--', c=c_pB68, label=r'Prediction given $\vb{g}_{\mathrm{B68}}$ and $\hat{\vb*{\psi}}_{\mathrm{obs}}$')
+    axP.plot( phideg, vi_pB68[0], '--', c=c_pB68, label=r'prediction given $\vb{g}_{\mathrm{B68}}$ and $\hat{\vb*{\psi}}_{\mathrm{obs}}$')
     axS1.plot(phideg, vi_pB68[1], '--', c=c_pB68)
     axS2.plot(phideg, vi_pB68[2], '--', c=c_pB68) 
 
@@ -267,9 +267,10 @@ for ii, exprnum in enumerate(EXPERIMENTS):
     hleg.get_frame().set_linewidth(0.8);
 
     # Panel no.
-    writeSubplotLabel(axP,  2, r'{\bf a}', frameon=True, alpha=1.0, fontsize=FS)
-    writeSubplotLabel(axS1, 2, r'{\bf b}', frameon=True, alpha=1.0, fontsize=FS)
-    writeSubplotLabel(axS2, 2, r'{\bf c}', frameon=True, alpha=1.0, fontsize=FS)
+    bbox=(-0.14,1.23)
+    writeSubplotLabel(axP,  2, r'(\textit{a})', frameon=False, alpha=1.0, fontsize=FS, bbox=bbox)
+    writeSubplotLabel(axS1, 2, r'(\textit{b})', frameon=False, alpha=1.0, fontsize=FS, bbox=bbox)
+    writeSubplotLabel(axS2, 2, r'(\textit{c})', frameon=False, alpha=1.0, fontsize=FS, bbox=bbox)
 
     # Axis labels
     axP.set_ylabel( r'$V_{\mathrm{qP}}$ ($\SI{}{\metre\per\second}$)')
@@ -291,9 +292,10 @@ for ii, exprnum in enumerate(EXPERIMENTS):
     ### Save figure
     
     fsuffix = 'Lutz%03i'%(exprnum)
-    fname = 'plots/infer-%s-alpha=%.2f.png'%(fsuffix, alpha)
+#    fname = 'plots/infer-%s-alpha=%.2f.png'%(fsuffix, alpha)
+    fname = 'plots/infer-%s-alpha=%.2f.pdf'%(fsuffix, alpha)
     print('*** Saving inversion results to %s'%(fname))
-    plt.savefig(fname, dpi=200)
+    plt.savefig(fname, dpi=300)
     
 #--------------------
 # Python exports

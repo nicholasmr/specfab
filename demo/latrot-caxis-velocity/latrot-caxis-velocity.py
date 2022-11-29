@@ -39,8 +39,7 @@ def plot(ugrad, ax, titlestr='', speedthres=0):
 
     D, W = (ugrad + ugrad.T)/2, (ugrad - ugrad.T)/2
 
-    cdot = np.einsum('ij,jkl->ikl', W, cv) - np.einsum('ij,jkl->ikl', D, cv) \
-         + np.einsum('ijk,ljk,lm,mjk->ijk', cv,cv,D,cv)
+    cdot = np.einsum('ij,jkl->ikl', W, cv) - (np.einsum('ij,jkl->ikl', D, cv) - np.einsum('ijk,ljk,lm,mjk->ijk', cv,cv,D,cv))
          
     u = np.einsum('ijk,ijk->jk', cdot, pv)
     v = np.einsum('ijk,ijk->jk', cdot, tv)
@@ -55,8 +54,7 @@ def plot(ugrad, ax, titlestr='', speedthres=0):
 
     ### Quiver, low res
 
-    cdot_ = np.einsum('ij,jkl->ikl', W, cv_) - np.einsum('ij,jkl->ikl', D, cv_) \
-         + np.einsum('ijk,ljk,lm,mjk->ijk', cv_,cv_,D,cv_)
+    cdot_ = np.einsum('ij,jkl->ikl', W, cv_) - (np.einsum('ij,jkl->ikl', D, cv_) - np.einsum('ijk,ljk,lm,mjk->ijk', cv_,cv_,D,cv_))
          
     u_ = np.einsum('ijk,ijk->jk', cdot_, pv_)
     v_ = np.einsum('ijk,ijk->jk', cdot_, tv_)

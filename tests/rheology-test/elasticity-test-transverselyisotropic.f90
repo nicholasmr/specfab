@@ -93,8 +93,8 @@ program demo
     strain_input = tau_vv(x3)
 !    strain_input = tau_vw(x1,x3)
     print *, 'strain_input = ', strain_input
-    stress_true = stress_of_strain__tranisotropic(strain_input, lam,mu,Elam,Emu,Egam,m)
-    stress_homo = ev_sigprime_Reuss(strain_input, nlm, lam,mu,Elam,Emu,Egam)
+    stress_true = elas_rev__tranisotropic(strain_input, lam,mu,Elam,Emu,Egam,m)
+    stress_homo = elas_rev__tranisotropic_reuss(strain_input, nlm, lam,mu,Elam,Emu,Egam)
    
     print *, 'stress_true = ', stress_true
     print *, 'stress_homo = ', stress_homo
@@ -168,20 +168,20 @@ function stress_ratio(strain, lam,mu, Elam,Emu,Egam,m, v,w)
     real(kind=dp), intent(in) :: strain(3,3), lam,mu, Elam,Emu,Egam,m(3), v(3),w(3)
     real(kind=dp)             :: stress_ratio
 
-    stress_ratio = doubleinner22(stress_of_strain__tranisotropic(strain, lam,mu, Elam,Emu,Egam,m), outerprod(v,w)) / &
-                   doubleinner22(stress_of_strain__tranisotropic(strain, lam,mu, 1.0d0,1.0d0,1.0d0,m), outerprod(v,w))
+    stress_ratio = doubleinner22(elas_rev__tranisotropic(strain, lam,mu, Elam,Emu,Egam,m), outerprod(v,w)) / &
+                   doubleinner22(elas_rev__tranisotropic(strain, lam,mu, 1.0d0,1.0d0,1.0d0,m), outerprod(v,w))
 end
 
 subroutine tau_of_eps_of_tau(tau_in, lam,mu,Elam,Emu,Egam,m) 
-
+    ! eps=strain, tau=stress
     implicit none
 
     integer, parameter        :: dp = 8
     real(kind=dp), intent(in) :: tau_in(3,3), lam,mu,Elam,Emu,Egam,m(3)
     real(kind=dp)             :: eps(3,3), tau(3,3)
 
-    eps = strain_of_stress__tranisotropic(tau_in,  lam,mu,Elam,Emu,Egam,m)
-    tau = stress_of_strain__tranisotropic(eps,     lam,mu,Elam,Emu,Egam,m)
+    eps = elas_fwd__tranisotropic(tau_in,  lam,mu,Elam,Emu,Egam,m)
+    tau = elas_rev__tranisotropic(eps,     lam,mu,Elam,Emu,Egam,m)
     
     print *, 'tau0             = ', tau_in
     print *, 'tau(eps(tau0))   = ', tau

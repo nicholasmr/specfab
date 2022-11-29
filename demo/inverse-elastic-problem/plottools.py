@@ -20,7 +20,7 @@ def plot_ODF(nlm, lm, ax=None, cmap='Greys', cblabel='$\psi$', rot0=-40, \
     F, lon,lat = discretize_ODF(nlm, lm)
     F[F<0] = 0 # fix numerical/truncation errors
     cmap = cmr.get_sub_cmap(cmap, 0.05, 1) # don't include pure white.
-    h = ax.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), levels=lvls, extend=('max' if lvls[0]==0.0 else 'both'), cmap=cmap, nchunk=5) # "nchunk" argument must be larger than 0 for isotropic ODFs to be plotted correctly
+    h = ax.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), levels=lvls, extend=('max' if lvls[0]==0.0 else 'both'), cmap=cmap) # "nchunk" argument must be larger than 0 for isotropic ODFs to be plotted correctly
 
     # Add grid lines
     kwargs_gridlines = {'ylocs':np.arange(-90,90+30,30), 'xlocs':np.arange(0,360+45,45), 'linewidth':0.5, 'color':'black', 'alpha':0.25, 'linestyle':'-'}

@@ -1,4 +1,4 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk>, 2021
+! N. M. Rathmann <rathmann@nbi.ku.dk>, 2021-2022
 
 program demo
 
@@ -46,8 +46,8 @@ subroutine sig_of_eps_of_sig(sig_in, A,n, fa,fb)
     integer, intent(in)       :: n
     real(kind=dp)             :: eps(3,3), sig(3,3)
 
-    eps = eps_of_sig__isotropic(sig_in, A,n, fa,fb)
-    sig = sig_of_eps__isotropic(eps,    A,n, fa,fb)
+    eps = rheo_fwd__isotropic_compressible(sig_in, A,n, fa,fb)
+    sig = rheo_rev__isotropic_compressible(eps,    A,n, fa,fb)
     
     print *, 'sig0             = ', sig_in
     print *, 'sig(eps(sig0))   = ', sig

@@ -199,8 +199,8 @@ function eps_ratio(tau,A,n, m1,m2,m3, Eij, v,w) result(ratio)
     integer, intent(in)       :: n
     real(kind=dp)             :: ratio
 
-    ratio = doubleinner22(eps_of_tau__orthotropic(tau,A,n, m1,m2,m3, Eij), outerprod(v,w)) / &
-            doubleinner22(eps_of_tau__isotropic(  tau,A,n),                outerprod(v,w))
+    ratio = doubleinner22(rheo_fwd__orthotropic(tau,A,n, m1,m2,m3, Eij), outerprod(v,w)) / &
+            doubleinner22(rheo_fwd__isotropic(  tau,A,n),                outerprod(v,w))
 end
 
 function eps_ratio_Pettit(tau,A,n, m1,m2,m3, Eij, v,w) result(ratio)
@@ -213,8 +213,8 @@ function eps_ratio_Pettit(tau,A,n, m1,m2,m3, Eij, v,w) result(ratio)
     integer, intent(in)       :: n
     real(kind=dp)             :: ratio
 
-    ratio = doubleinner22(eps_of_tau__orthotropic_Pettit(tau,A,n, m1,m2,m3, Eij), outerprod(v,w)) / &
-            doubleinner22(eps_of_tau__isotropic(         tau,A,n),                outerprod(v,w))
+    ratio = doubleinner22(rheo_fwd__orthotropic_Pettit(tau,A,n, m1,m2,m3, Eij), outerprod(v,w)) / &
+            doubleinner22(rheo_fwd__isotropic(         tau,A,n),                outerprod(v,w))
 end
 
 function eps_ratio_Martin(tau,A,n, m1,m2,m3, Eij, v,w) result(ratio)
@@ -227,8 +227,8 @@ function eps_ratio_Martin(tau,A,n, m1,m2,m3, Eij, v,w) result(ratio)
     integer, intent(in)       :: n
     real(kind=dp)             :: ratio
 
-    ratio = doubleinner22(eps_of_tau__orthotropic_Martin(tau,A,n, m1,m2,m3, Eij), outerprod(v,w)) / &
-            doubleinner22(eps_of_tau__isotropic(         tau,A,n),                outerprod(v,w))
+    ratio = doubleinner22(rheo_fwd__orthotropic_Martin(tau,A,n, m1,m2,m3, Eij), outerprod(v,w)) / &
+            doubleinner22(rheo_fwd__isotropic(         tau,A,n),                outerprod(v,w))
 end
 
 !-------------------------------------------------------------------
@@ -242,8 +242,8 @@ subroutine tau_of_eps_of_tau(tau_in, A, n, m1,m2,m3, Eij)
     integer, intent(in)       :: n
     real(kind=dp)             :: eps(3,3), tau(3,3)
 
-    eps = eps_of_tau__orthotropic(tau_in, A, n, m1,m2,m3, Eij)
-    tau = tau_of_eps__orthotropic(eps,    A, n, m1,m2,m3, Eij)
+    eps = rheo_fwd__orthotropic(tau_in, A, n, m1,m2,m3, Eij)
+    tau = rheo_rev__orthotropic(eps,    A, n, m1,m2,m3, Eij)
     
     print *, 'tau0             = ', tau_in
     print *, 'tau(eps(tau0))   = ', tau
@@ -261,8 +261,8 @@ subroutine tau_of_eps_of_tau_Pettit(tau_in, A, n, m1,m2,m3, Eij)
     integer, intent(in)       :: n
     real(kind=dp)             :: eps(3,3), tau(3,3)
 
-    eps = eps_of_tau__orthotropic_Pettit(tau_in, A, n, m1,m2,m3, Eij)
-    tau = tau_of_eps__orthotropic_Pettit(eps,    A, n, m1,m2,m3, Eij)
+    eps = rheo_fwd__orthotropic_Pettit(tau_in, A, n, m1,m2,m3, Eij)
+    tau = rheo_rev__orthotropic_Pettit(eps,    A, n, m1,m2,m3, Eij)
     
     print *, 'tau0             = ', tau_in
     print *, 'tau(eps(tau0))   = ', tau
@@ -280,8 +280,8 @@ subroutine tau_of_eps_of_tau_Martin(tau_in, A, n, m1,m2,m3, Eij)
     integer, intent(in)       :: n
     real(kind=dp)             :: eps(3,3), tau(3,3)
 
-    eps = eps_of_tau__orthotropic_Martin(tau_in, A, n, m1,m2,m3, Eij)
-    tau = tau_of_eps__orthotropic_Martin(eps,    A, n, m1,m2,m3, Eij)
+    eps = rheo_fwd__orthotropic_Martin(tau_in, A, n, m1,m2,m3, Eij)
+    tau = rheo_rev__orthotropic_Martin(eps,    A, n, m1,m2,m3, Eij)
     
     print *, 'tau0             = ', tau_in
     print *, 'tau(eps(tau0))   = ', tau
@@ -301,7 +301,7 @@ subroutine test_vectorized_rheology(eps, A, n, m1,m2,m3, Eij)
     integer, intent(in)       :: n
     real(kind=dp)             :: tau(3,3), tau_vec(9), C(9,9)
 
-    tau = tau_of_eps__orthotropic( eps, A, n, m1,m2,m3, Eij)
+    tau = rheo_rev__orthotropic( eps, A, n, m1,m2,m3, Eij)
     C   = Cmat_inverse_orthotropic(eps, A, n, m1,m2,m3, Eij)
     tau_vec = matmul(C, vectorize9(eps))
 
@@ -322,7 +322,7 @@ subroutine test_mandelvectorized_rheology(eps, A, n, m1,m2,m3, Eij)
     integer, intent(in)       :: n
     real(kind=dp)             :: tau(3,3), tauv(3,3), C(6,6)
 
-    tau = tau_of_eps__orthotropic(    eps, A, n, m1,m2,m3, Eij)
+    tau = rheo_rev__orthotropic(    eps, A, n, m1,m2,m3, Eij)
     C   = Cmandel_inverse_orthotropic(eps, A, n, m1,m2,m3, Eij)
     tauv = vec_to_mat(matmul(C, mat_to_vec(eps))) 
 

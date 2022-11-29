@@ -15,7 +15,7 @@ module enhancementfactors
 contains      
 
     !---------------------------------
-    ! ENHANCEMENT-FACTORS
+    ! VISCOUS ENHANCEMENT-FACTORS
     !---------------------------------
 
     function Evw(vw, tau, nlm, Ecc,Eca,alpha,nprime)
@@ -30,8 +30,8 @@ contains
         integer, intent(in)          :: nprime
         real(kind=dp)                :: Evw
 
-        Evw = (1-alpha)*Evw_Sac(vw, tau, nlm, Ecc,Eca,nprime) &
-                + alpha*Evw_Tay(vw, tau, nlm, Ecc,Eca,nprime)
+        Evw = (1-alpha)*Evw_sachs( vw, tau, nlm, Ecc,Eca,nprime) &
+                + alpha*Evw_taylor(vw, tau, nlm, Ecc,Eca,nprime)
     end
 
     function Eeiej(nlm, e1,e2,e3, Ecc,Eca,alpha,nprime) result (Eij)
@@ -63,7 +63,7 @@ contains
         Eij(3,2) = Eij(2,3)   
     end
 
-    function Evw_Sac(vw, tau, nlm, Ecc,Eca, nprime) result (Evw)
+    function Evw_sachs(vw, tau, nlm, Ecc,Eca, nprime) result (Evw)
 
         implicit none
         
@@ -72,11 +72,11 @@ contains
         integer, intent(in)          :: nprime
         real(kind=dp)                :: Evw
         
-        Evw = doubleinner22(ev_epsprime_Sac(           tau, nlm, Ecc,Eca,nprime), vw) / &
-              doubleinner22(ev_epsprime_Sac__isotropic(tau,      Ecc,Eca,nprime), vw)
+        Evw = doubleinner22(rheo_fwd__tranisotropic_sachshomo(           tau, nlm, Ecc,Eca,nprime), vw) / &
+              doubleinner22(rheo_fwd__tranisotropic_sachshomo__isotropic(tau,      Ecc,Eca,nprime), vw)
     end
 
-    function Evw_Tay(vw, tau, nlm, Ecc,Eca, nprime) result (Evw)
+    function Evw_taylor(vw, tau, nlm, Ecc,Eca, nprime) result (Evw)
 
         implicit none
         
@@ -85,9 +85,15 @@ contains
         integer, intent(in)          :: nprime
         real(kind=dp)                :: Evw
 
-        Evw = doubleinner22(ev_epsprime_Tay(           tau, nlm, Ecc,Eca,nprime), vw) / &
-              doubleinner22(ev_epsprime_Tay__isotropic(tau,      Ecc,Eca,nprime), vw)
+        Evw = doubleinner22(rheo_fwd__tranisotropic_taylorhomo(           tau, nlm, Ecc,Eca,nprime), vw) / &
+              doubleinner22(rheo_fwd__tranisotropic_taylorhomo__isotropic(tau,      Ecc,Eca,nprime), vw)
     end
+    
+    !---------------------------------
+    ! ELASTIC ENHANCEMENT-FACTORS
+    !---------------------------------
+
+    ! N/A
 
     !---------------------------------
     ! SYNTHETIC STRESS STATES

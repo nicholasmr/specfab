@@ -13,12 +13,24 @@ from matplotlib.ticker import AutoMinorLocator
 from Cij import * # elastic constants
 from plottools import *
 
+# Use alternative labels for RSPA article?
+if 1:
+    Cij_exprname = {\
+        'Bennett1968' : r'Bennett [39]', \
+        'Gammon1983'  : r'Gammon \textit{et al.} [6]', \
+        'Gagnon1988'  : r'Gagnon \textit{et al.} [65]', \
+        'Dantl1968'   : r'Dantl [66]', \
+        'Brockamp1964': r'Brockamp \& Querfurth [67]', \
+        'Bass1957'    : r'Bass \textit{et al.} [68]', \
+        'Green1956'   : r'Green \& Mackinnon [69]', \
+    }
+
 ### Figure setup
 
 scale = 3.45
 fig = plt.figure(figsize=(2.0*scale,2*1.05*scale))
 gs = gridspec.GridSpec(2, 3)
-gs.update(hspace=0.425, wspace=0.4, left=0.085, right=0.985, top=0.985, bottom=0.350)
+gs.update(hspace=0.425, wspace=0.4, left=0.085, right=0.988, top=0.955, bottom=0.350)
 
 ax_lam  = fig.add_subplot(gs[0, 0])
 ax_mu   = fig.add_subplot(gs[0, 1])
@@ -92,7 +104,7 @@ for ii, expr in enumerate(allexperiments):
             hlist.append(heb)
             hlabels.append(Cij_exprname[expr])
 
-hleg = ax_Elam.legend(hlist, hlabels, title=r'\bf Literature estimates', bbox_to_anchor=(-0.20, legbboxy), **legkwargs)
+hleg = ax_Elam.legend(hlist, hlabels, title=r'literature estimates', bbox_to_anchor=(-0.20, legbboxy), **legkwargs)
 hleg.get_frame().set_linewidth(lwleg)
 hleg.get_title().set_fontsize(FSSMALL)
 ax_Elam.add_artist(hleg)
@@ -119,7 +131,7 @@ for ii, expr in enumerate(allinferred):
     h_inferred[ii] = h
     labels[ii] = g_exprname[expr]
 
-hleg = ax_Emu.legend(handles=h_inferred, labels=labels, title=r'\bf Inferred from ice-core samples', bbox_to_anchor=(+0.05, legbboxy), ncol=3, **legkwargs)
+hleg = ax_Emu.legend(handles=h_inferred, labels=labels, title=r'inferred from ice-core samples', bbox_to_anchor=(+0.05, legbboxy), ncol=3, **legkwargs)
 hleg.get_frame().set_linewidth(lwleg)
 hleg.get_title().set_fontsize(FSSMALL)
 
@@ -139,7 +151,8 @@ def setup_axes(ax, label, ylabel='', ylims=None, yticks=None, yticks_minor=None)
     ax.set_xticks(np.arange(-50,10,5), minor=True)
     ax.set_xlim(xlims)
     
-    writeSubplotLabel(ax, 2, r'\bf{%s}'%label, fontsize=FS)
+#    writeSubplotLabel(ax, 2, r'\bf{%s}'%label, fontsize=FS)
+    writeSubplotLabel(ax, 2, r'(\textit{%s})'%label, fontsize=FS+0.5, frameon=False, alpha=0.0, pad=0.0, bbox=(-0.3,1.2))
 
 yticks       = np.arange(0,20,1)
 yticks_minor = np.arange(0,20,1/4)
@@ -154,7 +167,8 @@ setup_axes(ax_Egam, 'f', yticks=yticks, yticks_minor=yticks_minor, ylabel=r'$\ha
 
 ### Save figure
 
-fname = 'plots/temperature-dependence.png'
+#fname = 'plots/temperature-dependence.png'
+fname = 'plots/temperature-dependence.pdf'
 print('** Saving %s'%(fname))
 plt.savefig(fname, dpi=300)
 

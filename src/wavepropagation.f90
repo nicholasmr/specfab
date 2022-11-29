@@ -131,7 +131,7 @@ contains
         real(kind=dp) :: a2mat(3,3), a2v(6), a4v(6,6)
         real(kind=dp) :: KM_anticomm(3,3)
 
-        call elastic_tranisotropic_params__stress(lam,mu,Elam,Emu,Egam, k1,k2,k3,k4,k5) ! (k1, ..., k5) are effective elastic coefficients, *not* related to wave vector.
+        call elas_revparams__tranisotropic(lam,mu,Elam,Emu,Egam, k1,k2,k3,k4,k5) ! (k1, ..., k5) are effective elastic coefficients, *not* related to wave vector.
         call f_ev_ck_Mandel(nlm, a2v, a4v) ! Structure tensors in Mandel notation: a2v = ev_c2_Mandel, B = ev_c4_Mandel
         a2mat = vec_to_mat(a2v) ! = a2
         KM_anticomm = matmul(kk,a2mat) + matmul(a2mat,kk) ! = {a2,kk} for k=kvert=[0,0,1]
@@ -154,7 +154,7 @@ contains
         real(kind=dp)    :: ev_c2(3,3), ev_c4(3,3,3,3) 
         real(kind=dp)    :: P(9,9), Pinv(9,9) 
 
-        call elastic_tranisotropic_params__strain(lam,mu,Elam,Emu,Egam, k1,k2,k3,k4,k5) ! (k1, ..., k5) are effective elastic coefficients, *not* related to wave vector.
+        call elas_fwdparams__tranisotropic(lam,mu,Elam,Emu,Egam, k1,k2,k3,k4,k5) ! (k1, ..., k5) are effective elastic coefficients, *not* related to wave vector.
 
         n00 = nlm(1)
         n2m = nlm(I_l2:(I_l4-1))

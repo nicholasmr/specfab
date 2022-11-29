@@ -46,9 +46,9 @@ function Cmat_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(C)
     real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
     real(kind=dp)                 :: viscosity
 
-    call orthotropic_coefs(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-    call orthotropic_tensors_and_invars(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
-    call orthotropic_auxinvars(J1,J2,J3, J23,J31,J12)
+    call rheo_params__orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    call rheo_structs__orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
+    call rheo_auxinvars__orthotropic(J1,J2,J3, J23,J31,J12)
 
     viscosity = A**(-1.d0/n) * ( &
         + lam1/gam * J23**2 &
@@ -90,9 +90,9 @@ function Cmandel_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(Cmandel)
     real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
     real(kind=dp)                 :: viscosity
 
-    call orthotropic_coefs(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-    call orthotropic_tensors_and_invars(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
-    call orthotropic_auxinvars(J1,J2,J3, J23,J31,J12)
+    call rheo_params__orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    call rheo_structs__orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
+    call rheo_auxinvars__orthotropic(J1,J2,J3, J23,J31,J12)
 
     viscosity = A**(-1.d0/n) * ( &
         + lam1/gam * J23**2 &
@@ -134,9 +134,9 @@ subroutine Cmat_inverse_orthotropic_dimless(eps, n, m1,m2,m3, Eij, MinInVar, vis
     real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
     real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
 
-    call orthotropic_coefs(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-    call orthotropic_tensors_and_invars(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
-    call orthotropic_auxinvars(J1,J2,J3, J23,J31,J12)
+    call rheo_params__orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    call rheo_structs__orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
+    call rheo_auxinvars__orthotropic(J1,J2,J3, J23,J31,J12)
 
     viscosity = ( &
         + lam1/gam * J23**2 &

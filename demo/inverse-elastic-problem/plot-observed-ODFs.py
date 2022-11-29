@@ -46,9 +46,10 @@ for ii, exprnum in enumerate([3,7,10]):
     qlatd, qlond = get_deg(qlat, qlon)
     ax[ii].plot(qlond, qlatd, ls='none', marker='o', markersize=0.45, c='#33a02c', transform=geo) 
     plot_unitaxes(ax[ii], geo)
-    ax[ii].set_title(r'Sample %03i'%(exprnum), pad=10, fontsize=FS)
+    ax[ii].set_title(r'sample %03i'%(exprnum), pad=10, fontsize=FS)
 
-fname = 'plots/observed-ODFs.png'
+#fname = 'plots/observed-ODFs.png'
+fname = 'plots/observed-ODFs.pdf'
 print('** Saving %s'%(fname))
 plt.savefig(fname, dpi=250)  
   

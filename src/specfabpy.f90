@@ -32,16 +32,16 @@ module specfabpy
         a4_IBOF__sf => a4_IBOF, & ! From Elmer        
         
         ! Rheologies
-        tau_of_eps__isotropic__sf     => tau_of_eps__isotropic,     eps_of_tau__isotropic__sf     => eps_of_tau__isotropic, &
-        tau_of_eps__tranisotropic__sf => tau_of_eps__tranisotropic, eps_of_tau__tranisotropic__sf => eps_of_tau__tranisotropic, &
-        tau_of_eps__orthotropic__sf   => tau_of_eps__orthotropic,   eps_of_tau__orthotropic__sf   => eps_of_tau__orthotropic, &
-        tau_of_eps__orthotropic_Martin__sf => tau_of_eps__orthotropic_Martin, eps_of_tau__orthotropic_Martin__sf => eps_of_tau__orthotropic_Martin, &
-        tau_of_eps__orthotropic_Pettit__sf => tau_of_eps__orthotropic_Pettit, eps_of_tau__orthotropic_Pettit__sf => eps_of_tau__orthotropic_Pettit, &
-        eps_of_tau__linearTaylorSachs__sf => eps_of_tau__linearTaylorSachs, &
+        rheo_rev__isotropic__sf     => rheo_rev__isotropic,     rheo_fwd__isotropic__sf     => rheo_fwd__isotropic, &
+        rheo_rev__tranisotropic__sf => rheo_rev__tranisotropic, rheo_fwd__tranisotropic__sf => rheo_fwd__tranisotropic, &
+        rheo_rev__orthotropic__sf   => rheo_rev__orthotropic,   rheo_fwd__orthotropic__sf   => rheo_fwd__orthotropic, &
+        rheo_rev__orthotropic_Martin__sf => rheo_rev__orthotropic_Martin, rheo_fwd__orthotropic_Martin__sf => rheo_fwd__orthotropic_Martin, &
+        rheo_rev__orthotropic_Pettit__sf => rheo_rev__orthotropic_Pettit, rheo_fwd__orthotropic_Pettit__sf => rheo_fwd__orthotropic_Pettit, &
+        rheo_fwd__tranisotropic_lintaylorsachshomo__sf => rheo_fwd__tranisotropic_lintaylorsachshomo, &
         
         ! Elasticities 
-        stress_of_strain__tranisotropic__sf => stress_of_strain__tranisotropic, &
-        strain_of_stress__tranisotropic__sf => strain_of_stress__tranisotropic, &
+        elas_rev__tranisotropic__sf => elas_rev__tranisotropic, &
+        elas_fwd__tranisotropic__sf => elas_fwd__tranisotropic, &
         Vi_elastic_tranisotropic__sf => Vi_elastic_tranisotropic, &
         Qnorm__sf => Qnorm, &
         
@@ -204,8 +204,7 @@ contains
         integer, intent(in)       :: nprime
         real(kind=dp)             :: Evw
         
-        Evw = (1-alpha)*Evw_Sac(vw, tau, nlm, Ecc,Eca,nprime) &
-                + alpha*Evw_Tay(vw, tau, nlm, Ecc,Eca,nprime)
+        Evw = Evw__sf(vw, tau, nlm, Ecc,Eca,alpha,nprime)
     end
     
     function Eeiej(nlm, e1,e2,e3, Ecc,Eca,alpha,nprime) 
@@ -284,150 +283,150 @@ contains
     ! GRAIN-AVERAGED RHEOLOGY (SACHS, TAYLOR)
     !---------------------------------
        
-    function eps_of_tau__linearTaylorSachs(tau, nlm, Aprime,Ecc,Eca,alpha) result(eps_of_tau)
+    function rheo_fwd__linearTaylorSachs(tau, nlm, Aprime,Ecc,Eca,alpha) result(eps)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in)    :: tau(3,3), Aprime, Ecc,Eca,alpha
         complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp)                :: eps_of_tau(3,3)
+        real(kind=dp)                :: eps(3,3)
     
-        eps_of_tau = eps_of_tau__linearTaylorSachs__sf(tau, nlm, Aprime,Ecc,Eca,alpha)
+        eps = rheo_fwd__tranisotropic_lintaylorsachshomo__sf(tau, nlm, Aprime,Ecc,Eca,alpha)
     end
         
     !---------------------------------
     ! TRANSVERSELY ISOTROPIC RHEOLOGY 
     !---------------------------------
 
-    function eps_of_tau__tranisotropic(tau, A,n, m,Emm,Emt) result(eps)
+    function rheo_fwd__tranisotropic(tau, A,n, m,Emm,Emt) result(eps)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in) :: tau(3,3), A, m(3),Emm,Emt
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: eps(3,3)
         
-        eps = eps_of_tau__tranisotropic__sf(tau, A,n, m,Emm,Emt)
+        eps = rheo_fwd__tranisotropic__sf(tau, A,n, m,Emm,Emt)
     end
     
-    function tau_of_eps__tranisotropic(eps, A,n, m,Emm,Emt) result(tau)
+    function rheo_rev__tranisotropic(eps, A,n, m,Emm,Emt) result(tau)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in) :: eps(3,3), A, m(3),Emm,Emt 
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: tau(3,3)
         
-        tau = tau_of_eps__tranisotropic__sf(eps, A,n, m,Emm,Emt)
+        tau = rheo_rev__tranisotropic__sf(eps, A,n, m,Emm,Emt)
     end
     
     !---------------------------------
     ! ORTHOTROPIC RHEOLOGY 
     !---------------------------------
     
-    function eps_of_tau__orthotropic(tau, A,n, m1,m2,m3, Eij) result(eps)
+    function rheo_fwd__orthotropic(tau, A,n, m1,m2,m3, Eij) result(eps)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in) :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: eps(3,3)
         
-        eps = eps_of_tau__orthotropic__sf(tau, A,n, m1,m2,m3, Eij)
+        eps = rheo_fwd__orthotropic__sf(tau, A,n, m1,m2,m3, Eij)
     end
     
-    function tau_of_eps__orthotropic(eps, A,n, m1,m2,m3, Eij) result(tau)
+    function rheo_rev__orthotropic(eps, A,n, m1,m2,m3, Eij) result(tau)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: tau(3,3)
         
-        tau = tau_of_eps__orthotropic__sf(eps, A,n, m1,m2,m3, Eij)
+        tau = rheo_rev__orthotropic__sf(eps, A,n, m1,m2,m3, Eij)
     end
     
     ! Pettit's hypothesis that the fluidity is orientation independent.
-    function eps_of_tau__orthotropic_Pettit(tau, A,n, m1,m2,m3, Eij) result(eps)
+    function rheo_fwd__orthotropic_Pettit(tau, A,n, m1,m2,m3, Eij) result(eps)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in) :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: eps(3,3)
         
-        eps = eps_of_tau__orthotropic_Pettit__sf(tau, A,n, m1,m2,m3, Eij)
+        eps = rheo_fwd__orthotropic_Pettit__sf(tau, A,n, m1,m2,m3, Eij)
     end
     
-    function tau_of_eps__orthotropic_Pettit(eps, A,n, m1,m2,m3, Eij) result(tau)
+    function rheo_rev__orthotropic_Pettit(eps, A,n, m1,m2,m3, Eij) result(tau)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: tau(3,3)
         
-        tau = tau_of_eps__orthotropic_Pettit__sf(eps, A,n, m1,m2,m3, Eij)
+        tau = rheo_rev__orthotropic_Pettit__sf(eps, A,n, m1,m2,m3, Eij)
     end
     
     ! Martin's hypothesis that the viscosity is orientation independent.
-    function eps_of_tau__orthotropic_Martin(tau, A,n, m1,m2,m3, Eij) result(eps)
+    function rheo_fwd__orthotropic_Martin(tau, A,n, m1,m2,m3, Eij) result(eps)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in) :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: eps(3,3)
         
-        eps = eps_of_tau__orthotropic_Martin__sf(tau, A,n, m1,m2,m3, Eij)
+        eps = rheo_fwd__orthotropic_Martin__sf(tau, A,n, m1,m2,m3, Eij)
     end
     
-    function tau_of_eps__orthotropic_Martin(eps, A,n, m1,m2,m3, Eij) result(tau)
+    function rheo_rev__orthotropic_Martin(eps, A,n, m1,m2,m3, Eij) result(tau)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: tau(3,3)
         
-        tau = tau_of_eps__orthotropic_Martin__sf(eps, A,n, m1,m2,m3, Eij)
+        tau = rheo_rev__orthotropic_Martin__sf(eps, A,n, m1,m2,m3, Eij)
     end
     
     !---------------------------------
     ! ISOTROPIC (GLEN) RHEOLOGY 
     !---------------------------------
 
-    function eps_of_tau__isotropic(tau, A,n) result(eps)
+    function rheo_fwd__isotropic(tau, A,n) result(eps)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in) :: tau(3,3), A
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: eps(3,3)
         
-        eps = eps_of_tau__isotropic__sf(tau, A,n)
+        eps = rheo_fwd__isotropic__sf(tau, A,n)
     end
     
-    function tau_of_eps__isotropic(eps, A,n) result(tau)
+    function rheo_rev__isotropic(eps, A,n) result(tau)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in) :: eps(3,3), A
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: tau(3,3)
         
-        tau = tau_of_eps__isotropic__sf(eps, A,n)
+        tau = rheo_rev__isotropic__sf(eps, A,n)
     end
     
     !---------------------------------
     ! TRANSVERSELY ISOTROPIC ELASTICITY 
     !---------------------------------
     
-    function stress_of_strain__tranisotropic(strain, lam,mu, Elam,Emu,Egam,m) result(stress)
+    function elas_rev__tranisotropic(strain, lam,mu, Elam,Emu,Egam,m) result(stress)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in) :: strain(3,3), lam,mu, Elam,Emu,Egam,m(3)
         real(kind=dp)             :: stress(3,3)
         
-        stress = stress_of_strain__tranisotropic__sf(strain, lam,mu, Elam,Emu,Egam,m)
+        stress = elas_rev__tranisotropic__sf(strain, lam,mu, Elam,Emu,Egam,m)
     end
     
-    function strain_of_stress__tranisotropic(stress, lam,mu, Elam,Emu,Egam,m) result(strain)
+    function elas_fwd__tranisotropic(stress, lam,mu, Elam,Emu,Egam,m) result(strain)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in) :: stress(3,3), lam,mu, Elam,Emu,Egam,m(3)
         real(kind=dp)             :: strain(3,3)
         
-        strain = strain_of_stress__tranisotropic__sf(stress, lam,mu, Elam,Emu,Egam,m)
+        strain = elas_fwd__tranisotropic__sf(stress, lam,mu, Elam,Emu,Egam,m)
     end
     
     subroutine Cij_to_Lame(C11,C33,C55,C12,C13, lam,mu,Elam,Emu,Egam)
@@ -436,7 +435,7 @@ contains
         real(kind=dp), intent(in)  :: C11,C33,C55,C12,C13
         real(kind=dp), intent(out) :: lam,mu, Elam,Emu,Egam ! Lame parameters and their directional enhancements
         
-        call Cij_to_Lame__traniso(C11,C33,C55,C12,C13, lam,mu,Elam,Emu,Egam)
+        call Cij_to_Lame__tranisotropic(C11,C33,C55,C12,C13, lam,mu,Elam,Emu,Egam)
     end
     
     !---------------------------------

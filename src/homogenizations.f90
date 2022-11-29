@@ -1,6 +1,7 @@
 ! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2022
 
 ! Bulk polycrystalline homogenization schemes, assuming individual grains have a transversely isotropic constitutive equation, both viscously and elastically.
+! Other grain symmetry groups not yet supported.
 
 module homogenizations  
 
@@ -69,9 +70,9 @@ contains
     ! VISCOUS
     !---------------------------------
 
-    function ev_epsprime_Sac(tau, nlm, Ecc,Eca,nprime) result(eps)
-
-        ! Sachs grain-averaged rheology
+    function rheo_fwd__tranisotropic_sachshomo(tau, nlm, Ecc,Eca,nprime) result(eps)
+    
+        ! Grain-averaged forward rheology subject to Sachs homogenization (constant stress over all grains) assuming transversely isotropic grains.
         
         implicit none
         
@@ -85,7 +86,7 @@ contains
         real(kind=dp)             :: eps(3,3), coefA,coefB,coefC, tausq(3,3), I2
         real(kind=dp)             :: a2v(6), a4v(6,6), a4tau(3,3)
 
-        call tranisotropic_coefs(Ecc,Eca,d,nprime,1.0d0, coefA,coefB,coefC)
+        call rheo_params__tranisotropic(Ecc,Eca,d,nprime,1.0d0, coefA,coefB,coefC)
 
         I2 = doubleinner22(tau,tau)
 
@@ -120,9 +121,9 @@ contains
         eps = ev_etac0*tau - coefA*doubleinner22(ev_etac2,tau)*identity + coefB*a4tau + coefC*(matmul(tau,ev_etac2)+matmul(ev_etac2,tau))
     end
 
-    function ev_epsprime_Tay(tau, nlm, Ecc,Eca,nprime) result(eps)
+    function rheo_fwd__tranisotropic_taylorhomo(tau, nlm, Ecc,Eca,nprime) result(eps)
         
-        ! Taylor grain-averaged rheology
+        ! Grain-averaged forward rheology subject to Sachs homogenization (constant stress over all grains) assuming transversely isotropic grains.
         ! NOTE: Taylor model supports only n'=1. nprime is required anyway for future compatibility with n'>1.
         
         implicit none
@@ -138,7 +139,7 @@ contains
         integer                   :: info
     !    integer :: ipiv(9), work
                                                                
-        call tranisotropic_coefs(Ecc,Eca,d,nprime,-1.0d0, coefA,coefB,coefC)
+        call rheo_params__tranisotropic(Ecc,Eca,d,nprime,-1.0d0, coefA,coefB,coefC)
         
         call f_ev_ck_Mandel(nlm, a2v, a4v) ! Structure tensors in Mandel notation: a2v = ev_c2_Mandel, B = ev_c4_Mandel
         a2mat = vec_to_mat(a2v) ! = a2
@@ -166,9 +167,9 @@ contains
         eps = vec_to_mat(tau_vec)
     end
 
-    function eps_of_tau__linearTaylorSachs(tau, nlm, Aprime,Ecc,Eca,alpha) result(eps)
+    function rheo_fwd__tranisotropic_lintaylorsachshomo(tau, nlm, Aprime,Ecc,Eca,alpha) result(eps)
 
-        ! Mixed Taylor--Sachs grain-averaged rheology:
+        ! Mixed linear Taylor--Sachs grain-averaged rheology:
         !       eps = (1-alpha)*<eps'(tau)> + alpha*eps(<tau'>)
         ! ...where eps'(tau') is the transversely isotropic rheology for n'=1 (linear viscous)
 
@@ -178,13 +179,15 @@ contains
         real(kind=dp), intent(in)    :: tau(3,3), Aprime, Ecc, Eca, alpha
         real(kind=dp)                :: eps(3,3)
         
-        eps = (1-alpha)*Aprime*ev_epsprime_Sac(tau, nlm, Ecc,Eca,1)  &
-                + alpha*Aprime*ev_epsprime_Tay(tau, nlm, Ecc,Eca,1) 
+        eps = (1-alpha)*Aprime*rheo_fwd__tranisotropic_sachshomo( tau, nlm, Ecc,Eca,1)  &
+                + alpha*Aprime*rheo_fwd__tranisotropic_taylorhomo(tau, nlm, Ecc,Eca,1) 
     end
     
     ! Isotropic-fabric bulk rheologies for faster evaluation when calculating (isotropic) denominators in enhancement factors
     
-    function ev_epsprime_Sac__isotropic(tau, Ecc,Eca,nprime) result(eps)
+    function rheo_fwd__tranisotropic_sachshomo__isotropic(tau, Ecc,Eca,nprime) result(eps)
+       
+        ! Same as rheo_fwd__tranisotropic_sachshomo() but uses hardcoded isotropic ODF
        
         implicit none
         
@@ -196,7 +199,7 @@ contains
         real(kind=dp)            :: eps(3,3), coefA,coefB,coefC, tausq(3,3), I2
         real(kind=dp)            :: a4tau(3,3)
 
-        call tranisotropic_coefs(Ecc,Eca,d,nprime,1.0d0, coefA,coefB,coefC)
+        call rheo_params__tranisotropic(Ecc,Eca,d,nprime,1.0d0, coefA,coefB,coefC)
         eps = (1 + 2.0d0/15*coefB + 2.0d0/3*coefC)*tau ! for n' = 1
 
         ! Same as n'=3 but *without* the orientation-dependent terms in the nonlinear grain fluidity.        
@@ -218,7 +221,9 @@ contains
     end
     
     
-    function ev_epsprime_Tay__isotropic(tau, Ecc,Eca,nprime) result(eps)
+    function rheo_fwd__tranisotropic_taylorhomo__isotropic(tau, Ecc,Eca,nprime) result(eps)
+
+        ! Same as rheo_fwd__tranisotropic_taylorhomo() but uses hardcoded isotropic ODF
 
         implicit none
         
@@ -227,7 +232,7 @@ contains
         real(kind=dp), parameter  :: d = 3.0d0
         real(kind=dp)             :: eps(3,3), coefA,coefB,coefC
 
-        call tranisotropic_coefs(Ecc,Eca,d,nprime,-1.0d0, coefA,coefB,coefC)
+        call rheo_params__tranisotropic(Ecc,Eca,d,nprime,-1.0d0, coefA,coefB,coefC)
         eps = tau/(1 + 2.0d0/15*coefB + 2.0d0/3*coefC) ! Unlike the Taylor homogenization with an arbitrary anisotropy, when isotropic the analytical inverse is easy to derive.
     end
     
@@ -252,9 +257,9 @@ contains
     ! ELASTIC
     !---------------------------------
 
-    function ev_sigprime_Reuss(strain, nlm, lam,mu, Elam,Emu,Egam) result(stress)
-        
-        ! sig(<eps>) given nlm
+    function elas_rev__tranisotropic_reuss(strain, nlm, lam,mu, Elam,Emu,Egam) result(stress)
+
+        ! Reuss-averaged elastic constitutive equation assuming transversely isotropic grains: sig(<eps>) (given nlm)
         
         implicit none
         
@@ -268,7 +273,7 @@ contains
         real(kind=dp) :: P(6,6), L(6,6), strain_vec(6,1) !,  P_reg(6,6),strain_vec_reg(6,1)
         integer       :: info
 
-        call elastic_tranisotropic_params__strain(lam,mu,Elam,Emu,Egam, k1,k2,k3,k4,k5)
+        call elas_fwdparams__tranisotropic(lam,mu,Elam,Emu,Egam, k1,k2,k3,k4,k5)
         
         call f_ev_ck_Mandel(nlm, a2v, a4v) ! Structure tensors in Mandel notation: a2v = ev_c2_Mandel, B = ev_c4_Mandel
         a2mat = vec_to_mat(a2v) ! = a2
