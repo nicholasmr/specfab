@@ -257,7 +257,11 @@ contains
     ! ELASTIC
     !---------------------------------
 
-    function elas_rev_tranisotropic_reuss(strain, nlm, lam,mu, Elam,Emu,Egam) result(stress)
+    !function elas_fwd_tranisotropic_voigthomo(strain, nlm, lam,mu, Elam,Emu,Egam) result(strain)
+    ! *** N/A ***
+    !end
+
+    function elas_rev_tranisotropic_reusshomo(strain, nlm, lam,mu, Elam,Emu,Egam) result(stress)
 
         ! Reuss-averaged elastic constitutive equation assuming transversely isotropic grains: sig(<eps>) (given nlm)
         

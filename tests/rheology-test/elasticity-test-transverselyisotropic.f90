@@ -94,7 +94,7 @@ program demo
 !    strain_input = tau_vw(x1,x3)
     print *, 'strain_input = ', strain_input
     stress_true = elas_rev_tranisotropic(strain_input, lam,mu,Elam,Emu,Egam,m)
-    stress_homo = elas_rev_tranisotropic_reuss(strain_input, nlm, lam,mu,Elam,Emu,Egam)
+    stress_homo = elas_rev_tranisotropic_reusshomo(strain_input, nlm, lam,mu,Elam,Emu,Egam)
    
     print *, 'stress_true = ', stress_true
     print *, 'stress_homo = ', stress_homo
