@@ -50,7 +50,7 @@ contains
     ! FABRIC DYNAMICS
     !---------------------------------
 
-    function M_LROT(eps,omg, tau,Aprime,Ecc,Eca, beta)  
+    function M_LROT(eps, omg, iota, zeta)  
 
         !------------------
         ! Lattice rotation
@@ -60,19 +60,18 @@ contains
 
         implicit none
 
-        real(kind=dp), intent(in) :: eps(3,3), omg(3,3), tau(3,3) ! strain-rate (eps), spin (omg), dev. stress (tau)
-        real(kind=dp), intent(in) :: Aprime, Ecc, Eca, beta
-        complex(kind=dp)          :: M_LROT(nlm_len,nlm_len), qe(-2:2), qt(-2:2), qo(-1:1)
+        real(kind=dp), intent(in) :: eps(3,3), omg(3,3), iota, zeta ! strain-rate (eps), spin (omg), eps^1 coefficient (iota), eps^2 coefficient (zeta)
+        complex(kind=dp)          :: M_LROT(nlm_len,nlm_len), qe(-2:2), qo(-1:1)
         integer, parameter        :: SHI_LATROT = 6 ! Scope of harmonic interactions (in wave space) for LATROT
         complex(kind=dp), dimension(SHI_LATROT) :: g0,     gz,     gn,     gp
         complex(kind=dp), dimension(SHI_LATROT) :: g0_rot, gz_rot, gn_rot, gp_rot
-        complex(kind=dp), dimension(SHI_LATROT) :: g0_Sac, gz_Sac, gn_Sac, gp_Sac
         complex(kind=dp), dimension(SHI_LATROT) :: g0_Tay, gz_Tay, gn_Tay, gp_Tay
-        real(kind=dp) :: etaprime
-
+        real(kind=dp) :: zetanorm, epssq(3,3)
+        
         ! Quadric expansion coefficients
-        qe = quad_rr(eps)
-        qt = quad_rr(tau)
+        epssq = matmul(eps,eps)
+        zetanorm = zeta/sqrt(epssq(1,1)+epssq(2,2)+epssq(3,3)) ! Normalize zeta so that evolution depends only on total accumulated strain
+        qe = quad_rr(iota*eps + zetanorm*epssq)
         qo = quad_tp(omg)
 
         ! Harmonic interaction weights
@@ -80,35 +79,17 @@ contains
         gz_rot = [ -i*sqrt(3.)*qo(0), 0*r,0*r,0*r,0*r,0*r ]
         gn_rot = [ -i*6/sqrt(6.)*qo(-1), 0*r,0*r,0*r,0*r,0*r ]
         gp_rot = [ +i*6/sqrt(6.)*qo(+1), 0*r,0*r,0*r,0*r,0*r ]
+        
         g0_Tay = 3*[ 0*r, qe(-2),qe(-1),qe(0),qe(+1),qe(+2) ]
         gz_Tay = [ 0*r, -qe(-2),0*r,0*r,0*r,qe(+2) ]
         gn_Tay = [ sqrt(5./6)*qe(-1), 0*r, qe(-2), sqrt(2./3)*qe(-1), sqrt(3./2)*qe(0), 2*qe(+1) ]
         gp_Tay = [ sqrt(5./6)*qe(+1), 2*qe(-1), sqrt(3./2)*qe(0), sqrt(2./3)*qe(+1), qe(+2), 0*r ]
         
-        if (beta .gt. 1.0d0-1d-4) then
-            ! beta=1 => ODF evolution is kinematic in the sense that c-axes rotate in response to the bulk stretching and spin.
-            ! This is what was used in Rathmann et al. (2021) and Rathmann and Lilien (2021).
-            
-            g0 = g0_rot + g0_Tay
-            gz = gz_rot + gz_Tay
-            gn = gn_rot + gn_Tay
-            gp = gp_rot + gp_Tay
-        
-        else
-            ! *** EXPERIMENTAL, NOT VALIDATED ***
-            ! Depends on (tau,Aprime,Ecc,Eca) unlike the Taylor case.
-            
-            etaprime = Aprime*doubleinner22(tau,tau) ! Assumes eta' = A'*(I2(tau)) (i.e. n'=3).
-            g0_Sac = 3*[ 0*r, Eca*qt(-2),Eca*qt(-1),Eca*qt(0),Eca*qt(+1),Eca*qt(+2) ]
-            gz_Sac = [ 0*r, -Eca*qt(-2),-1./2*(Eca-1)*qt(-1),0*r,1./2*(Eca-1)*qt(+1),Eca*qt(+2) ]
-            gn_Sac = [ sqrt(5./6)*qt(-1), 0*r, Eca*qt(-2), sqrt(1./6)*(3*Eca-1)*qt(-1), sqrt(3./2)*Eca*qt(0), (Eca+1)*qt(+1) ]
-            gp_Sac = [ sqrt(5./6)*qt(+1), (Eca+1)*qt(-1), sqrt(3./2)*Eca*qt(0), sqrt(1./6)*(3*Eca-1)*qt(+1), Eca*qt(+2), 0*r ]
+        g0 = g0_rot + g0_Tay
+        gz = gz_rot + gz_Tay
+        gn = gn_rot + gn_Tay
+        gp = gp_rot + gp_Tay
 
-            g0 = g0_rot + (1-beta)*etaprime*g0_Sac + beta*g0_Tay
-            gz = gz_rot + (1-beta)*etaprime*gz_Sac + beta*gz_Tay
-            gn = gn_rot + (1-beta)*etaprime*gn_Sac + beta*gn_Tay
-            gp = gp_rot + (1-beta)*etaprime*gp_Sac + beta*gp_Tay
-        end if 
 
         do ii = 1, nlm_len
             M_LROT(ii,1:nlm_len) = -1*( matmul(GC(ii,1:nlm_len,1:SHI_LATROT),g0) + matmul(GCm(ii,1:nlm_len,1:SHI_LATROT),gz) + matmul(GC_m1(ii,1:nlm_len,1:SHI_LATROT),gn) + matmul(GC_p1(ii,1:nlm_len,1:SHI_LATROT),gp) )    

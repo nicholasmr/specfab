@@ -95,7 +95,7 @@ program demo
     omg = (ugrad-transpose(ugrad))/2 ! spin
     
     call initspecfab(L) 
-    M  = M_LROT(eps,omg, 0*eps,0d0,0d0,0d0, 1d0) 
+    M  = M_LROT(eps, omg, 1d0, 0d0) 
     call reduce_M(M, Mrr,Mri,Mir,Mii) ! Any x-y rotation will make nlm (rnlm) complex valued, all four Mrr,Mri,Mir,Mii must be considere (else Mrr suffices)
    
     nlm0  = nlm2 ! Test fabric. Must be has correctly conjugate components for -m modes, hence we use nlm2

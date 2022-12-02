@@ -138,7 +138,7 @@ for L in L_list:
             nlm_prev = nlm[nn-1,:]
             
             # Lattice rotation operator (nlm_len x nlm_len matrix)
-            M_LROT = sf.M_LROT(nlm_prev, D, W) 
+            M_LROT = sf.M_LROT(nlm_prev, D, W, 1, 0) 
 
             # DDRX operator (nlm_len x nlm_len matrix)
             S = D.copy() # S (dev. stress tensor) remains coaxial with D (strain-rate tensor) for this mode of deformation, so we need not calculate S from the bulk flow law (which in turn requires calculating the enhancement factors from the modelled fabric)

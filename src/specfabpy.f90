@@ -107,14 +107,14 @@ contains
     ! FABRIC DYNAMICS
     !---------------------------------
     
-    function M_LROT(nlm, eps,omg) 
+    function M_LROT(nlm, eps, omg, iota, zeta) 
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp), intent(in)    :: eps(3,3), omg(3,3)
+        real(kind=dp), intent(in)    :: eps(3,3), omg(3,3), iota, zeta
         complex(kind=dp)             :: M_LROT(size(nlm),size(nlm))
         
-        M_LROT = M_LROT__sf(eps,omg, 0*eps,0d0,1d0,1d0, 1d0) ! only the Taylor model is provided for the python interface
+        M_LROT = M_LROT__sf(eps, omg, iota, zeta)
     end
     
     function M_DDRX(nlm, tau)

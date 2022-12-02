@@ -118,7 +118,7 @@ program demo
     !-------------------------------------------------------------------
 
     call savestate(nlm, 1) ! Save initial state    
-    M = M_LROT(eps,omg, 0*eps,0d0,0d0,0d0, 1d0) ! Assume constant strain-rate and spin with Taylor style plastic spin for lattice rotation (beta=1).
+    M = M_LROT(eps, omg, 1d0, 0d0) ! Assume constant strain-rate and spin with Taylor style plastic spin for lattice rotation.
     M = M + M_REG(eps) ! Regularization
             
     do tt = 2, Nt

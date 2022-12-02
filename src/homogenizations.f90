@@ -123,7 +123,7 @@ contains
 
     function rheo_fwd_tranisotropic_taylorhomo(tau, nlm, Ecc,Eca,nprime) result(eps)
         
-        ! Grain-averaged forward rheology subject to Sachs homogenization (constant stress over all grains) assuming transversely isotropic grains.
+        ! Grain-averaged forward rheology subject to Taylor homogenization (constant strainrate over all grains) assuming transversely isotropic grains.
         ! NOTE: Taylor model supports only n'=1. nprime is required anyway for future compatibility with n'>1.
         
         implicit none

@@ -98,7 +98,7 @@ for tt in np.arange(1,Nt):
 
     nlm_prev = nlm[tt-1,:]
 
-    M_LROT = sf.M_LROT(nlm_prev, eps,omg) # Here we consider constant large-scale velocity gradients, **but if for any practical time-varying scenario M_ij should be calculated inside the loop below!**
+    M_LROT = sf.M_LROT(nlm_prev, eps, omg, 1, 0) # Here we consider constant large-scale velocity gradients, **but if for any practical time-varying scenario M_ij should be calculated inside the loop below!**
     M_REG  = sf.M_REG(nlm_prev, eps)
     M      = M_LROT + M_REG
 

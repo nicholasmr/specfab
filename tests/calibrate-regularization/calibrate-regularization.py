@@ -116,7 +116,7 @@ for L in L_list:
     nlm[0,:] = 1/np.sqrt(4*np.pi) # Init with isotropy
     nlm0 = nlm[:,0].copy()
     
-    M = sf.M_LROT(nlm0, D, W) # strain-rate assumed constant for calibration experiments
+    M = sf.M_LROT(nlm0, D, W, 1, 0) # strain-rate assumed constant for calibration experiments
     if 0 and TEST_GIRDLE: # test specfab implemention of solution.
         print("*** USING SPECFAB'S M_REG() (verifying fortran implementation)")
         nu0 = 1

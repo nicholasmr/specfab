@@ -121,7 +121,7 @@ class SyntheticFabric():
 #            tt = Nt0-ii
             tt = ii
             D_, W_ = D[tt,:,:], W[tt,:,:]
-            M = sf.M_LROT(nlm_prev, D_,W_) # Lattice rotation
+            M = sf.M_LROT(nlm_prev, D_, W_, 1, 0) # Lattice rotation
             M += self.M_REG(D_) # Regularization
             nlm_list[tt,:] = nlm_prev + dt * np.matmul(M, nlm_prev)
             nlm_prev = nlm_list[tt,:]
@@ -133,7 +133,7 @@ class SyntheticFabric():
         for ii in np.arange(Nt1+1):
             tt = Nt0+ii
             D_, W_ = D[tt,:,:], W[tt,:,:]
-            M = sf.M_LROT(nlm_prev, D_,W_) # Lattice rotation
+            M = sf.M_LROT(nlm_prev, D_, W_, 1, 0) # Lattice rotation
             M += nu0 * sf.M_REG(nlm_prev, D_) # Regularization
             nlm_list[tt,:] = nlm_prev + dt * np.matmul(M, nlm_prev)
             nlm_prev = nlm_list[tt,:]

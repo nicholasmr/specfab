@@ -45,7 +45,7 @@ nlm = np.zeros((2, nlm_len, Nt), dtype=np.complex128)
 nlm[:,0,:] = 1/np.sqrt(4*np.pi) # Init with isotropy
 nlm0 = nlm[0,:,0].copy()
 
-M_LROT = sf.M_LROT(nlm0, D, W) # strain-rate assumed constant for calibration experiments
+M_LROT = sf.M_LROT(nlm0, D, W, 1, 0) # strain-rate assumed constant for calibration experiments
 M_REG  = sf.M_REG(nlm0, D)
 
 for ii in [0,1]:

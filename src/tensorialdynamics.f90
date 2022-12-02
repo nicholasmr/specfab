@@ -24,7 +24,7 @@ subroutine daidt_LATROT(eps, omg, a2, a4, da2dt, da4dt)
     
     nlm = 0.0
     nlm(1:(I_l6-1)) = a4_to_nlm(a4) ! tensorial --> spectral, truncated at L=4
-    ddt_nlm = matmul(M_LROT(eps,omg, 0*eps,0d0,0d0,0d0, 1d0), nlm) ! spectral evolution  --- d/dt nlm_i = M_ij nlm_j 
+    ddt_nlm = matmul(M_LROT(eps, omg, 1.0d0, 0.0d0), nlm) ! spectral evolution  --- d/dt nlm_i = M_ij nlm_j 
     call dndt_to_daidt(ddt_nlm, nlm(1), da2dt, da4dt) ! spectral --> tensorial 
 end
 
