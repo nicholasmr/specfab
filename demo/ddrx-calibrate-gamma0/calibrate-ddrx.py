@@ -53,7 +53,7 @@ for L in L_list:
     PROFILE = 'EDC'
 
     if PROFILE == 'EDC':
-        file = open("DOME_C.dump",'rb')
+        file = open("EDC.p",'rb')
         (fab,temp,aux) = pickle.load(file)
         n20_0 = 0.14 # initial fabric state of parcel (only l,m=2,0 component is assumed nonzero)
         strain_zz_stop=-0.96 # stop integration at this vertical parcel strain. Fabric is only measured until the depth corresponding to this vertical strain.

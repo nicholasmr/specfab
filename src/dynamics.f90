@@ -398,9 +398,9 @@ contains
         if (nlm_len .ge. nlm_lenvec(12)) nlm_rot(I_l12:(I_l14-1)) = matmul(D12mn, nlm(I_l12:(I_l14-1)))
 !       if (nlm_len .ge. nlm_lenvec(6)) nlm_rot(I_l14:(I_l16-1)) = matmul(D14mn, nlm(I_l14:(I_l16-1)))
 
-        if (nlm_len .gt. nlm_lenvec(Lmax_wignerD)) then
-            print *, 'specfab error: L > L_max for rotating nlm with wigner D matrices'
-        end if
+!        if (nlm_len .gt. nlm_lenvec(Lmax_wignerD)) then
+!            print *, 'specfab error: L > L_max for rotating nlm with wigner D matrices'
+!        end if
     end
 
 end module dynamics
