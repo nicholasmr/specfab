@@ -27,6 +27,7 @@ See the [specfab Wiki](https://github.com/nicholasmr/specfab/wiki)
 | Lattice rotation | [Rathmann et al. (2021)](https://doi.org/10.1017/jog.2020.117) |
 | Discontinuous dynamic recrystallization | [Rathmann and Lilien (2021)](https://doi.org/10.1017/jog.2021.88) |
 | Orthotropic bulk rheologies | [Rathmann and Lilien (2022)](https://doi.org/10.1017/jog.2022.33) |
+| Elastic wave velocities | [Rathmann et al. (2022)](https://doi.org/10.1098/rspa.2022.0574) |
 
 See also the [Wiki](https://github.com/nicholasmr/specfab/wiki)
 
