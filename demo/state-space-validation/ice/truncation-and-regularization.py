@@ -276,6 +276,6 @@ if DEBUG:
     print( nlm_uc6[-1,3]/n20_delta,  nlm_uc6[-1,10]/n40_delta)
 
 ### Save figure
-plt.savefig('%s.png'%(SELFNAME), dpi=350)
+plt.savefig('%s.png'%(SELFNAME), dpi=250)
 plt.close()
 
