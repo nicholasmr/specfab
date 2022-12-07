@@ -1,6 +1,6 @@
 ## specfab
 
-A spectral orientation fabric model for polycrystalline materials that:
+A spectral orientation fabric model for polycrystalline ice that:
 - Can model lattice (c-axis) rotation, discontinuous dynamic recrystallization, and rotation recrystallization.
 - Can calculate fabric-induced directional viscosities (enhancement factors) using Sachs/Taylor homogenizations.
 - Can calculate elastic P- and S-wave velocities using Voigt/Reuss homogenizations.
