@@ -1,4 +1,8 @@
-# Nicholas M. Rathmann, 2022
+# N. M. Rathmann <rathmann@nbi.ku.dk>, 2021-2022
+
+"""
+Tests conversion from structure-tensor (a2,a4) to spectral expansion coefficients (L=2,L¤4)
+"""
 
 import sys, os, copy, code # code.interact(local=locals())
 import numpy as np
@@ -28,14 +32,16 @@ theta = np.deg2rad(45 * 1)
 phi   = np.deg2rad(45 * 1)
 
 #----------------------
-# Rotate nlm using Wigner's D matrix
+# Rotate nlm using Wigner's D matrix to generate nlm with all components non-zero
 #----------------------
 
 nlm_wig = sf.rotate_nlm(nlm_0, -theta, 0) # vert
 nlm_wig = sf.rotate_nlm(nlm_wig, 0, phi) # horiz
+
 a2_wig = sf.a2(nlm_wig)
 a4_wig = sf.a4(nlm_wig)
 
+print('nlm_wig: \n', nlm_wig)
 print('a2_wig (tr=%.3f): \n'%(np.trace(a2_wig)), a2_wig)
 
 #----------------------
@@ -57,18 +63,23 @@ a4_matrot = np.einsum('mi,nj,ok,pl,ijkl', Rv, Rv, Rv, Rv, a4_matrot)
 a4_matrot = np.einsum('mi,nj,ok,pl,ijkl', Rh, Rh, Rh, Rh, a4_matrot)
 
 nlm_matrot = np.zeros((nlm_len), dtype=np.complex64) 
-#nlm_matrot[:6] = sf.a2_to_nlm(a2_matrot) # uncomment to instead test a2_to_nlm()
-nlm_matrot[:] = sf.a4_to_nlm(a4_matrot)
+#nlm_matrot[:6] = sf.a2_to_nlm(a2_matrot) # uncomment to test a2_to_nlm()
+nlm_matrot[:] = sf.a4_to_nlm(a4_matrot) # uncomment to test a4_to_nlm()
+
+# nlm_matrot should now match nlm_wig 
 
 #----------------------
 # Print error
 #----------------------
 
 np.set_printoptions(linewidth=400)
-print('--- Error ---')
+print('\n--- Conversion error estimates ---\n')
 print(nlm_wig[:])
 print(nlm_matrot[:])
 print('nlm err (sum abs): ', np.sum(np.abs(nlm_wig-nlm_matrot)))
+
+# Double check
+print('nlm err (sum abs) of nlm-a4_to_nlm(a4(nlm)): ', np.sum(np.abs( nlm_wig - sf.a4_to_nlm(sf.a4(nlm_wig)) )) )
 
 #----------------------
 # Plot
@@ -100,13 +111,13 @@ def plot_axes(ax, geo, cax='#ff7f00'):
     ax.plot([90],[0], marker=r'$y$', ms=7, c=cax, transform=geo) # y axis
     ax.plot([0],[90], marker=r'$z$', ms=7, c=cax, transform=geo) # z axis
 
-plot_ODF(nlm_wig, lm, ax=ax1, cmap='Greys', cblabel=r'$\psi/N$ (rot. nlm)')
+plot_ODF(nlm_wig, lm, ax=ax1, cmap='Greys', cblabel=r'$\psi/N$ ("nlm" rotated)')
 plot_axes(ax1, geo)
 
-plot_ODF(nlm_matrot, lm, ax=ax2, cmap='Greys', cblabel=r'$\psi/N$ (rot. ai)')
+plot_ODF(nlm_matrot, lm, ax=ax2, cmap='Greys', cblabel=r'$\psi/N$ ("ai" rotated)')
 plot_axes(ax2, geo)
 
-fout = 'ai-to-nlm-test.png'
-print('Saving %s'%(fout))
+fout = 'ai-to-nlm.png'
+print('\nSaving %s'%(fout))
 plt.savefig(fout, dpi=dpi)
     
