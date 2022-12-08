@@ -13,7 +13,7 @@ L = 12
 lm, nlm_len = sf.init(L)
 nlm = np.zeros((3, nlm_len), dtype=np.complex64) # The expansion coefficients
 
-if 0:
+if 1:
     a2 = np.diag([0.0,0.0,1.0]) # any second-order structure tensor (not necessarily diagonal)
     nlm[0,0:6] = sf.a2_to_nlm(a2) # l=2 expansion coefficients for corresponding ODF (a2 is normalized)
 else:
@@ -51,7 +51,7 @@ def plot_axes(ax, geo):
     ax.plot([90],[0], marker=r'$y$', ms=7, c=cax, transform=geo) # y axis
     ax.plot([0],[90], marker=r'$z$', ms=7, c=cax, transform=geo) # z axis
 
-dpi, scale = 150, 2.2
+dpi, scale = 125, 2.2
 fig = plt.figure(figsize=(3*scale,1.4*scale))
 gs = gridspec.GridSpec(1,3)
 a = 0.03

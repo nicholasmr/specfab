@@ -492,6 +492,6 @@ secax.set_xticks(xticks[::1], minor=True)
 ### Save figure
 
 #plt.tight_layout()
-plt.savefig('%s.png'%(SELFNAME), dpi=250)
+plt.savefig('%s.png'%(SELFNAME), dpi=175)
 plt.close()
 

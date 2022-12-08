@@ -380,5 +380,5 @@ for ii,nn in enumerate(steps_to_plot_ODF):
 
 fname = 'rheology-compare-%s.png'%(T_EXP_STR[T_EXP])
 print('Saving output to %s'%(fname))
-plt.savefig(fname, dpi=300)
+plt.savefig(fname, dpi=175)
 

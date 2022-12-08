@@ -268,7 +268,7 @@ if len(types) == 3:
     fout = "enhancement-factor-lin-taylor-sachs"
     os.system('pdfjam --nup 3x1 --trim "0 0 0em 0" %s --outfile %s.pdf;'%(flist,fout))    
     os.system('pdfcrop --margins 2 %s.pdf %s.pdf;'%(fout,fout))
-    os.system('convert -density 400 -quality 100 +profile "icc" -flatten %s.pdf %s.png'%(fout,fout))
+    os.system('convert -density 200 -quality 100 +profile "icc" -flatten %s.pdf %s.png'%(fout,fout))
     os.system('rm %s'%(flist))
     os.system('rm %s.pdf'%(fout))
 

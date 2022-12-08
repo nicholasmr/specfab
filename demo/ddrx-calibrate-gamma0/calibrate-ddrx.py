@@ -258,5 +258,5 @@ for L in L_list:
 
     fname = 'calibrate-ddrx-L%i-%s%s.png'%(L, PROFILE, '--with-CDRX' if WITH_CDRX else '')
     print('saving %s'%(fname))
-    plt.savefig(fname, dpi=200)
+    plt.savefig(fname, dpi=150)
 

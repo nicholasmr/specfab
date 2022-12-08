@@ -190,6 +190,6 @@ for ii,nprime in enumerate(nprime_list):
     ax.xaxis.set_minor_locator(locmin)
     ax.xaxis.set_minor_formatter(mpl.ticker.NullFormatter())
 
-plt.savefig('enhancement-factor-nlin-sachs.png', dpi=300)
+plt.savefig('enhancement-factor-nlin-sachs.png', dpi=250)
 plt.close()
 
