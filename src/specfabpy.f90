@@ -24,8 +24,8 @@ module specfabpy
         M_REG__sf  => M_REG, &
 
         ! Structure tensors 
-        a2__sf => a2, a4__sf => a4, & 
-        a2_to_nlm__sf => a2_to_nlm, a4_to_nlm__sf => a4_to_nlm, & ! Canonical representations
+        a2__sf => a2, a4__sf => a4, a6__sf => a6, & 
+        a2_to_nlm__sf => a2_to_nlm, a4_to_nlm__sf => a4_to_nlm, a6_to_nlm__sf => a6_to_nlm, & ! Canonical representations
         ae2_to_a2__sf => ae2_to_a2, ae4_to_a4__sf => ae4_to_a4, & ! Elmer representations
         a4_to_mat__sf => a4_to_mat, & ! a4 in Mandel notation
         a4_eigentensors__sf => a4_eigentensors, & ! 3x3 eigentensors of a4
@@ -242,6 +242,15 @@ contains
         a4 = a4__sf(nlm)
     end    
     
+    function a6(nlm) 
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp)                :: a6(3,3,3,3,3,3)
+
+        a6 = a6__sf(nlm)
+    end    
+    
     subroutine ai(nlm, a2,a4,a6,a8)
         use specfabpy_const
         implicit none
@@ -270,8 +279,18 @@ contains
         
         nlm = a4_to_nlm__sf(a4)
     end
+
+    function a6_to_nlm(a6) result(nlm)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: a6(3,3,3,3,3,3)
+        integer, parameter        :: nlmlen = 1+5+9+13
+        complex(kind=dp)          :: nlm(nlmlen)
+        
+        nlm = a6_to_nlm__sf(a6)
+    end
     
-   function a4_to_mat(A) result (M)
+    function a4_to_mat(A) result (M)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in) :: A(3,3,3,3)

@@ -41,11 +41,23 @@ contains
         a4 = f_ev_c4(nlm(1),n2m,n4m)
     end
     
+    function a6(nlm) 
+        ! a^(6) := <c^6> 
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp)                :: a6(3,3,3,3,3,3)
+        complex(kind=dp)             :: n2m(-2:2), n4m(-4:4), n6m(-6:6)
+        n2m = nlm(I_l2:(I_l4-1))
+        n4m = nlm(I_l4:(I_l6-1))
+        n6m = nlm(I_l6:(I_l8-1))
+        a6 = f_ev_c6(nlm(1),n2m,n4m,n6m)
+    end
+    
     function a2_to_nlm(a2) result(nlm)
         ! Get n_2^m from a^(2)
         implicit none
         real(kind=dp), intent(in) :: a2(3,3)
-        complex(kind=dp)          :: nlm(1+5)
+        complex(kind=dp)          :: nlm(1+5) ! [n00, n2m]
         nlm = (0.0, 0.0) ! init
         include "include/a2_to_nlm__body.f90"
     end
@@ -54,11 +66,20 @@ contains
         ! Get n_2^m and n_4^m from a^(4)
         implicit none
         real(kind=dp), intent(in) :: a4(3,3,3,3)
-        complex(kind=dp)          :: nlm(1+5+9)
+        complex(kind=dp)          :: nlm(1+5+9) ! [n00, n2m, n4m]
         real(kind=dp)             :: a4Mandel(6,6)        
         nlm = 0.0 ! init
         a4Mandel = a4_to_mat(a4) ! 6x6 Mandel matrix of a4
         include "include/a4_to_nlm__body.f90"
+    end
+
+    function a6_to_nlm(a6) result(nlm)
+        ! Get n_2^m and n_4^m from a^(4)
+        implicit none
+        real(kind=dp), intent(in) :: a6(3,3,3,3,3,3)
+        complex(kind=dp)          :: nlm(1+5+9+13) ! [n00, n2m, n4m, n6m]
+        nlm = 0.0 ! init
+        include "include/a6_to_nlm__body.f90"
     end
 
     !---------------------------------
