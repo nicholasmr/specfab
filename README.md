@@ -5,6 +5,8 @@ A spectral orientation fabric model for polycrystalline ice that:
 - Can calculate fabric-induced directional viscosities (enhancement factors) using Sachs/Taylor homogenizations.
 - Can calculate elastic P- and S-wave velocities using Voigt/Reuss homogenizations.
 - Contains expressions for both forward and inverse orthotropic and tranversely isotropic rheologies.
+- Convert between structure tensors and spectral expansions coefficients.
+- Can be integrated with finite-element models such as Elmer and FeniCS.
 
 ![image](demo/cube-crush-animation/cube-crush.gif)
 
