@@ -1,7 +1,7 @@
 # N. M. Rathmann <rathmann@nbi.ku.dk>, 2022
 
 """
-Script for processing experimental data that generates a2 and a4 from measured c-axis ensembles
+Script for processing experimental data that generates a2 and a4 from measured grain orientations
 """
 
 import sys, os, copy, code # code.interact(local=locals())
@@ -28,15 +28,15 @@ from specfabpy import specfabpy as sf
 # See definitions in experiments.py 
 
 # All data
-#experiments = (expr_GRIP, expr_LAWDOME,  expr_EGRIP_MAIN, expr_SPICE, expr_EGRIP_S5, expr_Priestly, expr_Qi, expr_Fan_10,expr_Fan_4, expr_Hunter) 
+experiments = (expr_GRIP, expr_LAWDOME,  expr_EGRIP_MAIN, expr_SPICE, expr_EGRIP_S5, expr_Priestley, expr_Qi, expr_Fan_10,expr_Fan_4, expr_Hunter) 
 
 # Subsets
 #experiments = ()
 #experiments = (expr_Qi, expr_Fan_10,expr_Fan_4, expr_Hunter)
 #experiments = (expr_Qi,expr_Fan_30,expr_Fan_20,expr_Fan_10,expr_Fan_4)
 #experiments = (expr_Fan_10,expr_Fan_4)
-#experiments = (expr_Hunter,)
-experiments = (expr_Priestley,)
+#experiments = (expr_EGRIP_MAIN,expr_Fan_10,expr_Fan_4,expr_Hunter)
+#experiments = (expr_Priestley,)
 
 #--------------------
 # Process selected experiments
@@ -44,7 +44,7 @@ experiments = (expr_Priestley,)
 
 for expr in experiments:
 
-    corr = {'n20': [], 'n40': []} # container for data correlation 
+    corr = {'n20':[], 'n40':[], 'n60':[]} # container for data correlation 
     
     print('\n----------------------------------')
     print('Processing experiments in %s/'%(expr['path']))
@@ -73,6 +73,12 @@ for expr in experiments:
         #    qcolat, qlon = np.array([np.pi/2 * 1,]), np.array([np.pi/2 * 1,]) # debug
             qlat = np.pi/2 - qcolat 
             
+        elif expr['coords'] == 'vector': # Cartesian coordinate vector
+            vj = df.to_numpy()
+            print(np.shape(vj))
+            qlat, qlon = cart2sph(vj)
+            qcolat = np.pi/2 - qlat
+        
         else: # c-axes given by spherical coordinates?
             sphcoords = df.to_numpy()
             qlat, qlon = np.deg2rad(sphcoords[:,expr['I_lat']].astype(np.float64)), np.deg2rad(sphcoords[:,expr['I_azi']].astype(np.float64))
@@ -86,16 +92,24 @@ for expr in experiments:
             qlon   = np.hstack((qlon, qlon-np.pi))
             qlat = np.pi/2 - qcolat 
             
-        ### Determine ODF from a2 and a4
+        ### Determine ODF from structure tensor
         
-        lm, nlm_len = sf.init(4)
-        nlm_L4 = np.zeros((nlm_len), dtype=np.complex64) # The expansion coefficients
-        nlm_L2 = nlm_L4.copy()
+        lm, nlm_len = sf.init(6)
+        nlm = np.zeros((nlm_len), dtype=np.complex64) 
         caxes = np.array([ [np.cos(p)*np.sin(t), np.sin(p)*np.sin(t), np.cos(t)] for t, p in zip(qcolat,qlon) ]) # construct c-axis from angles
-        a2 = np.array([ np.einsum('i,j',c,c)         for c in caxes]).mean(axis=0) # construct <cc>
-        a4 = np.array([ np.einsum('i,j,k,l',c,c,c,c) for c in caxes]).mean(axis=0) # construct <cccc>
-        nlm_L2[:6]  = sf.a2_to_nlm(a2) # for comparing with a4 method
-        nlm_L4[:16] = sf.a4_to_nlm(a4)
+        if 1: # use a6 to determine nlm? else a4
+            print('Using a6_to_nlm()')
+            a6 = np.array([ np.einsum('i,j,k,l,m,n',c,c,c,c,c,c) for c in caxes]).mean(axis=0) # construct <c^6>
+            nlm[:]   = sf.a6_to_nlm(a6) 
+        else:
+            print('Using a4_to_nlm()')
+            a4 = np.array([ np.einsum('i,j,k,l',c,c,c,c) for c in caxes]).mean(axis=0) # construct <c^6>
+            nlm[:15] = sf.a4_to_nlm(a4) 
+
+        # lowest order representation for reference
+        a2 = sf.a2(nlm)        
+        nlm_L2 = nlm.copy()
+        nlm_L2[6:] = 0
 
         ### Rotated frame 
            
@@ -105,14 +119,14 @@ for expr in experiments:
         
         print('true v1 colat, lon = %f, %f (deg.) '%(np.rad2deg(v1_colat), np.rad2deg(v1_lon)))
         # THIS is the nlm array from which spectral coefs are derived for correlation
-        nlmr_L4 = sf.rotate_nlm(nlm_L4, 0, -v1_lon) # The rotation is the composition of two rotations 
-        nlmr_L4 = sf.rotate_nlm(nlmr_L4, +v1_colat, 0) # ... second rotation
-        # *_L2 is used only for plotting!
-        nlmr_L2 = nlmr_L4.copy()
-        nlmr_L2[6:] = 0        
+        nlmr = sf.rotate_nlm(nlm, 0, -v1_lon) # The rotation is the composition of two rotations 
+        nlmr = sf.rotate_nlm(nlmr, +v1_colat, 0) # ... second rotation
+
+        nlmr_L2 = nlmr.copy()
+        nlmr_L2[6:] = 0
         
         # verify that rotated a2 frame has v1 vertical
-        (v1new_colat, v1new_lon, v1new) = get_v_angles(sf.a2(nlmr_L4))
+        (v1new_colat, v1new_lon, v1new) = get_v_angles(sf.a2(nlmr))
         print('new  v1 colat, lon = %f, %f (deg.) '%(np.rad2deg(v1new_colat), np.rad2deg(v1new_lon)))
         print('new  v1 = ', v1new)
         
@@ -125,8 +139,9 @@ for expr in experiments:
         
         ### Save correlation for later plotting
         
-        corr['n20'].append(np.real(nlmr_L4[ 3])) # n_2^0 (is real by def.)
-        corr['n40'].append(np.real(nlmr_L4[10])) # n_4^0 (is real by def.)
+        corr['n20'].append(np.real(nlmr[ 3])) # nl0 are identically real 
+        corr['n40'].append(np.real(nlmr[10]))
+        corr['n60'].append(np.real(nlmr[21]))
         
         """
         Setup figure for plotting the derived ODF and rotated c-axes of this sample.
@@ -163,7 +178,7 @@ for expr in experiments:
             v1latd, v1lond = get_deg(np.pi/2-v1_colat, v1_lon)
             ms = 0.3
 
-            plot_ODF(nlm_L4, lm, ax=ax1, cmap='Greys', cblabel=r'$\psi/N$')
+            plot_ODF(nlm, lm, ax=ax1, cmap='Greys', cblabel=r'$\psi/N$')
             ax1.plot(qlond, qlatd, ls='none', marker='x', markersize=ms, c='tab:blue', transform=geo) 
             ax1.plot(v1lond, v1latd, ls='none', marker='o', markersize=4, c='tab:green', transform=geo) 
             plot_axes(ax1, geo)
@@ -172,7 +187,7 @@ for expr in experiments:
             ax2.plot(v1lond, v1latd, ls='none', marker='o', markersize=4, c='tab:green', transform=geo) 
             plot_axes(ax2, geo)
 
-            plot_ODF(nlm_L4, lm, ax=ax3, cmap='Greys', cblabel=r'$\psi/N, L=4$')
+            plot_ODF(nlm, lm, ax=ax3, cmap='Greys', cblabel=r'$\psi/N$')
             ax3.plot(v1lond, v1latd, ls='none', marker='o', markersize=4, c='tab:green', transform=geo) 
             plot_axes(ax3, geo)
 
@@ -181,7 +196,7 @@ for expr in experiments:
             qlatrd, qlonrd = get_deg(qlatr, qlonr)
             v1newlatd, v1newlond = get_deg(np.pi/2-v1new_colat, v1new_lon)
             
-            plot_ODF(nlmr_L4, lm, ax=ax1r, cmap='Greys', cblabel=r'$\psi/N$ (rot. frame)')
+            plot_ODF(nlmr, lm, ax=ax1r, cmap='Greys', cblabel=r'$\psi/N$ (rot. frame)')
             ax1r.plot(qlonrd, qlatrd, ls='none', marker='x', markersize=ms, c='tab:blue', transform=geo) 
             plot_axes(ax1r, geo)
             ax1r.plot(v1newlond, v1newlatd, ls='none', marker='o', markersize=4, c='tab:green', transform=geo) 
@@ -190,7 +205,7 @@ for expr in experiments:
             plot_axes(ax2r, geo)
             ax2r.plot(v1newlond, v1newlatd, ls='none', marker='o', markersize=4, c='tab:green', transform=geo) 
             
-            plot_ODF(nlmr_L4, lm, ax=ax3r, cmap='Greys', cblabel=r'$\psi/N, L=4$ (rot. frame)')
+            plot_ODF(nlmr, lm, ax=ax3r, cmap='Greys', cblabel=r'$\psi/N$ (rot. frame)')
             plot_axes(ax3r, geo)
             ax3r.plot(v1newlond, v1newlatd, ls='none', marker='o', markersize=4, c='tab:green', transform=geo) 
             
