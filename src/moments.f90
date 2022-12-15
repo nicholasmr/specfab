@@ -191,6 +191,48 @@ contains
         include "include/ev_c8__body.f90"
         ev = ev * k/f_ev_c0(n00)
     end
+
+    !---------------------------------
+    ! Orthogonal distribution
+    !---------------------------------
+    
+    function vlm_L2(blm,nlm) result(vlm)
+        implicit none
+        complex(kind=dp), intent(in) :: blm(:), nlm(:)
+        complex(kind=dp)             :: vlm(1+5) ! [v00, v2m]
+        real(kind=dp)                :: k=0.0, ev(3,3)
+        complex(kind=dp)             :: b00, n00, b2m(-2:2), n2m(-2:2)
+
+        b00 = blm(1)
+        n00 = nlm(1)
+        b2m = blm(I_l2:(I_l4-1))         
+        n2m = nlm(I_l2:(I_l4-1))
+
+        ev = 0.0
+        include "include/ev_c2_vlm__body.f90"
+        ev = ev * k/(f_ev_c0(b00)*f_ev_c0(n00))
+        vlm = a2_to_nlm(ev)
+    end
+    
+    function vlm_L4(blm,nlm) result(vlm)
+        implicit none
+        complex(kind=dp), intent(in) :: blm(:), nlm(:)
+        complex(kind=dp)             :: vlm(1+5+9) ! [v00, v2m, v4m]
+        real(kind=dp)                :: k=0.0, ev(3,3,3,3)
+        complex(kind=dp)             :: b00, n00, b2m(-2:2), n2m(-2:2), b4m(-4:4), n4m(-4:4)
+
+        b00 = blm(1)
+        n00 = nlm(1)
+        b2m = blm(I_l2:(I_l4-1))         
+        n2m = nlm(I_l2:(I_l4-1))
+        b4m = blm(I_l4:(I_l6-1))
+        n4m = nlm(I_l4:(I_l6-1))
+        
+        ev = 0.0
+        include "include/ev_c4_vlm__body.f90"
+        ev = ev * k/(f_ev_c0(b00)*f_ev_c0(n00))
+        vlm = a4_to_nlm(ev)
+    end
     
     !---------------------------------
     ! Fabric eigen frames

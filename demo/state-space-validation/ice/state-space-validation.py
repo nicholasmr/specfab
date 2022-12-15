@@ -71,6 +71,7 @@ for expr in experiments:
     corr = pickle.load(open(fcorr, "rb"))
     corr['n20'] /= normfac # Normalization
     corr['n40'] /= normfac
+    corr['n60'] /= normfac
     correlations.append(corr) 
     
 #--------------------

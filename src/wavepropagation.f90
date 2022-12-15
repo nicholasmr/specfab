@@ -24,8 +24,9 @@ contains
 
     function Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta_n,phi_n) result (vj)
     
-        ! Elastic phase velocities (qP, qS1, qS2) given ODF in terms of nlm and propagation directions (theta_n,phi_n) 
-    
+        ! Elastic phase velocities (qP, qS1, qS2) given nlm (i.e. ODF) and propagation directions (theta_n,phi_n) 
+        ! Assumes transversely isotropic grains with parameters lam,mu,Elam,Emu,Egam
+        
         implicit none
         
         complex(kind=dp), intent(in) :: nlm(:)
@@ -47,9 +48,9 @@ contains
         do nn = 1,size(theta_n)
             nlm4_rot = rotate_nlm4(nlm4, -theta_n(nn), -phi_n(nn)) ! negative angles because we are are rotating the specified direction (back) into the vertical orientation
             Qn = Qnorm(nlm4_rot, alpha, lam,mu,Elam,Emu,Egam) ! effective acoustic tensor
-            ri = detQ_polycoefs(Qn, omega, rho) ! polynomial coefs of problem: det(Q) = 0 
+            ri = detQ_polycoefs(Qn, omega, rho) ! polynomial coefs of Christoffel problem
 
-            ! xi=0 solutions from depressed cubic r0 + r2*q^2 + r4*q^4 + r6*q^6 = 0 ==> x^3 + a*x + b = 0
+            ! xi=0 solutions from depressed cubic equation r0 + r2*q^2 + r4*q^4 + r6*q^6 = 0 ==> x^3 + a*x + b = 0
             ! Exported from Mathematica
             a = (3.0d0*ri(6)*ri(2) - ri(4)**2)/(3.0d0*ri(6)**2)
             b = (2.0d0*ri(4)**3 - 9.0d0*ri(6)*ri(4)*ri(2) + 27.0d0*ri(6)**2*ri(0))/(27.0d0*ri(6)**3)
@@ -62,7 +63,7 @@ contains
             qj(2) = sqrt(x1)
             qj(3) = sqrt(x2)
             
-            ! phase velocities are then
+            ! phase velocities are then by definition
             vj(:,nn) = omega/abs(qj(:))
         end do
     end

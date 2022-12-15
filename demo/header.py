@@ -153,37 +153,36 @@ class PureShear():
 ### Plot 3D parcel
 
 
-def plot_parcel(ax, xyz0, dzx,dzy,dyx, scale=1, color='k', colorax='k', FSAX=FSSMALL, plotaxlbls=False):
+def plot_parcel(ax, xyz0, dzx,dzy,dyx, scale=1, color='k', colorax='k', lwax=1.25, lwside=1, FSAX=FSSMALL, plotaxlbls=False):
            
     x0,y0,z0 = xyz0 
     ax.view_init(20, +70+180)
     
     x,y,z = [0,dyx,x0+dyx,x0], [0,y0,y0,0], [0,0,0,0] # bottom
-    plot_side(ax, x,y,z, alpha=0.4, scale=scale, color=color)
+    plot_side(ax, x,y,z, alpha=0.4, scale=scale, color=color, lw=lwside)
 
     x,y,z = [0,dyx,dzx+dyx,dzx], [0,y0,y0+dzy,dzy], [0,0,z0,z0] # left
-    plot_side(ax, x,y,z, alpha=0.3, scale=scale, color=color)
+    plot_side(ax, x,y,z, alpha=0.3, scale=scale, color=color, lw=lwside)
     
     x,y,z = [0,x0,x0+dzx,dzx,dzx], [0,0,dzy,dzy], [0,0,z0,z0] # back
-    plot_side(ax, x,y,z, alpha=0.3, scale=scale, color=color)
+    plot_side(ax, x,y,z, alpha=0.3, scale=scale, color=color, lw=lwside)
     
     x,y,z = [dzx,dzx+dyx,x0+dzx+dyx,x0+dzx], [dzy,y0+dzy,y0+dzy,dzy], [z0,z0,z0,z0] # top
-    plot_side(ax, x,y,z, alpha=0.1, scale=scale, color=color)
+    plot_side(ax, x,y,z, alpha=0.1, scale=scale, color=color, lw=lwside)
     
     x,y,z = [dyx,x0+dyx,x0+dzx+dyx,dzx+dyx], [y0,y0,y0+dzy,y0+dzy], [0,0,z0,z0] # front
-    plot_side(ax, x,y,z, alpha=0.3, scale=scale, color=color)
+    plot_side(ax, x,y,z, alpha=0.3, scale=scale, color=color, lw=lwside)
     
     x,y,z = [x0,x0+dyx,x0+dzx+dyx,x0+dzx], [0,y0,y0+dzy,dzy], [0,0,z0,z0] # right
-    plot_side(ax, x,y,z, alpha=0.3, scale=scale, color=color)
+    plot_side(ax, x,y,z, alpha=0.3, scale=scale, color=color, lw=lwside)
     
     #ax.scatter([0],[0],[0], 'o', s=[50], color='k')
-    lw=1.25
     onespan = np.array([0,1])
     zero, one, doubleone = np.array([0,0]), np.array([0,1*scale]), np.array([1*scale,1*scale])
     xspan, yspan, zspan = one, one, one
-    ax.plot(xspan,zero,zero, '-', lw=lw, color=colorax, zorder=10)
-    ax.plot(zero,yspan,zero, '-', lw=lw, color=colorax, zorder=10)
-    ax.plot(zero,zero,zspan, '-', lw=lw, color=colorax, zorder=10)
+    ax.plot(xspan,zero,zero, '-', lw=lwax, color=colorax, zorder=10)
+    ax.plot(zero,yspan,zero, '-', lw=lwax, color=colorax, zorder=10)
+    ax.plot(zero,zero,zspan, '-', lw=lwax, color=colorax, zorder=10)
 
     if plotaxlbls:
         axlenmul = 1.15

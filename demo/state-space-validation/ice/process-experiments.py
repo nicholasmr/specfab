@@ -36,7 +36,7 @@ experiments = (expr_GRIP, expr_LAWDOME,  expr_EGRIP_MAIN, expr_SPICE, expr_EGRIP
 #experiments = (expr_Qi,expr_Fan_30,expr_Fan_20,expr_Fan_10,expr_Fan_4)
 #experiments = (expr_Fan_10,expr_Fan_4)
 #experiments = (expr_EGRIP_MAIN,expr_Fan_10,expr_Fan_4,expr_Hunter)
-#experiments = (expr_Priestley,)
+experiments = (expr_Priestley,)
 
 #--------------------
 # Process selected experiments
