@@ -62,8 +62,8 @@ module specfabpy
         reduce_M__sf => reduce_M, &
         rotate_nlm__sf => rotate_nlm, &
         Sl__sf => Sl, & ! Power spectrum
-        vlm_L2__sf => vlm_L2, & 
-        vlm_L4__sf => vlm_L4, &
+        a2_orth__sf => a2_orth, & 
+        a4_orth__sf => a4_orth, &
         
         ! Numerics
         Ldiag__sf => Ldiag, &
@@ -541,24 +541,42 @@ contains
         nlm_rot = rotate_nlm__sf(nlm, theta,phi)
     end
   
-    function vlm_L2(blm,nlm) result(vlm)
+!    function vlm_L2(blm,nlm) result(vlm)
+!        use specfabpy_const
+!        implicit none
+!        complex(kind=dp), intent(in) :: blm(:), nlm(:)
+!        integer, parameter        :: vlmlen = 1+5
+!        complex(kind=dp)          :: vlm(vlmlen)
+!        
+!        vlm = vlm_L2__sf(blm,nlm)
+!    end
+!  
+!    function vlm_L4(blm,nlm) result(vlm)
+!        use specfabpy_const
+!        implicit none
+!        complex(kind=dp), intent(in) :: blm(:), nlm(:)
+!        integer, parameter        :: vlmlen = 1+5+9
+!        complex(kind=dp)          :: vlm(vlmlen)
+!        
+!        vlm = vlm_L4__sf(blm,nlm)
+!    end
+  
+    function a2_orth(blm,nlm) result(a2)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: blm(:), nlm(:)
-        integer, parameter        :: vlmlen = 1+5
-        complex(kind=dp)          :: vlm(vlmlen)
+        real(kind=dp)                :: a2(3,3)
         
-        vlm = vlm_L2__sf(blm,nlm)
+        a2 = a2_orth__sf(blm,nlm)
     end
   
-    function vlm_L4(blm,nlm) result(vlm)
+    function a4_orth(blm,nlm) result(a4)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: blm(:), nlm(:)
-        integer, parameter        :: vlmlen = 1+5+9
-        complex(kind=dp)          :: vlm(vlmlen)
+        real(kind=dp)                :: a4(3,3,3,3)
         
-        vlm = vlm_L4__sf(blm,nlm)
+        a4 = a4_orth__sf(blm,nlm)
     end
   
     function DDRX_decayrate(nlm, tau)
