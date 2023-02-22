@@ -28,11 +28,12 @@ DYNAMICS=dynamics
 RHEOLOGIES=rheologies
 ELASTICITIES=elasticities
 WAVEPROP=wavepropagation
+ROTATION=rotation
 REDUCED=reducedform
 LAMBDASOLVER=lambdasolver
 
 DEPLESS=$(TENPROD).o $(MANDEL).o $(REDUCED).o $(GAUNT).o
-WITHDEPS=$(RHEOLOGIES).o $(ELASTICITIES).o $(MOMENTS).o $(LAMBDASOLVER).o $(DYNAMICS).o $(HOMOGEN).o $(ENHFAC).o $(WAVEPROP).o
+WITHDEPS=$(RHEOLOGIES).o $(ELASTICITIES).o $(MOMENTS).o $(LAMBDASOLVER).o $(DYNAMICS).o $(HOMOGEN).o $(ENHFAC).o $(ROTATION).o $(WAVEPROP).o
 # 
 OBJCORE=$(DEPLESS) $(WITHDEPS)
 SRCCORE=$(OBJCORE:.o=.f90)
@@ -109,6 +110,7 @@ rheology-test: $(SPECFAB).o
 
 aux-tests: $(SPECFAB).o
 	$(COMPILER) $(PATHTEST)/reduced-coef-test/reduced-coef-test.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHTEST)/reduced-coef-test/reduced-coef-test
+	$(COMPILER) $(PATHTEST)/wigner-d-rotation-test/discrete-rotation-test.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHTEST)/wigner-d-rotation-test/discrete-rotation-test
 
 lib$(SPECFAB).so: $(SRCALL) $(OBJALL)
 	$(COMPILER) $(OPTS) -shared $(SRCALL) -o $@
@@ -138,6 +140,9 @@ $(MOMENTS).o: $(MOMENTS).f90 $(MANDEL).o
 	$(COMPILER) $(OPTS) -c $(MOMENTS).f90
 
 $(WAVEPROP).o: $(WAVEPROP).f90 $(MOMENTS).o $(MANDEL).o $(TENPROD).o $(ELASTICITIES).o $(HOMOGEN).o
+	$(COMPILER) $(OPTS) -c $<
+
+$(ROTATION).o: $(ROTATION).f90 $(MOMENTS).o 
 	$(COMPILER) $(OPTS) -c $<
 
 $(LAMBDASOLVER).o:

@@ -44,6 +44,8 @@ module specfabpy
         elas_fwd_tranisotropic__sf => elas_fwd_tranisotropic, &
         Cij_to_Lame_tranisotropic__sf => Cij_to_Lame_tranisotropic, &
         Vi_elastic_tranisotropic__sf => Vi_elastic_tranisotropic, &
+        Vi_elastic_orthotropic__sf => Vi_elastic_orthotropic, &
+        Vi_elastic_orthotropic__discrete__sf => Vi_elastic_orthotropic__discrete, &
         Qnorm__sf => Qnorm, &
         
         ! Fluid enhancement factors
@@ -61,6 +63,7 @@ module specfabpy
         nlm_to_rnlm__sf => nlm_to_rnlm, rnlm_to_nlm__sf => rnlm_to_nlm, &
         reduce_M__sf => reduce_M, &
         rotate_nlm__sf => rotate_nlm, &
+        rotate_vector__sf => rotate_vector, &
         Sl__sf => Sl, & ! Power spectrum
         a2_orth__sf => a2_orth, & 
         a4_orth__sf => a4_orth, &
@@ -463,6 +466,31 @@ contains
     !---------------------------------
     ! ELASTIC PHASE VELOCITIES
     !---------------------------------
+    
+    ! For a composite material consisting of orthotropic grains
+    
+    function Vi_elastic_orthotropic(nlm_r1,nlm_r2,nlm_r3, alpha,lam,mu,rho, theta_n,phi_n) result(Vi)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm_r1(:), nlm_r2(:), nlm_r3(:)
+        real(kind=dp), intent(in)    :: alpha, lam(6), mu(3), rho
+        real(kind=dp), intent(in)    :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities along
+        real(kind=dp)                :: Vi(3,size(theta_n)) ! qS1, qS2, qP phase velocities
+
+        Vi = Vi_elastic_orthotropic__sf(nlm_r1,nlm_r2,nlm_r3, alpha,lam,mu,rho, theta_n,phi_n) 
+    end
+    
+    function Vi_elastic_orthotropic__discrete(r1,r2,r3, alpha,lam,mu,rho, theta_n,phi_n) result(Vi)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: r1(:,:), r2(:,:), r3(:,:)
+        real(kind=dp), intent(in) :: alpha, lam(6), mu(3), rho
+        real(kind=dp), intent(in) :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities along
+        real(kind=dp)             :: Vi(3,size(theta_n)) ! qS1, qS2, qP phase velocities
+
+        Vi = Vi_elastic_orthotropic__discrete__sf(r1,r2,r3, alpha,lam,mu,rho, theta_n,phi_n) 
+    end
+    
     ! For a composite material consisting of transversely isotropic grains
     
     function Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta_n,phi_n) result(Vi)
@@ -470,7 +498,7 @@ contains
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), intent(in)    :: alpha, lam,mu,Elam,Emu,Egam, rho
-        real(kind=dp), intent(in)    :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities (vj) along
+        real(kind=dp), intent(in)    :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities along
         real(kind=dp)                :: Vi(3,size(theta_n)) ! qS1, qS2, qP phase velocities
 
         Vi = Vi_elastic_tranisotropic__sf(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta_n,phi_n) 
@@ -530,6 +558,14 @@ contains
     !---------------------------------
     ! AUX
     !---------------------------------
+    
+    function rotate_vector(v, theta, phi) result(w)
+        use specfabpy_const    
+        implicit none
+        real(kind=dp), intent(in) :: v(3), theta, phi
+        real(kind=dp) :: w(3)
+        w = rotate_vector__sf(v, theta, phi)
+    end
     
     function rotate_nlm(nlm, theta,phi) result (nlm_rot)
         use specfabpy_const

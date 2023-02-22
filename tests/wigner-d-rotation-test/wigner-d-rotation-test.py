@@ -11,7 +11,7 @@ from specfabpy import specfabpy as sf
 
 L = 12
 lm, nlm_len = sf.init(L)
-nlm = np.zeros((3, nlm_len), dtype=np.complex64) # The expansion coefficients
+nlm = np.zeros((4, nlm_len), dtype=np.complex64) # The expansion coefficients
 
 if 1:
     a2 = np.diag([0.0,0.0,1.0]) # any second-order structure tensor (not necessarily diagonal)
@@ -22,10 +22,12 @@ else:
     nlm[0,nlm_len-(2*12+1)-(2*10+1)-0*(2*8+1)-0*(2*6+1)-0*(2*4+1)] = 0.3
 
 # Wigner D rotation of nlm, implemented in specfab only for components l<=12
-lat = np.deg2rad(-45)
-lon = np.deg2rad(45)
+lat = np.deg2rad(60) # z-->x angle
+lon = np.deg2rad(45) # x-->y angle
 nlm[1,:] = sf.rotate_nlm(nlm[0,:], lat, 0) # first rotate around y axis in x--z plane
 nlm[2,:] = sf.rotate_nlm(nlm[1,:], 0, lon) # next rotate around z axis in x--y plane 
+
+nlm[3,:] = sf.rotate_nlm(nlm[2,:], -lat, -lon) # rotate back
             
 # Print nlm
 np.set_printoptions(precision=4)
@@ -52,8 +54,8 @@ def plot_axes(ax, geo):
     ax.plot([0],[90], marker=r'$z$', ms=7, c=cax, transform=geo) # z axis
 
 dpi, scale = 125, 2.2
-fig = plt.figure(figsize=(3*scale,1.4*scale))
-gs = gridspec.GridSpec(1,3)
+fig = plt.figure(figsize=(4*scale,1.4*scale))
+gs = gridspec.GridSpec(1,4)
 a = 0.03
 gs.update(left=a, right=1-a, bottom=0.175, wspace=0.1)
 
@@ -64,8 +66,9 @@ prj = ccrs.Orthographic(rot, 90-inclination)
 ax1 = plt.subplot(gs[0, 0], projection=prj)
 ax2 = plt.subplot(gs[0, 1], projection=prj)
 ax3 = plt.subplot(gs[0, 2], projection=prj)
+ax4 = plt.subplot(gs[0, 3], projection=prj)
 
-ax1.set_global(); ax2.set_global(); ax3.set_global() 
+ax1.set_global(); ax2.set_global(); ax3.set_global(); ax4.set_global()  
 
 ### Plot
 
@@ -80,6 +83,10 @@ ax2.set_title('nlm_rot1')
 plot_ODF(nlm[2,:], lm, ax=ax3, cmap='Greys', cblabel=r'$\psi/N$')
 plot_axes(ax3, geo)
 ax3.set_title('nlm_rot2')
+
+plot_ODF(nlm[3,:], lm, ax=ax4, cmap='Greys', cblabel=r'$\psi/N$')
+plot_axes(ax4, geo)
+ax4.set_title('nlm_rot3 (back)')
 
 # Save figure
 fout = 'wigner-d-rotation-test.png'

@@ -111,7 +111,7 @@ expr_SPICE = {\
 # UNPUBLISHED DATA; Contact Ilka Weikusat (AWI) for permission to use
 expr_EGRIP_S5 = {\
     'path': 'EGRIP_S5', \
-    'plotname': 'EGRIP shear margin', \
+    'plotname': 'NEGIS shear margin', \
     'type':'ss', \
     'coords':'spherical', 'I_azi':0, 'I_lat':1, 'iscolat':False, \
     'flist': ['stereo_EGRIP_S5_124_1_20.txt', 'stereo_EGRIP_S5_124_3_20.txt', 'stereo_EGRIP_S5_124_volume_vertical_2_20.txt'], \

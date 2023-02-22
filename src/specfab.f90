@@ -12,6 +12,7 @@ module specfab
     use dynamics
     use rheologies
     use wavepropagation 
+    use rotation
     use reducedform
 
     implicit none 

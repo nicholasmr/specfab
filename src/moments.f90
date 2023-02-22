@@ -197,6 +197,8 @@ contains
     !---------------------------------
     
     function a2_orth(blm,nlm) result(ev)
+        ! Calculates <v^2> where v = b x n
+        ! Note that normalization is adjusted so that behaviour is correct for isotropic or delta distributions blm, nlm
         implicit none
         complex(kind=dp), intent(in) :: blm(:), nlm(:)
         real(kind=dp)                :: k=0.0, norm=0.0, ev(3,3)
@@ -208,12 +210,14 @@ contains
         n2m = nlm(I_l2:(I_l4-1))
 
         ev = 0.0
-        include "include/ev_c2_vlm__body.f90"
+        include "include/ev_v2__body.f90"
 !        ev = ev * k/(f_ev_c0(b00)*f_ev_c0(n00)) ! incorrectly normalized if blm and nlm are not delta funcs.
         ev = ev * k/norm
     end
     
     function a4_orth(blm,nlm) result(ev)
+        ! Calculates <v^4> where v = b x n
+        ! Note that normalization is adjusted so that behaviour is correct for isotropic or delta distributions blm, nlm
         implicit none
         complex(kind=dp), intent(in) :: blm(:), nlm(:)
         real(kind=dp)                :: k=0.0, norm=0.0, ev(3,3,3,3)
@@ -227,7 +231,49 @@ contains
         n4m = nlm(I_l4:(I_l6-1))
         
         ev = 0.0
-        include "include/ev_c4_vlm__body.f90"
+        include "include/ev_v4__body.f90"
+!        ev = ev * k/(f_ev_c0(b00)*f_ev_c0(n00)) ! incorrectly normalized if blm and nlm are not delta funcs.
+        ev = ev * k/norm 
+    end
+  
+    function a4_joint(blm,nlm) result(ev)
+        ! Calculates <n^2 b^2>
+        ! Note that normalization is adjusted so that behaviour is correct for isotropic or delta distributions blm, nlm
+        implicit none
+        complex(kind=dp), intent(in) :: blm(:), nlm(:)
+        real(kind=dp)                :: k=0.0, norm=0.0, ev(3,3,3,3)
+        complex(kind=dp)             :: b00, n00, b2m(-2:2), n2m(-2:2), b4m(-4:4), n4m(-4:4)
+
+        b00 = blm(1)
+        n00 = nlm(1)
+        b2m = blm(I_l2:(I_l4-1))         
+        n2m = nlm(I_l2:(I_l4-1))
+        b4m = blm(I_l4:(I_l6-1))
+        n4m = nlm(I_l4:(I_l6-1))
+        
+        ev = 0.0
+        include "include/ev_c2b2__body.f90"
+!        ev = ev * k/(f_ev_c0(b00)*f_ev_c0(n00)) ! incorrectly normalized if blm and nlm are not delta funcs.
+        ev = ev * k/norm 
+    end
+    
+    function a4_jointcross(blm,nlm) result(ev)
+        ! Calculates <n^2 v^2> where v = b x n
+        ! Note that normalization is adjusted so that behaviour is correct for isotropic or delta distributions blm, nlm
+        implicit none
+        complex(kind=dp), intent(in) :: blm(:), nlm(:)
+        real(kind=dp)                :: k=0.0, norm=0.0, ev(3,3,3,3)
+        complex(kind=dp)             :: b00, n00, b2m(-2:2), n2m(-2:2), b4m(-4:4), n4m(-4:4)
+
+        b00 = blm(1)
+        n00 = nlm(1)
+        b2m = blm(I_l2:(I_l4-1))         
+        n2m = nlm(I_l2:(I_l4-1))
+        b4m = blm(I_l4:(I_l6-1))
+        n4m = nlm(I_l4:(I_l6-1))
+        
+        ev = 0.0
+        include "include/ev_c2v2__body.f90"
 !        ev = ev * k/(f_ev_c0(b00)*f_ev_c0(n00)) ! incorrectly normalized if blm and nlm are not delta funcs.
         ev = ev * k/norm 
     end

@@ -50,11 +50,11 @@ else:
 # Experimental data to plot
 #--------------------
 
-# All data
-#experiments = (expr_GRIP, expr_LAWDOME,  expr_EGRIP_MAIN, expr_SPICE, expr_EGRIP_S5, expr_Priestley, expr_Qi, expr_Fan_10,expr_Fan_4, expr_Hunter) 
+# All data (Gerber et al., 2023)
+experiments = (expr_GRIP, expr_LAWDOME,  expr_EGRIP_MAIN, expr_SPICE, expr_EGRIP_S5, expr_Priestley, expr_Qi, expr_Fan_10,expr_Fan_4, expr_Hunter) 
 
 # Lilien et al. (2022)
-experiments = (expr_GRIP, expr_LAWDOME,  expr_EGRIP_MAIN, expr_SPICE, expr_Priestley, expr_Qi, expr_Fan_10,expr_Fan_4, expr_Hunter) 
+#experiments = (expr_GRIP, expr_LAWDOME,  expr_EGRIP_MAIN, expr_SPICE, expr_Priestley, expr_Qi, expr_Fan_10,expr_Fan_4, expr_Hunter) 
 
 # DEBUG
 #experiments = (expr_GRIP,)
@@ -113,7 +113,7 @@ def integrate_model(nlm0, Mtype, ugrad, dt, Nt=Nt, rotate=False, name=None):
                 a2 = sf.a2(nlm[tt,:])
                 (v1_colat, v1_lon, _) = get_v_angles(a2)
                 nlmr[tt,:] = sf.rotate_nlm( nlm[tt,:], 0, -v1_lon)
-                nlmr[tt,:] = sf.rotate_nlm(nlmr[tt,:], +v1_colat, 0)
+                nlmr[tt,:] = sf.rotate_nlm(nlmr[tt,:], -v1_colat, 0)
             else:
                 nlmr[tt,:] = nlm[tt,:] # no rotation requested, just copy the unrotated solution
             

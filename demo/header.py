@@ -53,7 +53,7 @@ def discretize_ODF(nlm, lm, latres=60):
     theta = np.linspace(0,   np.pi,   latres) # CO-LAT 
     phi   = np.linspace(0, 2*np.pi, 2*latres) # LON
     phi, theta = np.meshgrid(phi, theta) # gridded 
-    lon, colat = phi, theta
+    lon, colat = phi, theta # colat := theta 
     lat = np.pi/2-colat
     
     _,nlm_len = lm.shape
@@ -62,7 +62,7 @@ def discretize_ODF(nlm, lm, latres=60):
     return (F, lon,lat)
 
 
-def plot_ODF(nlm, lm, ax=None, cmap='Greys', cblabel='$\psi$', rot0=-40, lvls=lvls_default, tickintvl=tickintvl_default, latres=60):
+def plot_ODF(nlm, lm, ax=None, cmap='Greys', cblabel='$\psi$', rot0=-40, lvls=lvls_default, tickintvl=tickintvl_default, latres=60, nchunk=5):
     
     pltshow = (ax is None)
     
@@ -79,7 +79,7 @@ def plot_ODF(nlm, lm, ax=None, cmap='Greys', cblabel='$\psi$', rot0=-40, lvls=lv
     F, lon,lat = discretize_ODF(nlm, lm, latres=latres)
     F[F<0] = 0 # fix numerical/truncation errors
     cmap = cmr.get_sub_cmap(cmap, 0.05, 1) # don't include pure white.
-    h = ax.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), levels=lvls, extend=('max' if lvls[0]==0.0 else 'both'), cmap=cmap, nchunk=5) # "nchunk" argument must be larger than 0 for constant-ODF (e.g. isotropy) is plotted correctly.
+    h = ax.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), levels=lvls, extend=('max' if lvls[0]==0.0 else 'both'), cmap=cmap, nchunk=nchunk) # "nchunk" argument must be larger than 0 for constant-ODF (e.g. isotropy) is plotted correctly.
     #ax.set_facecolor(color_bad) # "bad" (masked) values, default white
 
     # Add grid lines

@@ -40,6 +40,14 @@ contains
         outerprod9 = reshape( [( [( a(ii)*b(jj), ii=1,9)], jj=1,9)] , [9,9])
     end
 
+    function outerprod22(A,B) result(C)
+        ! A_ij B_kl = rank-4 tensor
+        implicit none
+        real(kind=dp), intent(in) :: A(3,3), B(3,3)
+        real(kind=dp) :: C(3,3,3,3)
+        C = reshape( [( [( [( [( A(ii,jj)*B(kk,ll), ii=1,3)], jj=1,3)], kk=1,3)], ll=1,3)] , [3,3,3,3])
+    end    
+
     !------------------------
     ! INNER PRODUCTS
     !------------------------
@@ -60,6 +68,18 @@ contains
         do ll=1,3
             do kk=1,3
                 doubleinner42(ll,kk) = doubleinner22(A(ll,kk,:,:),B) 
+            end do
+        end do
+    end
+
+    function doubleinner42_firstlast_symmetric(A,B) result(C)
+        ! A_lkij B_lj = rank-2 tensor
+        implicit none
+        real(kind=dp), intent(in) :: A(3,3,3,3), B(3,3)
+        real(kind=dp) :: C(3,3)
+        do kk=1,3
+            do ii=1,3
+                C(kk,ii) = 0.5d0*( doubleinner22(A(:,kk,ii,:),B) + doubleinner22(transpose(A(:,ii,kk,:)),B) )
             end do
         end do
     end

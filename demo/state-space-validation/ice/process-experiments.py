@@ -120,7 +120,7 @@ for expr in experiments:
         print('true v1 colat, lon = %f, %f (deg.) '%(np.rad2deg(v1_colat), np.rad2deg(v1_lon)))
         # THIS is the nlm array from which spectral coefs are derived for correlation
         nlmr = sf.rotate_nlm(nlm, 0, -v1_lon) # The rotation is the composition of two rotations 
-        nlmr = sf.rotate_nlm(nlmr, +v1_colat, 0) # ... second rotation
+        nlmr = sf.rotate_nlm(nlmr, -v1_colat, 0) # ... second rotation
 
         nlmr_L2 = nlmr.copy()
         nlmr_L2[6:] = 0

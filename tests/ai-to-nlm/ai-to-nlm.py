@@ -37,7 +37,7 @@ phi   = np.deg2rad(45 * 1.2)
 # Rotate nlm using Wigner's D matrix to generate nlm with all components non-zero
 #----------------------
 
-nlm = sf.rotate_nlm(nlm_0, -theta, 0) # vertical rotation
+nlm = sf.rotate_nlm(nlm_0, theta, 0) # vertical rotation
 nlm = sf.rotate_nlm(nlm, 0, phi)  # horizontal rotation
 
 a2_wig = sf.a2(nlm)
