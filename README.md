@@ -9,8 +9,6 @@ Spectral CPO model of polycrystalline materials that:
 - Can convert between structure tensors and spectral expansions coefficients.
 - Can be integrated with finite-element models such as Elmer and FEniCS.
 
-By Nicholas M. Rathmann and David A. Lilien
-
 ## Documentation
 
 See [the specfab docs](https://nicholasmr.github.io/specfab) for installation, tutorials, and more.
