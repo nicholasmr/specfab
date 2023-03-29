@@ -1,0 +1,34 @@
+site_name: specfab documentation
+
+nav:
+    - About: index.md
+    - Loading specfab: initialize.md
+    - 'CPO':
+        - Representation: cpo-representation.md
+        - Dynamics: cpo-dynamics.md
+        - Rotation: cpo-rotation.md
+        - Plotting: cpo-plot.md
+    - 'Constitutive equations':
+        - Viscoplastic: constitutive-viscoplastic.md
+        - Elastic: constitutive-elastic.md
+        - Strain-rate enhancements: enhancements-strainrate.md
+    - 'Wave propagation':
+        - Elastic: wavepropagation-elastic.md
+        - Electromagnetic: wavepropagation-electromagnetic.md
+
+theme: 
+    name: 'readthedocs'
+
+markdown_extensions:
+    - attr_list
+    - admonition
+    - pymdownx.arithmatex:
+        generic: true
+    - pymdownx.highlight:
+          anchor_linenums: true
+          line_spans: __span
+          pygments_lang_class: true
+
+extra_javascript:
+  - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'
+
