@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Viscoplastic - specfab documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Viscoplastic";
+        var mkdocs_page_input_path = "constitutive-viscoplastic.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> specfab documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">About</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../initialize/">Loading specfab</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">CPO</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-representation/">Representation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics/">Dynamics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plotting</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Constitutive equations</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Viscoplastic</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#transversely-isotropic">Transversely isotropic</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#d-sfrheo_fwd_tranisotropics-a-n-m-emm-emt">D = sf.rheo_fwd_tranisotropic(S, A, n, m, Emm, Emt)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#s-sfrheo_rev_tranisotropicd-a-n-m-emm-emt">S = sf.rheo_rev_tranisotropic(D, A, n, m, Emm, Emt)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#orthotropic">Orthotropic</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#d-sfrheo_fwd_orthotropics-a-n-m1m2m3-eij">D = sf.rheo_fwd_orthotropic(S, A, n, m1,m2,m3, Eij)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#s-sfrheo_rev_orthotropicd-a-n-m1m2m3-eij">S = sf.rheo_rev_orthotropic(D, A, n, m1,m2,m3, Eij)</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Elastic</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain-rate enhancements</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Wave propagation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-elastic/">Elastic</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Electromagnetic</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">specfab documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Constitutive equations &raquo;</li>
+      <li>Viscoplastic</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="viscoplastic-constitutive-equations">Viscoplastic constitutive equations</h1>
+<p>Anisotropic power-law rheologies are supported in both forward and inverse (or reverse) form:</p>
+<ul>
+<li>Forward form: <span class="arithmatex">\({\bf D}({\bf S})\)</span> </li>
+<li>Inverse form: <span class="arithmatex">\({\bf S}({\bf D})\)</span> </li>
+</ul>
+<p>where <span class="arithmatex">\(\bf{D}\)</span> and <span class="arithmatex">\(\bf{S}\)</span> are the strain-rate and deviatoric stress tensors, respectively.</p>
+<div class="admonition note">
+<p class="admonition-title">Eigenenhancements</p>
+<p>Anisotropic viscosities/fluidities are prescribed in specfab in terms of logitudinal and shear strain-rate enhancement factors w.r.t material symmetry axes, termed <a href="../enhancements-strainrate/">eigenenhancements</a>.</p>
+</div>
+<h2 id="transversely-isotropic">Transversely isotropic</h2>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-bulk.png" style="width:120px" /> </p>
+<h3 id="d-sfrheo_fwd_tranisotropics-a-n-m-emm-emt"><code>D = sf.rheo_fwd_tranisotropic(S, A, n, m, Emm, Emt)</code></h3>
+<h3 id="s-sfrheo_rev_tranisotropicd-a-n-m-emm-emt"><code>S = sf.rheo_rev_tranisotropic(D, A, n, m, Emm, Emt)</code></h3>
+<table>
+<thead>
+<tr>
+<th>Arguments</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>S</code>, <code>D</code></td>
+<td>Deviatoric-stress and strain-rate tensor (3x3)</td>
+</tr>
+<tr>
+<td><code>A</code>, <code>n</code></td>
+<td>Flow-rate factor <span class="arithmatex">\(A\)</span> and power-law exponent <span class="arithmatex">\(n\)</span></td>
+</tr>
+<tr>
+<td><code>m</code></td>
+<td>Rotational symmetry axis <span class="arithmatex">\(\bf{m}\)</span></td>
+</tr>
+<tr>
+<td><code>Eij</code></td>
+<td>Tuple of eigenenhancements <code>(Emm, Emt)</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="orthotropic">Orthotropic</h2>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous-bulk.png" style="width:225px" /> </p>
+<h3 id="d-sfrheo_fwd_orthotropics-a-n-m1m2m3-eij"><code>D = sf.rheo_fwd_orthotropic(S, A, n, m1,m2,m3, Eij)</code></h3>
+<h3 id="s-sfrheo_rev_orthotropicd-a-n-m1m2m3-eij"><code>S = sf.rheo_rev_orthotropic(D, A, n, m1,m2,m3, Eij)</code></h3>
+<table>
+<thead>
+<tr>
+<th>Arguments</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>S</code>, <code>D</code></td>
+<td>Deviatoric-stress and strain-rate tensor (3x3)</td>
+</tr>
+<tr>
+<td><code>A</code>, <code>n</code></td>
+<td>Flow-rate factor <span class="arithmatex">\(A\)</span> and power-law exponent <span class="arithmatex">\(n\)</span></td>
+</tr>
+<tr>
+<td><code>m1</code>, <code>m2</code>, <code>m3</code></td>
+<td>Reflection symmetry axes <span class="arithmatex">\(\bf{m}_1\)</span>, <span class="arithmatex">\(\bf{m}_2\)</span>, and <span class="arithmatex">\(\bf{m}_3\)</span></td>
+</tr>
+<tr>
+<td><code>Eij</code></td>
+<td>Tuple of eigenenhancements <code>(E11,E22,E33,E23,E13,E12)</code></td>
+</tr>
+</tbody>
+</table>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../cpo-plot/" class="btn btn-neutral float-left" title="Plotting"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../constitutive-elastic/" class="btn btn-neutral float-right" title="Elastic">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../cpo-plot/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../constitutive-elastic/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
