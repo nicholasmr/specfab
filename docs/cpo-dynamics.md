@@ -5,7 +5,7 @@
 This tutorial shows how to model the CPO evolution of a Lagrangian material parcel.<br>
 Three modes of deformation/stress are considered:
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center){: style="width:600px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center){: style="width:620px"}
 
 ### Notation
 
@@ -40,10 +40,11 @@ $$
 
     $n(\theta,\phi)$ is also referred to as $\psi(\theta,\phi)$ in some of the figures below. 
 
+- - -
 
 ## Lattice rotation
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-LROT.gif){: style="width:600px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-LROT.gif){: style="width:650px"}
 
 The strain-induced rotation of $c$-axes is modelled given the (local) velocity gradient tensor $\nabla {\bf u}$ ([Svendsen and Hutter, 1996](https://doi.org/10.3189/S0260305500013525)).
 The model is a kinematic model in the sense that $c$-axes rotate in response to the bulk rate of stretching, ${\bf D}$, and spin, ${\bf W}$, thereby allowing the detailed microscopic stress and strain rate fields to be neglected and hence interactions between neighboring grains to be disregarded.
@@ -82,6 +83,7 @@ where ${\bf M_{\mathrm{LROT}}}$ is given analytically in [Rathmann et al. (2021)
     ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/latrot-caxis-velocity/latrot-caxis-velocity.png){: style="width:600px"}
 
 ### Example
+
 ```python
 import numpy as np
 from specfabpy import specfabpy as sf
@@ -118,9 +120,11 @@ for tt in np.arange(1,Nt):
 
 See also [demo code in repository](https://github.com/nicholasmr/specfab/tree/main/demo/fabric-evolution).
 
+- - -
+
 ## Discontinous dynamic recrystallization (DDRX) 
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-DDRX.gif){: style="width:600px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-DDRX.gif){: style="width:650px"}
 
 DDRX is modelled as a grain orientation or mass decay/production process on the unit sphere ([Placidi and others, 2010](https://doi.org/10.1007/s00161-009-0126-0)):
 
@@ -149,11 +153,12 @@ $$
 
     The normalized DDRX decay rate $\Gamma/\Gamma_0 = D - \langle D \rangle$ is an orientation dependent field that favors nucleation (orientation/mass production) in the directions where the resolved basal-plane shear stress is maximal, and orientation/mass decay elsewhere. 
 
-    The below figure ([code in repository](https://github.com/nicholasmr/specfab/tree/main/demo/ddrx-decayrate)) shows the normalized decay rate for the three modes of deformation considered (for details see [Rathmann and Lilien, 2021](https://doi.org/10.1017/jog.2021.88)):
+    The the normalized decay rate for the three modes of deformation considered are:
 
     ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/ddrx-decayrate/ddrx-decayrate.png){: style="width:600px"}
 
 ### Example
+
 ```python
 import numpy as np
 from specfabpy import specfabpy as sf
@@ -185,9 +190,11 @@ for tt in np.arange(1,Nt):
 # To derive the a2 structure tensor at time-step tt, use sf.a2(nlm[tt,:]) (see the corresponding demo)
 ```
 
+- - -
+
 ## Continous dynamic recrystallization (CDRX) 
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-CDRX.gif){: style="width:600px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-CDRX.gif){: style="width:650px"}
 
 Polygonization (rotation recrystallization, CDRX) accounts for the division of grains along internal sub-grain boundaries when exposed to bending stresses. 
 In effect, CDRX reduces the average grain size upon grain division but does not necessarily change the CPO much ([Alley, 1992](https://doi.org/10.3189/S0022143000003658)). 
@@ -205,6 +212,8 @@ To model CDRX, add the following contribution to the total fabric operator ${\bf
 M += Lambda*sf.M_CDRX(nlm)
 ```
 where `Lambda` ($\Lambda$) is the CDRX rate-factor magnitude that possibly depends on temperature, stress, strain-rate, etc. ([Richards et al., 2021](https://doi.org/10.1016/j.epsl.2020.116718)).
+
+- - -
 
 ## Regularization
 
