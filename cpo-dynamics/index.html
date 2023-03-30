@@ -58,22 +58,16 @@
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#notation">Notation</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#modes-of-deformation">Modes of deformation</a>
-    </li>
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#lattice-rotation">Lattice rotation</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#c-axis-velocity-field">c-axis velocity field</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="#example">Example</a>
     </li>
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#discontinous-dynamic-recrystallization-ddrx">Discontinous dynamic recrystallization (DDRX)</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#decayproduction-rate">Decay/production rate</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="#example_1">Example</a>
     </li>
         </ul>
@@ -138,12 +132,9 @@
               
                 <h1 id="cpo-dynamics">CPO Dynamics</h1>
 <h2 id="introduction">Introduction</h2>
-<p>This tutorial shows how to model CPO evolution for a Lagrangian material parcel.<br></p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The tutorial focuses only on modelling the CPO evolution of glacier ice, i.e. the <span class="arithmatex">\(c\)</span>-axis (or mass fraction) distribution <span class="arithmatex">\(n(\theta,\phi)\)</span>.</p>
-<p><span class="arithmatex">\(n(\theta,\phi)\)</span> is also referred to as <span class="arithmatex">\(\psi(\theta,\phi)\)</span> in some of the figures below and in the literature by Rathmann and Lilien.</p>
-</div>
+<p>This tutorial shows how to model the CPO evolution of a Lagrangian material parcel.<br>
+Three modes of deformation/stress are considered:</p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center" style="width:600px" /></p>
 <h3 id="notation">Notation</h3>
 <p>Given the expansion</p>
 <div class="arithmatex">\[
@@ -162,9 +153,11 @@ n(\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}Y_{l}^{m}(\theta,\phi) \qua
 <div class="arithmatex">\[
 {\bf M} = {\bf M_{\mathrm{LROT}}} + {\bf M_{\mathrm{DDRX}}} + {\bf M_{\mathrm{CDRX}}} + \cdots \quad\text{(operator)}. 
 \]</div>
-<h3 id="modes-of-deformation">Modes of deformation</h3>
-<p>Three modes of deformation/stress are used in the following to demonstrate the effect of different CPO processes:</p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes.png" style="width:600px" /></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The tutorial focuses only on modelling the CPO evolution of glacier ice, i.e. the <span class="arithmatex">\(c\)</span>-axis (or mass fraction) distribution <span class="arithmatex">\(n(\theta,\phi)\)</span>.</p>
+<p><span class="arithmatex">\(n(\theta,\phi)\)</span> is also referred to as <span class="arithmatex">\(\psi(\theta,\phi)\)</span> in some of the figures below. </p>
+</div>
 <h2 id="lattice-rotation">Lattice rotation</h2>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-LROT.gif" style="width:600px" /></p>
 <p>The strain-induced rotation of <span class="arithmatex">\(c\)</span>-axes is modelled given the (local) velocity gradient tensor <span class="arithmatex">\(\nabla {\bf u}\)</span> (<a href="https://doi.org/10.3189/S0260305500013525">Svendsen and Hutter, 1996</a>).
@@ -189,9 +182,11 @@ The model is a kinematic model in the sense that <span class="arithmatex">\(c\)<
 \frac{\partial}{\partial t} {\boldsymbol  n} = {\bf M_{\mathrm{LROT}}} \cdot {\boldsymbol n} ,
 \]</div>
 <p>where <span class="arithmatex">\({\bf M_{\mathrm{LROT}}}\)</span> is given analytically in <a href="https://doi.org/10.1017/jog.2020.117">Rathmann et al. (2021)</a>.</p>
-<h3 id="c-axis-velocity-field">c-axis velocity field</h3>
-<p>The below figure shows examples of the (normalized) <span class="arithmatex">\(c\)</span>-axis velocity field for the three modes of deformation considered:</p>
+<div class="admonition tip">
+<p class="admonition-title">c-axis velocity field</p>
+<p>The normalized <span class="arithmatex">\(c\)</span>-axis velocity fields for the three modes of deformation considered are:</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/latrot-caxis-velocity/latrot-caxis-velocity.png" style="width:600px" /></p>
+</div>
 <h3 id="example">Example</h3>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfabpy as sf
@@ -246,10 +241,12 @@ D = \frac{({\bf S}\cdot{\bf S}):({\bf c}\otimes{\bf c}) - {\bf S}:({\bf c}\otime
 <p>The average deformability, <span class="arithmatex">\(\langle D\rangle\)</span>, depends on the instantaneous CPO state &mdash; specifically, the <a href="../cpo-representation/">structure tensors</a> <code>a2</code> and <code>a4</code> &mdash; 
 making the corresponding matrix problem nonlinear by conserving the total number of grain orientations or mass density <a href="../cpo-representation/">depending on how normalization is interpreted</a>, the latter arguably resting on stronger physical grounds.</p>
 </div>
-<h3 id="decayproduction-rate">Decay/production rate</h3>
+<div class="admonition tip">
+<p class="admonition-title">Decay/production rate</p>
 <p>The normalized DDRX decay rate <span class="arithmatex">\(\Gamma/\Gamma_0 = D - \langle D \rangle\)</span> is an orientation dependent field that favors nucleation (orientation/mass production) in the directions where the resolved basal-plane shear stress is maximal, and orientation/mass decay elsewhere. </p>
 <p>The below figure (<a href="https://github.com/nicholasmr/specfab/tree/main/demo/ddrx-decayrate">code in repository</a>) shows the normalized decay rate for the three modes of deformation considered (for details see <a href="https://doi.org/10.1017/jog.2021.88">Rathmann and Lilien, 2021</a>):</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/ddrx-decayrate/ddrx-decayrate.png" style="width:600px" /></p>
+</div>
 <h3 id="example_1">Example</h3>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfabpy as sf
