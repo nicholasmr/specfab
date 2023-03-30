@@ -134,7 +134,7 @@
 <h2 id="introduction">Introduction</h2>
 <p>This tutorial shows how to model the CPO evolution of a Lagrangian material parcel.<br>
 Three modes of deformation/stress are considered:</p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center" style="width:600px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center" style="width:620px" /></p>
 <h3 id="notation">Notation</h3>
 <p>Given the expansion</p>
 <div class="arithmatex">\[
@@ -158,8 +158,9 @@ n(\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}Y_{l}^{m}(\theta,\phi) \qua
 <p>The tutorial focuses only on modelling the CPO evolution of glacier ice, i.e. the <span class="arithmatex">\(c\)</span>-axis (or mass fraction) distribution <span class="arithmatex">\(n(\theta,\phi)\)</span>.</p>
 <p><span class="arithmatex">\(n(\theta,\phi)\)</span> is also referred to as <span class="arithmatex">\(\psi(\theta,\phi)\)</span> in some of the figures below. </p>
 </div>
+<hr />
 <h2 id="lattice-rotation">Lattice rotation</h2>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-LROT.gif" style="width:600px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-LROT.gif" style="width:650px" /></p>
 <p>The strain-induced rotation of <span class="arithmatex">\(c\)</span>-axes is modelled given the (local) velocity gradient tensor <span class="arithmatex">\(\nabla {\bf u}\)</span> (<a href="https://doi.org/10.3189/S0260305500013525">Svendsen and Hutter, 1996</a>).
 The model is a kinematic model in the sense that <span class="arithmatex">\(c\)</span>-axes rotate in response to the bulk rate of stretching, <span class="arithmatex">\({\bf D}\)</span>, and spin, <span class="arithmatex">\({\bf W}\)</span>, thereby allowing the detailed microscopic stress and strain rate fields to be neglected and hence interactions between neighboring grains to be disregarded.</p>
 <p>The modelled <span class="arithmatex">\(c\)</span>-axes are taken to rotate with the bulk continuum spin (<span class="arithmatex">\({\bf W}\)</span>), plus some plastic spin correction (<span class="arithmatex">\({\bf W}_{\mathrm{p}}\)</span>), so that the <span class="arithmatex">\(c\)</span>-axis velocity field on the unit sphere is</p>
@@ -221,8 +222,9 @@ for tt in np.arange(1,Nt):
 # To derive the a2 structure tensor at time-step tt, use sf.a2(nlm[tt,:]) (see the corresponding demo)
 </code></pre>
 <p>See also <a href="https://github.com/nicholasmr/specfab/tree/main/demo/fabric-evolution">demo code in repository</a>.</p>
+<hr />
 <h2 id="discontinous-dynamic-recrystallization-ddrx">Discontinous dynamic recrystallization (DDRX)</h2>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-DDRX.gif" style="width:600px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-DDRX.gif" style="width:650px" /></p>
 <p>DDRX is modelled as a grain orientation or mass decay/production process on the unit sphere (<a href="https://doi.org/10.1007/s00161-009-0126-0">Placidi and others, 2010</a>):</p>
 <div class="arithmatex">\[ 
 \frac{\partial}{\partial t} n = \Gamma n 
@@ -244,7 +246,7 @@ making the corresponding matrix problem nonlinear by conserving the total number
 <div class="admonition tip">
 <p class="admonition-title">Decay/production rate</p>
 <p>The normalized DDRX decay rate <span class="arithmatex">\(\Gamma/\Gamma_0 = D - \langle D \rangle\)</span> is an orientation dependent field that favors nucleation (orientation/mass production) in the directions where the resolved basal-plane shear stress is maximal, and orientation/mass decay elsewhere. </p>
-<p>The below figure (<a href="https://github.com/nicholasmr/specfab/tree/main/demo/ddrx-decayrate">code in repository</a>) shows the normalized decay rate for the three modes of deformation considered (for details see <a href="https://doi.org/10.1017/jog.2021.88">Rathmann and Lilien, 2021</a>):</p>
+<p>The the normalized decay rate for the three modes of deformation considered are:</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/ddrx-decayrate/ddrx-decayrate.png" style="width:600px" /></p>
 </div>
 <h3 id="example_1">Example</h3>
@@ -277,8 +279,9 @@ for tt in np.arange(1,Nt):
 # To plot the ODF at time-step tt, use plot_ODF(nlm[tt,:], lm, ax, geo) (see the corresponding demo)
 # To derive the a2 structure tensor at time-step tt, use sf.a2(nlm[tt,:]) (see the corresponding demo)
 </code></pre>
+<hr />
 <h2 id="continous-dynamic-recrystallization-cdrx">Continous dynamic recrystallization (CDRX)</h2>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-CDRX.gif" style="width:600px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-CDRX.gif" style="width:650px" /></p>
 <p>Polygonization (rotation recrystallization, CDRX) accounts for the division of grains along internal sub-grain boundaries when exposed to bending stresses. 
 In effect, CDRX reduces the average grain size upon grain division but does not necessarily change the CPO much (<a href="https://doi.org/10.3189/S0022143000003658">Alley, 1992</a>). </p>
 <p>The model follows <a href="https://doi.org/10.1007/s001610050095">Gödert (2003)</a> by approximating the effect of CDRX on the distribution of grain orientations/mass as a Laplacian diffusive process on <span class="arithmatex">\(S^2\)</span>:</p>
@@ -291,6 +294,7 @@ In effect, CDRX reduces the average grain size upon grain division but does not 
 <pre><code class="language-python">M += Lambda*sf.M_CDRX(nlm)
 </code></pre>
 <p>where <code>Lambda</code> (<span class="arithmatex">\(\Lambda\)</span>) is the CDRX rate-factor magnitude that possibly depends on temperature, stress, strain-rate, etc. (<a href="https://doi.org/10.1016/j.epsl.2020.116718">Richards et al., 2021</a>).</p>
+<hr />
 <h2 id="regularization">Regularization</h2>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/8afe59b8847e16761d69abcc5c8ec0327c85e61c/tests/calibrate-regularization/animation.gif" style="width:700px" /></p>
 <p>As <span class="arithmatex">\(n(\theta,\phi)\)</span> becomes anisotropic due to CPO processes, the coefficients <span class="arithmatex">\(n_l^m\)</span> associated with high wavenumber modes (large <span class="arithmatex">\(l\)</span> and <span class="arithmatex">\(m\)</span>, and thus small-scale structure) must increase in magnitude relative to the low wavenumber coefficients (small <span class="arithmatex">\(l\)</span> and <span class="arithmatex">\(m\)</span>). </p>
