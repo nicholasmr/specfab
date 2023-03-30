@@ -92,6 +92,6 @@ for ax in axlist:
 fout = 'ddrx-decayrate.png'
 print('Saving %s'%(fout))
 #plt.tight_layout()
-plt.savefig(fout, dpi=200)
+plt.savefig(fout, transparent=True, dpi=200)
 #plt.show()
 

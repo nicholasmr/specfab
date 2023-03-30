@@ -2,12 +2,10 @@
 
 ## Introduction
 
-This tutorial shows how to model CPO evolution for a Lagrangian material parcel.<br>
+This tutorial shows how to model the CPO evolution of a Lagrangian material parcel.<br>
+Three modes of deformation/stress are considered:
 
-!!! note
-    The tutorial focuses only on modelling the CPO evolution of glacier ice, i.e. the $c$-axis (or mass fraction) distribution $n(\theta,\phi)$.
-    
-    $n(\theta,\phi)$ is also referred to as $\psi(\theta,\phi)$ in some of the figures below and in the literature by Rathmann and Lilien.
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center){: style="width:600px"}
 
 ### Notation
 
@@ -37,11 +35,11 @@ $$
 {\bf M} = {\bf M_{\mathrm{LROT}}} + {\bf M_{\mathrm{DDRX}}} + {\bf M_{\mathrm{CDRX}}} + \cdots \quad\text{(operator)}. 
 $$
 
-### Modes of deformation
+!!! note
+    The tutorial focuses only on modelling the CPO evolution of glacier ice, i.e. the $c$-axis (or mass fraction) distribution $n(\theta,\phi)$.
 
-Three modes of deformation/stress are used in the following to demonstrate the effect of different CPO processes:
+    $n(\theta,\phi)$ is also referred to as $\psi(\theta,\phi)$ in some of the figures below. 
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes.png){: style="width:600px"}
 
 ## Lattice rotation
 
@@ -78,10 +76,10 @@ $$
 
 where ${\bf M_{\mathrm{LROT}}}$ is given analytically in [Rathmann et al. (2021)](https://doi.org/10.1017/jog.2020.117).
 
-### c-axis velocity field 
-The below figure shows examples of the (normalized) $c$-axis velocity field for the three modes of deformation considered:
-
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/latrot-caxis-velocity/latrot-caxis-velocity.png){: style="width:600px"}
+!!! tip "c-axis velocity field"
+    The normalized $c$-axis velocity fields for the three modes of deformation considered are:
+    
+    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/latrot-caxis-velocity/latrot-caxis-velocity.png){: style="width:600px"}
 
 ### Example
 ```python
@@ -147,13 +145,13 @@ $$
     The average deformability, $\langle D\rangle$, depends on the instantaneous CPO state &mdash; specifically, the [structure tensors](cpo-representation.md) `a2` and `a4` &mdash; 
     making the corresponding matrix problem nonlinear by conserving the total number of grain orientations or mass density [depending on how normalization is interpreted](cpo-representation.md), the latter arguably resting on stronger physical grounds.
 
-### Decay/production rate
+!!! tip "Decay/production rate"
 
-The normalized DDRX decay rate $\Gamma/\Gamma_0 = D - \langle D \rangle$ is an orientation dependent field that favors nucleation (orientation/mass production) in the directions where the resolved basal-plane shear stress is maximal, and orientation/mass decay elsewhere. 
+    The normalized DDRX decay rate $\Gamma/\Gamma_0 = D - \langle D \rangle$ is an orientation dependent field that favors nucleation (orientation/mass production) in the directions where the resolved basal-plane shear stress is maximal, and orientation/mass decay elsewhere. 
 
-The below figure ([code in repository](https://github.com/nicholasmr/specfab/tree/main/demo/ddrx-decayrate)) shows the normalized decay rate for the three modes of deformation considered (for details see [Rathmann and Lilien, 2021](https://doi.org/10.1017/jog.2021.88)):
+    The below figure ([code in repository](https://github.com/nicholasmr/specfab/tree/main/demo/ddrx-decayrate)) shows the normalized decay rate for the three modes of deformation considered (for details see [Rathmann and Lilien, 2021](https://doi.org/10.1017/jog.2021.88)):
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/ddrx-decayrate/ddrx-decayrate.png){: style="width:600px"}
+    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/ddrx-decayrate/ddrx-decayrate.png){: style="width:600px"}
 
 ### Example
 ```python

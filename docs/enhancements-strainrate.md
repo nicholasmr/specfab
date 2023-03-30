@@ -33,19 +33,23 @@ In this way:
 
 * ${E_{12}}$ is the ${\bf e}_{1}$&mdash;${\bf e}_{2}$ shear strain-rate enhancement when subject to shear in the ${\bf e}_{1}$&mdash;${\bf e}_{2}$ plane
 
-Hence, $E_{ij}>1$ implies the material response is *softened* due to fabric (compared to an isotropic CPO), whereas $E_{ij}<1$ implies *hardening*.
+and so on.
 
-!!! note "Eigenenhancements"
+!!! note "Hard or soft"
 
-    *Eigenenhancements* are defined as the enhancement factors w.r.t. the CPO symmetry axes, ${\bf m}_i$, hence 
+    $E_{ij}>1$ implies the material response is *softened* due to fabric (compared to an isotropic CPO), whereas $E_{ij}<1$ implies *hardening*.
 
-    $${\bf e}_i = {\bf m}_i .$$
+### Eigenenhancements
 
-    These are the enhancements factors needed to specify the viscous anisotropy in bulk [anisotropic rheologies](constitutive-viscoplastic.md):
-    
-    | Transversely isotropic | Orthotropic |
-    | :-: | :-: |
-    | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous.png){: style="width:290px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous.png){: style="width:350px"} |
+*Eigenenhancements* are defined as the enhancement factors w.r.t. the CPO symmetry axes, ${\bf m}_i$, hence 
+
+$${\bf e}_i = {\bf m}_i .$$
+
+These are the enhancements factors needed to specify the viscous anisotropy in bulk [anisotropic rheologies](constitutive-viscoplastic.md):
+
+| Transversely isotropic | Orthotropic |
+| :-: | :-: |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous.png){: style="width:260px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous.png){: style="width:350px"} |
 
 ## Grain homogenization schemes 
 
@@ -58,7 +62,7 @@ In this way, the effective rheology is simply the grain-orentation-averaged rheo
 
 | Polycrystalline ice | Polycrystalline olivine |
 | :-: | :-: |
-| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:200px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:200px"} |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
 
 Any linear combination of the two homogenizations is supported:
 
@@ -75,7 +79,7 @@ where $E_{ij}^{\mathrm{Sachs}}$ and $E_{ij}^{\mathrm{Taylor}}$ are calculated wi
 If grains are approximately transversely isotropic, the grain rheology can be modelled using the [transversely isotropic power-law rheology](constitutive-viscoplastic.md).
 This requires specifying the three grain parameters $n$, $E_{cc}$ and $E_{ca}$, and the Sachs&mdash;Taylor weight $\alpha$.
 
-!!! note 
+!!! warning "Grain parameters"
     The parameters $n, E_{cc}, E_{ca},$ and $\alpha$ should be understood as the *effective* polycrystal values needed to reproduce deformation experiments, and not measured values derived from experiments on single crystals.
 
 #### Example for glacier ice

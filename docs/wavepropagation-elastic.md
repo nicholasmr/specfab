@@ -18,7 +18,7 @@ which depends on the CPO, grain elastic parameters, and direction of propagation
 If grains are approximately transversely isotropic, the grain elastic behaviour can be modelled using the [transversely isotropic elastic constitutive equation](constitutive-elastic.md).
 This requires specifying the three grain parameters $\lambda$, $\mu$, $\hat{\lambda}$, $\hat{\mu}$, $\hat{\gamma}$, and the Voigt&mdash;Reuss weight $\alpha$.
 
-!!! note 
+!!! warning "Grain parameters" 
     The parameters $\lambda$, $\mu$, $\hat{\lambda}$, $\hat{\mu}$, $\hat{\gamma}$, and $\alpha$ should be understood as the *effective* polycrystal values needed to reproduce experimental results, and not measured values derived from experiments on single crystals.
 
 ### Example for glacier ice

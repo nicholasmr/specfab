@@ -1,25 +1,27 @@
 # CPO representation
 
+## Definition
+
 CPOs are represented by the distribution(s) of crystallographic axes in orientation space, $S^2$.
 <br>
 Supported grain symmetry groups are
 
 | Grain symmetry | CPO components | Interpretation |
 | --- | --- | --- | 
-| Transversely isotropic | $n(\theta,\phi)$                | Distribution of slip-plane normals (n) |
-| Orthotropic            | $n(\theta,\phi),b(\theta,\phi)$ | Distribution of slip-plane normals ($n$) and slip directions ($b$) |
-
-E.g.:
-
-| Polycrystalline ice | Polycrystalline olivine |
-| :-: | :-: |
-| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:200px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:200px"} |
-
-where $n(\theta,\phi)$ is the $c$-axis distribution for polycrystalline ice, 
-whereas which crystallographic axes (${\bf r}_i$) the distributions $n(\theta,\phi)$ and $b(\theta,\phi)$ refer to for polycrystalline olivine depends on the fabric type and hence on physical conditions such as thermodynamic conditions, water content, and stress magnitude.
+| Transversely isotropic | $n(\theta,\phi)$                | Distribution of slip-plane normals |
+| Orthotropic            | $n(\theta,\phi),b(\theta,\phi)$ | Distribution of slip-plane normals and slip directions |
 
 !!! note
     Grain sizes or shapes are not represented or modelled by specfab.
+
+### Example
+
+| Polycrystalline ice | Polycrystalline olivine |
+| :-: | :-: |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
+
+* $n(\theta,\phi)$ is the $c$-axis distribution for polycrystalline ice
+* $n(\theta,\phi)$ and $b(\theta,\phi)$ refer to certain crystallographic axes (${\bf r}_i$) for polycrystalline olivine depending on the fabric type, and hence on physical conditions such as thermodynamic conditions, water content, and stress magnitude.
 
 ## Series expansion
 
@@ -41,12 +43,12 @@ The array of complex-valued expansion coefficients is defined as
 $\qquad$ `nlm` $= [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}] \quad\text{(state vector)}$.
 
 
-### Normalization 
+!!! warning "Normalization"
 
-$n(\theta,\phi)$ may be understood as either the number density (number of grains) with a given slip-normal orientation, or the mass density fraction ([Faria, 2006](https://royalsocietypublishing.org/doi/abs/10.1098/rspa.2005.1610)) of grains with a given slip-normal orientation.
+    $n(\theta,\phi)$ may be understood either as the number density of grains with a given slip-plane normal orientation, or as the mass density fraction ([Faria, 2006](https://royalsocietypublishing.org/doi/abs/10.1098/rspa.2005.1610)) of grains with a given slip-plane normal orientation.
 
-From specfab's point-of-view, the difference is a matter of normalization: since the models of [CPO evolution](cpo-dynamics.md) (lattice rotation, DDRX, CDRX) conserve the normalization, the two views are effectively the same, not least because CPO-derived quantities depend on the normalized distributions (which are identical).
-The mass-density-fraction interpretation rests, however, on stronger physical grounds as mass is conserved while grain numbers are not.
+    From specfab's point-of-view, the difference is a matter of normalization: since the models of [CPO evolution](cpo-dynamics.md) (lattice rotation, DDRX, CDRX) conserve the normalization, the two views are effectively the same, not least because CPO-derived quantities depend on the normalized distributions (which are identical).
+    The mass-density-fraction interpretation rests, however, on stronger physical grounds as mass is conserved but grain numbers are not.
 
 ## Reduced form
 
@@ -112,6 +114,8 @@ $$
 
 where $\hat{n}_l^m := n_l^m/n_0^0$, and ${\bf f}$, ${\bf g}$, ${\bf h}$ are linear in their arguments.
 
+### Example
+
 The following example shows how to convert between the representations:
 
 ```python
@@ -146,14 +150,13 @@ print('a6 is: ', a6)
 The spectral expansion coefficients of any CPO may be determined from discrete measurements of crystallographic axes.
 This requires constructing the corresponding structure tensors (for each crystallographic axis), from which the expansion coefficients may be derived.
 
-In the following example, a discrete ensemble of $c$-axis measurements of ice crystals is presumed.
-
+###Example
 ```python
 import numpy as np
 from specfabpy import specfabpy as sf
 lm, nlm_len = sf.init(6) 
 
-# Pseuso-code -- replace with your own array/list of measured c-axes
+# Replace with your own array/list of measured c-axes
 # caxes = [[c1x,c1y,c1z], [c2x,c2y,c2z], ...] 
 
 a6 = np.zeros((3,3,3,3,3,3))
@@ -162,7 +165,7 @@ for c in caxes
 a6 /= len(caxes) # normalize by number of c-axes (grains)
 ```
 
-!!! note 
+!!! tip 
     Constructing `a6` is to be preferred over `a4` and `a2` since it contains more information on the fine-scale structure of the distribution; 
     $l\leq 6$ expansion coefficients as opposed to $l\leq 4$ and $l\leq 2$ coefficients, respectively.
 

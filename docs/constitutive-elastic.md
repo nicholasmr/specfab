@@ -1,11 +1,13 @@
 # Elastic constitutive equations
 
-Linear elastic constituve equations are supported in both forward and inverse (or reverse) form:
+Linear elastic constituve equations are supported in both forward and inverse (or reverse) form.
 
+<!--
 - Forward form ${\bf E}({\bf S})$ 
 - Inverse form ${\bf S}({\bf E})$ 
 
 where $\bf{E}$ and $\bf{S}$ are the strain and stress tensors, respectively.
+-->
 
 ## Transversely isotropic
 

@@ -1,18 +1,20 @@
 # Viscoplastic constitutive equations
 
-Anisotropic power-law rheologies are supported in both forward and inverse (or reverse) form:
+Anisotropic power-law rheologies are supported in both forward and inverse (or reverse) form.
 
+<!--
 * Forward form: ${\bf D}({\bf S})$ 
 * Inverse form: ${\bf S}({\bf D})$ 
 
 where $\bf{D}$ and $\bf{S}$ are the strain-rate and deviatoric stress tensors, respectively.
+-->
 
 !!! note "Eigenenhancements"
-    Anisotropic viscosities/fluidities are prescribed in specfab in terms of logitudinal and shear strain-rate enhancement factors w.r.t material symmetry axes, termed [eigenenhancements](enhancements-strainrate.md).
+    Anisotropic viscosities/fluidities are prescribed in terms of logitudinal and shear strain-rate enhancement factors w.r.t material symmetry axes, termed [eigenenhancements](enhancements-strainrate.md).
 
 ## Transversely isotropic
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-bulk.png){: style="width:120px"} 
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-bulk.png){: style="width:140px"} 
 
 ### `D = sf.rheo_fwd_tranisotropic(S, A, n, m, Emm, Emt)`
 
@@ -28,7 +30,7 @@ where $\bf{D}$ and $\bf{S}$ are the strain-rate and deviatoric stress tensors, r
 
 ## Orthotropic
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous-bulk.png){: style="width:225px"} 
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous-bulk.png){: style="width:250px"} 
 
 ### `D = sf.rheo_fwd_orthotropic(S, A, n, m1,m2,m3, Eij)`
 

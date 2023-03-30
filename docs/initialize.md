@@ -1,4 +1,4 @@
-## Initialization
+# Initialization
 
 Initialize `specfabpy` by running
 

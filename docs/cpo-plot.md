@@ -1,6 +1,6 @@
 # Plotting
 
-The orientation distribution function (ODF; normalized expansion series) can be plotted as follows
+The orientation distribution function (ODF; normalized expansion series) can be plotted as follows:
 
 ```python
 import numpy as np

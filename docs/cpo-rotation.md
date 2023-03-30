@@ -22,4 +22,4 @@ nlm_rot2 = sf.rotate_nlm(nlm_rot1, 0, phi) # next  rotate around z axis in x-y p
 
 Plotting the expansion series (`nlm` and `nlm_rot*`) gives:
 
-![](https://github.com/nicholasmr/specfab/raw/main/tests/wigner-d-rotation-test/wigner-d-rotation-test.png){: style="width:550px"}
+![](https://github.com/nicholasmr/specfab/raw/main/tests/wigner-d-rotation-test/wigner-d-rotation-test.png){: style="width:600px"}

@@ -15,6 +15,9 @@ nav:
     - 'Wave propagation':
         - Elastic: wavepropagation-elastic.md
         - Electromagnetic: wavepropagation-electromagnetic.md
+    - 'Finite-element modelling': 
+        - FEniCS: FEM-integration-fenics.md
+        - Elmer: FEM-integration-elmer.md
 
 theme: 
     name: 'readthedocs'
@@ -22,6 +25,7 @@ theme:
 markdown_extensions:
     - attr_list
     - admonition
+    - pymdownx.details
     - pymdownx.arithmatex:
         generic: true
     - pymdownx.highlight:
