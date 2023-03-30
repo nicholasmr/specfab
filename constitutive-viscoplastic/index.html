@@ -118,18 +118,20 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="viscoplastic-constitutive-equations">Viscoplastic constitutive equations</h1>
-<p>Anisotropic power-law rheologies are supported in both forward and inverse (or reverse) form:</p>
-<ul>
-<li>Forward form: <span class="arithmatex">\({\bf D}({\bf S})\)</span> </li>
-<li>Inverse form: <span class="arithmatex">\({\bf S}({\bf D})\)</span> </li>
-</ul>
-<p>where <span class="arithmatex">\(\bf{D}\)</span> and <span class="arithmatex">\(\bf{S}\)</span> are the strain-rate and deviatoric stress tensors, respectively.</p>
+<p>Anisotropic power-law rheologies are supported in both forward and inverse (or reverse) form.</p>
+<!--
+* Forward form: ${\bf D}({\bf S})$ 
+* Inverse form: ${\bf S}({\bf D})$ 
+
+where $\bf{D}$ and $\bf{S}$ are the strain-rate and deviatoric stress tensors, respectively.
+-->
+
 <div class="admonition note">
 <p class="admonition-title">Eigenenhancements</p>
-<p>Anisotropic viscosities/fluidities are prescribed in specfab in terms of logitudinal and shear strain-rate enhancement factors w.r.t material symmetry axes, termed <a href="../enhancements-strainrate/">eigenenhancements</a>.</p>
+<p>Anisotropic viscosities/fluidities are prescribed in terms of logitudinal and shear strain-rate enhancement factors w.r.t material symmetry axes, termed <a href="../enhancements-strainrate/">eigenenhancements</a>.</p>
 </div>
 <h2 id="transversely-isotropic">Transversely isotropic</h2>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-bulk.png" style="width:120px" /> </p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-bulk.png" style="width:140px" /> </p>
 <h3 id="d-sfrheo_fwd_tranisotropics-a-n-m-emm-emt"><code>D = sf.rheo_fwd_tranisotropic(S, A, n, m, Emm, Emt)</code></h3>
 <h3 id="s-sfrheo_rev_tranisotropicd-a-n-m-emm-emt"><code>S = sf.rheo_rev_tranisotropic(D, A, n, m, Emm, Emt)</code></h3>
 <table>
@@ -159,7 +161,7 @@
 </tbody>
 </table>
 <h2 id="orthotropic">Orthotropic</h2>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous-bulk.png" style="width:225px" /> </p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous-bulk.png" style="width:250px" /> </p>
 <h3 id="d-sfrheo_fwd_orthotropics-a-n-m1m2m3-eij"><code>D = sf.rheo_fwd_orthotropic(S, A, n, m1,m2,m3, Eij)</code></h3>
 <h3 id="s-sfrheo_rev_orthotropicd-a-n-m1m2m3-eij"><code>S = sf.rheo_rev_orthotropic(D, A, n, m1,m2,m3, Eij)</code></h3>
 <table>

@@ -129,12 +129,12 @@ Supported grain symmetry groups are</p>
 <tr>
 <td>Transversely isotropic</td>
 <td><span class="arithmatex">\(n(\theta,\phi)\)</span></td>
-<td>Distribution of slip-plane normals (n)</td>
+<td>Distribution of slip-plane normals</td>
 </tr>
 <tr>
 <td>Orthotropic</td>
 <td><span class="arithmatex">\(n(\theta,\phi),b(\theta,\phi)\)</span></td>
-<td>Distribution of slip-plane normals (<span class="arithmatex">\(n\)</span>) and slip directions (<span class="arithmatex">\(b\)</span>)</td>
+<td>Distribution of slip-plane normals and slip directions</td>
 </tr>
 </tbody>
 </table>
@@ -172,9 +172,9 @@ $$</p>
 <p>The array of complex-valued expansion coefficients is defined as</p>
 <p><span class="arithmatex">\(\qquad\)</span> <code>nlm</code> <span class="arithmatex">\(= [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}] \quad\text{(state vector)}\)</span>.</p>
 <h3 id="normalization">Normalization</h3>
-<p><span class="arithmatex">\(n(\theta,\phi)\)</span> may be understood as either the number density (number of grains) with a given slip-normal orientation, or the mass density fraction (<a href="https://royalsocietypublishing.org/doi/abs/10.1098/rspa.2005.1610">Faria, 2006</a>) of grains with a given slip-normal orientation.</p>
+<p><span class="arithmatex">\(n(\theta,\phi)\)</span> may be understood either as the number density of grains with a given slip-plane normal orientation, or as the mass density fraction (<a href="https://royalsocietypublishing.org/doi/abs/10.1098/rspa.2005.1610">Faria, 2006</a>) of grains with a given slip-plane normal orientation.</p>
 <p>From specfab's point-of-view, the difference is a matter of normalization: since the models of <a href="../cpo-dynamics/">CPO evolution</a> (lattice rotation, DDRX, CDRX) conserve the normalization, the two views are effectively the same, not least because CPO-derived quantities depend on the normalized distributions (which are identical).
-The mass-density-fraction interpretation rests, however, on stronger physical grounds as mass is conserved while grain numbers are not.</p>
+The mass-density-fraction interpretation rests, however, on stronger physical grounds as mass is conserved but grain numbers are not.</p>
 <h2 id="reduced-form">Reduced form</h2>
 <p>Not all expansion coefficients are independent for real-valued expansion series, but must fulfill</p>
 <div class="arithmatex">\[ 

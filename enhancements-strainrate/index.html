@@ -68,6 +68,10 @@
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Strain-rate enhancements</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#definition">Definition</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#eigenenhancements">Eigenenhancements</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#grain-homogenization-schemes">Grain homogenization schemes</a>
         <ul>
@@ -147,9 +151,12 @@ E_{ij} = \frac{
 <p><span class="arithmatex">\({E_{12}}\)</span> is the <span class="arithmatex">\({\bf e}_{1}\)</span>&mdash;<span class="arithmatex">\({\bf e}_{2}\)</span> shear strain-rate enhancement when subject to shear in the <span class="arithmatex">\({\bf e}_{1}\)</span>&mdash;<span class="arithmatex">\({\bf e}_{2}\)</span> plane</p>
 </li>
 </ul>
-<p>Hence, <span class="arithmatex">\(E_{ij}&gt;1\)</span> implies the material response is <em>softened</em> due to fabric (compared to an isotropic CPO), whereas <span class="arithmatex">\(E_{ij}&lt;1\)</span> implies <em>hardening</em>.</p>
+<p>and so on.</p>
 <div class="admonition note">
-<p class="admonition-title">Eigenenhancements</p>
+<p class="admonition-title">Hard or soft</p>
+<p>Notice: <span class="arithmatex">\(E_{ij}&gt;1\)</span> implies the material response is <em>softened</em> due to fabric (compared to an isotropic CPO), whereas <span class="arithmatex">\(E_{ij}&lt;1\)</span> implies <em>hardening</em>.</p>
+</div>
+<h3 id="eigenenhancements">Eigenenhancements</h3>
 <p><em>Eigenenhancements</em> are defined as the enhancement factors w.r.t. the CPO symmetry axes, <span class="arithmatex">\({\bf m}_i\)</span>, hence </p>
 <div class="arithmatex">\[{\bf e}_i = {\bf m}_i .\]</div>
 <p>These are the enhancements factors needed to specify the viscous anisotropy in bulk <a href="../constitutive-viscoplastic/">anisotropic rheologies</a>:</p>
@@ -162,12 +169,11 @@ E_{ij} = \frac{
 </thead>
 <tbody>
 <tr>
-<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous.png" style="width:290px" /></td>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous.png" style="width:260px" /></td>
 <td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous.png" style="width:350px" /></td>
 </tr>
 </tbody>
 </table>
-</div>
 <h2 id="grain-homogenization-schemes">Grain homogenization schemes</h2>
 <p>Using (1) to calculate <span class="arithmatex">\(E_{ij}\)</span> for a given CPO requires an effective rheology that takes the microstructure into account.
 <br></p>
@@ -197,8 +203,8 @@ E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}} ,
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-monocrystal.png" style="width:200px" /></p>
 <p>If grains are approximately transversely isotropic, the grain rheology can be modelled using the <a href="../constitutive-viscoplastic/">transversely isotropic power-law rheology</a>.
 This requires specifying the three grain parameters <span class="arithmatex">\(n\)</span>, <span class="arithmatex">\(E_{cc}\)</span> and <span class="arithmatex">\(E_{ca}\)</span>, and the Sachs&mdash;Taylor weight <span class="arithmatex">\(\alpha\)</span>.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
+<div class="admonition warning">
+<p class="admonition-title">Grain parameters</p>
 <p>The parameters <span class="arithmatex">\(n, E_{cc}, E_{ca},\)</span> and <span class="arithmatex">\(\alpha\)</span> should be understood as the <em>effective</em> polycrystal values needed to reproduce deformation experiments, and not measured values derived from experiments on single crystals.</p>
 </div>
 <h4 id="example-for-glacier-ice">Example for glacier ice</h4>
