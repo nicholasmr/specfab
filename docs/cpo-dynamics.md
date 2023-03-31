@@ -207,6 +207,8 @@ $$
 \frac{\partial}{\partial t} {\boldsymbol  n} = {\bf M_{\mathrm{CDRX}}} \cdot {\boldsymbol n} .
 $$
 
+### Example 
+
 To model CDRX, add the following contribution to the total fabric operator ${\bf M}$:
 ```python
 M += Lambda*sf.M_CDRX(nlm)

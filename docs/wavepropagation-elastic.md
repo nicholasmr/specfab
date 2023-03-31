@@ -13,7 +13,10 @@ which depends on the CPO, grain elastic parameters, and direction of propagation
 
 ## Transversely isotropic grains
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-elastic-monocrystal.png){: style="width:200px"} 
+| Monocrystal | Polycrystal |
+| :-: | :-: |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-elastic-monocrystal.png){: style="width:210px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} |
+
 
 If grains are approximately transversely isotropic, the grain elastic behaviour can be modelled using the [transversely isotropic elastic constitutive equation](constitutive-elastic.md).
 This requires specifying the three grain parameters $\lambda$, $\mu$, $\hat{\lambda}$, $\hat{\mu}$, $\hat{\gamma}$, and the Voigt&mdash;Reuss weight $\alpha$.
@@ -51,7 +54,11 @@ Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta,ph
 
 ## Orthotropic grains
 
-Not yet implemented
+| Monocrystal | Polycrystal |
+| :-: | :-: |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orhotropic-elastic-monocrystal.png){: style="width:210px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
+
+Under development.
 
 <!--
 For polycrystals with orthotropic grains characterized by *effective* values of the grain elastic constants $a,b,c$ (see [elasticities](constitutive-elastic.md)).

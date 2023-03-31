@@ -54,15 +54,9 @@ These are the enhancements factors needed to specify the viscous anisotropy in b
 ## Grain homogenization schemes 
 
 Using (1) to calculate $E_{ij}$ for a given CPO requires an effective rheology that takes the microstructure into account.
-<br>
 
 In the simplest case, polycrystals may be regarded as an ensemble of interactionless grains (monocrystals) subject to either a homogeneous strain field (Taylor's hypothesis) or homogeneous stress field (Sachs's hypothesis) over the polycrystal scale. 
 In this way, the effective rheology is simply the grain-orentation-averaged rheology, assuming homogeneous stress or strain-rate over the polycrystal scale.
-<br>
-
-| Polycrystalline ice | Polycrystalline olivine |
-| :-: | :-: |
-| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
 
 Any linear combination of the two homogenizations is supported:
 
@@ -74,7 +68,9 @@ where $E_{ij}^{\mathrm{Sachs}}$ and $E_{ij}^{\mathrm{Taylor}}$ are calculated wi
 
 ### Transversely isotropic grains
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-monocrystal.png){: style="width:200px"}
+| Monocrystal | Polycrystal |
+| :-: | :-: |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-monocrystal.png){: style="width:210px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} |
 
 If grains are approximately transversely isotropic, the grain rheology can be modelled using the [transversely isotropic power-law rheology](constitutive-viscoplastic.md).
 This requires specifying the three grain parameters $n$, $E_{cc}$ and $E_{ca}$, and the Sachs&mdash;Taylor weight $\alpha$.
@@ -82,9 +78,9 @@ This requires specifying the three grain parameters $n$, $E_{cc}$ and $E_{ca}$, 
 !!! warning "Grain parameters"
     The parameters $n, E_{cc}, E_{ca},$ and $\alpha$ should be understood as the *effective* polycrystal values needed to reproduce deformation experiments, and not measured values derived from experiments on single crystals.
 
-#### Example for glacier ice
+#### Example 
 
-The below example shows how $E_{ij}$ may be calculated given `a2`, `a4`, or `nlm`. 
+The below example for glacier ice shows how $E_{ij}$ may be calculated given `a2`, `a4`, or `nlm`. 
 
 ```python
 import numpy as np
@@ -92,8 +88,7 @@ from specfabpy import specfabpy as sf
 lm, nlm_len = sf.init(4) # L=4 truncation is sufficient in this case
 
 ### Make synthetic ODF
-# Suppose the fabric is unidirectional with all c-axes aligned in z-direction
-# ...then ODF = deltafunc(r-m), and therefore (Rathmann et al., 2021)
+# Unidirectional CPO: all c-axes aligned in z-direction (ODF = deltafunc(r-m))
 m = np.array([0,0,1]) 
 nlm = np.zeros((nlm_len), dtype=np.complex64) # Array of expansion coefficients
 if True: # use a2
@@ -103,21 +98,25 @@ else: # use a4
     a4 = np.einsum('i,j,k,l', m,m,m,m) # Outer product
     nlm[:15] = sf.a4_to_nlm(a4) # Derive corresponding expansion coefficients
 
-### Coordinate basis vectors for enhancement-factor matrix
+### Coordinate basis vectors for enhancement-factor calculations
 (e1,e2,e3, eigvals) = sf.frame(nlm, 'e') # a2 eigen basis
 #(e1,e2,e3) = (np.array([1,0,0]),np.array([0,1,0]),np.array([0,0,1])) # x,y,z cartesian basis
 
-### Transversely isotropic monocrystal parameters for ice (following Rathmann & Lilien, 2021)
-nprime = 1      # n'=1 => linear grain rheology
-Ecc    = 1      # Enhancement factor for compression along c-axis
-Eca    = 1e3    # Enhancement factor for shear parallel to basal plane
-alpha  = 0.0125 # Taylor--Sachs weight
+### Transversely isotropic monocrystal parameters for ice (Rathmann & Lilien, 2021)
+n     = 1      # n=1 => linear grain rheology (nonlinear not fully supported)
+Ecc   = 1      # Enhancement factor for compression along c-axis
+Eca   = 1e3    # Enhancement factor for shear parallel to basal plane
+alpha = 0.0125 # Taylor--Sachs weight
 
 ### Calculate enhancement-factor matrix in the basis (e1,e2,e3)
-Eij = sf.Eeiej(nlm, e1,e2,e3, Ecc,Eca,alpha,nprime) 
+Eij = sf.Eeiej(nlm, e1,e2,e3, Ecc,Eca,alpha,n) 
 ```
 
 ### Orthotropic grains
 
-Not yet implemented
+| Monocrystal | Polycrystal |
+| :-: | :-: |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orhotropic-viscous-monocrystal.png){: style="width:210px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
+
+Under development.
 

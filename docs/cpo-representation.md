@@ -4,7 +4,7 @@
 
 CPOs are represented by the distribution(s) of crystallographic axes in orientation space, $S^2$.
 <br>
-Supported grain symmetry groups are
+Supported grain symmetry groups for modelling [CPO evolution](cpo-dynamics.md) are
 
 | Grain symmetry | CPO components | Interpretation |
 | --- | --- | --- | 
@@ -17,11 +17,9 @@ Supported grain symmetry groups are
 ### Example
 
 | Polycrystalline ice | Polycrystalline olivine |
-| :-: | :-: |
+| :- | :- |
 | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
-
-* $n(\theta,\phi)$ is the $c$-axis distribution for polycrystalline ice
-* $n(\theta,\phi)$ and $b(\theta,\phi)$ refer to certain crystallographic axes (${\bf r}_i$) for polycrystalline olivine depending on the fabric type, and hence on physical conditions such as thermodynamic conditions, water content, and stress magnitude.
+| $n(\theta,\phi)$ is the ${\bf c}$-axis distribution for <br>polycrystalline ice. | $n(\theta,\phi)$ and $b(\theta,\phi)$ refer to certain <br>crystallographic axes (${\bf r}_i$) for polycrystalline <br>olivine depending on the fabric type (i.e. <br> thermodynamic conditions, water content, <br>and stress magnitude). |
 
 ## Series expansion
 
@@ -49,43 +47,6 @@ $\qquad$ `nlm` $= [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdo
 
     From specfab's point-of-view, the difference is a matter of normalization: since the models of [CPO evolution](cpo-dynamics.md) (lattice rotation, DDRX, CDRX) conserve the normalization, the two views are effectively the same, not least because CPO-derived quantities depend on the normalized distributions (which are identical).
     The mass-density-fraction interpretation rests, however, on stronger physical grounds as mass is conserved but grain numbers are not.
-
-## Reduced form
-
-Not all expansion coefficients are independent for real-valued expansion series, but must fulfill
-
-$$ 
-n_l^{-m}=(-1)^m(n_l^m)^* .
-$$
-
-This can be taken advantage of for large problems where many (e.g. gridded) CPOs need to be stored in memory, thereby effectively reducing the size of the problem. 
-The reduced array of expansion coefficients
-
-$\qquad$ `rnlm` $= [n_0^0,n_2^{0},n_2^{1},n_2^{2},n_4^{0},\cdots,n_4^{4},\cdots,n_L^{0},\cdots,n_L^{L}] \quad\text{(reduced state vector)}$
-
-can be constructed as follows:
-
-```python
-import numpy as np
-from specfabpy import specfabpy as sf
-lm, nlm_len = sf.init(2) # L=2 truncation is sufficient in this case
-
-# Construct an arbitrary fabric
-a2 = np.diag([0.1,0.2,0.7]) # any second-order structure tensor (not necessarily diagonal)
-nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
-nlm[0:6] = sf.a2_to_nlm(a2) # l=2 expansion coefficients for corresponding ODF (a2 is normalized)
-print('original:', nlm)
-
-# Get reduced form of coefficient array, rnlm
-rnlm_len = sf.get_rnlm_len() 
-rnlm = np.zeros((rnlm_len), dtype=np.complex64) # array of reduced expansion coefficients
-rnlm[:] = sf.nlm_to_rnlm(nlm, rnlm_len) # reduced form
-print('reduced:', rnlm)
-
-# Recover full form (nlm) from reduced form (rnlm)
-nlm[:] = sf.rnlm_to_nlm(rnlm, nlm_len)
-print('recovered:', nlm)
-```
 
 ## Structure tensors
 
@@ -165,8 +126,47 @@ for c in caxes
 a6 /= len(caxes) # normalize by number of c-axes (grains)
 ```
 
-!!! tip 
+!!! note 
     Constructing `a6` is to be preferred over `a4` and `a2` since it contains more information on the fine-scale structure of the distribution; 
-    $l\leq 6$ expansion coefficients as opposed to $l\leq 4$ and $l\leq 2$ coefficients, respectively.
+    that is, $l\leq 6$ expansion coefficients as opposed to $l\leq 4$ and $l\leq 2$ coefficients, respectively.
 
+
+## Reduced form
+
+Not all expansion coefficients are independent for real-valued expansion series, but must fulfill
+
+$$ 
+n_l^{-m}=(-1)^m(n_l^m)^* .
+$$
+
+This can be taken advantage of for large problems where many (e.g. gridded) CPOs need to be stored in memory, thereby effectively reducing the size of the problem. 
+The array of reduced expansion coefficients is defined as
+
+$\qquad$ `rnlm` $= [n_0^0,n_2^{0},n_2^{1},n_2^{2},n_4^{0},\cdots,n_4^{4},\cdots,n_L^{0},\cdots,n_L^{L}] \quad\text{(reduced state vector)}$
+
+### Example 
+
+Converting between full and reduced forms:
+
+```python
+import numpy as np
+from specfabpy import specfabpy as sf
+lm, nlm_len = sf.init(2) # L=2 truncation is sufficient in this case
+
+# Construct an arbitrary fabric
+a2 = np.diag([0.1,0.2,0.7]) # any second-order structure tensor (not necessarily diagonal)
+nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
+nlm[0:6] = sf.a2_to_nlm(a2) # l=2 expansion coefficients for corresponding ODF (a2 is normalized)
+print('original:', nlm)
+
+# Get reduced form of coefficient array, rnlm
+rnlm_len = sf.get_rnlm_len() 
+rnlm = np.zeros((rnlm_len), dtype=np.complex64) # array of reduced expansion coefficients
+rnlm[:] = sf.nlm_to_rnlm(nlm, rnlm_len) # reduced form
+print('reduced:', rnlm)
+
+# Recover full form (nlm) from reduced form (rnlm)
+nlm[:] = sf.rnlm_to_nlm(rnlm, nlm_len)
+print('recovered:', nlm)
+```
 
