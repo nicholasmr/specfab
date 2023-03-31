@@ -128,7 +128,20 @@ which depends on the CPO, grain elastic parameters, and direction of propagation
 Moreover, in these homogenizations, grains are assumed interactionless and the bulk elastic behaviour is therefore simply the grain-orientation-averaged elastic behaviour subject to either homogeneous stress or strain assumptions over the polycrystal scale.</p>
 </div>
 <h2 id="transversely-isotropic-grains">Transversely isotropic grains</h2>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-elastic-monocrystal.png" style="width:200px" /> </p>
+<table>
+<thead>
+<tr>
+<th align="center">Monocrystal</th>
+<th align="center">Polycrystal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-elastic-monocrystal.png" style="width:210px" /></td>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png" style="width:220px" /></td>
+</tr>
+</tbody>
+</table>
 <p>If grains are approximately transversely isotropic, the grain elastic behaviour can be modelled using the <a href="../constitutive-elastic/">transversely isotropic elastic constitutive equation</a>.
 This requires specifying the three grain parameters <span class="arithmatex">\(\lambda\)</span>, <span class="arithmatex">\(\mu\)</span>, <span class="arithmatex">\(\hat{\lambda}\)</span>, <span class="arithmatex">\(\hat{\mu}\)</span>, <span class="arithmatex">\(\hat{\gamma}\)</span>, and the Voigt&mdash;Reuss weight <span class="arithmatex">\(\alpha\)</span>.</p>
 <div class="admonition warning">
@@ -161,7 +174,21 @@ theta, phi = np.deg2rad([90,70,]), np.deg2rad([0,10,]) # wave-vector directions 
 Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta,phi) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
 </code></pre>
 <h2 id="orthotropic-grains">Orthotropic grains</h2>
-<p>Not yet implemented</p>
+<table>
+<thead>
+<tr>
+<th align="center">Monocrystal</th>
+<th align="center">Polycrystal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orhotropic-elastic-monocrystal.png" style="width:210px" /></td>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png" style="width:220px" /></td>
+</tr>
+</tbody>
+</table>
+<p>Under development.</p>
 <!--
 For polycrystals with orthotropic grains characterized by *effective* values of the grain elastic constants $a,b,c$ (see [elasticities](constitutive-elastic.md)).
 
