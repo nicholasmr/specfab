@@ -1,6 +1,6 @@
 # Elastic wave propagation
 
-Elastic P and S plan-wave velocities, permitted in a polycrystal with an arbitrary CPO, can be determined for any linear combination of the Voigt and Reuss homogenization schemes by solving for the eigenvalues of the acoustic tensor:
+Elastic P and S plan-wave velocities, permitted in a polycrystal with an arbitrary CPO, can be determined for any linear combination of the Voigt and Reuss homogenization schemes by solving for the eigenvalues of the [acoustic tensor](https://www.brown.edu/Departments/Engineering/Courses/En221/Notes/Elasticity/Elasticity.htm):
 
 $$
 {\bf {Q}}= (1-\alpha){\bf Q_{\mathrm{Reuss}}} + \alpha{\bf Q_{\mathrm{Voigt}}},
@@ -17,12 +17,11 @@ which depends on the CPO, grain elastic parameters, and direction of propagation
 | :-: | :-: |
 | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-elastic-monocrystal.png){: style="width:210px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} |
 
-
 If grains are approximately transversely isotropic, the grain elastic behaviour can be modelled using the [transversely isotropic elastic constitutive equation](constitutive-elastic.md).
 This requires specifying the three grain parameters $\lambda$, $\mu$, $\hat{\lambda}$, $\hat{\mu}$, $\hat{\gamma}$, and the Voigt&mdash;Reuss weight $\alpha$.
 
 !!! warning "Grain parameters" 
-    The parameters $\lambda$, $\mu$, $\hat{\lambda}$, $\hat{\mu}$, $\hat{\gamma}$, and $\alpha$ should be understood as the *effective* polycrystal values needed to reproduce experimental results, and not measured values derived from experiments on single crystals.
+    The grain parameters should be understood as the *effective* polycrystal values needed to reproduce experimental results, and not measured values derived from experiments on single crystals.
 
 ### Example for glacier ice
 
@@ -56,9 +55,17 @@ Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta,ph
 
 | Monocrystal | Polycrystal |
 | :-: | :-: |
-| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orhotropic-elastic-monocrystal.png){: style="width:210px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-elastic-monocrystal.png){: style="width:250px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
 
-Under development.
+If grains are approximately orthotropic, the grain elastic behaviour can be modelled using the [orthotropic elastic constitutive equation](constitutive-elastic.md).
+This requires specifying the ten grain parameters $\lambda_{11}$, $\lambda_{22}$, $\lambda_{33}$, $\lambda_{12}$, $\lambda_{13}$, $\lambda_{23}$, $\mu_{1}$, $\mu_{2}$, $\mu_{3}$, and the Voigt&mdash;Reuss weight $\alpha$.
+
+!!! warning "Grain parameters" 
+    The grain parameters should be understood as the *effective* polycrystal values needed to reproduce experimental results, and not measured values derived from experiments on single crystals.
+
+### Example for olivine
+
+Not yet available.
 
 <!--
 For polycrystals with orthotropic grains characterized by *effective* values of the grain elastic constants $a,b,c$ (see [elasticities](constitutive-elastic.md)).

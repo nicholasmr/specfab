@@ -1,9 +1,10 @@
-# CPO Dynamics
+# CPO Dynamics for transversely isotropic grains
 
 ## Introduction
 
-This tutorial shows how to model the CPO evolution of a Lagrangian material parcel.<br>
-Three modes of deformation/stress are considered:
+This tutorial focuses on modelling the CPO evolution of glacier ice, i.e. the $c$-axis (or mass fraction) distribution $n(\theta,\phi)$.
+
+The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different modes of deformation/stress:
 
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center){: style="width:620px"}
 
@@ -36,8 +37,6 @@ $$
 $$
 
 !!! note
-    The tutorial focuses only on modelling the CPO evolution of glacier ice, i.e. the $c$-axis (or mass fraction) distribution $n(\theta,\phi)$.
-
     $n(\theta,\phi)$ is also referred to as $\psi(\theta,\phi)$ in some of the figures below. 
 
 - - -
