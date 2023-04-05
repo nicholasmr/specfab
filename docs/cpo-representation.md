@@ -4,7 +4,7 @@
 
 CPOs are represented by the distribution(s) of crystallographic axes in orientation space, $S^2$.
 <br>
-Supported grain symmetry groups for modelling [CPO evolution](cpo-dynamics.md) are
+Supported grain symmetry groups for modelling [CPO evolution](cpo-dynamics-tranisotropic.md) are
 
 | Grain symmetry | CPO components | Interpretation |
 | --- | --- | --- | 
@@ -45,7 +45,7 @@ $\qquad$ `nlm` $= [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdo
 
     $n(\theta,\phi)$ may be understood either as the number density of grains with a given slip-plane normal orientation, or as the mass density fraction ([Faria, 2006](https://royalsocietypublishing.org/doi/abs/10.1098/rspa.2005.1610)) of grains with a given slip-plane normal orientation.
 
-    From specfab's point-of-view, the difference is a matter of normalization: since the models of [CPO evolution](cpo-dynamics.md) (lattice rotation, DDRX, CDRX) conserve the normalization, the two views are effectively the same, not least because CPO-derived quantities depend on the normalized distributions (which are identical).
+    From specfab's point-of-view, the difference is a matter of normalization: since the models of [CPO evolution](cpo-dynamics-tranisotropic.md) (lattice rotation, DDRX, CDRX) conserve the normalization, the two views are effectively the same, not least because CPO-derived quantities depend on the normalized distributions (which are identical).
     The mass-density-fraction interpretation rests, however, on stronger physical grounds as mass is conserved but grain numbers are not.
 
 ## Structure tensors
