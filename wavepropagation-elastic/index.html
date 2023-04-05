@@ -48,15 +48,20 @@
                 <li class="toctree-l1"><a class="reference internal" href="../initialize/">Loading specfab</a>
                 </li>
               </ul>
-              <p class="caption"><span class="caption-text">CPO</span></p>
+              <p class="caption"><span class="caption-text">CPO representation</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-representation/">Representation</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics/">Dynamics</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotation</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plotting</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">CPO dynamics</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-tranisotropic/">Transversely isotropic grains</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-orthotropic/">Orthotropic grains</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Constitutive equations</span></p>
@@ -79,6 +84,10 @@
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#orthotropic-grains">Orthotropic grains</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#example-for-olivine">Example for olivine</a>
+    </li>
+        </ul>
     </li>
     </ul>
                   </li>
@@ -117,7 +126,7 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="elastic-wave-propagation">Elastic wave propagation</h1>
-<p>Elastic P and S plan-wave velocities, permitted in a polycrystal with an arbitrary CPO, can be determined for any linear combination of the Voigt and Reuss homogenization schemes by solving for the eigenvalues of the acoustic tensor:</p>
+<p>Elastic P and S plan-wave velocities, permitted in a polycrystal with an arbitrary CPO, can be determined for any linear combination of the Voigt and Reuss homogenization schemes by solving for the eigenvalues of the <a href="https://www.brown.edu/Departments/Engineering/Courses/En221/Notes/Elasticity/Elasticity.htm">acoustic tensor</a>:</p>
 <p>$$
 {\bf {Q}}= (1-\alpha){\bf Q_{\mathrm{Reuss}}} + \alpha{\bf Q_{\mathrm{Voigt}}},
 $$
@@ -146,7 +155,7 @@ Moreover, in these homogenizations, grains are assumed interactionless and the b
 This requires specifying the three grain parameters <span class="arithmatex">\(\lambda\)</span>, <span class="arithmatex">\(\mu\)</span>, <span class="arithmatex">\(\hat{\lambda}\)</span>, <span class="arithmatex">\(\hat{\mu}\)</span>, <span class="arithmatex">\(\hat{\gamma}\)</span>, and the Voigt&mdash;Reuss weight <span class="arithmatex">\(\alpha\)</span>.</p>
 <div class="admonition warning">
 <p class="admonition-title">Grain parameters</p>
-<p>The parameters <span class="arithmatex">\(\lambda\)</span>, <span class="arithmatex">\(\mu\)</span>, <span class="arithmatex">\(\hat{\lambda}\)</span>, <span class="arithmatex">\(\hat{\mu}\)</span>, <span class="arithmatex">\(\hat{\gamma}\)</span>, and <span class="arithmatex">\(\alpha\)</span> should be understood as the <em>effective</em> polycrystal values needed to reproduce experimental results, and not measured values derived from experiments on single crystals.</p>
+<p>The grain parameters should be understood as the <em>effective</em> polycrystal values needed to reproduce experimental results, and not measured values derived from experiments on single crystals.</p>
 </div>
 <h3 id="example-for-glacier-ice">Example for glacier ice</h3>
 <pre><code class="language-python">import numpy as np
@@ -183,12 +192,19 @@ Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta,ph
 </thead>
 <tbody>
 <tr>
-<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orhotropic-elastic-monocrystal.png" style="width:210px" /></td>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-elastic-monocrystal.png" style="width:250px" /></td>
 <td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png" style="width:220px" /></td>
 </tr>
 </tbody>
 </table>
-<p>Under development.</p>
+<p>If grains are approximately orthotropic, the grain elastic behaviour can be modelled using the <a href="../constitutive-elastic/">orthotropic elastic constitutive equation</a>.
+This requires specifying the ten grain parameters <span class="arithmatex">\(\lambda_{11}\)</span>, <span class="arithmatex">\(\lambda_{22}\)</span>, <span class="arithmatex">\(\lambda_{33}\)</span>, <span class="arithmatex">\(\lambda_{12}\)</span>, <span class="arithmatex">\(\lambda_{13}\)</span>, <span class="arithmatex">\(\lambda_{23}\)</span>, <span class="arithmatex">\(\mu_{1}\)</span>, <span class="arithmatex">\(\mu_{2}\)</span>, <span class="arithmatex">\(\mu_{3}\)</span>, and the Voigt&mdash;Reuss weight <span class="arithmatex">\(\alpha\)</span>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Grain parameters</p>
+<p>The grain parameters should be understood as the <em>effective</em> polycrystal values needed to reproduce experimental results, and not measured values derived from experiments on single crystals.</p>
+</div>
+<h3 id="example-for-olivine">Example for olivine</h3>
+<p>Not yet available.</p>
 <!--
 For polycrystals with orthotropic grains characterized by *effective* values of the grain elastic constants $a,b,c$ (see [elasticities](constitutive-elastic.md)).
 
