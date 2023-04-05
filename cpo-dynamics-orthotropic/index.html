@@ -63,6 +63,16 @@
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Orthotropic grains</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#notation">Notation</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#lattice-rotation">Lattice rotation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#regularization">Regularization</a>
+    </li>
     </ul>
                   </li>
               </ul>
@@ -114,30 +124,44 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="cpo-dynamics-for-orthotropic-grains">CPO dynamics for orthotropic grains</h1>
-<p>Not yet available.</p>
+<h2 id="introduction">Introduction</h2>
+<p>This tutorial focuses on modelling the CPO evolution of polycrystalline olivine, i.e. distributions of slip-system axes <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span>.</p>
+<p>The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different modes of deformation/stress:</p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center" style="width:620px" /></p>
+<h3 id="notation">Notation</h3>
+<p>Given the expansions</p>
+<div class="arithmatex">\[
+n({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}({\bf x},t) Y_{l}^{m}(\theta,\phi) \quad\text{(distribution of slip-plane normals)}, 
+\\
+b({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}b_{l}^{m}({\bf x},t) Y_{l}^{m}(\theta,\phi) \quad\text{(distribution of slip directions)}, 
+\]</div>
+<p>CPO evolution can be written as a matrix problem involving</p>
+<div class="arithmatex">\[
+{\bf s}_n = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}]^{\mathrm{T}} \quad\text{($n$ state vector)},
+\\
+{\bf s}_b = [b_0^0,b_2^{-2},b_2^{-1},b_2^{0},b_2^{1},b_2^{2},b_4^{-4},\cdots,b_4^{4},\cdots,b_L^{-L},\cdots,b_L^{L}]^{\mathrm{T}} \quad\text{($b$ state vector)},
+\]</div>
+<p>such that </p>
+<div class="arithmatex">\[
+\frac{\mathrm{D}{\bf s}_n}{\mathrm{D} t} = {\bf M}_n \cdot {\bf s}_n \quad\text{($n$ state evolution)},
+\\
+\frac{\mathrm{D}{\bf s}_b}{\mathrm{D} t} = {\bf M}_b \cdot {\bf s}_b \quad\text{($b$ state evolution)},
+\]</div>
+<p>where the operators (matrix) <span class="arithmatex">\({\bf M}_n\)</span> and <span class="arithmatex">\({\bf M}_b\)</span> represents the effect of a given CPO process, which may depend on stress, strain-rate, temperature, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only lattice rotation is so far supported: <span class="arithmatex">\({\bf M} = {\bf M}_{\mathrm{LROT}}\)</span> for both <span class="arithmatex">\(n\)</span> and <span class="arithmatex">\(b\)</span>.</p>
+</div>
+<hr />
+<h2 id="lattice-rotation">Lattice rotation</h2>
+<p>To be published before documented here.</p>
 <!--
-## Introduction
-
-This tutorial shows how to model the CPO evolution of a Lagrangian material parcel.<br>
-Three modes of deformation/stress are considered:
-
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center){: style="width:620px"}
-
-### Notation
-
-- - -
-
-## Lattice rotation
-
 ### Example
-
-- - -
-
-## Regularization
-
-Same as [CPO dynamics for transversely isotropic grains](cpo-dynamics-tranisotropic.md)
-
 -->
+
+<hr />
+<h2 id="regularization">Regularization</h2>
+<p>Same as <a href="../cpo-dynamics-tranisotropic/">CPO dynamics for transversely isotropic grains</a></p>
               
             </div>
           </div><footer>
