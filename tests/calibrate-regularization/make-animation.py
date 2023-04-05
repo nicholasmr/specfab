@@ -74,7 +74,7 @@ print('S_dirac(l) (for l=0,2,...,L) = ', Sl_dirac)
 #---------------------
 
 # Plot frames
-if 0:
+if 1:
     for tt in np.arange(Nt):
         
         ### Setup figure
@@ -94,7 +94,7 @@ if 0:
         h = ax.semilogy(Lrange, Sl_model_reg,   ls='-', c='#006d2c', label=r'$\bf{M}=\bf{M}_\mathrm{LROT} + \bf{M}_\mathrm{REG}$')
             
         # Delta spectrum
-        ax.semilogy(Lrange, Sl_dirac, '--', c='k', lw=1.5, label=r'$\psi(\bf{r})=\delta(\bf{r}-\bf{z})$')  
+        ax.semilogy(Lrange, Sl_dirac, '--', c='k', lw=1.5, label=r'$n(\bf{r})=\delta(\bf{r}-\bf{z})$')  
         
         # Set figure axes etc.
         ax.set_xlabel('$l$')
@@ -104,7 +104,7 @@ if 0:
         ax.set_xlim([0,np.amax([10,L])])
         ax.grid()
         legkwargs = {'frameon':True, 'fancybox':False, 'edgecolor':'k', 'handlelength':1.9, 'labelspacing':0.2}
-        hleg = ax.legend(loc=3, fontsize=FS-1.5, **legkwargs)
+        hleg = ax.legend(loc=3, fontsize=FS-0.5, **legkwargs)
         
         ### Plot ODFs
         
@@ -118,11 +118,11 @@ if 0:
         lvls = np.linspace(0,1,9)
         tickintvl = 4
 
-        plot_ODF(nlm[0,:,tt], lm, ax=ax_ODF[0], cmap='Greys', cblabel=r'$\psi/N$ (ODF)', latres=40, lvls=lvls, tickintvl=tickintvl)
+        plot_ODF(nlm[0,:,tt], lm, ax=ax_ODF[0], cmap='Greys', cblabel=r'$n/N$ (ODF)', latres=40, lvls=lvls, tickintvl=tickintvl)
         ax_ODF[0].set_global()
         ax_ODF[0].set_title(r'$\bf{M}=\bf{M}_\mathrm{LROT} + \bf{M}_\mathrm{REG}$', fontsize=FS+1, pad=10)
         
-        plot_ODF(nlm[1,:,tt], lm, ax=ax_ODF[1], cmap='Greys', cblabel=r'$\psi/N$ (ODF)', latres=40, lvls=lvls, tickintvl=tickintvl)
+        plot_ODF(nlm[1,:,tt], lm, ax=ax_ODF[1], cmap='Greys', cblabel=r'$n/N$ (ODF)', latres=40, lvls=lvls, tickintvl=tickintvl)
         ax_ODF[1].set_global()
         ax_ODF[1].set_title(r'$\bf{M}=\bf{M}_\mathrm{LROT}$', fontsize=FS+1, pad=10)
 

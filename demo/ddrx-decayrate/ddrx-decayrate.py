@@ -68,24 +68,24 @@ nlm[0] = 1 # Assume isotropic state for calculating decay rate
 
 ### Plot 1
 tau = np.diag([0.5,0.5,-1]) # Unconfined UC in z
-plot(sf.DDRX_decayrate(nlm, tau), ax1, titlestr=r'%s Unconfined pure shear'%(r'{\Large \bf a}\,\,'))
+plot(sf.DDRX_decayrate(nlm, tau), ax1, titlestr=r'%s Unconfined pure shear'%(r'{\Large \textit{(a)}}\,\,'))
 
 ### Plot 2
 tau = np.diag([-1,0,+1]) # Confined UC in z
-plot(sf.DDRX_decayrate(nlm, tau), ax2, titlestr=r'%s Confined pure shear'%(r'{\Large \bf b}\,\,'))
+plot(sf.DDRX_decayrate(nlm, tau), ax2, titlestr=r'%s Confined pure shear'%(r'{\Large \textit{(b)}}\,\,'))
 
 ### Plot 3
 tau = np.matrix([[0,0,1],[0,0,0],[1,0,0]]) # SS xz
 #tau = np.matrix([[0,1,0],[1,0,0],[0,0,0]]) # SS xy
-plot(sf.DDRX_decayrate(nlm, tau), ax3, titlestr=r'%s Simple shear'%(r'{\Large \bf c}\,\,'))
+plot(sf.DDRX_decayrate(nlm, tau), ax3, titlestr=r'%s Simple shear'%(r'{\Large \textit{(c)}}\,\,'))
 
 #---------
 
 for ax in axlist:
-    ax.plot([0],[90],'k.', transform=geo)
-    ax.plot([rot0],[0],'k.', transform=geo)
-    ax.text(rot0-80, 75, r'$\vu{z}$', horizontalalignment='left', transform=geo)
-    ax.text(rot0-13, -8, r'$\vu{y}$', horizontalalignment='left', transform=geo)
+#    ax.plot([0],[90],'k.', transform=geo)
+#    ax.plot([rot0],[0],'k.', transform=geo)
+    ax.text(rot0-40, 85, r'$\vu{z}$', horizontalalignment='left', transform=geo, fontsize=FS+2)
+    ax.text(rot0-3, -5, r'$\vu{y}$', horizontalalignment='left', transform=geo, fontsize=FS+2)
 
 #---------
 

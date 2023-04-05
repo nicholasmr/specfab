@@ -101,22 +101,22 @@ axlist = [ax1,ax2,ax3]
 
 ### Plot 1
 ugrad = np.diag([0.5,0.5,-1]) # Unconfined UC in z
-plot(ugrad, ax1, titlestr=r'%s Unconfined pure shear'%(r'{\Large \bf a}\,\,'), speedthres=10e-2)
+plot(ugrad, ax1, titlestr=r'%s Unconfined pure shear'%(r'{\Large \textit{(a)}}\,\,'), speedthres=10e-2)
 
 #### Plot 2
 ugrad = np.diag([+1,0,-1]) 
-plot(ugrad, ax2, titlestr=r'%s Confined pure shear'%(r'{\Large \bf b}\,\,'))
+plot(ugrad, ax2, titlestr=r'%s Confined pure shear'%(r'{\Large \textit{(b)}}\,\,'))
 
 #### Plot 3
 ugrad = np.array([[0,0,1], [0,0,0], [0,0,0]])
-plot(ugrad, ax3, titlestr=r'%s Simple shear'%(r'{\Large \bf c}\,\,'))
+plot(ugrad, ax3, titlestr=r'%s Simple shear'%(r'{\Large \textit{(c)}}\,\,'))
 
 #---------
 
 for ax in axlist:
-    ax.plot([0],[90], c='0.3', marker=r'$z$', ms=8, transform=geo)
-    ax.plot([0],[0], c='0.3', marker=r'$x$', ms=8, transform=geo)
-    ax.plot([90],[0], c='0.3', marker=r'$y$', ms=8, transform=geo)
+    ax.plot([0],[90], c='0.0', marker=r'$z$', ms=8, transform=geo)
+    ax.plot([0],[0], c='0.0', marker=r'$x$', ms=8, transform=geo)
+    ax.plot([90],[0], c='0.0', marker=r'$y$', ms=8, transform=geo)
 
 #---------
 

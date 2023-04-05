@@ -92,7 +92,7 @@ geo = ccrs.Geodetic()
 for ii, Mtype in enumerate(Mtypes):
 
     # Plot frames
-    if 0: 
+    if 1: 
         for tt in np.arange(0,Nt):
         #for tt in np.arange(Nt-1,Nt):
         
@@ -112,12 +112,12 @@ for ii, Mtype in enumerate(Mtypes):
             ### Plot
             lvls = np.linspace(0,1,9)
             tickintvl = 4
-            plot_ODF(nlm[ii,0,tt,:], lm, ax=ax1, cmap='Greys', cblabel=r'$\psi/N$ (ODF)', lvls=lvls, tickintvl=tickintvl)
-            plot_ODF(nlm[ii,1,tt,:], lm, ax=ax2, cmap='Greys', cblabel=r'$\psi/N$ (ODF)', lvls=lvls, tickintvl=tickintvl)
-            plot_ODF(nlm[ii,2,tt,:], lm, ax=ax3, cmap='Greys', cblabel=r'$\psi/N$ (ODF)', lvls=lvls, tickintvl=tickintvl)
-            ax1.set_title(r'%s Unconfined pure shear'%(r'{\Large \bf a}\,\,'), fontsize=FS, pad=10)
-            ax2.set_title(r'%s Confined pure shear'%(r'{\Large \bf b}\,\,'), fontsize=FS, pad=10)
-            ax3.set_title(r'%s Simple shear'%(r'{\Large \bf c}\,\,'), fontsize=FS, pad=10)
+            plot_ODF(nlm[ii,0,tt,:], lm, ax=ax1, cmap='Greys', cblabel=r'$n/N$ (ODF)', lvls=lvls, tickintvl=tickintvl)
+            plot_ODF(nlm[ii,1,tt,:], lm, ax=ax2, cmap='Greys', cblabel=r'$n/N$ (ODF)', lvls=lvls, tickintvl=tickintvl)
+            plot_ODF(nlm[ii,2,tt,:], lm, ax=ax3, cmap='Greys', cblabel=r'$n/N$ (ODF)', lvls=lvls, tickintvl=tickintvl)
+            ax1.set_title(r'%s Unconfined pure shear'%(r'{\Large \textit{(a)}}\,\,'), fontsize=FS, pad=10)
+            ax2.set_title(r'%s Confined pure shear'%(r'{\Large \textit{(b)}}\,\,'), fontsize=FS, pad=10)
+            ax3.set_title(r'%s Simple shear'%(r'{\Large \textit{(c)}}\,\,'), fontsize=FS, pad=10)
                 
             ### Save
             fout = 'frames/fabric-evolution-%s-animation-%03i.png'%(Mtype,tt)
