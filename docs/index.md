@@ -1,6 +1,6 @@
 # specfab documentation
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/logo.jpg){: style="width:200px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/logo-square.jpg){: style="width:300px"}
 
 Spectral CPO model of polycrystalline materials that:
 
@@ -28,7 +28,7 @@ Source code [available here](https://github.com/nicholasmr/specfab)
 | Fortran | The Fortran module is built by running `make specfab.o` |
 | Elmer/Ice Interface | To interface with Elmer/Ice, you need a shared version of the libraries (built with the same Fortran compiler as Elmer). If needed, change the compiler in `src/Makefile`, then run `make libspecfab.so` |
 
-## Documentation 
+## Literature 
 
 | Component | Reference |
 | :--- | :--- |
