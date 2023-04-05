@@ -63,6 +63,8 @@
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a>
         <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#lagrangian-material-parcel">Lagrangian material parcel</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="#notation">Notation</a>
     </li>
         </ul>
@@ -141,7 +143,13 @@
               
                 <h1 id="cpo-dynamics-for-transversely-isotropic-grains">CPO dynamics for transversely isotropic grains</h1>
 <h2 id="introduction">Introduction</h2>
-<p>This tutorial focuses on modelling the CPO evolution of glacier ice, i.e. the <span class="arithmatex">\(c\)</span>-axis (or mass fraction) distribution <span class="arithmatex">\(n(\theta,\phi)\)</span>.</p>
+<p>This tutorial focuses on modelling the CPO evolution of glacier ice, understood as the <span class="arithmatex">\(c\)</span>-axis distribution or, equivelently, the distribution of (easy) slip-plane normals of grains, <span class="arithmatex">\(n(\theta,\phi)\)</span>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><span class="arithmatex">\(n(\theta,\phi)\)</span> may also be understood as the mass density fraction of grains with a given slip-plane normal orientation.
+See <a href="../cpo-representation/">CPO representation</a> for details.</p>
+</div>
+<h3 id="lagrangian-material-parcel">Lagrangian material parcel</h3>
 <p>The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different modes of deformation/stress:</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center" style="width:620px" /></p>
 <h3 id="notation">Notation</h3>
@@ -162,10 +170,6 @@ n({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}({\bf x},t) Y_{l}
 <div class="arithmatex">\[
 {\bf M} = {\bf M_{\mathrm{LROT}}} + {\bf M_{\mathrm{DDRX}}} + {\bf M_{\mathrm{CDRX}}} + \cdots \quad\text{(operator)}. 
 \]</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><span class="arithmatex">\(n(\theta,\phi)\)</span> is also referred to as <span class="arithmatex">\(\psi(\theta,\phi)\)</span> in some of the figures below. </p>
-</div>
 <hr />
 <h2 id="lattice-rotation">Lattice rotation</h2>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-LROT.gif" style="width:650px" /></p>
@@ -304,7 +308,7 @@ In effect, CDRX reduces the average grain size upon grain division but does not 
 <p>where <code>Lambda</code> (<span class="arithmatex">\(\Lambda\)</span>) is the CDRX rate-factor magnitude that possibly depends on temperature, stress, strain-rate, etc. (<a href="https://doi.org/10.1016/j.epsl.2020.116718">Richards et al., 2021</a>).</p>
 <hr />
 <h2 id="regularization">Regularization</h2>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/8afe59b8847e16761d69abcc5c8ec0327c85e61c/tests/calibrate-regularization/animation.gif" style="width:700px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/tests/calibrate-regularization/animation.gif" style="width:700px" /></p>
 <p>As <span class="arithmatex">\(n(\theta,\phi)\)</span> becomes anisotropic due to CPO processes, the coefficients <span class="arithmatex">\(n_l^m\)</span> associated with high wavenumber modes (large <span class="arithmatex">\(l\)</span> and <span class="arithmatex">\(m\)</span>, and thus small-scale structure) must increase in magnitude relative to the low wavenumber coefficients (small <span class="arithmatex">\(l\)</span> and <span class="arithmatex">\(m\)</span>). </p>
 <p>One way to visualize this is by the <a href="https://en.wikipedia.org/wiki/Spherical_harmonics#Spectrum_analysis">angular power spectrum</a></p>
 <div class="arithmatex">\[ 
