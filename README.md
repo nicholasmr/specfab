@@ -1,5 +1,7 @@
 ## specfab
 
+<img src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/logo-square.jpg" alt="specfab logo" width="330px"> 
+
 Spectral CPO model of polycrystalline materials that:
 
 - Can model lattice rotation, discontinuous DRX, and rotation/continuous DRX.
