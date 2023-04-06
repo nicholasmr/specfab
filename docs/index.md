@@ -15,7 +15,7 @@ By Nicholas M. Rathmann and David A. Lilien
 
 ## Glacier ice demo
 
-![](https://github.com/nicholasmr/specfab/raw/main/demo/cube-crush-animation/cube-crush.gif){: style="width:500px"}
+![](https://github.com/nicholasmr/specfab/raw/main/demo/cube-crush-animation/cube-crush.gif){: style="width:550px"}
 
 ## Install
 
@@ -36,4 +36,24 @@ Source code [available here](https://github.com/nicholasmr/specfab)
 | Discontinuous dynamic recrystallization | [Rathmann and Lilien (2021)](https://doi.org/10.1017/jog.2021.88) |
 | Orthotropic bulk rheologies | [Rathmann and Lilien (2022)](https://doi.org/10.1017/jog.2022.33) |
 | Elastic wave velocities | [Rathmann et al. (2022)](https://doi.org/10.1098/rspa.2022.0574) |
+
+## Initialize 
+
+Initialize `specfabpy` by running
+
+```python
+import numpy as np
+from specfabpy import specfabpy as sf
+lm, nlm_len = sf.init(10) # L=10 truncation is sufficient for many cases
+nlm = np.zeros(nlm_len, dtype=np.complex64)
+nlm[0] = 1/np.sqrt(4*np.pi) # Normalized, isotropic distribution
+```
+
+where
+
+| Variable | Interpretation |
+| --- | --- |
+| `nlm_len` | Number of expansion coefficients for expansion series truncated at $l=L$ |
+| `nlm`     | Vector of complex-valued expansion coefficients (state vector) |
+| `lm`      | Vector of degree and order integers (`l`,`m`) associated with each entry in `nlm` |
 

@@ -2,7 +2,6 @@ site_name: specfab documentation
 
 nav:
     - About: index.md
-    - Loading specfab: initialize.md
     - 'CPO representation':
         - Representation: cpo-representation.md
         - Rotation: cpo-rotation.md
@@ -10,13 +9,12 @@ nav:
     - 'CPO dynamics':
         - Transversely isotropic grains: cpo-dynamics-tranisotropic.md
         - Orthotropic grains: cpo-dynamics-orthotropic.md
-    - 'Constitutive equations':
-        - Viscoplastic: constitutive-viscoplastic.md
-        - Elastic: constitutive-elastic.md
+    - 'Rheology':
         - Strain-rate enhancements: enhancements-strainrate.md
-    - 'Wave propagation':
-        - Elastic: wavepropagation-elastic.md
-        - Electromagnetic: wavepropagation-electromagnetic.md
+        - Constitutive equations: constitutive-viscoplastic.md
+    - 'Elasticity':
+        - Wave propagation: wavepropagation-elastic.md
+        - Constitutive equations: constitutive-elastic.md
     - 'Finite-element modelling': 
         - FEniCS: FEM-integration-fenics.md
         - Elmer: FEM-integration-elmer.md
