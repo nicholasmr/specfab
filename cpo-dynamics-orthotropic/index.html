@@ -63,11 +63,9 @@
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Orthotropic grains</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#notation">Notation</a>
+    <li class="toctree-l2"><a class="reference internal" href="#lagrangian-material-parcel">Lagrangian material parcel</a>
     </li>
-        </ul>
+    <li class="toctree-l2"><a class="reference internal" href="#notation">Notation</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#lattice-rotation">Lattice rotation</a>
     </li>
@@ -123,9 +121,29 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="cpo-dynamics-for-orthotropic-grains">CPO dynamics for orthotropic grains</h1>
-<h2 id="introduction">Introduction</h2>
-<p>This tutorial focuses on modelling the CPO evolution of polycrystalline olivine, i.e. distributions of slip-system axes <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span>.</p>
+                <h1 id="cpo-dynamics-orthotropic-grains">CPO dynamics &mdash; Orthotropic grains</h1>
+<p>This tutorial focuses on modelling the CPO evolution of polycrystalline olivine, understood as the distribution of (easy) slip-plane normals and slip directions of grains, <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span>.</p>
+<table>
+<thead>
+<tr>
+<th align="center">Polycrystal</th>
+<th align="center">Slip system</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png" style="width:220px" /></td>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slipplane.png" style="width:190px" /></td>
+</tr>
+</tbody>
+</table>
+<p>The distributions <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span> refer to certain crystallographic axes (<span class="arithmatex">\({\bf r}_i\)</span>) depending on the fabric type; i.e. thermodynamic conditions, water content, and stress magnitude that control which of the crystallographic slip systems is activated.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The distributions may also be understood as the mass density fraction of grains with a given slip-plane-normal and slip-direction orientation.
+See <a href="../cpo-representation/">CPO representation</a> for details.</p>
+</div>
+<h3 id="lagrangian-material-parcel">Lagrangian material parcel</h3>
 <p>The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different modes of deformation/stress:</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center" style="width:620px" /></p>
 <h3 id="notation">Notation</h3>

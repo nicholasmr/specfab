@@ -165,6 +165,7 @@ Supported grain symmetry groups for modelling <a href="../cpo-dynamics-tranisotr
 </tr>
 </tbody>
 </table>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slipplane.png" style="width:180px" /> </p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Grain sizes or shapes are not represented or modelled by specfab.</p>
@@ -196,10 +197,12 @@ n(\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}Y_{l}^{m}(\theta,\phi) \qua
 $$</p>
 <p>The orientation distribution function (ODF) is defined as the normalized distribution </p>
 <div class="arithmatex">\[ 
-\mathrm{ODF} := \frac{n(\theta,\phi)}{N} \quad\text{where}\quad N=\int_{S^2}{n} d\Omega=\sqrt{4\pi}n_0^0 .
+\mathrm{ODF} = \frac{n(\theta,\phi)}{N} \quad\text{where}\quad N=\int_{S^2}{n} d\Omega=\sqrt{4\pi}n_0^0 .
 \]</div>
-<p>The array of complex-valued expansion coefficients is defined as</p>
-<p><span class="arithmatex">\(\qquad\)</span> <code>nlm</code> <span class="arithmatex">\(= [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}] \quad\text{(state vector)}\)</span>.</p>
+<p>The array of complex-valued expansion coefficients, defining the CPO state, is </p>
+<div class="arithmatex">\[
+{\bf s} = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}] \quad\text{(state vector)}.
+\]</div>
 <div class="admonition warning">
 <p class="admonition-title">Normalization</p>
 <p><span class="arithmatex">\(n(\theta,\phi)\)</span> may be understood either as the number density of grains with a given slip-plane normal orientation, or as the mass density fraction (<a href="https://royalsocietypublishing.org/doi/abs/10.1098/rspa.2005.1610">Faria, 2006</a>) of grains with a given slip-plane normal orientation.</p>
@@ -225,7 +228,7 @@ The mass-density-fraction interpretation rests, however, on stronger physical gr
 ,
 \qquad\text{(for all $m$)}
 \]</div>
-<p>where <span class="arithmatex">\(\hat{n}_l^m := n_l^m/n_0^0\)</span>, and <span class="arithmatex">\({\bf f}\)</span>, <span class="arithmatex">\({\bf g}\)</span>, <span class="arithmatex">\({\bf h}\)</span> are linear in their arguments.</p>
+<p>where <span class="arithmatex">\(\hat{n}_l^m = n_l^m/n_0^0\)</span>, and <span class="arithmatex">\({\bf f}\)</span>, <span class="arithmatex">\({\bf g}\)</span>, <span class="arithmatex">\({\bf h}\)</span> are linear in their arguments.</p>
 <h3 id="example_1">Example</h3>
 <p>The following example shows how to convert between the representations:</p>
 <pre><code class="language-python">import numpy as np

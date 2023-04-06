@@ -173,9 +173,9 @@ E_{ij} = \frac{
 <p><span class="arithmatex">\(E_{ij}&gt;1\)</span> implies the material response is <em>softened</em> due to fabric (compared to an isotropic CPO), whereas <span class="arithmatex">\(E_{ij}&lt;1\)</span> implies <em>hardening</em>.</p>
 </div>
 <h3 id="eigenenhancements">Eigenenhancements</h3>
-<p><em>Eigenenhancements</em> are defined as the enhancement factors w.r.t. the CPO symmetry axes, <span class="arithmatex">\({\bf m}_i\)</span>, hence </p>
+<p><em>Eigenenhancements</em> are defined as the enhancement factors w.r.t. the CPO symmetry axes (<span class="arithmatex">\({\bf m}_i\)</span>): </p>
 <div class="arithmatex">\[{\bf e}_i = {\bf m}_i .\]</div>
-<p>These are the enhancements factors needed to specify the viscous anisotropy in bulk <a href="../constitutive-viscoplastic/">anisotropic rheologies</a>:</p>
+<p>These are the enhancements factors needed to specify the viscous anisotropy in <a href="../constitutive-viscoplastic/">bulk rheologies</a>:</p>
 <table>
 <thead>
 <tr>
@@ -199,6 +199,10 @@ In this way, the effective rheology is simply the grain-orentation-averaged rheo
 E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}} ,
 \]</div>
 <p>where <span class="arithmatex">\(E_{ij}^{\mathrm{Sachs}}\)</span> and <span class="arithmatex">\(E_{ij}^{\mathrm{Taylor}}\)</span> are calculated with (1) assuming constant <span class="arithmatex">\(\bf{S}\)</span> and <span class="arithmatex">\(\bf{D}\)</span>, respectively.</p>
+<div class="admonition warning">
+<p class="admonition-title">Grain parameters</p>
+<p>The grain viscous parameters below should be understood as the <em>effective</em> polycrystal values needed to reproduce deformation experiments, and not measured values derived from experiments on single crystals.</p>
+</div>
 <h3 id="transversely-isotropic-grains">Transversely isotropic grains</h3>
 <table>
 <thead>
@@ -216,10 +220,6 @@ E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}} ,
 </table>
 <p>If grains are approximately transversely isotropic, the grain rheology can be modelled using the <a href="../constitutive-viscoplastic/">transversely isotropic power-law rheology</a>.
 This requires specifying the three grain parameters <span class="arithmatex">\(n\)</span>, <span class="arithmatex">\(E_{cc}\)</span> and <span class="arithmatex">\(E_{ca}\)</span>, and the Taylor&mdash;Sachs weight <span class="arithmatex">\(\alpha\)</span>.</p>
-<div class="admonition warning">
-<p class="admonition-title">Grain parameters</p>
-<p>The grain parameters should be understood as the <em>effective</em> polycrystal values needed to reproduce deformation experiments, and not measured values derived from experiments on single crystals.</p>
-</div>
 <h4 id="example-for-glacier-ice">Example for glacier ice</h4>
 <p>The below example for glacier ice shows how <span class="arithmatex">\(E_{ij}\)</span> may be calculated given <code>a2</code>, <code>a4</code>, or <code>nlm</code>. </p>
 <pre><code class="language-python">import numpy as np
@@ -267,10 +267,6 @@ Eij = sf.Eeiej(nlm, e1,e2,e3, Ecc,Eca,alpha,n)
 </table>
 <p>If grains are approximately orthotropic, the grain rheology can be modelled using the <a href="../constitutive-viscoplastic/">orthotropic power-law rheology</a>.
 This requires specifying the eight grain parameters <span class="arithmatex">\(n\)</span>, <span class="arithmatex">\(E_{11}\)</span>, <span class="arithmatex">\(E_{22}\)</span>, <span class="arithmatex">\(E_{33}\)</span>, <span class="arithmatex">\(E_{12}\)</span>, <span class="arithmatex">\(E_{13}\)</span>, <span class="arithmatex">\(E_{23}\)</span>, and the Taylor&mdash;Sachs weight <span class="arithmatex">\(\alpha\)</span>.</p>
-<div class="admonition warning">
-<p class="admonition-title">Grain parameters</p>
-<p>The grain parameters should be understood as the <em>effective</em> polycrystal values needed to reproduce deformation experiments, and not measured values derived from experiments on single crystals.</p>
-</div>
 <h4 id="example-for-olivine">Example for olivine</h4>
 <p>Not yet available.</p>
               

@@ -141,9 +141,23 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="cpo-dynamics-for-transversely-isotropic-grains">CPO dynamics for transversely isotropic grains</h1>
+                <h1 id="cpo-dynamics-transversely-isotropic-grains">CPO dynamics &mdash; Transversely isotropic grains</h1>
 <h2 id="introduction">Introduction</h2>
-<p>This tutorial focuses on modelling the CPO evolution of glacier ice, understood as the <span class="arithmatex">\(c\)</span>-axis distribution or, equivelently, the distribution of (easy) slip-plane normals of grains, <span class="arithmatex">\(n(\theta,\phi)\)</span>.</p>
+<p>This tutorial focuses on modelling the CPO evolution of polycrystalline glacier ice, understood as the <span class="arithmatex">\({\bf c}\)</span>-axis distribution or, equivelently, the distribution of (easy) slip-plane normals of grains, <span class="arithmatex">\(n(\theta,\phi)\)</span>.</p>
+<table>
+<thead>
+<tr>
+<th align="center">Polycrystal</th>
+<th align="center">Slip system</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png" style="width:220px" /></td>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slipplane.png" style="width:190px" /></td>
+</tr>
+</tbody>
+</table>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><span class="arithmatex">\(n(\theta,\phi)\)</span> may also be understood as the mass density fraction of grains with a given slip-plane normal orientation.
@@ -157,7 +171,7 @@ See <a href="../cpo-representation/">CPO representation</a> for details.</p>
 <div class="arithmatex">\[
 n({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}({\bf x},t) Y_{l}^{m}(\theta,\phi) \quad\text{(distribution of slip-plane normals)}, 
 \]</div>
-<p>CPO evolution can be written as a matrix problem involving</p>
+<p>CPO evolution can be written as a matrix problem involving the state vector</p>
 <div class="arithmatex">\[
 {\bf s} = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}]^{\mathrm{T}} \quad\text{(state vector)},
 \]</div>
@@ -192,7 +206,7 @@ The model is a kinematic model in the sense that <span class="arithmatex">\(c\)<
 <p>The corresponding effect on the continuous <span class="arithmatex">\(c\)</span>-axis distribution is modelled as a conservative advection process on the surface of the unit sphere:</p>
 <div class="arithmatex">\[ 
 \frac{\mathrm{D} n}{\mathrm{D} t} = -\nabla_{S^2}\cdot(n{\bf \dot{c}}) 
-\qquad\Longrightarrow\qquad
+\quad\Longrightarrow\quad
 \frac{\mathrm{D} {\bf s}}{\mathrm{D} t} = {\bf M_{\mathrm{LROT}}} \cdot {\bf s},
 \]</div>
 <p>where <span class="arithmatex">\({\bf M_{\mathrm{LROT}}}\)</span> is given analytically in <a href="https://doi.org/10.1017/jog.2020.117">Rathmann et al. (2021)</a>.</p>
@@ -240,16 +254,17 @@ for tt in np.arange(1,Nt):
 <p>DDRX is modelled as a grain orientation or mass decay/production process on the unit sphere (<a href="https://doi.org/10.1007/s00161-009-0126-0">Placidi and others, 2010</a>):</p>
 <div class="arithmatex">\[ 
 \frac{\mathrm{D} n}{\mathrm{D} t} = \Gamma n 
-\qquad\Longrightarrow\qquad
+\quad\Longrightarrow\quad
 \frac{\mathrm{D} {\bf s}}{\mathrm{D} t} = {\bf M_{\mathrm{DDRX}}} \cdot {\bf s} ,
 \]</div>
 <p>where the decay/production rate </p>
 <div class="arithmatex">\[\Gamma = \Gamma_0\left(D- {\langle} D {\rangle}\right) \quad\text{(decay/production rate)}\]</div>
-<p>depends on the rate magnitude <span class="arithmatex">\(\Gamma_0\)</span>  (<code>Gamma0</code> in specfab), and the deformability <span class="arithmatex">\(D\)</span> as a function of the stress tensor <span class="arithmatex">\({\bf S}\)</span>:</p>
+<p>depends on the rate magnitude <span class="arithmatex">\(\Gamma_0\)</span>, and the deformability <span class="arithmatex">\(D\)</span> as a function of the stress tensor <span class="arithmatex">\({\bf S}\)</span>:</p>
 <div class="arithmatex">\[
 D = \frac{({\bf S}\cdot{\bf S}):({\bf c}\otimes{\bf c}) - {\bf S}:({\bf c}\otimes{\bf c}\otimes{\bf c}\otimes{\bf c}):{\bf S}}{{\bf S}:{\bf S}}\quad\text{(deformability)}
 .
 \]</div>
+<p><span class="arithmatex">\({\bf M_{\mathrm{DDRX}}}\)</span> is given analytically in <a href="https://doi.org/10.1017/jog.2021.88">Rathmann and Lilien (2021)</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The average deformability, <span class="arithmatex">\(\langle D\rangle\)</span>, depends on the instantaneous CPO state &mdash; specifically, the <a href="../cpo-representation/">structure tensors</a> <code>a2</code> and <code>a4</code> &mdash; 
@@ -298,14 +313,14 @@ In effect, CDRX reduces the average grain size upon grain division but does not 
 <p>The model follows <a href="https://doi.org/10.1007/s001610050095">Gödert (2003)</a> by approximating the effect of CDRX on the distribution of grain orientations/mass as a Laplacian diffusive process on <span class="arithmatex">\(S^2\)</span>:</p>
 <div class="arithmatex">\[
 \frac{\mathrm{D} n}{\mathrm{D} t} = \Lambda\nabla^2 n 
-\qquad\Longrightarrow\qquad
+\quad\Longrightarrow\quad
 \frac{\mathrm{D} {\bf s}}{\mathrm{D} t} = {\bf M_{\mathrm{CDRX}}} \cdot {\bf s} .
 \]</div>
 <h3 id="example_2">Example</h3>
 <p>To model CDRX, add the following contribution to the total fabric operator <span class="arithmatex">\({\bf M}\)</span>:</p>
 <pre><code class="language-python">M += Lambda*sf.M_CDRX(nlm)
 </code></pre>
-<p>where <code>Lambda</code> (<span class="arithmatex">\(\Lambda\)</span>) is the CDRX rate-factor magnitude that possibly depends on temperature, stress, strain-rate, etc. (<a href="https://doi.org/10.1016/j.epsl.2020.116718">Richards et al., 2021</a>).</p>
+<p>where <code>Lambda</code> is the CDRX rate-factor magnitude, <span class="arithmatex">\(\Lambda\)</span>, that possibly depends on temperature, stress, strain-rate, etc. (<a href="https://doi.org/10.1016/j.epsl.2020.116718">Richards et al., 2021</a>).</p>
 <hr />
 <h2 id="regularization">Regularization</h2>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/tests/calibrate-regularization/animation.gif" style="width:700px" /></p>
@@ -320,7 +335,7 @@ In the animation above, the left-hand panel shows how the power spectrum evolves
 Specfab uses Laplacian hyper diffusion (<span class="arithmatex">\(k&gt;1\)</span>) as regularization in <span class="arithmatex">\(S^2\)</span></p>
 <div class="arithmatex">\[ 
 \frac{\mathrm{D} n_l^m}{\mathrm{D} t} ={\nu}[l(l+1)]^{k} n_l^m 
-\qquad\Longrightarrow\qquad
+\quad\Longrightarrow\quad
 \frac{\mathrm{D} {\bf s}}{\mathrm{D} t} = {\bf M_{\mathrm{REG}}} \cdot {\bf s} 
 ,
 \]</div>

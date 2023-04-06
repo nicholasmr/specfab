@@ -136,6 +136,10 @@ which depends on the CPO, grain elastic parameters, and direction of propagation
 <p>The Voigt scheme (<span class="arithmatex">\(\alpha=1\)</span>) assumes the strain field is homogeneous over the polycrystal scale, whereas the Reuss scheme (<span class="arithmatex">\(\alpha=0\)</span>) assumes the stress is homogeneous.
 Moreover, in these homogenizations, grains are assumed interactionless and the bulk elastic behaviour is therefore simply the grain-orientation-averaged elastic behaviour subject to either homogeneous stress or strain assumptions over the polycrystal scale.</p>
 </div>
+<div class="admonition warning">
+<p class="admonition-title">Grain parameters</p>
+<p>The grain elastic parameters should be understood as the <em>effective</em> polycrystal values needed to reproduce experimental results, and not measured values derived from experiments on single crystals.</p>
+</div>
 <h2 id="transversely-isotropic-grains">Transversely isotropic grains</h2>
 <table>
 <thead>
@@ -153,10 +157,6 @@ Moreover, in these homogenizations, grains are assumed interactionless and the b
 </table>
 <p>If grains are approximately transversely isotropic, the grain elastic behaviour can be modelled using the <a href="../constitutive-elastic/">transversely isotropic elastic constitutive equation</a>.
 This requires specifying the three grain parameters <span class="arithmatex">\(\lambda\)</span>, <span class="arithmatex">\(\mu\)</span>, <span class="arithmatex">\(\hat{\lambda}\)</span>, <span class="arithmatex">\(\hat{\mu}\)</span>, <span class="arithmatex">\(\hat{\gamma}\)</span>, and the Voigt&mdash;Reuss weight <span class="arithmatex">\(\alpha\)</span>.</p>
-<div class="admonition warning">
-<p class="admonition-title">Grain parameters</p>
-<p>The grain parameters should be understood as the <em>effective</em> polycrystal values needed to reproduce experimental results, and not measured values derived from experiments on single crystals.</p>
-</div>
 <h3 id="example-for-glacier-ice">Example for glacier ice</h3>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfabpy as sf
@@ -199,10 +199,6 @@ Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta,ph
 </table>
 <p>If grains are approximately orthotropic, the grain elastic behaviour can be modelled using the <a href="../constitutive-elastic/">orthotropic elastic constitutive equation</a>.
 This requires specifying the ten grain parameters <span class="arithmatex">\(\lambda_{11}\)</span>, <span class="arithmatex">\(\lambda_{22}\)</span>, <span class="arithmatex">\(\lambda_{33}\)</span>, <span class="arithmatex">\(\lambda_{12}\)</span>, <span class="arithmatex">\(\lambda_{13}\)</span>, <span class="arithmatex">\(\lambda_{23}\)</span>, <span class="arithmatex">\(\mu_{1}\)</span>, <span class="arithmatex">\(\mu_{2}\)</span>, <span class="arithmatex">\(\mu_{3}\)</span>, and the Voigt&mdash;Reuss weight <span class="arithmatex">\(\alpha\)</span>.</p>
-<div class="admonition warning">
-<p class="admonition-title">Grain parameters</p>
-<p>The grain parameters should be understood as the <em>effective</em> polycrystal values needed to reproduce experimental results, and not measured values derived from experiments on single crystals.</p>
-</div>
 <h3 id="example-for-olivine">Example for olivine</h3>
 <p>Not yet available.</p>
 <!--
