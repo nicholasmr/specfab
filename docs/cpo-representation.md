@@ -11,6 +11,8 @@ Supported grain symmetry groups for modelling [CPO evolution](cpo-dynamics-trani
 | Transversely isotropic | $n(\theta,\phi)$                | Distribution of slip-plane normals |
 | Orthotropic            | $n(\theta,\phi),b(\theta,\phi)$ | Distribution of slip-plane normals and slip directions |
 
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slipplane.png){: style="width:180px"} 
+
 !!! note
     Grain sizes or shapes are not represented or modelled by specfab.
 
@@ -33,12 +35,14 @@ $$
 The orientation distribution function (ODF) is defined as the normalized distribution 
 
 $$ 
-\mathrm{ODF} := \frac{n(\theta,\phi)}{N} \quad\text{where}\quad N=\int_{S^2}{n} d\Omega=\sqrt{4\pi}n_0^0 .
+\mathrm{ODF} = \frac{n(\theta,\phi)}{N} \quad\text{where}\quad N=\int_{S^2}{n} d\Omega=\sqrt{4\pi}n_0^0 .
 $$
 
-The array of complex-valued expansion coefficients is defined as
+The array of complex-valued expansion coefficients, defining the CPO state, is 
 
-$\qquad$ `nlm` $= [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}] \quad\text{(state vector)}$.
+$$
+{\bf s} = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}] \quad\text{(state vector)}.
+$$
 
 
 !!! warning "Normalization"
@@ -73,7 +77,7 @@ $$ {\bf a}^{(2)} = {\bf f}(\hat{n}_2^{m})
 \qquad\text{(for all $m$)}
 $$
 
-where $\hat{n}_l^m := n_l^m/n_0^0$, and ${\bf f}$, ${\bf g}$, ${\bf h}$ are linear in their arguments.
+where $\hat{n}_l^m = n_l^m/n_0^0$, and ${\bf f}$, ${\bf g}$, ${\bf h}$ are linear in their arguments.
 
 ### Example
 

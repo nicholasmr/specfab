@@ -1,3 +1,3 @@
 # Electromagnetic wave propagation
 
-Not yet implemented
+To be implemented.

@@ -1,8 +1,19 @@
-# CPO dynamics for transversely isotropic grains
+# CPO dynamics &mdash; Transversely isotropic grains
 
 ## Introduction
 
-This tutorial focuses on modelling the CPO evolution of glacier ice, i.e. the $c$-axis (or mass fraction) distribution $n(\theta,\phi)$.
+This tutorial focuses on modelling the CPO evolution of polycrystalline glacier ice, understood as the ${\bf c}$-axis distribution or, equivelently, the distribution of (easy) slip-plane normals of grains, $n(\theta,\phi)$.
+
+| Polycrystal | Slip system |
+| :-: | :-: |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slipplane.png){: style="width:190px"} |
+
+
+!!! note 
+    $n(\theta,\phi)$ may also be understood as the mass density fraction of grains with a given slip-plane normal orientation.
+    See [CPO representation](cpo-representation.md) for details.
+
+### Lagrangian material parcel
 
 The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different modes of deformation/stress:
 
@@ -16,7 +27,7 @@ $$
 n({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}({\bf x},t) Y_{l}^{m}(\theta,\phi) \quad\text{(distribution of slip-plane normals)}, 
 $$
 
-CPO evolution can be written as a matrix problem involving
+CPO evolution can be written as a matrix problem involving the state vector
 
 $$
 {\bf s} = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}]^{\mathrm{T}} \quad\text{(state vector)},
@@ -35,9 +46,6 @@ The total effect of multiple processes acting simultaneously is simply
 $$
 {\bf M} = {\bf M_{\mathrm{LROT}}} + {\bf M_{\mathrm{DDRX}}} + {\bf M_{\mathrm{CDRX}}} + \cdots \quad\text{(operator)}. 
 $$
-
-!!! note
-    $n(\theta,\phi)$ is also referred to as $\psi(\theta,\phi)$ in some of the figures below. 
 
 - - -
 
@@ -71,7 +79,7 @@ The corresponding effect on the continuous $c$-axis distribution is modelled as 
 
 $$ 
 \frac{\mathrm{D} n}{\mathrm{D} t} = -\nabla_{S^2}\cdot(n{\bf \dot{c}}) 
-\qquad\Longrightarrow\qquad
+\quad\Longrightarrow\quad
 \frac{\mathrm{D} {\bf s}}{\mathrm{D} t} = {\bf M_{\mathrm{LROT}}} \cdot {\bf s},
 $$
 
@@ -129,7 +137,7 @@ DDRX is modelled as a grain orientation or mass decay/production process on the 
 
 $$ 
 \frac{\mathrm{D} n}{\mathrm{D} t} = \Gamma n 
-\qquad\Longrightarrow\qquad
+\quad\Longrightarrow\quad
 \frac{\mathrm{D} {\bf s}}{\mathrm{D} t} = {\bf M_{\mathrm{DDRX}}} \cdot {\bf s} ,
 $$
 
@@ -137,12 +145,14 @@ where the decay/production rate
 
 $$\Gamma = \Gamma_0\left(D- {\langle} D {\rangle}\right) \quad\text{(decay/production rate)}$$
 
-depends on the rate magnitude $\Gamma_0$  (`Gamma0` in specfab), and the deformability $D$ as a function of the stress tensor ${\bf S}$:
+depends on the rate magnitude $\Gamma_0$, and the deformability $D$ as a function of the stress tensor ${\bf S}$:
 
 $$
 D = \frac{({\bf S}\cdot{\bf S}):({\bf c}\otimes{\bf c}) - {\bf S}:({\bf c}\otimes{\bf c}\otimes{\bf c}\otimes{\bf c}):{\bf S}}{{\bf S}:{\bf S}}\quad\text{(deformability)}
 .
 $$
+
+${\bf M_{\mathrm{DDRX}}}$ is given analytically in [Rathmann and Lilien (2021)](https://doi.org/10.1017/jog.2021.88).
 
 !!! note 
     The average deformability, $\langle D\rangle$, depends on the instantaneous CPO state &mdash; specifically, the [structure tensors](cpo-representation.md) `a2` and `a4` &mdash; 
@@ -201,7 +211,7 @@ The model follows [Gödert (2003)](https://doi.org/10.1007/s001610050095) by app
 
 $$
 \frac{\mathrm{D} n}{\mathrm{D} t} = \Lambda\nabla^2 n 
-\qquad\Longrightarrow\qquad
+\quad\Longrightarrow\quad
 \frac{\mathrm{D} {\bf s}}{\mathrm{D} t} = {\bf M_{\mathrm{CDRX}}} \cdot {\bf s} .
 $$
 
@@ -211,13 +221,13 @@ To model CDRX, add the following contribution to the total fabric operator ${\bf
 ```python
 M += Lambda*sf.M_CDRX(nlm)
 ```
-where `Lambda` ($\Lambda$) is the CDRX rate-factor magnitude that possibly depends on temperature, stress, strain-rate, etc. ([Richards et al., 2021](https://doi.org/10.1016/j.epsl.2020.116718)).
+where `Lambda` is the CDRX rate-factor magnitude, $\Lambda$, that possibly depends on temperature, stress, strain-rate, etc. ([Richards et al., 2021](https://doi.org/10.1016/j.epsl.2020.116718)).
 
 - - -
 
 ## Regularization
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/8afe59b8847e16761d69abcc5c8ec0327c85e61c/tests/calibrate-regularization/animation.gif){: style="width:700px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/tests/calibrate-regularization/animation.gif){: style="width:700px"}
 
 As $n(\theta,\phi)$ becomes anisotropic due to CPO processes, the coefficients $n_l^m$ associated with high wavenumber modes (large $l$ and $m$, and thus small-scale structure) must increase in magnitude relative to the low wavenumber coefficients (small $l$ and $m$). 
 
@@ -235,7 +245,7 @@ Specfab uses Laplacian hyper diffusion ($k>1$) as regularization in $S^2$
 
 $$ 
 \frac{\mathrm{D} n_l^m}{\mathrm{D} t} ={\nu}[l(l+1)]^{k} n_l^m 
-\qquad\Longrightarrow\qquad
+\quad\Longrightarrow\quad
 \frac{\mathrm{D} {\bf s}}{\mathrm{D} t} = {\bf M_{\mathrm{REG}}} \cdot {\bf s} 
 ,
 $$

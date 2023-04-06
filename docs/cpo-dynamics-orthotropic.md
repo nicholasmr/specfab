@@ -1,9 +1,18 @@
-# CPO dynamics for orthotropic grains
+# CPO dynamics &mdash; Orthotropic grains
 
+This tutorial focuses on modelling the CPO evolution of polycrystalline olivine, understood as the distribution of (easy) slip-plane normals and slip directions of grains, $n(\theta,\phi)$ and $b(\theta,\phi)$.
 
-## Introduction
+| Polycrystal | Slip system |
+| :-: | :-: |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slipplane.png){: style="width:190px"} |
 
-This tutorial focuses on modelling the CPO evolution of polycrystalline olivine, i.e. distributions of slip-system axes $n(\theta,\phi)$ and $b(\theta,\phi)$.
+The distributions $n(\theta,\phi)$ and $b(\theta,\phi)$ refer to certain crystallographic axes (${\bf r}_i$) depending on the fabric type; i.e. thermodynamic conditions, water content, and stress magnitude that control which of the crystallographic slip systems is activated.
+
+!!! note 
+    The distributions may also be understood as the mass density fraction of grains with a given slip-plane-normal and slip-direction orientation.
+    See [CPO representation](cpo-representation.md) for details.
+
+### Lagrangian material parcel
 
 The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different modes of deformation/stress:
 

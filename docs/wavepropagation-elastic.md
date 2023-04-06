@@ -11,6 +11,9 @@ which depends on the CPO, grain elastic parameters, and direction of propagation
     The Voigt scheme ($\alpha=1$) assumes the strain field is homogeneous over the polycrystal scale, whereas the Reuss scheme ($\alpha=0$) assumes the stress is homogeneous.
     Moreover, in these homogenizations, grains are assumed interactionless and the bulk elastic behaviour is therefore simply the grain-orientation-averaged elastic behaviour subject to either homogeneous stress or strain assumptions over the polycrystal scale.
 
+!!! warning "Grain parameters" 
+    The grain elastic parameters should be understood as the *effective* polycrystal values needed to reproduce experimental results, and not measured values derived from experiments on single crystals.
+
 ## Transversely isotropic grains
 
 | Monocrystal | Polycrystal |
@@ -19,9 +22,6 @@ which depends on the CPO, grain elastic parameters, and direction of propagation
 
 If grains are approximately transversely isotropic, the grain elastic behaviour can be modelled using the [transversely isotropic elastic constitutive equation](constitutive-elastic.md).
 This requires specifying the three grain parameters $\lambda$, $\mu$, $\hat{\lambda}$, $\hat{\mu}$, $\hat{\gamma}$, and the Voigt&mdash;Reuss weight $\alpha$.
-
-!!! warning "Grain parameters" 
-    The grain parameters should be understood as the *effective* polycrystal values needed to reproduce experimental results, and not measured values derived from experiments on single crystals.
 
 ### Example for glacier ice
 
@@ -59,9 +59,6 @@ Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta,ph
 
 If grains are approximately orthotropic, the grain elastic behaviour can be modelled using the [orthotropic elastic constitutive equation](constitutive-elastic.md).
 This requires specifying the ten grain parameters $\lambda_{11}$, $\lambda_{22}$, $\lambda_{33}$, $\lambda_{12}$, $\lambda_{13}$, $\lambda_{23}$, $\mu_{1}$, $\mu_{2}$, $\mu_{3}$, and the Voigt&mdash;Reuss weight $\alpha$.
-
-!!! warning "Grain parameters" 
-    The grain parameters should be understood as the *effective* polycrystal values needed to reproduce experimental results, and not measured values derived from experiments on single crystals.
 
 ### Example for olivine
 

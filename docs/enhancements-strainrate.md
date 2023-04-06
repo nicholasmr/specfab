@@ -41,11 +41,11 @@ and so on.
 
 ### Eigenenhancements
 
-*Eigenenhancements* are defined as the enhancement factors w.r.t. the CPO symmetry axes, ${\bf m}_i$, hence 
+*Eigenenhancements* are defined as the enhancement factors w.r.t. the CPO symmetry axes (${\bf m}_i$): 
 
 $${\bf e}_i = {\bf m}_i .$$
 
-These are the enhancements factors needed to specify the viscous anisotropy in bulk [anisotropic rheologies](constitutive-viscoplastic.md):
+These are the enhancements factors needed to specify the viscous anisotropy in [bulk rheologies](constitutive-viscoplastic.md):
 
 | Transversely isotropic | Orthotropic |
 | :-: | :-: |
@@ -66,6 +66,9 @@ $$
 
 where $E_{ij}^{\mathrm{Sachs}}$ and $E_{ij}^{\mathrm{Taylor}}$ are calculated with (1) assuming constant $\bf{S}$ and $\bf{D}$, respectively.
 
+!!! warning "Grain parameters"
+    The grain viscous parameters below should be understood as the *effective* polycrystal values needed to reproduce deformation experiments, and not measured values derived from experiments on single crystals.
+
 ### Transversely isotropic grains
 
 | Monocrystal | Polycrystal |
@@ -74,9 +77,6 @@ where $E_{ij}^{\mathrm{Sachs}}$ and $E_{ij}^{\mathrm{Taylor}}$ are calculated wi
 
 If grains are approximately transversely isotropic, the grain rheology can be modelled using the [transversely isotropic power-law rheology](constitutive-viscoplastic.md).
 This requires specifying the three grain parameters $n$, $E_{cc}$ and $E_{ca}$, and the Taylor&mdash;Sachs weight $\alpha$.
-
-!!! warning "Grain parameters"
-    The grain parameters should be understood as the *effective* polycrystal values needed to reproduce deformation experiments, and not measured values derived from experiments on single crystals.
 
 #### Example for glacier ice
 
@@ -120,9 +120,6 @@ Eij = sf.Eeiej(nlm, e1,e2,e3, Ecc,Eca,alpha,n)
 
 If grains are approximately orthotropic, the grain rheology can be modelled using the [orthotropic power-law rheology](constitutive-viscoplastic.md).
 This requires specifying the eight grain parameters $n$, $E_{11}$, $E_{22}$, $E_{33}$, $E_{12}$, $E_{13}$, $E_{23}$, and the Taylor&mdash;Sachs weight $\alpha$.
-
-!!! warning "Grain parameters"
-    The grain parameters should be understood as the *effective* polycrystal values needed to reproduce deformation experiments, and not measured values derived from experiments on single crystals.
 
 #### Example for olivine
 

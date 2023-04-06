@@ -79,7 +79,7 @@ if 1:
         
         ### Setup figure
 
-        scale=1.0
+        scale=0.9
         fig = plt.figure(figsize=(7*scale,3*scale))
         gs = gridspec.GridSpec(1, 3, width_ratios=[1.5,1,1], wspace=0.25, bottom=0.17, top=0.95, left=0.1, right=0.99)
         
