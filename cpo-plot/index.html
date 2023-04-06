@@ -119,7 +119,7 @@ import matplotlib.ticker as mticker
 import cmasher as cmr
 import cartopy.crs as ccrs
 
-def plot_ODF(nlm, lm, ax, geo, cmap='Greys', cblabel='$\psi/N$ (ODF)', lvls=np.linspace(0.0,0.4,9), tickintvl=4, latres=60, plotAxes=False):
+def plot_ODF(nlm, lm, ax, geo, cmap='Greys', cblabel='$n/N$ (ODF)', lvls=np.linspace(0.0,0.4,9), tickintvl=4, latres=60, plotAxes=False):
 
     # Discretize over S^2
     theta = np.linspace(0,   np.pi,   latres) # co-lat

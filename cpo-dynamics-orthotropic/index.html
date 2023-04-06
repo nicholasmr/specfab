@@ -147,7 +147,11 @@ n({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}({\bf x},t) Y_{l}
 \\
 b({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}b_{l}^{m}({\bf x},t) Y_{l}^{m}(\theta,\phi) \quad\text{(distribution of slip directions)}, 
 \]</div>
-<p>CPO evolution can be written as a matrix problem involving</p>
+<p>CPO evolution can be written as a matrix problem involving the (block) state vector</p>
+<div class="arithmatex">\[
+{\bf s} = \begin{bmatrix} {\bf s}_n \\ {\bf s}_b \end{bmatrix} \quad\text{(state vector)},
+\]</div>
+<p>where</p>
 <div class="arithmatex">\[
 {\bf s}_n = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}]^{\mathrm{T}} \quad\text{($n$ state vector)},
 \\
@@ -155,14 +159,12 @@ b({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}b_{l}^{m}({\bf x},t) Y_{l}
 \]</div>
 <p>such that </p>
 <div class="arithmatex">\[
-\frac{\mathrm{D}{\bf s}_n}{\mathrm{D} t} = {\bf M}_n \cdot {\bf s}_n \quad\text{($n$ state evolution)},
-\\
-\frac{\mathrm{D}{\bf s}_b}{\mathrm{D} t} = {\bf M}_b \cdot {\bf s}_b \quad\text{($b$ state evolution)},
+\frac{\mathrm{D}{\bf s}}{\mathrm{D} t} = {\bf M} \cdot {\bf s} \quad\text{(state evolution)},
 \]</div>
-<p>where the operators (matrix) <span class="arithmatex">\({\bf M}_n\)</span> and <span class="arithmatex">\({\bf M}_b\)</span> represents the effect of a given CPO process, which may depend on stress, strain-rate, temperature, etc.</p>
+<p>where the operator (matrix) <span class="arithmatex">\({\bf M}\)</span> represents the effect of a given CPO process, which may depend on stress, strain-rate, temperature, etc.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Only lattice rotation is so far supported: <span class="arithmatex">\({\bf M} = {\bf M}_{\mathrm{LROT}}\)</span> for both <span class="arithmatex">\(n\)</span> and <span class="arithmatex">\(b\)</span>.</p>
+<p>Only lattice rotation is so far supported: <span class="arithmatex">\({\bf M} = {\bf M}_{\mathrm{LROT}}\)</span>.</p>
 </div>
 <hr />
 <h2 id="lattice-rotation">Lattice rotation</h2>
