@@ -261,10 +261,15 @@ lm, nlm_len = sf.init(6)
 # Replace with your own array/list of measured c-axes
 # caxes = [[c1x,c1y,c1z], [c2x,c2y,c2z], ...] 
 
+# Determine sixth-order structure tensor, a6
 a6 = np.zeros((3,3,3,3,3,3))
 for c in caxes
     a6 += np.einsum('i,j,k,l,m,n', c,c,c,c,c,c) # sixth outer product of c with itself
 a6 /= len(caxes) # normalize by number of c-axes (grains)
+
+# Determine spectral expansion coefficients
+nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
+nlm[:] = sf.a6_to_nlm(a6) # Determine l=2,4,6 expansion coefficients of ODF (a6 is normalized)
 </code></pre>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
