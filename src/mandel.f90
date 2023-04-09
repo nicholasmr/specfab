@@ -36,6 +36,19 @@ contains
         M(3,:) = [v(5)/s, v(4)/s, v(3)]
     end
 
+    function vec_to_mat_voigt(v) result (M)
+        
+        ! 6x1 Voigt vector to symmetric 3x3 matrix
+        
+        implicit none
+        real(kind=dp), intent(in) :: v(6) 
+        real(kind=dp)             :: M(3,3) 
+        
+        M(1,:) = [v(1),   v(6)/1, v(5)/1]
+        M(2,:) = [v(6)/1, v(2),   v(4)/1]
+        M(3,:) = [v(5)/1, v(4)/1, v(3)]
+    end
+
     function a4_to_mat(A) result (M)
     
         ! 3x3x3x3 symmetric tensor (e.g. a4) to 6x6 Mandel matrix

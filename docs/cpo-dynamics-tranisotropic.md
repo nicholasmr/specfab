@@ -88,7 +88,7 @@ where ${\bf M_{\mathrm{LROT}}}$ is given analytically in [Rathmann et al. (2021)
 !!! tip "c-axis velocity field"
     The normalized $c$-axis velocity fields for the three modes of deformation considered are:
     
-    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/latrot-caxis-velocity/latrot-caxis-velocity.png){: style="width:600px"}
+    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/latrot-velocity/latrot-velocity.png){: style="width:600px"}
 
 ### Example
 

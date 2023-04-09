@@ -1,4 +1,4 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk>, 2022
+# N. M. Rathmann <rathmann@nbi.ku.dk>, 2022-2023
 
 """
 Given two ODFs of orthogonal axes (coefficieints blm and nlm), calculate ODF of the third axis (coefficients vlm)

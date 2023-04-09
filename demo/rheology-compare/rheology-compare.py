@@ -7,6 +7,7 @@ import scipy.special as sp
 sys.path.insert(0, '..')
 from header import *
 from specfabpy import specfabpy as sf
+from sfconstants import *
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -26,7 +27,7 @@ T_EXP_STR = {T_EXP_CC:'cc', T_EXP_SS:'ss'}
 ### Select experiment
 
 T_EXP = T_EXP_CC
-T_EXP = T_EXP_SS
+#T_EXP = T_EXP_SS
 
 DEBUG = 0
 
@@ -68,12 +69,7 @@ dt = T/Nt
 # Grain parameters for enhancement-factor model
 #----------------------
 
-# Linear (n'=1) mixed Taylor--Sachs enhancements            
-# Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
-nprime    = 1 
-Eca_lin   = sf.Eca_opt_lin
-Ecc_lin   = sf.Ecc_opt_lin
-alpha_lin = sf.alpha_opt_lin  
+(Eij_grain, alpha, n_grain) = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
 
 #----------------------
 # Velocity gradient
@@ -118,7 +114,7 @@ nlm[0,0] = 1/np.sqrt(4*np.pi) # Init with isotropy (Normalized such that N(t=0) 
 vecdim = (Nt,3)
 e1,e2,e3 = np.zeros(vecdim, dtype=np.float64),np.zeros(vecdim, dtype=np.float64),np.zeros(vecdim, dtype=np.float64)
 eig = np.zeros(vecdim, dtype=np.float64)
-Eij = np.zeros((Nt,3,3), dtype=np.float64)
+Eij = np.zeros((Nt,6), dtype=np.float64)
 
 # G=Glen, R=Rathmann & Lilien, P=Pettit, M=Martin
 Y_G = sf.rheo_fwd_isotropic(tau0, Aglen,nglen)
@@ -137,12 +133,12 @@ with Bar('dt=%.3fyr, Nt=%i :: L=%i (nlm_len=%i) ::'%(dt/year2sec,Nt,L,nlm_len), 
         e1[ttp,:], e2[ttp,:], e3[ttp,:], eig[ttp,:] = sf.frame(c, 'e')
 
         ### Enhancement factors
-        Eij[ttp,:,:] = np.transpose(sf.Eeiej(c, e1[ttp,:],e2[ttp,:],e3[ttp,:], Ecc_lin, Eca_lin, alpha_lin, nprime))
+        Eij[ttp,:] = np.transpose(sf.Eij_tranisotropic(c, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij_grain, alpha, n_grain))
         
         ### Y for fabric at constant strain rate
-        Y_R[ttp,:,:] = sf.rheo_fwd_orthotropic(       tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:])
-        Y_P[ttp,:,:] = sf.rheo_fwd_orthotropic_Pettit(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:])
-        Y_M[ttp,:,:] = sf.rheo_fwd_orthotropic_Martin(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:])
+        Y_R[ttp,:,:] = sf.rheo_fwd_orthotropic(       tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:])
+        Y_P[ttp,:,:] = sf.rheo_fwd_orthotropic_Pettit(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:])
+        Y_M[ttp,:,:] = sf.rheo_fwd_orthotropic_Martin(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:])
  
         # Verify enhancement factors are correctly reproduced *if* deformation was coaxial with eigenframe
         if False:
@@ -150,15 +146,16 @@ with Bar('dt=%.3fyr, Nt=%i :: L=%i (nlm_len=%i) ::'%(dt/year2sec,Nt,L,nlm_len), 
             ei[0,:] = e1[ttp,:]; ei[1,:] = e2[ttp,:]; ei[2,:] = e3[ttp,:];
             print("\n")
             print('e1,e2,e3 = ', ei[0,:],ei[1,:],ei[2,:])
-            print("Eij = \n", Eij[ttp,:,:])
-            for ii,jj in ((0,0),(1,1),(2,2), (1,2),(2,0),(0,1)):
+            print("Eij = \n", Eij[ttp,:])
+            #for ii,jj in ((0,0),(1,1),(2,2), (1,2),(2,0),(0,1)):
+            for ii in (0,1,2, 3,4,5):
                 eij = np.tensordot(ei[ii,:],ei[jj,:],axes=0)
-                tau0 = eij+eij.T if ii != jj else np.eye(3)/3-eij
-                Eij_ = Eij[ttp,ii,jj]
+                tau0 = eij+eij.T if ii >= 3 else np.eye(3)/3-eij
+                Eij_ = Eij[ttp,ii]
                 Y_G_ = np.tensordot(sf.rheo_fwd_isotropic(tau0, Aglen,nglen), eij, axes=2)
-                Eij_R = np.tensordot(sf.rheo_fwd_orthotropic(       tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:]), eij, axes=2) / Y_G_
-                Eij_P = np.tensordot(sf.rheo_fwd_orthotropic_Pettit(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:]), eij, axes=2) / Y_G_
-                Eij_M = np.tensordot(sf.rheo_fwd_orthotropic_Martin(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:,:]), eij, axes=2) / Y_G_
+                Eij_R = np.tensordot(sf.rheo_fwd_orthotropic(       tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:]), eij, axes=2) / Y_G_
+                Eij_P = np.tensordot(sf.rheo_fwd_orthotropic_Pettit(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:]), eij, axes=2) / Y_G_
+                Eij_M = np.tensordot(sf.rheo_fwd_orthotropic_Martin(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:]), eij, axes=2) / Y_G_
                 print("(i,j)=(%i,%i) :: Eij_R/Eij = %.3e --- Eij_P/Eij = %.3e --- Eij_M/Eij = %.3e :: Eij = %.3e"%(ii,jj, Eij_R/Eij_, Eij_P/Eij_, Eij_M/Eij_, Eij_))
             print("\n")
  

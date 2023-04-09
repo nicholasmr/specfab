@@ -44,7 +44,7 @@ def writeSubplotLabel(ax,loc,txt,frameon=True, alpha=1.0, fontsize=FS, pad=0.005
 
 PRODUCTION = 1
 
-nprime_list = [1,3]
+n_grain_list = [1,3]
 
 #----------
 
@@ -72,19 +72,19 @@ for ii, lli in enumerate(llrange):
 f = 8 if PRODUCTION else 2
 Eca_list = np.logspace(-0,4.1,f*10) # shear along basal plane
 Ecc_list = np.logspace(-2,2,f*10) # against basal plane
-size = (len(nprime_list), len(Eca_list),len(Ecc_list))
+size = (len(n_grain_list), len(Eca_list),len(Ecc_list))
 Emm, Emt, Epq = np.zeros(size), np.zeros(size), np.zeros(size)
 
 #-------------
 
-for nn, nprime in enumerate(nprime_list):
+for nn, n_grain in enumerate(n_grain_list):
 
     for ii,Eca in enumerate(Eca_list):
         for jj,Ecc in enumerate(Ecc_list):
-            Emm[nn,ii,jj] = sf.Evw(nlm, mm,tau_ps_mm, Ecc,Eca,0,nprime) # Evw(a2,a4,a6,a8, vw,tau, Ecc,Eca,alpha,nprime)
-            Emt[nn,ii,jj] = sf.Evw(nlm, mt,tau_ss_mt, Ecc,Eca,0,nprime)
-            Epq[nn,ii,jj] = sf.Evw(nlm, pq,tau_ss_pq, Ecc,Eca,0,nprime)
-
+            Eij_grain = [Ecc,Eca]
+            Emm[nn,ii,jj] = sf.Evw_tranisotropic(nlm, mm,tau_ps_mm, Eij_grain,0,n_grain) 
+            Emt[nn,ii,jj] = sf.Evw_tranisotropic(nlm, mt,tau_ss_mt, Eij_grain,0,n_grain)
+            Epq[nn,ii,jj] = sf.Evw_tranisotropic(nlm, pq,tau_ss_pq, Eij_grain,0,n_grain)
         
 X = np.array([[ Ecc for Ecc in Ecc_list]   for Eca in Eca_list])
 Y = np.array([[ Eca for Ecc in Ecc_list]   for Eca in Eca_list])
@@ -101,9 +101,9 @@ gs.update(left=0.07, right=1-0.00, top=0.95, bottom=0.17, wspace=0.2)
 ax_list = [plt.subplot(gs[0, 0]),plt.subplot(gs[0, 1])]
 cmap = mpl_cm.get_cmap('Blues')
     
-for ii,nprime in enumerate(nprime_list):
+for ii,n_grain in enumerate(n_grain_list):
 
-    print('nprime=%i'%(nprime))
+    print('n_grain=%i'%(n_grain))
 
     Emm_map, Emt_map, Epq_map = Emm[ii,:,:], Emt[ii,:,:], Epq[ii,:,:]
     Zpq = np.ma.array(np.divide(Emt_map,Epq_map))
@@ -190,6 +190,6 @@ for ii,nprime in enumerate(nprime_list):
     ax.xaxis.set_minor_locator(locmin)
     ax.xaxis.set_minor_formatter(mpl.ticker.NullFormatter())
 
-plt.savefig('enhancement-factor-nlin-sachs.png', dpi=250)
+plt.savefig('enhancement-factor-nlin-sachs-tranisotropic.png', dpi=250)
 plt.close()
 

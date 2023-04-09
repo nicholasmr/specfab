@@ -7,6 +7,7 @@ from netCDF4 import Dataset
 
 sys.path.insert(0, '..')
 from specfabpy import specfabpy as sf # To use specfabpy compile the specfab Python module by running "make specfabpy"
+from sfconstants import *
 
 #----------------------
 # Input arguments
@@ -30,8 +31,8 @@ L = 8 # Spectral truncation (4<=L<=8)
 # Grain parameters
 #----------------------
 
-Eca_lin,  Ecc_lin,  alpha_lin  = sf.Eca_opt_lin,  sf.Ecc_opt_lin,  sf.alpha_opt_lin  # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
-Eca_nlin, Ecc_nlin, alpha_nlin = sf.Eca_opt_nlin, sf.Ecc_opt_nlin, sf.alpha_opt_nlin # Optimal n'=3 (nlin) grain parameters (Rathmann et. al, 2021)
+(Eij_grain_lin,  alpha_lin,  n_grain_lin)  = sfconst.ice['viscoplastic']['linear']    # (Eij_grain, alpha, n_grain)
+(Eij_grain_nlin, alpha_nlin, n_grain_nlin) = sfconst.ice['viscoplastic']['nonlinear'] # (Eij_grain, alpha, n_grain)
 
 #----------------------
 # Velocity gradient
@@ -127,14 +128,12 @@ for tt in np.arange(0,Nt):
     p1[tt,:],p2[tt,:],p3[tt,:], _             = sf.frame(c, 'p')
 
     # Linear (n'=1) mixed Taylor--Sachs enhancements            
-    nprime = 1
-    Eeiej_lin[tt,:,:] = np.transpose(sf.Eeiej(c, e1[tt,:],e2[tt,:],e3[tt,:], Ecc_lin, Eca_lin, alpha_lin, nprime))
-    Epipj_lin[tt,:,:] = np.transpose(sf.Eeiej(c, p1[tt,:],p2[tt,:],p3[tt,:], Ecc_lin, Eca_lin, alpha_lin, nprime))
+    Eeiej_lin[tt,:,:] = np.transpose(sf.vec_to_mat_voigt(sf.Eij_tranisotropic(c, e1[tt,:],e2[tt,:],e3[tt,:], Eij_grain_lin, alpha_lin, n_grain_lin)))
+    Epipj_lin[tt,:,:] = np.transpose(sf.vec_to_mat_voigt(sf.Eij_tranisotropic(c, p1[tt,:],p2[tt,:],p3[tt,:], Eij_grain_lin, alpha_lin, n_grain_lin)))
     
     # Nonlinear (n'=3) Sachs enhancements
-    nprime = 3
-    Eeiej_nlin[tt,:,:] = np.transpose(sf.Eeiej(c, e1[tt,:],e2[tt,:],e3[tt,:], Ecc_nlin, Eca_nlin, alpha_nlin, nprime))
-    Epipj_nlin[tt,:,:] = np.transpose(sf.Eeiej(c, p1[tt,:],p2[tt,:],p3[tt,:], Ecc_nlin, Eca_nlin, alpha_nlin, nprime))
+    Eeiej_nlin[tt,:,:] = np.transpose(sf.vec_to_mat_voigt(sf.Eij_tranisotropic(c, e1[tt,:],e2[tt,:],e3[tt,:], Eij_grain_nlin, alpha_nlin, n_grain_nlin)))
+    Epipj_nlin[tt,:,:] = np.transpose(sf.vec_to_mat_voigt(sf.Eij_tranisotropic(c, p1[tt,:],p2[tt,:],p3[tt,:], Eij_grain_nlin, alpha_nlin, n_grain_nlin)))
     
 #print('l=0 coefs:', nlm[:,0])
 #print(r'last - first l=0 coef (%) = ', 100*(nlm[-1,0]-nlm[0,0])/nlm[0,0])
@@ -152,8 +151,8 @@ ncfile = Dataset(fname,mode='w',format='NETCDF3_CLASSIC')
 
 # Config
 ncfile.tsteps, ncfile.dt, ncfile.L = Nt, dt, L
-ncfile.Ecc_lin,  ncfile.Eca_lin,  ncfile.alpha_lin  = Ecc_lin,  Eca_lin,  alpha_lin
-ncfile.Ecc_nlin, ncfile.Eca_nlin, ncfile.alpha_nlin = Ecc_nlin, Eca_nlin, alpha_nlin
+ncfile.Ecc_lin,  ncfile.Eca_lin,  ncfile.alpha_lin  = Eij_grain_lin[0],  Eij_grain_lin[1],  alpha_lin
+ncfile.Ecc_nlin, ncfile.Eca_nlin, ncfile.alpha_nlin = Eij_grain_nlin[0], Eij_grain_nlin[1], alpha_nlin
 
 ncfile.ugrad = ugrad.flatten()
 

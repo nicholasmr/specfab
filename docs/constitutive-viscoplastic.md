@@ -16,9 +16,9 @@ where $\bf{D}$ and $\bf{S}$ are the strain-rate and deviatoric stress tensors, r
 
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-bulk.png){: style="width:140px"} 
 
-### `D = sf.rheo_fwd_tranisotropic(S, A, n, m, Emm, Emt)`
+### `D = sf.rheo_fwd_tranisotropic(S, A, n, m, Eij)`
 
-### `S = sf.rheo_rev_tranisotropic(D, A, n, m, Emm, Emt)`
+### `S = sf.rheo_rev_tranisotropic(D, A, n, m, Eij)`
 
 | Arguments | Type |
 | --- | --- |

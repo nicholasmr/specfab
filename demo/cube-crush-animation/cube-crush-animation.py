@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2021
+# Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2021-2023
 
 import copy, sys, os, code # code.interact(local=locals())
 import numpy as np
@@ -10,6 +10,7 @@ import scipy.special as sp
 sys.path.insert(0, '..')
 from header import *
 from specfabpy import specfabpy as sf # requires the spectral fabric module to be compiled!
+from sfconstants import *
 
 s2yr   = 3.16887646e-8
 yr2s   = 31556926    
@@ -111,9 +112,10 @@ class SyntheticFabric():
         nlm_list[:,0] = 1/np.sqrt(4*np.pi) # Normalized such that N(t=0) = 1
         eigvals = np.zeros((Nt+1,3))
         
-        Eij = np.ones((Nt+1,3,3))
+        Eij = np.ones((Nt+1,6))
         e1,e2,e3 = [1, 0, 0], [0, 1, 0], [0, 0, 1]
-        Ecc,Eca,alpha,nprime = sf.Ecc_opt_lin, sf.Eca_opt_lin, sf.alpha_opt_lin, 1
+        (Eij_grain, alpha, n_grain) = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
+
         
         nlm_prev = nlm_list[Nt,:].copy()
         nu0 = 1
@@ -125,7 +127,7 @@ class SyntheticFabric():
             M += self.M_REG(D_) # Regularization
             nlm_list[tt,:] = nlm_prev + dt * np.matmul(M, nlm_prev)
             nlm_prev = nlm_list[tt,:]
-            Eij[tt,:,:] = sf.Eeiej(nlm_prev, e1,e2,e3, Ecc,Eca,alpha,nprime) 
+            Eij[tt,:] = sf.Eij_tranisotropic(nlm_prev, e1,e2,e3, Eij_grain,alpha,n_grain) 
             _,_,_, eigvals[tt,:] = sf.frame(nlm_prev, 'e')
 #            print(eigvals)
         
@@ -137,7 +139,7 @@ class SyntheticFabric():
             M += nu0 * sf.M_REG(nlm_prev, D_) # Regularization
             nlm_list[tt,:] = nlm_prev + dt * np.matmul(M, nlm_prev)
             nlm_prev = nlm_list[tt,:]
-            Eij[tt,:,:] = sf.Eeiej(nlm_prev, e1,e2,e3, Ecc,Eca,alpha,nprime) 
+            Eij[tt,:] = sf.Eij_tranisotropic(nlm_prev, e1,e2,e3, Eij_grain,alpha,n_grain) 
             _,_,_, eigvals[tt,:] = sf.frame(nlm_prev, 'e')
         
         ### Plot
@@ -189,10 +191,14 @@ class SyntheticFabric():
 #            print(I)
 #            print(strainvec[I])
 #            print(len(I),Nt+1)
-            axE.plot(strainvec[I], Eij[I,STRESSAXPERP,STRESSAX], '-k', lw=lw, label=r'$E_{xz}$')
-            axE.plot(strainvec[I], Eij[I,1,STRESSAXPERP], '-.k', lw=lw, label=r'$E_{yz}$')
-            axE.plot(strainvec[I], Eij[I,STRESSAX,STRESSAX], '--k',  lw=lw, label=r'$E_{zz}$' if STRESSDIRECTION == 'z' else r'$E_{xx}$')
-            axE.plot(strainvec[I], Eij[I,STRESSAXPERP,STRESSAXPERP], ':k',  lw=lw, label=r'$E_{xx}$' if STRESSDIRECTION == 'z' else r'$E_{zz}$')
+            if STRESSDIRECTION == 'x':
+                # Eij = Exx,Eyy,Ezz,Exz,Eyz,Exy
+                axE.plot(strainvec[I], Eij[I,4], '-k',  lw=lw, label=r'$E_{xz}$')
+                axE.plot(strainvec[I], Eij[I,3], '-.k', lw=lw, label=r'$E_{yz}$')
+                axE.plot(strainvec[I], Eij[I,0], '--k', lw=lw, label=r'$E_{zz}$' if STRESSDIRECTION == 'z' else r'$E_{xx}$')
+                axE.plot(strainvec[I], Eij[I,2], ':k',  lw=lw, label=r'$E_{xx}$' if STRESSDIRECTION == 'z' else r'$E_{zz}$')
+            else:
+                pass
             axE.text(0.02, 1.50, '{\\bf Softer than}\n{\\bf isotropy}', fontsize=FS-2.5, color='#08519c', ha='center', ma='center')
             axE.text(0.02, 0.20, '{\\bf Harder than}\n{\\bf isotropy}', fontsize=FS-2.5, color='#a50f15', ha='center', ma='center')
 

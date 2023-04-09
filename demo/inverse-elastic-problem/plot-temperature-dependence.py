@@ -167,8 +167,8 @@ setup_axes(ax_Egam, 'f', yticks=yticks, yticks_minor=yticks_minor, ylabel=r'$\ha
 
 ### Save figure
 
-#fname = 'plots/temperature-dependence.png'
-fname = 'plots/temperature-dependence.pdf'
+fname = 'plots/temperature-dependence.png'
+#fname = 'plots/temperature-dependence.pdf'
 print('** Saving %s'%(fname))
 plt.savefig(fname, dpi=300)
 

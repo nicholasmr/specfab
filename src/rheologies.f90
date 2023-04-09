@@ -1,16 +1,16 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2022
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2023
 
-! Fluid rheologies
+! Viscoplastic rheologies
 
 !-----------
 ! Notation:
 !-----------
 !   eps = Strain-rate tensor (3x3)
-!   tau = Deviatoric stress (3x3)
+!   tau = Deviatoric stress tensor (3x3)
 !   A   = Strain-rate (flow rate) factor
 !   n   = Nonlinear flow exponent
-!   mi  = Material symmetry axes (m1,m2,m3)
-!   Eij = Directional enhancement factors along "mi"
+!   mi  = Material/rheological symmetry axes (m1,m2,m3)
+!   Eij = Directional enhancement factors w.r.t. axes "mi"
 !-----------
 
 module rheologies
@@ -87,15 +87,15 @@ contains
     ! TRANSVERSELY ISOTROPIC RHEOLOGY
     !---------------------------------
 
-    function rheo_fwd_tranisotropic(tau, A,n, m,Emm,Emt) result(eps)
+    function rheo_fwd_tranisotropic(tau, A,n, m,Eij) result(eps)
 
         implicit none
-        real(kind=dp), intent(in) :: tau(3,3), A, m(3), Emm, Emt
+        real(kind=dp), intent(in) :: tau(3,3), A, m(3), Eij(2)
         integer, intent(in)       :: n
         real(kind=dp)             :: eps(3,3), fluidity, kI,kM,kL, I2,I4,I5, mm(3,3),tausq(3,3)
         real(kind=dp), parameter  :: d = 3.0d0
         
-        call rheo_params_tranisotropic(Emm,Emt,d,n,1.0d0, kI,kM,kL)
+        call rheo_params_tranisotropic(Eij,d,n,1.0d0, kI,kM,kL)
 
         mm = outerprod(m,m)
         tausq = matmul(tau,tau)    
@@ -107,15 +107,15 @@ contains
         eps = fluidity*( tau - kI*I4*identity + kM*I4*mm + kL*(matmul(tau,mm)+matmul(mm,tau)) )
     end
 
-    function rheo_rev_tranisotropic(eps, A,n, m,Emm,Emt) result(tau)
+    function rheo_rev_tranisotropic(eps, A,n, m,Eij) result(tau)
 
         implicit none
-        real(kind=dp), intent(in) :: eps(3,3), A, m(3), Emm, Emt
+        real(kind=dp), intent(in) :: eps(3,3), A, m(3), Eij(2)
         integer, intent(in)       :: n
         real(kind=dp)             :: tau(3,3), viscosity, kI,kM,kL, I2,I4,I5, mm(3,3),epssq(3,3)
         real(kind=dp), parameter  :: d = 3.0d0
 
-        call rheo_params_tranisotropic(Emm,Emt,d,n,-1.0d0, kI,kM,kL)
+        call rheo_params_tranisotropic(Eij,d,n,-1.0d0, kI,kM,kL)
 
         mm = outerprod(m,m)
         epssq = matmul(eps,eps)    
@@ -127,19 +127,20 @@ contains
         tau = viscosity*( eps - kI*I4*identity + kM*I4*mm + kL*(matmul(eps,mm)+matmul(mm,eps)) )
     end
 
-    subroutine rheo_params_tranisotropic(Emm,Emt,d,n,expo, kI,kM,kL)
+    subroutine rheo_params_tranisotropic(Eij,d,n,expo, kI,kM,kL)
 
         implicit none
-        real(kind=dp), intent(in)  :: Emm,Emt,expo,d
+        real(kind=dp), intent(in)  :: Eij(2),expo,d
         integer, intent(in)        :: n
         real(kind=dp), intent(out) :: kI,kM,kL
         real(kind=dp)              :: nexpo
 
         nexpo = expo * 2.0d0/(n + 1.0d0) 
         
-        kI = (Emm**nexpo-1)/(d-1.)
-        kM = (d*(Emm**nexpo+1)-2.)/(d-1.) - 2*Emt**nexpo
-        kL = Emt**nexpo - 1
+        ! Eij := (Emm,Emt)
+        kI = (Eij(1)**nexpo-1)/(d-1.)
+        kM = (d*(Eij(1)**nexpo+1)-2.)/(d-1.) - 2*Eij(2)**nexpo
+        kL = Eij(2)**nexpo - 1
     end
 
     !---------------------------------
@@ -149,7 +150,7 @@ contains
     function rheo_fwd_orthotropic(tau, A,n, m1,m2,m3, Eij) result(eps)
 
         implicit none
-        real(kind=dp), intent(in)     :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        real(kind=dp), intent(in)     :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(6)
         integer, intent(in)           :: n
         real(kind=dp)                 :: eps(3,3)
         real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
@@ -182,7 +183,7 @@ contains
     function rheo_rev_orthotropic(eps, A,n, m1,m2,m3, Eij) result(tau)
 
         implicit none
-        real(kind=dp), intent(in)     :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        real(kind=dp), intent(in)     :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(6)
         integer, intent(in)           :: n
         real(kind=dp)                 :: tau(3,3)
         real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
@@ -216,7 +217,7 @@ contains
     function rheo_rev_orthotropic_dimless(eps, n, m1,m2,m3, Eij) result(tau)
 
         implicit none
-        real(kind=dp), intent(in)     :: eps(3,3), m1(3),m2(3),m3(3), Eij(3,3)
+        real(kind=dp), intent(in)     :: eps(3,3), m1(3),m2(3),m3(3), Eij(6)
         integer, intent(in)           :: n
         real(kind=dp)                 :: tau(3,3)
         real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
@@ -240,23 +241,23 @@ contains
     subroutine rheo_params_orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
 
         implicit none
-        real(kind=dp), intent(in)  :: Eij(3,3)
+        real(kind=dp), intent(in)  :: Eij(6) ! E11,E22,E33,E23(E32),E13(E31),E12(E21)
         integer, intent(in)        :: n
         real(kind=dp), intent(out) :: lam1,lam2,lam3,lam4,lam5,lam6, gam
         real(kind=dp)              :: Eexpo, E11n,E22n,E33n !,E12n,E31n,E23n
 
         Eexpo = 2.0d0/(n + 1.0d0) 
         
-        E11n = Eij(1,1)**Eexpo
-        E22n = Eij(2,2)**Eexpo
-        E33n = Eij(3,3)**Eexpo
+        E11n = Eij(1)**Eexpo
+        E22n = Eij(2)**Eexpo
+        E33n = Eij(3)**Eexpo
 
         lam1 = 4/3.0d0*(-E11n+E22n+E33n)
         lam2 = 4/3.0d0*(+E11n-E22n+E33n)
         lam3 = 4/3.0d0*(+E11n+E22n-E33n)
-        lam4 = 2* Eij(2,3)**Eexpo
-        lam5 = 2* Eij(3,1)**Eexpo
-        lam6 = 2* Eij(1,2)**Eexpo
+        lam4 = 2* Eij(4)**Eexpo
+        lam5 = 2* Eij(5)**Eexpo
+        lam6 = 2* Eij(6)**Eexpo
         
         gam = -(E11n**2 + E22n**2 + E33n**2) + 2*(E11n*E22n + E11n*E33n + E22n*E33n)
         gam = abs(gam) 
@@ -311,7 +312,7 @@ contains
     function rheo_fwd_orthotropic_Pettit(tau, A,n, m1,m2,m3, Eij) result(eps)
 
         implicit none
-        real(kind=dp), intent(in)     :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        real(kind=dp), intent(in)     :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(6)
         integer, intent(in)           :: n
         real(kind=dp)                 :: eps(3,3)
         real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
@@ -337,7 +338,7 @@ contains
     function rheo_rev_orthotropic_Pettit(eps, A,n, m1,m2,m3, Eij) result(tau)
 
         implicit none
-        real(kind=dp), intent(in)     :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        real(kind=dp), intent(in)     :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(6)
         integer, intent(in)           :: n
         real(kind=dp)                 :: tau(3,3)
         real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
@@ -379,7 +380,7 @@ contains
     function rheo_fwd_orthotropic_Martin(tau, A,n, m1,m2,m3, Eij) result(eps)
 
         implicit none
-        real(kind=dp), intent(in)     :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        real(kind=dp), intent(in)     :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(6)
         integer, intent(in)           :: n
         real(kind=dp)                 :: eps(3,3)
         real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
@@ -418,7 +419,7 @@ contains
     function rheo_rev_orthotropic_Martin(eps, A,n, m1,m2,m3, Eij) result(tau)
 
         implicit none
-        real(kind=dp), intent(in)     :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        real(kind=dp), intent(in)     :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(6)
         integer, intent(in)           :: n
         real(kind=dp)                 :: tau(3,3)
         real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
@@ -448,13 +449,13 @@ contains
         use lambdasolver
         
         implicit none
-        real(kind=dp), intent(in)  :: Eij(3,3)
+        real(kind=dp), intent(in)  :: Eij(6)
         integer, intent(in)        :: n
         real(kind=dp), intent(out) :: lam1,lam2,lam3,lam4,lam5,lam6, gam
         real(kind=dp)              :: Eexpo, lami(3), Eii(3), f1
 
         ! Logitudinal 
-        Eii = [Eij(1,1),Eij(2,2),Eij(3,3)] ! Init guess
+        Eii = [Eij(1),Eij(2),Eij(3)] ! Init guess
         lami = lambdaprime(n, Eii)
         lam1 = lami(1)
         lam2 = lami(2)
@@ -464,9 +465,9 @@ contains
 
         ! Shear
         Eexpo = 1.0d0/n
-        lam4 = 2 * Eij(2,3)**Eexpo
-        lam5 = 2 * Eij(3,1)**Eexpo
-        lam6 = 2 * Eij(1,2)**Eexpo
+        lam4 = 2 * Eij(4)**Eexpo
+        lam5 = 2 * Eij(5)**Eexpo
+        lam6 = 2 * Eij(6)**Eexpo
     end
 
 end module rheologies

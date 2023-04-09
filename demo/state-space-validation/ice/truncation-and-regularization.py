@@ -16,6 +16,7 @@ from localheader import *
 sys.path.insert(0, '../../../demo') # for importing local specfabpy build (if available) and common python header
 from header import * # contains matplotlib setup etc.
 from specfabpy import specfabpy as sf
+from sfconstants import *
 
 # This is the presumed psi_0^0 coefficient when deriving nlm from a^(2) or a^(4), a central normalization factor used below. 
 normfac = 1/np.sqrt(4*np.pi) 
@@ -28,7 +29,7 @@ def pfile(fname): return "specfab-state-trajectories/%s--%s.p"%(SELFNAME, fname)
 # Flags
 #--------------------
 
-INTEGRATE_MODEL = 1  # Generate model lines from scratch? Else load saved Pickle files.
+INTEGRATE_MODEL = 0  # Generate model lines from scratch? Else load saved Pickle files.
 DEBUG           = 0  # For faster plotting (lower resolution)
             
 #--------------------
@@ -142,9 +143,8 @@ Ezz = np.zeros((RESY, RESX)) *np.nan
 Exz = np.zeros((RESY, RESX)) *np.nan
 Epq = np.zeros((RESY, RESX)) *np.nan
 
-# Monocrystal fluid parameters for enhancement-factor calculation
-Ecc,nprime = 1, 1
-Eca,alpha = 1e3, 0.0125
+# Monocrystal fluid parameters for enhancement factor calculation
+(Eij_grain, alpha, n_grain) = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
 
 # Symmetry axis "m" and transverse axis "t"
 m, t = np.array([0,0,1]), np.array([1,0,0])
@@ -161,8 +161,8 @@ for xii, x_ in enumerate(x):
     for yii, y_ in enumerate(y): 
         nlm_ = np.zeros((nlm_len), dtype=np.complex64) # The expansion coefficients
         nlm_[0], nlm_[3], nlm_[10] = 1, x_, y_
-        Ezz[yii,xii] = sf.Evw(nlm_, mm,tau_ps_mm, Ecc,Eca,alpha,nprime)
-        Exz[yii,xii] = sf.Evw(nlm_, mt,tau_ss_mt, Ecc,Eca,alpha,nprime)
+        Ezz[yii,xii] = sf.Evw_tranisotropic(nlm_, mm,tau_ps_mm, Eij_grain,alpha,n_grain)
+        Exz[yii,xii] = sf.Evw_tranisotropic(nlm_, mt,tau_ss_mt, Eij_grain,alpha,n_grain)
 
 print('done')
 
@@ -171,9 +171,9 @@ if DEBUG:
     a2 = np.tensordot(m,m, axes=0)
     a4 = np.tensordot(a2,a2, axes=0)
     nlm_sm = sf.a4_to_nlm(a4)
-    Ezz_sm = sf.Evw(nlm_sm, mm,tau_ps_mm, Ecc,Eca,alpha,nprime)
-    Exz_sm = sf.Evw(nlm_sm, mt,tau_ss_mt, Ecc,Eca,alpha,nprime)
-    Epq_sm = sf.Evw(nlm_sm, pq,tau_ss_pq, Ecc,Eca,alpha,nprime)
+    Ezz_sm = sf.Evw_tranisotropic(nlm_sm, mm,tau_ps_mm, Eij_grain,alpha,n_grain)
+    Exz_sm = sf.Evw_tranisotropic(nlm_sm, mt,tau_ss_mt, Eij_grain,alpha,n_grain)
+    Epq_sm = sf.Evw_tranisotropic(nlm_sm, pq,tau_ss_pq, Eij_grain,alpha,n_grain)
     print(nlm_sm)
     print('Ezz_sm, Exz_sm, Exz_sm/Epq_sm = %.1e, %.1e, %.1e'%(Ezz_sm,Exz_sm, Exz_sm/Epq_sm))
 

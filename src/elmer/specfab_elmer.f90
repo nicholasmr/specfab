@@ -38,7 +38,7 @@ function Cmat_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(C)
     ! Returns 9x9 matrix "C" such that vec(tau) = matmul(C, vec(eps)), where vec(tau) and vec(eps) are 9x1 column vectors.
 
     implicit none
-    real(kind=dp), intent(in)     :: A, m1(3),m2(3),m3(3), Eij(3,3)
+    real(kind=dp), intent(in)     :: A, m1(3),m2(3),m3(3), Eij(6)
     integer, intent(in)           :: n
     real(kind=dp)                 :: eps(3,3), C(9,9)
     real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
@@ -82,7 +82,7 @@ function Cmandel_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(Cmandel)
     ! To get the usual 3x3 form of tau, use: tau = vec_to_mat( matmul(Cmandel, mat_to_vec(eps)) )
 
     implicit none
-    real(kind=dp), intent(in)     :: A, m1(3),m2(3),m3(3), Eij(3,3)
+    real(kind=dp), intent(in)     :: A, m1(3),m2(3),m3(3), Eij(6)
     integer, intent(in)           :: n
     real(kind=dp)                 :: eps(3,3), Cmandel(6,6)
     real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
@@ -126,7 +126,7 @@ subroutine Cmat_inverse_orthotropic_dimless(eps, n, m1,m2,m3, Eij, MinInVar, vis
     ! To get the usual 3x3 form of tau, use: tau = vec_to_mat( matmul(Cmandel, mat_to_vec(eps)) )
 
     implicit none
-    real(kind=dp), intent(in)     :: m1(3),m2(3),m3(3), Eij(3,3), MinInVar
+    real(kind=dp), intent(in)     :: m1(3),m2(3),m3(3), Eij(6), MinInVar
     real(kind=dp), intent(out)    :: viscosity, C6(6,6) 
     integer, intent(in)           :: n
     real(kind=dp)                 :: eps(3,3), Cmandel(6,6)

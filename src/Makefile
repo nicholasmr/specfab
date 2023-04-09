@@ -15,7 +15,7 @@ OPTSNETCDF=-lnetcdff -I/usr/include -L/usr/lib
 PATHDEMO=../demo
 PATHTEST=../tests
 PATHFABEVO=$(PATHDEMO)/fabric-evolution
-PATHRHEOTEST=$(PATHTEST)/rheology-test
+PATHRHEOTEST=$(PATHTEST)/constitutive-equations
 
 SPECFAB=specfab
 MOMENTS=moments
@@ -102,7 +102,7 @@ specfabpy: $(SPECFAB).o
 python: specfabpy
 	python setup.py install
 
-rheology-test: $(SPECFAB).o
+constitutive-tests: $(SPECFAB).o
 	$(COMPILER) $(PATHRHEOTEST)/rheology-test-orthotropic.f90             $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-orthotropic
 	$(COMPILER) $(PATHRHEOTEST)/rheology-test-transverselyisotropic.f90   $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-transverselyisotropic
 	$(COMPILER) $(PATHRHEOTEST)/elasticity-test-transverselyisotropic.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/elasticity-test-transverselyisotropic

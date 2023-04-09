@@ -1,5 +1,7 @@
 # CPO dynamics &mdash; Orthotropic grains
 
+## Introduction
+
 This tutorial focuses on modelling the CPO evolution of polycrystalline olivine, understood as the distribution of (easy) slip-plane normals and slip directions of grains, $n(\theta,\phi)$ and $b(\theta,\phi)$.
 
 | Polycrystal | Slip system |
@@ -28,7 +30,13 @@ n({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}({\bf x},t) Y_{l}
 b({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}b_{l}^{m}({\bf x},t) Y_{l}^{m}(\theta,\phi) \quad\text{(distribution of slip directions)}, 
 $$
 
-CPO evolution can be written as a matrix problem involving
+CPO evolution can be written as a matrix problem involving the (block) state vector
+
+$$
+{\bf s} = \begin{bmatrix} {\bf s}_n \\ {\bf s}_b \end{bmatrix} \quad\text{(state vector)},
+$$
+
+where
 
 $$
 {\bf s}_n = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}]^{\mathrm{T}} \quad\text{($n$ state vector)},
@@ -39,15 +47,13 @@ $$
 such that 
 
 $$
-\frac{\mathrm{D}{\bf s}_n}{\mathrm{D} t} = {\bf M}_n \cdot {\bf s}_n \quad\text{($n$ state evolution)},
-\\
-\frac{\mathrm{D}{\bf s}_b}{\mathrm{D} t} = {\bf M}_b \cdot {\bf s}_b \quad\text{($b$ state evolution)},
+\frac{\mathrm{D}{\bf s}}{\mathrm{D} t} = {\bf M} \cdot {\bf s} \quad\text{(state evolution)},
 $$
 
-where the operators (matrix) ${\bf M}_n$ and ${\bf M}_b$ represents the effect of a given CPO process, which may depend on stress, strain-rate, temperature, etc.
+where the operator (matrix) ${\bf M}$ represents the effect of a given CPO process, which may depend on stress, strain-rate, temperature, etc.
 
 !!! note
-    Only lattice rotation is so far supported: ${\bf M} = {\bf M}_{\mathrm{LROT}}$ for both $n$ and $b$.
+    Only lattice rotation is so far supported: ${\bf M} = {\bf M}_{\mathrm{LROT}}$.
 
 - - -
 

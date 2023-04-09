@@ -2,7 +2,7 @@
 
 program demo
 
-    use specfab    
+    use specfab
     use netcdf
     
     implicit none
@@ -21,6 +21,16 @@ program demo
     ! Fabric state and evolution
     complex(kind=dp), allocatable :: nlm(:), M(:,:) ! Series expansion coefs and evolution matrix
     real(kind=dp)                 :: ugrad(3,3), eps(3,3), omg(3,3) ! Large-scale deformation
+
+    ! Optimal n'=1 (lin) grain parameters 
+    ! These are the linear mixed Taylor--Sachs best-fit parameters from Rathmann and Lilien (2021)
+    real(kind=dp), parameter :: Eij_lin(2) = [1d0, 1d3]
+    real(kind=dp), parameter :: alpha_lin = 0.0125
+    
+    ! Optimal n'=3 (nlin) grain parameters 
+    ! These are the nonlinear Sachs-only best-fit parameters (Rathmann et al., 2021) 
+    real(kind=dp), parameter :: Eij_nlin(2) = [1d0, 1d4]
+    real(kind=dp), parameter :: alpha_nlin = 0
 
     ! For dumping state to netCDF
     complex(kind=dp), allocatable   :: nlm_save(:,:)
@@ -139,12 +149,12 @@ program demo
     call check(nf90_put_att(ncid,NF90_GLOBAL, "L",      Lcap))
     call check(nf90_put_att(ncid,NF90_GLOBAL, "ugrad",  reshape(ugrad, [size(ugrad)]) ))
     
-    call check(nf90_put_att(ncid,NF90_GLOBAL, "Eca_lin", Eca_opt_lin))
-    call check(nf90_put_att(ncid,NF90_GLOBAL, "Ecc_lin", Ecc_opt_lin))
-    call check(nf90_put_att(ncid,NF90_GLOBAL, "Eca_nlin", Eca_opt_nlin))
-    call check(nf90_put_att(ncid,NF90_GLOBAL, "Ecc_nlin", Ecc_opt_nlin))
-    call check(nf90_put_att(ncid,NF90_GLOBAL, "alpha_lin",  alpha_opt_lin))
-    call check(nf90_put_att(ncid,NF90_GLOBAL, "alpha_nlin", alpha_opt_nlin))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "Eca_lin", Eij_lin(2)))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "Ecc_lin", Eij_lin(1)))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "Eca_nlin", Eij_nlin(2)))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "Ecc_nlin", Eij_nlin(1)))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "alpha_lin",  alpha_lin))
+    call check(nf90_put_att(ncid,NF90_GLOBAL, "alpha_nlin", alpha_nlin))
     
     call check( nf90_def_dim(ncid, "DOF",    nlm_len,   c_did) )
     call check( nf90_def_dim(ncid, "tstep",  Nt,        time_did) )
@@ -207,12 +217,12 @@ contains
         call frame(nlm, 'p', p1_save(:,tt),p2_save(:,tt),p3_save(:,tt), eigvals_save(:,tt)) ! eigen frame rotated 45 deg. (pq-frame)
 
         ! Linear (n'=1) mixed Taylor--Sachs enhancements        
-        Eeiej_lin_save(:,:,tt) = Eeiej(nlm, e1_save(:,tt),e2_save(:,tt),e3_save(:,tt), Ecc_opt_lin, Eca_opt_lin, alpha_opt_lin, 1)
-        Epipj_lin_save(:,:,tt) = Eeiej(nlm, p1_save(:,tt),p2_save(:,tt),p3_save(:,tt), Ecc_opt_lin, Eca_opt_lin, alpha_opt_lin, 1)
+        Eeiej_lin_save(:,:,tt) = vec_to_mat_voigt(Eij_tranisotropic(nlm, e1_save(:,tt),e2_save(:,tt),e3_save(:,tt), Eij_lin, alpha_lin, 1))
+        Epipj_lin_save(:,:,tt) = vec_to_mat_voigt(Eij_tranisotropic(nlm, p1_save(:,tt),p2_save(:,tt),p3_save(:,tt), Eij_lin, alpha_lin, 1))
         
         ! Nonlinear (n'=3) Sachs enhancements
-        Eeiej_nlin_save(:,:,tt) = Eeiej(nlm, e1_save(:,tt),e2_save(:,tt),e3_save(:,tt), Ecc_opt_nlin, Eca_opt_nlin, alpha_opt_nlin, 3)
-        Epipj_nlin_save(:,:,tt) = Eeiej(nlm, p1_save(:,tt),p2_save(:,tt),p3_save(:,tt), Ecc_opt_nlin, Eca_opt_nlin, alpha_opt_nlin, 3)
+        Eeiej_nlin_save(:,:,tt) = vec_to_mat_voigt(Eij_tranisotropic(nlm, e1_save(:,tt),e2_save(:,tt),e3_save(:,tt), Eij_nlin, alpha_nlin, 3))
+        Epipj_nlin_save(:,:,tt) = vec_to_mat_voigt(Eij_tranisotropic(nlm, p1_save(:,tt),p2_save(:,tt),p3_save(:,tt), Eij_nlin, alpha_nlin, 3))
 
     end
     

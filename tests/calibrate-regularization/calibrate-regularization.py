@@ -8,6 +8,7 @@ from scipy.optimize import minimize
 sys.path.insert(0, '../../demo')
 from header import *
 from specfabpy import specfabpy as sf
+from sfconstants import *
 
 import matplotlib.pyplot as plt
 from matplotlib import rcParams, rc
@@ -26,7 +27,7 @@ TEST_GIRDLE  = 0  # Validate calibration (for single maximum fabrics) against gi
 
 L_list = [4,6,8,20]
 L_list = [8,10,12,]
-#L_list = [10,]
+L_list = [8,]
 
 ### Mode of deformation
 if not TEST_GIRDLE: 
@@ -231,40 +232,39 @@ for L in L_list:
     
     vecdim = (3,Nc+1)
     eigvals = np.zeros(vecdim, dtype=np.float64)
-    Eeiej = np.zeros((3,3,Nc+1), dtype=np.float64)
+    Eeiej = np.zeros((6,Nc+1), dtype=np.float64)
     for nn in tsteps:
         c = nlm[:,nn]
         e1,e2,e3, eigvals[:,nn] = sf.frame(c, 'e')
-        #print(nn, eigvals[:,nn])
-        Eca_lin,  Ecc_lin,  alpha_lin, nprime  = sf.Eca_opt_lin,  sf.Ecc_opt_lin,  sf.alpha_opt_lin, 1  # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
-        Eeiej[:,:,nn] = np.transpose(sf.Eeiej(c, e1,e2,e3, Ecc_lin, Eca_lin, alpha_lin, nprime))
+        (Eij_grain, alpha, n_grain) = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
+        Eeiej[:,nn] = np.transpose(sf.Eij_tranisotropic(c, e1,e2,e3, Eij_grain, alpha, n_grain))
     
     ax = fig.add_subplot(gs[0,2])
     ax.plot(epszz_t, eigvals[0,:], '-',  c='tab:red',   lw=2, label=r'$\lambda_1$')
     ax.plot(epszz_t, eigvals[1,:], '-',  c='tab:blue',  lw=2, label=r'$\lambda_2$')
     ax.plot(epszz_t, eigvals[2,:], '--', c='tab:green', lw=2, label=r'$\lambda_3$')
-    ax.set_ylabel(r'$\bf{a}^{(2)}$ eigen values')
+    ax.set_ylabel(r'$\bf{a}^{(2)}$ eigenvalues')
     ax.set_xlabel(r'$\epsilon_{zz}$')
     ax.set_ylim([0,1])
     ax.set_xlim(epszz_t[[0,-1]])
     ax.legend()
     ax.grid()
-    ax.set_title('Eigen values')
+    ax.set_title('Eigenvalues')
     print('eigvals for last step are: ', eigvals[:,-1])
     
     #---------------------
     
     ax = fig.add_subplot(gs[0,1])
-    ax.semilogy(epszz_t, Eeiej[0,0], '-',  c='tab:red',   label=r'$E_{11}$')
-    ax.semilogy(epszz_t, Eeiej[2,2], '--', c='tab:blue',  label=r'$E_{33}$')
-    ax.semilogy(epszz_t, Eeiej[0,2], '-',  c='tab:green', label=r'$E_{13}$')
+    ax.semilogy(epszz_t, Eeiej[0], '-',  c='tab:red',   label=r'$E_{11}$')
+    ax.semilogy(epszz_t, Eeiej[2], '--', c='tab:blue',  label=r'$E_{33}$')
+    ax.semilogy(epszz_t, Eeiej[4], '-',  c='tab:green', label=r'$E_{13}$')
     ax.set_ylim([1e-2,1e1])
     ax.set_xlim(epszz_t[[0,-1]])
     ax.set_ylabel('$E_{ij}$')
     ax.set_xlabel('$\epsilon_{zz}$')
     ax.legend()
     ax.grid()
-    ax.set_title('Eigen enhancements')
+    ax.set_title('Eigenenhancements')
     
     #---------------------
     

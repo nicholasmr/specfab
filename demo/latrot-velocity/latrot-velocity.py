@@ -120,7 +120,7 @@ for ax in axlist:
 
 #---------
 
-fout = 'latrot-caxis-velocity.png'
+fout = 'latrot-velocity.png'
 print('Saving %s'%(fout))
 plt.savefig(fout, transparent=True, dpi=200)
 

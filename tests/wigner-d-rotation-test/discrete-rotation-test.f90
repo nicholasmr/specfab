@@ -1,4 +1,4 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk>, 2021-2022
+! N. M. Rathmann <rathmann@nbi.ku.dk>, 2022
 
 program demo
 

@@ -48,8 +48,8 @@ for ii, exprnum in enumerate([3,7,10]):
     plot_unitaxes(ax[ii], geo)
     ax[ii].set_title(r'sample %03i'%(exprnum), pad=10, fontsize=FS)
 
-#fname = 'plots/observed-ODFs.png'
-fname = 'plots/observed-ODFs.pdf'
+fname = 'plots/observed-ODFs.png'
+#fname = 'plots/observed-ODFs.pdf'
 print('** Saving %s'%(fname))
 plt.savefig(fname, dpi=250)  
   

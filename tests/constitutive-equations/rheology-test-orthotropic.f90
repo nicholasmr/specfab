@@ -7,7 +7,7 @@ program demo
     implicit none
 
     integer, parameter :: dp = 8
-    real(kind=dp)      :: A, Eij(3,3), m1(3),m2(3),m3(3), rotang
+    real(kind=dp)      :: A, Eij(6), m1(3),m2(3),m3(3), rotang
     integer            :: n
     real(kind=dp), dimension(3), parameter :: x1 = [1,0,0], x2 = [0,1,0], x3 = [0,0,1] ! x,y,z dir.
     real, parameter    :: Pi = 3.1415927
@@ -20,19 +20,14 @@ program demo
 
     ! Set a synthetic enhancement-factor (fluidity) structure that we later want to recover (test self consistency)
    
-    Eij(1,1) = 5  ! m1--m1 longitudinal enhancement 
-    Eij(2,2) = 10 ! m2--m2 longitudinal enhancement 
-    Eij(3,3) = 20 ! m3--m3 longitudinal enhancement 
+    Eij(1) = 5  ! m1--m1 longitudinal enhancement 
+    Eij(2) = 10 ! m2--m2 longitudinal enhancement 
+    Eij(3) = 20 ! m3--m3 longitudinal enhancement 
 
-    Eij(2,3) = 50 ! m2--m3 shear enhancement 
-    Eij(3,1) = 60 ! m3--m1 shear enhancement 
-    Eij(1,2) = 70 ! m1--m2 shear enhancement 
+    Eij(4) = 50 ! m2--m3 shear enhancement 
+    Eij(5) = 60 ! m3--m1 shear enhancement 
+    Eij(6) = 70 ! m1--m2 shear enhancement 
 
-    ! Not strictly needed in this demo, but Eij should be symmetric
-    Eij(3,2) = Eij(2,3) 
-    Eij(1,3) = Eij(3,1)
-    Eij(2,1) = Eij(1,2)
-    
     !-------------------------------------------------------------------
     ! m_i
     !-------------------------------------------------------------------
@@ -66,30 +61,30 @@ program demo
     print *, ' '
     
     print *, '*** For FULL rheology:'        
-    print *, '(i,j)=(1,1) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio(tau_vv(m1),    A,n, m1,m2,m3, Eij, m1,m1), ' --- should be E_{ij} = ', Eij(1,1)
-    print *, '(i,j)=(2,2) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio(tau_vv(m2),    A,n, m1,m2,m3, Eij, m2,m2), ' --- should be E_{ij} = ', Eij(2,2)
-    print *, '(i,j)=(3,3) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio(tau_vv(m3),    A,n, m1,m2,m3, Eij, m3,m3), ' --- should be E_{ij} = ', Eij(3,3)
-    print *, '(i,j)=(2,3) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio(tau_vw(m2,m3), A,n, m1,m2,m3, Eij, m2,m3), ' --- should be E_{ij} = ', Eij(2,3)
-    print *, '(i,j)=(3,1) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio(tau_vw(m1,m3), A,n, m1,m2,m3, Eij, m3,m1), ' --- should be E_{ij} = ', Eij(3,1)
-    print *, '(i,j)=(1,2) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio(tau_vw(m1,m2), A,n, m1,m2,m3, Eij, m1,m2), ' --- should be E_{ij} = ', Eij(1,2)
+    print *, '(i,j)=(1,1) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio(tau_vv(m1),    A,n, m1,m2,m3, Eij, m1,m1), ' --- should be E_{ij} = ', Eij(1)
+    print *, '(i,j)=(2,2) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio(tau_vv(m2),    A,n, m1,m2,m3, Eij, m2,m2), ' --- should be E_{ij} = ', Eij(2)
+    print *, '(i,j)=(3,3) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio(tau_vv(m3),    A,n, m1,m2,m3, Eij, m3,m3), ' --- should be E_{ij} = ', Eij(3)
+    print *, '(i,j)=(2,3) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio(tau_vw(m2,m3), A,n, m1,m2,m3, Eij, m2,m3), ' --- should be E_{ij} = ', Eij(4)
+    print *, '(i,j)=(3,1) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio(tau_vw(m1,m3), A,n, m1,m2,m3, Eij, m3,m1), ' --- should be E_{ij} = ', Eij(5)
+    print *, '(i,j)=(1,2) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio(tau_vw(m1,m2), A,n, m1,m2,m3, Eij, m1,m2), ' --- should be E_{ij} = ', Eij(6)
     print *, ' '
     
     print *, "*** For Pettit's hypothesis:"
-    print *, '(i,j)=(1,1) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Pettit(tau_vv(m1),    A,n, m1,m2,m3, Eij, m1,m1), ' --- should be E_{ij} = ', Eij(1,1)
-    print *, '(i,j)=(2,2) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Pettit(tau_vv(m2),    A,n, m1,m2,m3, Eij, m2,m2), ' --- should be E_{ij} = ', Eij(2,2)
-    print *, '(i,j)=(3,3) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Pettit(tau_vv(m3),    A,n, m1,m2,m3, Eij, m3,m3), ' --- should be E_{ij} = ', Eij(3,3)
-    print *, '(i,j)=(2,3) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Pettit(tau_vw(m2,m3), A,n, m1,m2,m3, Eij, m2,m3), ' --- should be E_{ij} = ', Eij(2,3)
-    print *, '(i,j)=(3,1) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Pettit(tau_vw(m1,m3), A,n, m1,m2,m3, Eij, m3,m1), ' --- should be E_{ij} = ', Eij(3,1)
-    print *, '(i,j)=(1,2) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Pettit(tau_vw(m1,m2), A,n, m1,m2,m3, Eij, m1,m2), ' --- should be E_{ij} = ', Eij(1,2)
+    print *, '(i,j)=(1,1) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Pettit(tau_vv(m1),    A,n, m1,m2,m3, Eij, m1,m1), ' --- should be E_{ij} = ', Eij(1)
+    print *, '(i,j)=(2,2) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Pettit(tau_vv(m2),    A,n, m1,m2,m3, Eij, m2,m2), ' --- should be E_{ij} = ', Eij(2)
+    print *, '(i,j)=(3,3) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Pettit(tau_vv(m3),    A,n, m1,m2,m3, Eij, m3,m3), ' --- should be E_{ij} = ', Eij(3)
+    print *, '(i,j)=(2,3) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Pettit(tau_vw(m2,m3), A,n, m1,m2,m3, Eij, m2,m3), ' --- should be E_{ij} = ', Eij(4)
+    print *, '(i,j)=(3,1) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Pettit(tau_vw(m1,m3), A,n, m1,m2,m3, Eij, m3,m1), ' --- should be E_{ij} = ', Eij(5)
+    print *, '(i,j)=(1,2) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Pettit(tau_vw(m1,m2), A,n, m1,m2,m3, Eij, m1,m2), ' --- should be E_{ij} = ', Eij(6)
     print *, ' '
     
     print *, "*** For Martin's hypothesis:"
-    print *, '(i,j)=(1,1) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Martin(tau_vv(m1),    A,n, m1,m2,m3, Eij, m1,m1), ' --- should be E_{ij} = ', Eij(1,1)
-    print *, '(i,j)=(2,2) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Martin(tau_vv(m2),    A,n, m1,m2,m3, Eij, m2,m2), ' --- should be E_{ij} = ', Eij(2,2)
-    print *, '(i,j)=(3,3) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Martin(tau_vv(m3),    A,n, m1,m2,m3, Eij, m3,m3), ' --- should be E_{ij} = ', Eij(3,3)
-    print *, '(i,j)=(2,3) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Martin(tau_vw(m2,m3), A,n, m1,m2,m3, Eij, m2,m3), ' --- should be E_{ij} = ', Eij(2,3)
-    print *, '(i,j)=(3,1) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Martin(tau_vw(m1,m3), A,n, m1,m2,m3, Eij, m3,m1), ' --- should be E_{ij} = ', Eij(3,1)
-    print *, '(i,j)=(1,2) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Martin(tau_vw(m1,m2), A,n, m1,m2,m3, Eij, m1,m2), ' --- should be E_{ij} = ', Eij(1,2)
+    print *, '(i,j)=(1,1) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Martin(tau_vv(m1),    A,n, m1,m2,m3, Eij, m1,m1), ' --- should be E_{ij} = ', Eij(1)
+    print *, '(i,j)=(2,2) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Martin(tau_vv(m2),    A,n, m1,m2,m3, Eij, m2,m2), ' --- should be E_{ij} = ', Eij(2)
+    print *, '(i,j)=(3,3) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Martin(tau_vv(m3),    A,n, m1,m2,m3, Eij, m3,m3), ' --- should be E_{ij} = ', Eij(3)
+    print *, '(i,j)=(2,3) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Martin(tau_vw(m2,m3), A,n, m1,m2,m3, Eij, m2,m3), ' --- should be E_{ij} = ', Eij(4)
+    print *, '(i,j)=(3,1) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Martin(tau_vw(m1,m3), A,n, m1,m2,m3, Eij, m3,m1), ' --- should be E_{ij} = ', Eij(5)
+    print *, '(i,j)=(1,2) :: eps_{m_i m_j}/eps_{m_i m_j}^{Glen} = ', eps_ratio_Martin(tau_vw(m1,m2), A,n, m1,m2,m3, Eij, m1,m2), ' --- should be E_{ij} = ', Eij(6)
     print *, ' '
     
     print *, "... where m_1, m_2, m_3 = "
@@ -195,7 +190,7 @@ function eps_ratio(tau,A,n, m1,m2,m3, Eij, v,w) result(ratio)
 
     integer, parameter        :: dp = 8
     real(kind=dp), intent(in) :: tau(3,3), v(3), w(3)
-    real(kind=dp), intent(in) :: A, Eij(3,3), m1(3),m2(3),m3(3)
+    real(kind=dp), intent(in) :: A, Eij(6), m1(3),m2(3),m3(3)
     integer, intent(in)       :: n
     real(kind=dp)             :: ratio
 
@@ -209,7 +204,7 @@ function eps_ratio_Pettit(tau,A,n, m1,m2,m3, Eij, v,w) result(ratio)
 
     integer, parameter        :: dp = 8
     real(kind=dp), intent(in) :: tau(3,3), v(3), w(3)
-    real(kind=dp), intent(in) :: A, Eij(3,3), m1(3),m2(3),m3(3)
+    real(kind=dp), intent(in) :: A, Eij(6), m1(3),m2(3),m3(3)
     integer, intent(in)       :: n
     real(kind=dp)             :: ratio
 
@@ -223,7 +218,7 @@ function eps_ratio_Martin(tau,A,n, m1,m2,m3, Eij, v,w) result(ratio)
 
     integer, parameter        :: dp = 8
     real(kind=dp), intent(in) :: tau(3,3), v(3), w(3)
-    real(kind=dp), intent(in) :: A, Eij(3,3), m1(3),m2(3),m3(3)
+    real(kind=dp), intent(in) :: A, Eij(6), m1(3),m2(3),m3(3)
     integer, intent(in)       :: n
     real(kind=dp)             :: ratio
 
@@ -238,7 +233,7 @@ subroutine tau_of_eps_of_tau(tau_in, A, n, m1,m2,m3, Eij)
     implicit none
 
     integer, parameter        :: dp = 8
-    real(kind=dp), intent(in) :: tau_in(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+    real(kind=dp), intent(in) :: tau_in(3,3), A, m1(3),m2(3),m3(3), Eij(6)
     integer, intent(in)       :: n
     real(kind=dp)             :: eps(3,3), tau(3,3)
 
@@ -257,7 +252,7 @@ subroutine tau_of_eps_of_tau_Pettit(tau_in, A, n, m1,m2,m3, Eij)
     implicit none
 
     integer, parameter        :: dp = 8
-    real(kind=dp), intent(in) :: tau_in(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+    real(kind=dp), intent(in) :: tau_in(3,3), A, m1(3),m2(3),m3(3), Eij(6)
     integer, intent(in)       :: n
     real(kind=dp)             :: eps(3,3), tau(3,3)
 
@@ -276,7 +271,7 @@ subroutine tau_of_eps_of_tau_Martin(tau_in, A, n, m1,m2,m3, Eij)
     implicit none
 
     integer, parameter        :: dp = 8
-    real(kind=dp), intent(in) :: tau_in(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+    real(kind=dp), intent(in) :: tau_in(3,3), A, m1(3),m2(3),m3(3), Eij(6)
     integer, intent(in)       :: n
     real(kind=dp)             :: eps(3,3), tau(3,3)
 
@@ -297,7 +292,7 @@ subroutine test_vectorized_rheology(eps, A, n, m1,m2,m3, Eij)
     implicit none
 
     integer, parameter        :: dp = 8
-    real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+    real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(6)
     integer, intent(in)       :: n
     real(kind=dp)             :: tau(3,3), tau_vec(9), C(9,9)
 
@@ -318,7 +313,7 @@ subroutine test_mandelvectorized_rheology(eps, A, n, m1,m2,m3, Eij)
     implicit none
 
     integer, parameter        :: dp = 8
-    real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+    real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(6)
     integer, intent(in)       :: n
     real(kind=dp)             :: tau(3,3), tauv(3,3), C(6,6)
 

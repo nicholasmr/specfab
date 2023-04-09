@@ -20,6 +20,7 @@ from experiments import * # experiment definitions (data structures for experime
 sys.path.insert(0, '../../../demo') # for importing local specfabpy build (if available) and common python header
 from header import * # contains matplotlib setup etc.
 from specfabpy import specfabpy as sf
+from sfconstants import *
 
 SELFNAME = sys.argv[0][:-3] # used as prefix for pickled files
 os.system('mkdir -p specfab-state-trajectories')
@@ -29,7 +30,7 @@ def pfile(fname): return "specfab-state-trajectories/%s--%s.p"%(SELFNAME, fname)
 # Flags
 #--------------------
 
-INTEGRATE_MODEL = 1  # Generate model lines? Else load saved Pickle files.
+INTEGRATE_MODEL = 0  # Generate model lines? Else load saved Pickle files.
 DEBUG           = 0  # Low-resolution plotting, etc.
             
 #--------------------
@@ -288,7 +289,7 @@ im = ax.imshow(imdat, aspect='auto', extent=[np.amin(xlims), np.amax(xlims), np.
 ### Determine E_zz
 
 Ezz = np.zeros((RESY, RESX)) 
-Ecc,Eca,alpha,nprime = 1, 1e3, 0.0125, 1
+(Eij_grain, alpha, n_grain) = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
 print('Determining E_zz ...', end='')
 for xii, x_ in enumerate(x):
     for yii, y_ in enumerate(y): 
@@ -298,8 +299,7 @@ for xii, x_ in enumerate(x):
             m, t = np.array([0,0,1]), np.array([1,0,0])
             mm, mt = np.tensordot(m,m, axes=0), np.tensordot(m,t, axes=0)
             tau_ps_mm = 1*(np.identity(3)-3*mm) 
-#            Ezz[yii,xii] = sf.Eeiej(nlm_, e1,e2,e3, Ecc,Eca,alpha,nprime)[-1,-1]
-            Ezz[yii,xii] = sf.Evw(nlm_, mm,tau_ps_mm, Ecc,Eca,alpha,nprime)
+            Ezz[yii,xii] = sf.Evw_tranisotropic(nlm_, mm,tau_ps_mm, Eij_grain,alpha,n_grain)
         else:
             Ezz[yii,xii] = np.nan
                 

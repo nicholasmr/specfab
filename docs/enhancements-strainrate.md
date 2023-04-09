@@ -103,13 +103,12 @@ else: # use a4
 #(e1,e2,e3) = (np.array([1,0,0]),np.array([0,1,0]),np.array([0,0,1])) # x,y,z cartesian basis
 
 ### Transversely isotropic monocrystal parameters for ice (Rathmann & Lilien, 2021)
-n     = 1      # n=1 => linear grain rheology (nonlinear not fully supported)
-Ecc   = 1      # Enhancement factor for compression along c-axis
-Eca   = 1e3    # Enhancement factor for shear parallel to basal plane
-alpha = 0.0125 # Taylor--Sachs weight
+n_grain   = 1        # n=1 => linear grain rheology (nonlinear not fully supported)
+Eij_grain = (1, 1e3) # (Ecc,Eca): Enhancement factor for compression along c-axis (Ecc) and for shear parallel to basal plane (Eca)
+alpha     = 0.0125   # Taylor--Sachs weight
 
-### Calculate enhancement-factor matrix in the basis (e1,e2,e3)
-Eij = sf.Eeiej(nlm, e1,e2,e3, Ecc,Eca,alpha,n) 
+### Calculate enhancement factors w.r.t. e1, e2, e3
+Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # = (E11,E22,E33,E23,E13,E12)
 ```
 
 ### Orthotropic grains

@@ -1,11 +1,11 @@
-subroutine mtframe_2d_josef(nlm, m,t, am,at, Emm,Emt, Exx,Exz, fabtype,  Ecc,Eca,alpha,nprime)
+subroutine mtframe_2d_josef(nlm, m,t, am,at, Emm,Emt, Exx,Exz, fabtype,  Eij_grain,alpha,n_grain)
 
     implicit none
     
     complex(kind=dp), intent(in) :: nlm(nlm_len)
     real(kind=dp), intent(out)   :: m(2),t(2), am,at, Emm,Emt, Exx,Exz, fabtype ! (m,t) = 2D vectors (x,z coords)
-    real(kind=dp), intent(in)    :: Ecc, Eca, alpha
-    integer, intent(in)          :: nprime
+    real(kind=dp), intent(in)    :: Eij_grain(2), alpha
+    integer, intent(in)          :: n_grain
     
     real(kind=dp), dimension(3)            :: m3,t3, e1,e2,e3, eigvals ! (m3,t3) = 3D (m,t)
     real(kind=dp), dimension(3), parameter :: ex=[1,0,0], ey=[0,1,0], ez=[0,0,1]
@@ -68,23 +68,23 @@ subroutine mtframe_2d_josef(nlm, m,t, am,at, Emm,Emt, Exx,Exz, fabtype,  Ecc,Eca
 !        stop 'm not normalized!'
     end if
     
-    Emm = Evw(outerprod(m3,m3), tau_vv(m3),     nlm, Ecc,Eca,alpha,nprime) ! Longitidinal
-    Emt = Evw(outerprod(m3,t3), tau_vw(m3,t3),  nlm, Ecc,Eca,alpha,nprime) ! Shear
+    Emm = Evw_tranisotropic(outerprod(m3,m3), tau_vv(m3),     nlm, Eij_grain,alpha,n_grain) ! Longitidinal
+    Emt = Evw_tranisotropic(outerprod(m3,t3), tau_vw(m3,t3),  nlm, Eij_grain,alpha,n_grain) ! Shear
 
-    Exx = Evw(outerprod(ex,ex), tau_vv(ex),     nlm, Ecc,Eca,alpha,nprime) ! Longitidinal
-    Exz = Evw(outerprod(ex,ez), tau_vw(ex,ez),  nlm, Ecc,Eca,alpha,nprime) ! Shear
+    Exx = Evw_tranisotropic(outerprod(ex,ex), tau_vv(ex),     nlm, Eij_grain,alpha,n_grain) ! Longitidinal
+    Exz = Evw_tranisotropic(outerprod(ex,ez), tau_vw(ex,ez),  nlm, Eij_grain,alpha,n_grain) ! Shear
 
 end
 
 
-subroutine mtframe_3d_josef(nlm, m,t, am,at1,at2, Emm,Emt, Exx,Exy,Exz, fabtype,  Ecc,Eca,alpha,nprime)
+subroutine mtframe_3d_josef(nlm, m,t, am,at1,at2, Emm,Emt, Exx,Exy,Exz, fabtype,  Eij_grain,alpha,n_grain)
 
     implicit none
     
     complex(kind=dp), intent(in) :: nlm(nlm_len)
     real(kind=dp), intent(out)   :: m(3),t(3), am,at1,at2, Emm,Emt, Exx,Exy,Exz, fabtype
-    real(kind=dp), intent(in)    :: Ecc, Eca, alpha
-    integer, intent(in)          :: nprime
+    real(kind=dp), intent(in)    :: Eij_grain(2), alpha
+    integer, intent(in)          :: n_grain
     
     real(kind=dp), dimension(3)            :: e1,e2,e3, eigvals
     real(kind=dp), dimension(3), parameter :: ex=[1,0,0], ey=[0,1,0], ez=[0,0,1]
@@ -121,12 +121,12 @@ subroutine mtframe_3d_josef(nlm, m,t, am,at1,at2, Emm,Emt, Exx,Exy,Exz, fabtype,
         t = -1.0*t
     end if
     
-    Emm = Evw(outerprod(m,m), tau_vv(m),   nlm, Ecc,Eca,alpha,nprime) ! Longitidinal
-    Emt = Evw(outerprod(m,t), tau_vw(m,t), nlm, Ecc,Eca,alpha,nprime) ! Shear
+    Emm = Evw_tranisotropic(outerprod(m,m), tau_vv(m),   nlm, Eij_grain,alpha,n_grain) ! Longitidinal
+    Emt = Evw_tranisotropic(outerprod(m,t), tau_vw(m,t), nlm, Eij_grain,alpha,n_grain) ! Shear
 
-    Exx = Evw(outerprod(ex,ex), tau_vv(ex),     nlm, Ecc,Eca,alpha,nprime) ! Longitidinal
-    Exy = Evw(outerprod(ex,ey), tau_vw(ex,ey),  nlm, Ecc,Eca,alpha,nprime) ! Shear
-    Exz = Evw(outerprod(ex,ez), tau_vw(ex,ez),  nlm, Ecc,Eca,alpha,nprime) ! Shear
+    Exx = Evw_tranisotropic(outerprod(ex,ex), tau_vv(ex),     nlm, Eij_grain,alpha,n_grain) ! Longitidinal
+    Exy = Evw_tranisotropic(outerprod(ex,ey), tau_vw(ex,ey),  nlm, Eij_grain,alpha,n_grain) ! Shear
+    Exz = Evw_tranisotropic(outerprod(ex,ez), tau_vw(ex,ez),  nlm, Eij_grain,alpha,n_grain) ! Shear
 
 end
 

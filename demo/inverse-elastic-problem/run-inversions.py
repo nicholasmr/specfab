@@ -33,7 +33,7 @@ MAKE_GAW_STATS = 0
 #--------------------
 
 EXPERIMENTS = [3,7,10]
-EXPERIMENTS = [7,] # debug
+#EXPERIMENTS = [7,] # debug
 
 #--------------------       
 # Monocrystal and homogenization parameters
@@ -292,8 +292,8 @@ for ii, exprnum in enumerate(EXPERIMENTS):
     ### Save figure
     
     fsuffix = 'Lutz%03i'%(exprnum)
-#    fname = 'plots/infer-%s-alpha=%.2f.png'%(fsuffix, alpha)
-    fname = 'plots/infer-%s-alpha=%.2f.pdf'%(fsuffix, alpha)
+    fname = 'plots/infer-%s-alpha=%.2f.png'%(fsuffix, alpha)
+#    fname = 'plots/infer-%s-alpha=%.2f.pdf'%(fsuffix, alpha)
     print('*** Saving inversion results to %s'%(fname))
     plt.savefig(fname, dpi=300)
     

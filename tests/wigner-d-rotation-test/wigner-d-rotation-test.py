@@ -53,7 +53,7 @@ def plot_axes(ax, geo):
     ax.plot([90],[0], marker=r'$y$', ms=7, c=cax, transform=geo) # y axis
     ax.plot([0],[90], marker=r'$z$', ms=7, c=cax, transform=geo) # z axis
 
-dpi, scale = 125, 2.2
+dpi, scale = 125, 2.0
 fig = plt.figure(figsize=(4*scale,1.4*scale))
 gs = gridspec.GridSpec(1,4)
 a = 0.03
@@ -72,19 +72,19 @@ ax1.set_global(); ax2.set_global(); ax3.set_global(); ax4.set_global()
 
 ### Plot
 
-plot_ODF(nlm[0,:], lm, ax=ax1, cmap='Greys', cblabel=r'$\psi/N$')
+plot_ODF(nlm[0,:], lm, ax=ax1, cmap='Greys', cblabel=r'$n/N$')
 plot_axes(ax1, geo)
 ax1.set_title('nlm')
 
-plot_ODF(nlm[1,:], lm, ax=ax2, cmap='Greys', cblabel=r'$\psi/N$')
+plot_ODF(nlm[1,:], lm, ax=ax2, cmap='Greys', cblabel=r'$n/N$')
 plot_axes(ax2, geo)
 ax2.set_title('nlm_rot1')
 
-plot_ODF(nlm[2,:], lm, ax=ax3, cmap='Greys', cblabel=r'$\psi/N$')
+plot_ODF(nlm[2,:], lm, ax=ax3, cmap='Greys', cblabel=r'$n/N$')
 plot_axes(ax3, geo)
 ax3.set_title('nlm_rot2')
 
-plot_ODF(nlm[3,:], lm, ax=ax4, cmap='Greys', cblabel=r'$\psi/N$')
+plot_ODF(nlm[3,:], lm, ax=ax4, cmap='Greys', cblabel=r'$n/N$')
 plot_axes(ax4, geo)
 ax4.set_title('nlm_rot3 (back)')
 

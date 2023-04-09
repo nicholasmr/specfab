@@ -1,4 +1,4 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2022
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2023
 
 ! This file is a wrapper for the Fortran routines to be provided in specfabpy
 
@@ -29,8 +29,10 @@ module specfabpy
         ae2_to_a2__sf => ae2_to_a2, ae4_to_a4__sf => ae4_to_a4, & ! Elmer representations
         a4_to_mat__sf => a4_to_mat, & ! a4 in Mandel notation
         a4_eigentensors__sf => a4_eigentensors, & ! 3x3 eigentensors of a4
+        a2_orth__sf => a2_orth, & 
+        a4_orth__sf => a4_orth, &
         a4_IBOF__sf => a4_IBOF, & ! From Elmer        
-        
+
         ! Rheologies
         rheo_rev_isotropic__sf     => rheo_rev_isotropic,     rheo_fwd_isotropic__sf     => rheo_fwd_isotropic, &
         rheo_rev_tranisotropic__sf => rheo_rev_tranisotropic, rheo_fwd_tranisotropic__sf => rheo_fwd_tranisotropic, &
@@ -49,13 +51,11 @@ module specfabpy
         Qnorm__sf => Qnorm, &
         
         ! Fluid enhancement factors
+        Eij_tranisotropic__sf => Eij_tranisotropic, &
+        Eij_orthotropic__sf   => Eij_orthotropic, &
+        Evw_tranisotropic__sf => Evw_tranisotropic, &
+        Evw_orthotropic__sf   => Evw_orthotropic, &
         frame__sf => frame, &
-        Eeiej__sf => Eeiej, &
-        Evw__sf   => Evw, &
-
-        ! Optimal transversely isotropic (monocrystal) fluid enhancement factors for ice grains 
-        Eca_opt_lin__sf  => Eca_opt_lin,  Ecc_opt_lin__sf  => Ecc_opt_lin,  alpha_opt_lin__sf  => alpha_opt_lin, &
-        Eca_opt_nlin__sf => Eca_opt_nlin, Ecc_opt_nlin__sf => Ecc_opt_nlin, alpha_opt_nlin__sf => alpha_opt_nlin, &
         
         ! nlm and rnlm 
         lm__sf => lm, &
@@ -65,28 +65,18 @@ module specfabpy
         rotate_nlm__sf => rotate_nlm, &
         rotate_vector__sf => rotate_vector, &
         Sl__sf => Sl, & ! Power spectrum
-        a2_orth__sf => a2_orth, & 
-        a4_orth__sf => a4_orth, &
         
         ! Numerics
         Ldiag__sf => Ldiag, &
         apply_bounds__sf => apply_bounds, & 
 
         ! Fabric processes
-        Gamma0__sf => Gamma0
+        Gamma0__sf => Gamma0, &
 
+        ! AUX
+        vec_to_mat_voigt__sf => vec_to_mat_voigt
         
     implicit none
-    
-    ! Optimal n'=1 (lin) grain parameters 
-    real(kind=dp), parameter :: Eca_opt_lin   = Eca_opt_lin__sf
-    real(kind=dp), parameter :: Ecc_opt_lin   = Ecc_opt_lin__sf
-    real(kind=dp), parameter :: alpha_opt_lin = alpha_opt_lin__sf
-    
-    ! Optimal n'=3 (nlin) grain parameters 
-    real(kind=dp), parameter :: Eca_opt_nlin   = Eca_opt_nlin__sf
-    real(kind=dp), parameter :: Ecc_opt_nlin   = Ecc_opt_nlin__sf
-    real(kind=dp), parameter :: alpha_opt_nlin = alpha_opt_nlin__sf
     
     integer :: Lcap
 
@@ -202,29 +192,40 @@ contains
     ! ENHANCEMENT FACTORS
     !------------------
     
-    function Evw(nlm, vw,tau, Ecc,Eca,alpha,nprime) 
+    function Evw_tranisotropic(nlm, vw,tau, Eij_grain,alpha,n_grain) result(Evw)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp), intent(in) :: vw(3,3), tau(3,3), Ecc,Eca,alpha
-        integer, intent(in)       :: nprime
+        real(kind=dp), intent(in) :: vw(3,3), tau(3,3), Eij_grain(2),alpha
+        integer, intent(in)       :: n_grain
         real(kind=dp)             :: Evw
         
-        Evw = Evw__sf(vw, tau, nlm, Ecc,Eca,alpha,nprime)
+        Evw = Evw_tranisotropic__sf(vw, tau, nlm, Eij_grain,alpha,n_grain)
     end
     
-    function Eeiej(nlm, e1,e2,e3, Ecc,Eca,alpha,nprime) 
+    function Evw_orthotropic(nlm_r1, nlm_r2, nlm_r3, vw,tau, Eij_grain, alpha, n_grain) result(Evw)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm_r1(:), nlm_r2(:), nlm_r3(:)
+        real(kind=dp), intent(in)    :: Eij_grain(6), alpha, vw(3,3), tau(3,3)
+        integer, intent(in)          :: n_grain
+        real(kind=dp)                :: Evw
+        
+        Evw = Evw_orthotropic__sf(vw, tau, nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain)
+    end
+
+    function Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) result(Eij)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), intent(in)    :: e1(3),e2(3),e3(3)
-        real(kind=dp), intent(in)    :: Ecc, Eca, alpha
-        integer, intent(in)          :: nprime
-        real(kind=dp)                :: Eeiej(3,3)
+        real(kind=dp), intent(in)    :: Eij_grain(2), alpha
+        integer, intent(in)          :: n_grain
+        real(kind=dp)                :: Eij(6)
         
-        Eeiej = Eeiej__sf(nlm, e1,e2,e3, Ecc,Eca,alpha,nprime)
+        Eij = Eij_tranisotropic__sf(nlm, e1,e2,e3, Eij_grain,alpha,n_grain)
     end
-
+    
     !---------------------------------
     ! STRUCTURE TENSORS
     !---------------------------------
@@ -304,42 +305,60 @@ contains
         M = a4_to_mat__sf(A)
     end
         
+    function a2_orth(blm,nlm) result(a2)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: blm(:), nlm(:)
+        real(kind=dp)                :: a2(3,3)
+        
+        a2 = a2_orth__sf(blm,nlm)
+    end
+  
+    function a4_orth(blm,nlm) result(a4)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: blm(:), nlm(:)
+        real(kind=dp)                :: a4(3,3,3,3)
+        
+        a4 = a4_orth__sf(blm,nlm)
+    end
+        
     !---------------------------------
     ! GRAIN-AVERAGED RHEOLOGY (SACHS, TAYLOR)
     !---------------------------------
        
-    function rheo_fwd__linearTaylorSachs(tau, nlm, Aprime,Ecc,Eca,alpha) result(eps)
+    function rheo_fwd__linearTaylorSachs(tau, nlm, Aprime,Eij_grain,alpha) result(eps)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in)    :: tau(3,3), Aprime, Ecc,Eca,alpha
+        real(kind=dp), intent(in)    :: tau(3,3), Aprime, Eij_grain(2),alpha
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp)                :: eps(3,3)
     
-        eps = rheo_fwd_tranisotropic_lintaylorsachshomo__sf(tau, nlm, Aprime,Ecc,Eca,alpha)
+        eps = rheo_fwd_tranisotropic_lintaylorsachshomo__sf(tau, nlm, Aprime,Eij_grain,alpha)
     end
         
     !---------------------------------
     ! TRANSVERSELY ISOTROPIC RHEOLOGY 
     !---------------------------------
 
-    function rheo_fwd_tranisotropic(tau, A,n, m,Emm,Emt) result(eps)
+    function rheo_fwd_tranisotropic(tau, A,n, m,Eij) result(eps)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in) :: tau(3,3), A, m(3),Emm,Emt
+        real(kind=dp), intent(in) :: tau(3,3), A, m(3),Eij(2)
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: eps(3,3)
         
-        eps = rheo_fwd_tranisotropic__sf(tau, A,n, m,Emm,Emt)
+        eps = rheo_fwd_tranisotropic__sf(tau, A,n, m,Eij)
     end
     
-    function rheo_rev_tranisotropic(eps, A,n, m,Emm,Emt) result(tau)
+    function rheo_rev_tranisotropic(eps, A,n, m,Eij) result(tau)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in) :: eps(3,3), A, m(3),Emm,Emt 
+        real(kind=dp), intent(in) :: eps(3,3), A, m(3),Eij(2)
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: tau(3,3)
         
-        tau = rheo_rev_tranisotropic__sf(eps, A,n, m,Emm,Emt)
+        tau = rheo_rev_tranisotropic__sf(eps, A,n, m,Eij)
     end
     
     !---------------------------------
@@ -349,7 +368,7 @@ contains
     function rheo_fwd_orthotropic(tau, A,n, m1,m2,m3, Eij) result(eps)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in) :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        real(kind=dp), intent(in) :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(6)
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: eps(3,3)
         
@@ -359,7 +378,7 @@ contains
     function rheo_rev_orthotropic(eps, A,n, m1,m2,m3, Eij) result(tau)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(6)
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: tau(3,3)
         
@@ -370,7 +389,7 @@ contains
     function rheo_fwd_orthotropic_Pettit(tau, A,n, m1,m2,m3, Eij) result(eps)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in) :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        real(kind=dp), intent(in) :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(6)
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: eps(3,3)
         
@@ -380,7 +399,7 @@ contains
     function rheo_rev_orthotropic_Pettit(eps, A,n, m1,m2,m3, Eij) result(tau)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(6)
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: tau(3,3)
         
@@ -391,7 +410,7 @@ contains
     function rheo_fwd_orthotropic_Martin(tau, A,n, m1,m2,m3, Eij) result(eps)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in) :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        real(kind=dp), intent(in) :: tau(3,3), A, m1(3),m2(3),m3(3), Eij(6)
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: eps(3,3)
         
@@ -401,7 +420,7 @@ contains
     function rheo_rev_orthotropic_Martin(eps, A,n, m1,m2,m3, Eij) result(tau)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(3,3)
+        real(kind=dp), intent(in) :: eps(3,3), A, m1(3),m2(3),m3(3), Eij(6)
         integer, intent(in)       :: n ! Glen exponent
         real(kind=dp)             :: tau(3,3)
         
@@ -577,44 +596,6 @@ contains
         nlm_rot = rotate_nlm__sf(nlm, theta,phi)
     end
   
-!    function vlm_L2(blm,nlm) result(vlm)
-!        use specfabpy_const
-!        implicit none
-!        complex(kind=dp), intent(in) :: blm(:), nlm(:)
-!        integer, parameter        :: vlmlen = 1+5
-!        complex(kind=dp)          :: vlm(vlmlen)
-!        
-!        vlm = vlm_L2__sf(blm,nlm)
-!    end
-!  
-!    function vlm_L4(blm,nlm) result(vlm)
-!        use specfabpy_const
-!        implicit none
-!        complex(kind=dp), intent(in) :: blm(:), nlm(:)
-!        integer, parameter        :: vlmlen = 1+5+9
-!        complex(kind=dp)          :: vlm(vlmlen)
-!        
-!        vlm = vlm_L4__sf(blm,nlm)
-!    end
-  
-    function a2_orth(blm,nlm) result(a2)
-        use specfabpy_const
-        implicit none
-        complex(kind=dp), intent(in) :: blm(:), nlm(:)
-        real(kind=dp)                :: a2(3,3)
-        
-        a2 = a2_orth__sf(blm,nlm)
-    end
-  
-    function a4_orth(blm,nlm) result(a4)
-        use specfabpy_const
-        implicit none
-        complex(kind=dp), intent(in) :: blm(:), nlm(:)
-        real(kind=dp)                :: a4(3,3,3,3)
-        
-        a4 = a4_orth__sf(blm,nlm)
-    end
-  
     function DDRX_decayrate(nlm, tau)
     
         use specfabpy_const
@@ -674,7 +655,16 @@ contains
         integer, intent(in)          :: l
         real(kind=dp)                :: Sl
        
-       Sl = Sl__sf(nlm, l) 
+        Sl = Sl__sf(nlm, l) 
+    end
+    
+    function vec_to_mat_voigt(v) result (M)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: v(6) 
+        real(kind=dp)             :: M(3,3) 
+        
+        M = vec_to_mat_voigt__sf(v)
     end
     
     !---------------------------------

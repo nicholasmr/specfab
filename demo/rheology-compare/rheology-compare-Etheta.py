@@ -7,6 +7,7 @@ import scipy.special as sp
 sys.path.insert(0, '..')
 from header import *
 from specfabpy import specfabpy as sf # To use specfabpy compile the specfab Python module by running "make specfabpy"
+from sfconstants import *
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -24,11 +25,8 @@ Aglen = 3.5e-26 # A(T=-25 deg.)
 angles = np.deg2rad(np.linspace(0,90,50))
 Nt = len(angles)
         
-# Linear (n'=1) mixed Taylor--Sachs enhancements: Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
-nprime = 1 
-Eca   = sf.Eca_opt_lin
-Ecc   = sf.Ecc_opt_lin
-alpha = sf.alpha_opt_lin  
+# Monocrystal parameters
+(Eij_grain, alpha, n_grain) = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
 
 #----------------------
 # Initialize model
@@ -69,7 +67,7 @@ def f_tau(mag, ang):
 
 for kk, ang in enumerate(angles):
 
-    Eij = np.transpose(sf.Eeiej(nlm, e1,e2,e3, Ecc, Eca, alpha, nprime))
+    Eij = np.transpose(sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain, alpha, n_grain))
     tau, vw = f_tau(1, ang)
     eps_G = sf.rheo_fwd_isotropic(         tau, Aglen,nglen)
     eps_R = sf.rheo_fwd_orthotropic(       tau, Aglen,nglen, e1,e2,e3, Eij)

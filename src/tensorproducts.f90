@@ -72,6 +72,18 @@ contains
         end do
     end
 
+    function doubleinner24(B,A) result(C)
+        ! B_ij A_jilk = rank-2 tensor
+        implicit none
+        real(kind=dp), intent(in) :: A(3,3,3,3), B(3,3)
+        real(kind=dp) :: C(3,3)
+        do ll=1,3
+            do kk=1,3
+                C(ll,kk) = doubleinner22(B,A(:,:,ll,kk)) 
+            end do
+        end do
+    end
+
     function doubleinner42_firstlast_symmetric(A,B) result(C)
         ! A_lkij B_lj = rank-2 tensor
         implicit none
