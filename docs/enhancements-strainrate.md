@@ -76,7 +76,7 @@ where $E_{ij}^{\mathrm{Sachs}}$ and $E_{ij}^{\mathrm{Taylor}}$ are calculated wi
 | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-monocrystal.png){: style="width:210px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} |
 
 If grains are approximately transversely isotropic, the grain rheology can be modelled using the [transversely isotropic power-law rheology](constitutive-viscoplastic.md).
-This requires specifying the three grain parameters $n$, $E_{cc}$ and $E_{ca}$, and the Taylor&mdash;Sachs weight $\alpha$.
+This requires specifying the three grain parameters $n'$, $E_{cc}'$ and $E_{ca}'$, and the Taylor&mdash;Sachs weight $\alpha$.
 
 #### Example for glacier ice
 
@@ -118,7 +118,7 @@ Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # = (E11,E22,
 | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous-monocrystal.png){: style="width:250px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
 
 If grains are approximately orthotropic, the grain rheology can be modelled using the [orthotropic power-law rheology](constitutive-viscoplastic.md).
-This requires specifying the eight grain parameters $n$, $E_{11}$, $E_{22}$, $E_{33}$, $E_{12}$, $E_{13}$, $E_{23}$, and the Taylor&mdash;Sachs weight $\alpha$.
+This requires specifying the eight grain parameters $n'$, $E_{11}'$, $E_{22}'$, $E_{33}'$, $E_{12}'$, $E_{13}'$, $E_{23}'$, and the Taylor&mdash;Sachs weight $\alpha$.
 
 #### Example for olivine
 
