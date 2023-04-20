@@ -213,9 +213,9 @@ E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}} ,
 </tbody>
 </table>
 <p>If grains are approximately transversely isotropic, the grain rheology can be modelled using the <a href="../constitutive-viscoplastic/">transversely isotropic power-law rheology</a>.
-This requires specifying the three grain parameters <span class="arithmatex">\(n'\)</span>, <span class="arithmatex">\(E_{cc}'\)</span> and <span class="arithmatex">\(E_{ca}'\)</span>, and the Taylor&mdash;Sachs weight <span class="arithmatex">\(\alpha\)</span>.</p>
+This requires specifying the grain eigenenhancements <span class="arithmatex">\(E_{cc}'\)</span> and <span class="arithmatex">\(E_{ca}'\)</span>, the power-law exponent <span class="arithmatex">\(n'\)</span>, and the Taylor&mdash;Sachs weight <span class="arithmatex">\(\alpha\)</span>.</p>
 <h4 id="example-for-glacier-ice">Example for glacier ice</h4>
-<p>The below example for glacier ice shows how <span class="arithmatex">\(E_{ij}\)</span> may be calculated given <code>a2</code>, <code>a4</code>, or <code>nlm</code>. </p>
+<p>The below example for glacier ice shows how bulk <span class="arithmatex">\(E_{ij}\)</span> may be calculated given <code>a2</code>, <code>a4</code>, or <code>nlm</code>. </p>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfabpy as sf
 lm, nlm_len = sf.init(4) # L=4 truncation is sufficient in this case
@@ -236,8 +236,8 @@ else: # use a4
 #(e1,e2,e3) = (np.array([1,0,0]),np.array([0,1,0]),np.array([0,0,1])) # x,y,z cartesian basis
 
 ### Transversely isotropic monocrystal parameters for ice (Rathmann &amp; Lilien, 2021)
-n_grain   = 1        # n=1 =&gt; linear grain rheology (nonlinear not fully supported)
-Eij_grain = (1, 1e3) # (Ecc,Eca): Enhancement factor for compression along c-axis (Ecc) and for shear parallel to basal plane (Eca)
+n_grain   = 1        # Power-law exponent: n=1 =&gt; linear grain rheology, nonlinear (n&gt;1) is unsupported.
+Eij_grain = (1, 1e3) # Grain eigenenhancements (Ecc,Eca) for compression along c-axis (Ecc) and for shear parallel to basal plane (Eca)
 alpha     = 0.0125   # Taylor--Sachs weight
 
 ### Calculate enhancement factors w.r.t. e1, e2, e3
@@ -259,7 +259,7 @@ Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # = (E11,E22,
 </tbody>
 </table>
 <p>If grains are approximately orthotropic, the grain rheology can be modelled using the <a href="../constitutive-viscoplastic/">orthotropic power-law rheology</a>.
-This requires specifying the eight grain parameters <span class="arithmatex">\(n'\)</span>, <span class="arithmatex">\(E_{11}'\)</span>, <span class="arithmatex">\(E_{22}'\)</span>, <span class="arithmatex">\(E_{33}'\)</span>, <span class="arithmatex">\(E_{12}'\)</span>, <span class="arithmatex">\(E_{13}'\)</span>, <span class="arithmatex">\(E_{23}'\)</span>, and the Taylor&mdash;Sachs weight <span class="arithmatex">\(\alpha\)</span>.</p>
+This requires specifying the grain eigenenhancements (<span class="arithmatex">\(E_{11}'\)</span>, <span class="arithmatex">\(E_{22}'\)</span>, <span class="arithmatex">\(E_{33}'\)</span>, <span class="arithmatex">\(E_{23}'\)</span>, <span class="arithmatex">\(E_{13}'\)</span>, <span class="arithmatex">\(E_{12}'\)</span>), the power-law exponent <span class="arithmatex">\(n'\)</span>, and the Taylor&mdash;Sachs weight <span class="arithmatex">\(\alpha\)</span>.</p>
 <h4 id="example-for-olivine">Example for olivine</h4>
 <p>Not yet available.</p>
               

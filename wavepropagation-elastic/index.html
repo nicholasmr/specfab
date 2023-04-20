@@ -150,7 +150,7 @@ Moreover, in these homogenizations, grains are assumed interactionless and the b
 </tbody>
 </table>
 <p>If grains are approximately transversely isotropic, the grain elastic behaviour can be modelled using the <a href="../constitutive-elastic/">transversely isotropic elastic constitutive equation</a>.
-This requires specifying the three grain parameters <span class="arithmatex">\(\lambda'\)</span>, <span class="arithmatex">\(\mu'\)</span>, <span class="arithmatex">\(\hat{\lambda}'\)</span>, <span class="arithmatex">\(\hat{\mu}'\)</span>, <span class="arithmatex">\(\hat{\gamma}'\)</span>, and the Voigt&mdash;Reuss weight <span class="arithmatex">\(\alpha\)</span>.</p>
+This requires specifying the grain elastic parameters <span class="arithmatex">\(\lambda'\)</span>, <span class="arithmatex">\(\mu'\)</span>, <span class="arithmatex">\(\hat{\lambda}'\)</span>, <span class="arithmatex">\(\hat{\mu}'\)</span>, <span class="arithmatex">\(\hat{\gamma}'\)</span>, and the Voigt&mdash;Reuss weight <span class="arithmatex">\(\alpha\)</span>.</p>
 <h3 id="example-for-glacier-ice">Example for glacier ice</h3>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfabpy as sf
@@ -192,7 +192,7 @@ Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta,ph
 </tbody>
 </table>
 <p>If grains are approximately orthotropic, the grain elastic behaviour can be modelled using the <a href="../constitutive-elastic/">orthotropic elastic constitutive equation</a>.
-This requires specifying the ten grain parameters <span class="arithmatex">\(\lambda_{11}'\)</span>, <span class="arithmatex">\(\lambda_{22}'\)</span>, <span class="arithmatex">\(\lambda_{33}'\)</span>, <span class="arithmatex">\(\lambda_{12}'\)</span>, <span class="arithmatex">\(\lambda_{13}'\)</span>, <span class="arithmatex">\(\lambda_{23}'\)</span>, <span class="arithmatex">\(\mu_{1}'\)</span>, <span class="arithmatex">\(\mu_{2}'\)</span>, <span class="arithmatex">\(\mu_{3}'\)</span>, and the Voigt&mdash;Reuss weight <span class="arithmatex">\(\alpha\)</span>.</p>
+This requires specifying the grain elastic parameters <span class="arithmatex">\(\lambda_{11}'\)</span>, <span class="arithmatex">\(\lambda_{22}'\)</span>, <span class="arithmatex">\(\lambda_{33}'\)</span>, <span class="arithmatex">\(\lambda_{23}'\)</span>, <span class="arithmatex">\(\lambda_{13}'\)</span>, <span class="arithmatex">\(\lambda_{12}'\)</span>, <span class="arithmatex">\(\mu_{1}'\)</span>, <span class="arithmatex">\(\mu_{2}'\)</span>, <span class="arithmatex">\(\mu_{3}'\)</span>, and the Voigt&mdash;Reuss weight <span class="arithmatex">\(\alpha\)</span>.</p>
 <h3 id="example-for-olivine">Example for olivine</h3>
 <p>Not yet available.</p>
 <!--
