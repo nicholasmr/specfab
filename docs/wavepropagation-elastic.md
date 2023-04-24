@@ -21,7 +21,7 @@ which depends on the CPO, grain elastic parameters, and direction of propagation
 | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-elastic-monocrystal.png){: style="width:210px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} |
 
 If grains are approximately transversely isotropic, the grain elastic behaviour can be modelled using the [transversely isotropic elastic constitutive equation](constitutive-elastic.md).
-This requires specifying the three grain parameters $\lambda'$, $\mu'$, $\hat{\lambda}'$, $\hat{\mu}'$, $\hat{\gamma}'$, and the Voigt&mdash;Reuss weight $\alpha$.
+This requires specifying the grain elastic parameters $\lambda'$, $\mu'$, $\hat{\lambda}'$, $\hat{\mu}'$, $\hat{\gamma}'$, and the Voigt&mdash;Reuss weight $\alpha$.
 
 ### Example for glacier ice
 
@@ -58,7 +58,7 @@ Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta,ph
 | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-elastic-monocrystal.png){: style="width:250px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
 
 If grains are approximately orthotropic, the grain elastic behaviour can be modelled using the [orthotropic elastic constitutive equation](constitutive-elastic.md).
-This requires specifying the ten grain parameters $\lambda_{11}'$, $\lambda_{22}'$, $\lambda_{33}'$, $\lambda_{12}'$, $\lambda_{13}'$, $\lambda_{23}'$, $\mu_{1}'$, $\mu_{2}'$, $\mu_{3}'$, and the Voigt&mdash;Reuss weight $\alpha$.
+This requires specifying the grain elastic parameters $\lambda_{11}'$, $\lambda_{22}'$, $\lambda_{33}'$, $\lambda_{23}'$, $\lambda_{13}'$, $\lambda_{12}'$, $\mu_{1}'$, $\mu_{2}'$, $\mu_{3}'$, and the Voigt&mdash;Reuss weight $\alpha$.
 
 ### Example for olivine
 

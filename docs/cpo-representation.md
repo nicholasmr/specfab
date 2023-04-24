@@ -14,14 +14,14 @@ Supported grain symmetry groups for modelling [CPO evolution](cpo-dynamics-trani
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slipplane.png){: style="width:180px"} 
 
 !!! note
-    Grain sizes or shapes are not represented or modelled by specfab.
+    Grain sizes or shapes are not modelled by specfab.
 
 ### Example
 
 | <center>Polycrystalline ice</center> | <center>Polycrystalline olivine</center> |
 | :- | :- |
 | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
-| $n(\theta,\phi)$ is the ${\bf c}$-axis distribution for <br>polycrystalline ice. | $n(\theta,\phi)$ and $b(\theta,\phi)$ refer to certain <br>crystallographic axes (${\bf r}_i$) for polycrystalline <br>olivine depending on the fabric type (i.e. <br> thermodynamic conditions, water content, <br>and stress magnitude). |
+| $n(\theta,\phi)$ is the ${\bf c}$-axis distribution for <br>polycrystalline ice. | $n(\theta,\phi)$ and $b(\theta,\phi)$ are the distributions of particular <br>crystallographic axes (${\bf r}_i$) for polycrystalline olivine<br> depending on fabric type (A&mdash;E type). |
 
 ## Series expansion
 
@@ -44,10 +44,11 @@ $$
 {\bf s} = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}] \quad\text{(state vector)}.
 $$
 
+$$ $$ <!-- half space -->
 
 !!! warning "Normalization"
 
-    $n(\theta,\phi)$ may be understood either as the number density of grains with a given slip-plane normal orientation, or as the mass density fraction ([Faria, 2006](https://royalsocietypublishing.org/doi/abs/10.1098/rspa.2005.1610)) of grains with a given slip-plane normal orientation.
+    $n(\theta,\phi)$ may be understood either as the number density of grains with a given slip-plane normal orientation, or as the mass density fraction ([Faria, 2006](https://royalsocietypublishing.org/doi/abs/10.1098/rspa.2005.1610); [Richards et al., 2021](https://www.sciencedirect.com/science/article/abs/pii/S0012821X20306622)) of grains with a given slip-plane normal orientation.
 
     From specfab's point-of-view, the difference is a matter of normalization: since the models of [CPO evolution](cpo-dynamics-tranisotropic.md) (lattice rotation, DDRX, CDRX) conserve the normalization, the two views are effectively the same, not least because CPO-derived quantities depend on the normalized distributions (which are identical).
     The mass-density-fraction interpretation rests, however, on stronger physical grounds as mass is conserved but grain numbers are not.

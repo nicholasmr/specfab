@@ -7,15 +7,14 @@ program demo
     implicit none
 
     integer, parameter :: dp = 8
-    real(kind=dp)      :: A, fa,fb!, m(3),t(3)
-    integer            :: n
+    real(kind=dp)      :: A,n, fa,fb!, m(3),t(3)
     
     real(kind=dp), dimension(3), parameter :: x1 = [1,0,0], x2 = [0,1,0], x3 = [0,0,1] ! x,y,z dir.
 
     call initspecfab(4) ! Not going to use specfab, but is good practice to initialize it even when using static routines (as is the case here).
    
     A = 3.5d0 ! Rate factor (arbitrary value)
-    n = 3     ! Flow law exponent
+    n = 3.0d0 ! Flow law exponent
    
     ! rho -> rho_ice
     fa = 2.0d0
@@ -42,8 +41,7 @@ subroutine sig_of_eps_of_sig(sig_in, A,n, fa,fb)
     implicit none
 
     integer, parameter        :: dp = 8
-    real(kind=dp), intent(in) :: sig_in(3,3), A, fa,fb
-    integer, intent(in)       :: n
+    real(kind=dp), intent(in) :: sig_in(3,3), A,n, fa,fb
     real(kind=dp)             :: eps(3,3), sig(3,3)
 
     eps = rheo_fwd_isotropic_compressible(sig_in, A,n, fa,fb)

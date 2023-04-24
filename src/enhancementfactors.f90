@@ -34,30 +34,31 @@ contains
         real(kind=dp)                :: Eij(6)
         
         ! Longitudinal
-        Eij(1) = Evw_tranisotropic(outerprod(e1,e1), tau_vv(e1),     nlm, Eij_grain,alpha,n_grain) 
-        Eij(2) = Evw_tranisotropic(outerprod(e2,e2), tau_vv(e2),     nlm, Eij_grain,alpha,n_grain)
-        Eij(3) = Evw_tranisotropic(outerprod(e3,e3), tau_vv(e3),     nlm, Eij_grain,alpha,n_grain)    
+        Eij(1) = Evw_tranisotropic(e1,e1, tau_vv(e1),    nlm, Eij_grain,alpha,n_grain) 
+        Eij(2) = Evw_tranisotropic(e2,e2, tau_vv(e2),    nlm, Eij_grain,alpha,n_grain)
+        Eij(3) = Evw_tranisotropic(e3,e3, tau_vv(e3),    nlm, Eij_grain,alpha,n_grain)    
 
         ! Shear
-        Eij(4) = Evw_tranisotropic(outerprod(e2,e3), tau_vw(e2,e3),  nlm, Eij_grain,alpha,n_grain)
-        Eij(5) = Evw_tranisotropic(outerprod(e1,e3), tau_vw(e1,e3),  nlm, Eij_grain,alpha,n_grain) 
-        Eij(6) = Evw_tranisotropic(outerprod(e1,e2), tau_vw(e1,e2),  nlm, Eij_grain,alpha,n_grain) 
+        Eij(4) = Evw_tranisotropic(e2,e3, tau_vw(e2,e3), nlm, Eij_grain,alpha,n_grain)
+        Eij(5) = Evw_tranisotropic(e1,e3, tau_vw(e1,e3), nlm, Eij_grain,alpha,n_grain) 
+        Eij(6) = Evw_tranisotropic(e1,e2, tau_vw(e1,e2), nlm, Eij_grain,alpha,n_grain) 
     end
     
-    function Evw_tranisotropic(vw,tau, nlm, Eij_grain,alpha,n_grain) result(Evw)
+    function Evw_tranisotropic(v,w,tau, nlm, Eij_grain,alpha,n_grain) result(Evw)
 
         ! Generalized enhancement factor for transversely isotropic grains and a linear Taylor--Sachs homogenization scheme.
 
         implicit none
         
         complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp), intent(in)    :: Eij_grain(2), alpha, vw(3,3), tau(3,3)
+        real(kind=dp), intent(in)    :: Eij_grain(2), alpha, v(3),w(3), tau(3,3)
         integer, intent(in)          :: n_grain
-        real(kind=dp)                :: Evw_sachs, Evw_taylor, Evw
-    
+        real(kind=dp)                :: vw(3,3), Evw_sachs, Evw_taylor, Evw
+
+        vw = outerprod(v,w)    
         Evw_sachs  = 0.0d0
         Evw_taylor = 0.0d0
-
+    
         Evw_sachs = doubleinner22(rheo_fwd_tranisotropic_sachshomo(           tau, nlm, Eij_grain,n_grain), vw) / &
                     doubleinner22(rheo_fwd_tranisotropic_sachshomo__isotropic(tau,      Eij_grain,n_grain), vw)
 
@@ -83,28 +84,29 @@ contains
         real(kind=dp)                :: Eij(6)
         
         ! Longitudinal
-        Eij(1) = Evw_orthotropic(outerprod(e1,e1), tau_vv(e1),     nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain) 
-        Eij(2) = Evw_orthotropic(outerprod(e2,e2), tau_vv(e2),     nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain)
-        Eij(3) = Evw_orthotropic(outerprod(e3,e3), tau_vv(e3),     nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain)    
+        Eij(1) = Evw_orthotropic(e1,e1, tau_vv(e1),    nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain) 
+        Eij(2) = Evw_orthotropic(e2,e2, tau_vv(e2),    nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain)
+        Eij(3) = Evw_orthotropic(e3,e3, tau_vv(e3),    nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain)    
 
         ! Shear
-        Eij(4) = Evw_orthotropic(outerprod(e2,e3), tau_vw(e2,e3),  nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain)
-        Eij(5) = Evw_orthotropic(outerprod(e1,e3), tau_vw(e1,e3),  nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain) 
-        Eij(6) = Evw_orthotropic(outerprod(e1,e2), tau_vw(e1,e2),  nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain) 
+        Eij(4) = Evw_orthotropic(e2,e3, tau_vw(e2,e3), nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain)
+        Eij(5) = Evw_orthotropic(e1,e3, tau_vw(e1,e3), nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain) 
+        Eij(6) = Evw_orthotropic(e1,e2, tau_vw(e1,e2), nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain) 
     end
     
-    function Evw_orthotropic(vw,tau, nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain)  result(Evw)
+    function Evw_orthotropic(v,w,tau, nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain)  result(Evw)
 
         ! Generalized enhancement factor for orthotropic grains and a linear Taylor--Sachs homogenization scheme.
 
         implicit none
         
         complex(kind=dp), intent(in) :: nlm_r1(:), nlm_r2(:), nlm_r3(:)
-        real(kind=dp), intent(in)    :: Eij_grain(6), alpha, vw(3,3), tau(3,3)
+        real(kind=dp), intent(in)    :: Eij_grain(6), alpha, v(3),w(3), tau(3,3)
         integer, intent(in)          :: n_grain
-        real(kind=dp)                :: Evw_sachs, Evw_taylor, Evw
+        real(kind=dp)                :: vw(3,3), Evw_sachs, Evw_taylor, Evw
         complex(kind=dp)             :: nlm_iso(size(nlm_r1))
     
+        vw = outerprod(v,w)
         Evw_sachs  = 0.0d0
         Evw_taylor = 0.0d0
     

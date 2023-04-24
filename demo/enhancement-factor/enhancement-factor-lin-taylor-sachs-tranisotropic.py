@@ -58,9 +58,9 @@ m, t = np.array([0,0,1]), np.array([1,0,0])
 p, q = (m+t)/np.sqrt(2), (m-t)/np.sqrt(2)
 mm, mt, pq = np.tensordot(m,m, axes=0), np.tensordot(m,t, axes=0), np.tensordot(p,q, axes=0)
 
-tau_ps_mm = 1*(np.identity(3)-3*mm) 
-tau_ss_mt = 1*(mt + np.transpose(mt)) 
-tau_ss_pq = 1*(pq + np.transpose(pq))
+tau_mm = 1*(np.identity(3)-3*mm) 
+tau_mt = 1*(mt + np.transpose(mt)) 
+tau_pq = 1*(pq + np.transpose(pq))
 
 L = 4
 lm, nlm_len = sf.init(L) # nlm_len is the number of fabric expansion coefficients (degrees of freedom).
@@ -87,10 +87,10 @@ Emm_alpha,  Emt_alpha,  Epq_alpha  = np.zeros(size), np.zeros(size), np.zeros(si
 
 #-------------
 
-#print(psi.Evw(mt,tau_ss_mt, 3,[1],[1], moments))
+#print(psi.Evw(mt,tau_mt, 3,[1],[1], moments))
 #print()
-#print('max E_mt (n=1): %f'%(psi.Evw(mt,tau_ss_mt, 1,[0.1],[1e8], moments)[0][0]))
-#print('max E_mt (n=3): %f'%(psi.Evw(mt,tau_ss_mt, 3,[0.1],[1e8], moments)[0][0]))
+#print('max E_mt (n=1): %f'%(psi.Evw(mt,tau_mt, 1,[0.1],[1e8], moments)[0][0]))
+#print('max E_mt (n=3): %f'%(psi.Evw(mt,tau_mt, 3,[0.1],[1e8], moments)[0][0]))
 
 #-------------
 
@@ -98,19 +98,19 @@ for ii,Eca in enumerate(Eca_list):
 
     for jj,Ecc in enumerate(Ecc_list):
         Eij_grain = [Ecc,Eca]
-        Emm_Sachs[ii,jj] = sf.Evw_tranisotropic(nlm, mm,tau_ps_mm, Eij_grain,0,n_grain)
-        Emt_Sachs[ii,jj] = sf.Evw_tranisotropic(nlm, mt,tau_ss_mt, Eij_grain,0,n_grain)
-        Epq_Sachs[ii,jj] = sf.Evw_tranisotropic(nlm, pq,tau_ss_pq, Eij_grain,0,n_grain)
+        Emm_Sachs[ii,jj] = sf.Evw_tranisotropic(nlm, m,m,tau_mm, Eij_grain,0,n_grain)
+        Emt_Sachs[ii,jj] = sf.Evw_tranisotropic(nlm, m,t,tau_mt, Eij_grain,0,n_grain)
+        Epq_Sachs[ii,jj] = sf.Evw_tranisotropic(nlm, p,q,tau_pq, Eij_grain,0,n_grain)
         #       
-        Emm_Taylor[ii,jj] = sf.Evw_tranisotropic(nlm, mm,tau_ps_mm, Eij_grain,1,n_grain)
-        Emt_Taylor[ii,jj] = sf.Evw_tranisotropic(nlm, mt,tau_ss_mt, Eij_grain,1,n_grain)
-        Epq_Taylor[ii,jj] = sf.Evw_tranisotropic(nlm, pq,tau_ss_pq, Eij_grain,1,n_grain)
+        Emm_Taylor[ii,jj] = sf.Evw_tranisotropic(nlm, m,m,tau_mm, Eij_grain,1,n_grain)
+        Emt_Taylor[ii,jj] = sf.Evw_tranisotropic(nlm, m,t,tau_mt, Eij_grain,1,n_grain)
+        Epq_Taylor[ii,jj] = sf.Evw_tranisotropic(nlm, p,q,tau_pq, Eij_grain,1,n_grain)
         
     for kk,alpha in enumerate(alpha_list):
         Eij_grain = [1,Eca]
-        Emm_alpha[ii,kk] = sf.Evw_tranisotropic(nlm, mm,tau_ps_mm, Eij_grain,alpha,n_grain)
-        Emt_alpha[ii,kk] = sf.Evw_tranisotropic(nlm, mt,tau_ss_mt, Eij_grain,alpha,n_grain)
-        Epq_alpha[ii,kk] = sf.Evw_tranisotropic(nlm, pq,tau_ss_pq, Eij_grain,alpha,n_grain)
+        Emm_alpha[ii,kk] = sf.Evw_tranisotropic(nlm, m,m,tau_mm, Eij_grain,alpha,n_grain)
+        Emt_alpha[ii,kk] = sf.Evw_tranisotropic(nlm, m,t,tau_mt, Eij_grain,alpha,n_grain)
+        Epq_alpha[ii,kk] = sf.Evw_tranisotropic(nlm, p,q,tau_pq, Eij_grain,alpha,n_grain)
         
 Xe = np.array([[ Ecc for Ecc in Ecc_list]   for Eca in Eca_list])
 Xa = np.array([[ alp for alp in alpha_list] for Eca in Eca_list])
@@ -120,7 +120,7 @@ Y  = np.array([[ Eca for Ecc in Ecc_list]   for Eca in Eca_list])
 # Plot maps
 #-----------------------
 
-panelstrs = [r'{\LARGE \bf a}\,\, $\alpha=0$', r'{\LARGE \bf b}\,\, $\alpha=1$', r'{\LARGE \bf c}\,\, $E_{cc} = 1$']
+panelstrs = [r'\textit{(a)}\, $\alpha=0$', r'\textit{(b)}\, $\alpha=1$', r'\textit{(c)}\, $E_{cc} = 1$']
 
 for ii,TYPE in enumerate(types):
 

@@ -67,42 +67,37 @@ contains
         real(kind=dp), intent(in)    :: Eij_grain(2), tau(3,3)
         integer, intent(in)          :: n_grain
         
-        real(kind=dp), parameter  :: d = 3.0d0
         real(kind=dp)             :: ev_c2(3,3), ev_c4(3,3,3,3), ev_c6(3,3,3,3, 3,3), ev_c8(3,3,3,3, 3,3,3,3)
         real(kind=dp)             :: ev_etac0 = 0, ev_etac2(3,3), ev_etac4(3,3,3,3) ! <eta*c^k> terms
         real(kind=dp)             :: eps(3,3), coefA,coefB,coefC, tausq(3,3), I2
         real(kind=dp)             :: a2v(6), a4v(6,6), a4tau(3,3)
 
-        call rheo_params_tranisotropic(Eij_grain,d,n_grain,1.0d0, coefA,coefB,coefC)
-
+        call rheo_params_tranisotropic(Eij_grain,3,DFLOAT(n_grain),1, coefA,coefB,coefC)
         I2 = doubleinner22(tau,tau)
 
-        ! Linear grain fluidity    
         if (n_grain .eq. 1) then
             call f_ev_ck_Mandel(nlm, a2v, a4v) ! Structure tensors in Mandel notation: a2v = ev_c2_Mandel, a4v = ev_c4_Mandel
             ev_etac0 = 1.0d0
             ev_etac2 = vec_to_mat(a2v) ! = a2 = ev_c2
             a4tau    = vec_to_mat(matmul(a4v,mat_to_vec(tau))) ! = a4 : tau = doubleinner42(ev_etac4,tau)
 
-        ! Nonlinear orientation-dependent grain fluidity (Johnson's rheology)        
         else if (n_grain .eq. 3) then
-            tausq = matmul(tau,tau)
             if (size(nlm) < (8 +1)*(8 +2)/2) then ! L < 8 ?
                 stop "specfab error: Sachs homogenization with n'=3 requires L >= 8."
             end if
             call f_ev_ck(nlm, 'f', ev_c2,ev_c4,ev_c6,ev_c8) ! Calculate structure tensors of orders 2,4,6,8
+            tausq = matmul(tau,tau)
             ev_etac0 = I2*  1.0 + coefB*doubleinner22(doubleinner42(ev_c4,tau),tau) + 2*coefC*doubleinner22(ev_c2,tausq)
             ev_etac2 = I2*ev_c2 + coefB*doubleinner42(doubleinner62(ev_c6,tau),tau) + 2*coefC*doubleinner42(ev_c4,tausq)
             ev_etac4 = I2*ev_c4 + coefB*doubleinner62(doubleinner82(ev_c8,tau),tau) + 2*coefC*doubleinner62(ev_c6,tausq)
             a4tau = doubleinner42(ev_etac4,tau)
             
-        ! Same as n'=3 but *without* the orientation-dependent terms in the nonlinear grain fluidity.        
+        ! Same as n'=3 but disregarding the orientation-dependent terms in the nonlinear grain fluidity.        
         else if (n_grain .eq. -3) then 
             call f_ev_ck_Mandel(nlm, a2v, a4v) ! Structure tensors in Mandel notation: a2v = ev_c2_Mandel, a4v = ev_c4_Mandel
             ev_etac0 = I2 * 1.0d0
             ev_etac2 = I2 * vec_to_mat(a2v) ! = I2*a2 = I2*ev_c2
             a4tau    = I2 * vec_to_mat(matmul(a4v,mat_to_vec(tau))) ! = I2 * a4 : tau = I2 * doubleinner42(ev_etac4,tau)
-            
         end if
 
         eps = ev_etac0*tau - coefA*doubleinner22(ev_etac2,tau)*identity + coefB*a4tau + coefC*(matmul(tau,ev_etac2)+matmul(ev_etac2,tau))
@@ -119,14 +114,14 @@ contains
         real(kind=dp), intent(in)    :: Eij_grain(2), tau(3,3)
         integer, intent(in)          :: n_grain ! Dummy variable: <eps'(tau)> with Taylor hypothesis is implemented only for n' = 1.
         
-        real(kind=dp), parameter  :: d = 3.0d0, s = sqrt(2.0)
+        real(kind=dp), parameter  :: s = sqrt(2.0)
         real(kind=dp)             :: a2mat(3,3), a2v(6), a4v(6,6)
         real(kind=dp)             :: P(6,6), L(6,6), tau_vec(6,1),  P_reg(6,6),tau_vec_reg(6,1)
         real(kind=dp)             :: eps(3,3), coefA,coefB,coefC
         integer                   :: info
     !    integer :: ipiv(9), work
                                                                
-        call rheo_params_tranisotropic(Eij_grain,d,n_grain,-1.0d0, coefA,coefB,coefC)
+        call rheo_params_tranisotropic(Eij_grain,3,DFLOAT(n_grain),-1, coefA,coefB,coefC)
         
         call f_ev_ck_Mandel(nlm, a2v, a4v) ! Structure tensors in Mandel notation: a2v = ev_c2_Mandel, B = ev_c4_Mandel
         a2mat = vec_to_mat(a2v) ! = a2
@@ -162,24 +157,15 @@ contains
         
         real(kind=dp), intent(in) :: Eij_grain(2), tau(3,3)
         integer, intent(in)       :: n_grain
-        
-        real(kind=dp), parameter :: d = 3.0d0
-        real(kind=dp)            :: ev_etac0 = 0.0d0, ev_etac2(3,3), ev_etac4(3,3,3,3) ! <eta*c^k> terms
-        real(kind=dp)            :: eps(3,3), coefA,coefB,coefC, tausq(3,3), I2
-        real(kind=dp)            :: a4tau(3,3)
+        real(kind=dp)             :: ev_etac0 = 0.0d0, ev_etac2(3,3), ev_etac4(3,3,3,3) ! <eta*c^k> terms
+        real(kind=dp)             :: eps(3,3), coefA,coefB,coefC, tausq(3,3), I2, a4tau(3,3)
 
-        call rheo_params_tranisotropic(Eij_grain,d,n_grain,1.0d0, coefA,coefB,coefC)
-        eps = (1 + 2.0d0/15*coefB + 2.0d0/3*coefC)*tau ! for n' = 1
-
-        ! Same as n'=3 but *without* the orientation-dependent terms in the nonlinear grain fluidity.        
-        if (n_grain .eq. -3) then 
-            I2 = doubleinner22(tau,tau)
-            eps = I2 * eps
-        end if
-
-        ! Nonlinear orientation-dependent grain fluidity
-        if (n_grain .eq. 3) then
-            I2 = doubleinner22(tau,tau)
+        call rheo_params_tranisotropic(Eij_grain,3,DFLOAT(n_grain),1, coefA,coefB,coefC)
+        I2 = doubleinner22(tau,tau)
+                    
+        if (n_grain .eq.  1) eps = (1 + 2.0d0/15*coefB + 2.0d0/3*coefC)*tau ! n'=1
+        if (n_grain .eq. -3) eps = I2*eps ! Same as n'=3 but disregarding the orientation-dependent terms in the nonlinear grain fluidity.
+        if (n_grain .eq.  3) then
             tausq = matmul(tau,tau)
             ev_etac0 = I2*1.0       + coefB*doubleinner22(doubleinner42(ev_c4_iso,tau),tau) + 2*coefC*doubleinner22(ev_c2_iso,tausq)
             ev_etac2 = I2*ev_c2_iso + coefB*doubleinner42(doubleinner62(ev_c6_iso,tau),tau) + 2*coefC*doubleinner42(ev_c4_iso,tausq)
@@ -196,30 +182,13 @@ contains
         implicit none
         
         real(kind=dp), intent(in) :: Eij_grain(2), tau(3,3)
-        integer, intent(in)       :: n_grain ! Dummy variable: <eps'(tau)> with Taylor hypothesis is implemented only for n' = 1.
-        real(kind=dp), parameter  :: d = 3.0d0
+        integer, intent(in)       :: n_grain ! Dummy variable, only n' = 1 implemented.
         real(kind=dp)             :: eps(3,3), coefA,coefB,coefC
 
-        call rheo_params_tranisotropic(Eij_grain,d,n_grain,-1.0d0, coefA,coefB,coefC)
-        eps = tau/(1 + 2.0d0/15*coefB + 2.0d0/3*coefC) ! Unlike the Taylor homogenization with an arbitrary anisotropy, when isotropic the analytical inverse is easy to derive.
+        call rheo_params_tranisotropic(Eij_grain,3,DFLOAT(n_grain),-1, coefA,coefB,coefC)
+        eps = tau/(1 + 2.0d0/15*coefB + 2.0d0/3*coefC) ! Analytical inverse when isotropic.
     end
     
-    function rheo_fwd_tranisotropic_lintaylorsachshomo(tau, nlm, Aprime,Eij_grain,alpha) result(eps)
-
-        ! Mixed linear Taylor--Sachs grain-averaged rheology:
-        !       eps = (1-alpha)*<eps'(tau)> + alpha*eps(<tau'>)
-        ! ...where eps'(tau') is the transversely isotropic rheology for n'=1 (linear viscous)
-
-        implicit none
-
-        complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp), intent(in)    :: tau(3,3), Aprime, Eij_grain(2), alpha
-        real(kind=dp)                :: eps(3,3)
-        
-        eps = (1-alpha)*Aprime*rheo_fwd_tranisotropic_sachshomo( tau, nlm, Eij_grain,1)  &
-                + alpha*Aprime*rheo_fwd_tranisotropic_taylorhomo(tau, nlm, Eij_grain,1) 
-    end
-
     function anticommutator_Mandel(a2mat) result(L)
 
         ! Mandel form of anti-commutator: {a2,tau} := a2 . tau + tau . a2 
@@ -269,7 +238,7 @@ contains
 !        real(kind=dp) :: ev_r1(3,3), ev_r2(3,3), ev_r3(3,3)   
 !        real(kind=dp) :: ev_r1r2_sym(3,3), ev_r1r3_sym(3,3), ev_r2r3_sym(3,3)
 
-        call rheo_params_orthotropic(Eij_grain, n_grain, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+        call rheo_params_orthotropic(Eij_grain, DFLOAT(n_grain), lam1,lam2,lam3,lam4,lam5,lam6, gam)
         tauv = mat_to_vec(tau)
             
         ! Linear grain fluidity    
@@ -342,7 +311,7 @@ contains
         integer       :: info
     !    integer :: ipiv(9), work
                                                                
-        call rheo_params_orthotropic(Eij_grain, n_grain, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+        call rheo_params_orthotropic(Eij_grain, DFLOAT(n_grain), lam1,lam2,lam3,lam4,lam5,lam6, gam)
 
         ! Linear grain viscosity    
         if (n_grain .eq. 1) then

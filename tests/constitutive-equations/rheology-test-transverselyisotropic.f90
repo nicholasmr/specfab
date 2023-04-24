@@ -7,8 +7,7 @@ program demo
     implicit none
 
     integer, parameter :: dp = 8
-    real(kind=dp)      :: A, Eij(2), m(3), t(3)
-    integer            :: n
+    real(kind=dp)      :: A,n, Eij(2), m(3), t(3)
     real(kind=dp), dimension(3), parameter :: x1 = [1,0,0], x2 = [0,1,0], x3 = [0,0,1] ! x,y,z dir.
 
     call initspecfab(4) ! Not going to use specfab, but is good practice to initialize it even when using static routines (as is the case here).
@@ -42,7 +41,7 @@ program demo
     !-------------------------------------------------------------------
     
     A = 3.5d0 ! Rate factor (arbitrary value)
-    n = 3     ! Flow law exponent
+    n = 3.0d0 ! Flow law exponent
 
     print *, '--------------------------------------------------------'    
     print *, 'Test that enhancement factors are correctly recovered for longitudinal and shear deformation along m and t'
@@ -80,8 +79,7 @@ function eps_ratio(tau, A,n, m,Eij, v,w)
 
     integer, parameter        :: dp = 8
     real(kind=dp), intent(in) :: tau(3,3), v(3), w(3)
-    real(kind=dp), intent(in) :: A, m(3), Eij(2)
-    integer, intent(in)       :: n
+    real(kind=dp), intent(in) :: A,n, m(3), Eij(2)
     real(kind=dp)             :: eps_ratio
 
     eps_ratio = doubleinner22(rheo_fwd_tranisotropic(tau, A,n, m,Eij), outerprod(v,w)) / &
@@ -93,8 +91,7 @@ subroutine tau_of_eps_of_tau(tau_in, A,n, m,Eij)
     implicit none
 
     integer, parameter        :: dp = 8
-    real(kind=dp), intent(in) :: tau_in(3,3), A, m(3), Eij(2)
-    integer, intent(in)       :: n
+    real(kind=dp), intent(in) :: tau_in(3,3), A,n, m(3), Eij(2)
     real(kind=dp)             :: eps(3,3), tau(3,3)
 
     eps = rheo_fwd_tranisotropic(tau_in,  A,n, m,Eij)

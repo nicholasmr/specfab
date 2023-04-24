@@ -53,9 +53,9 @@ p, q = (m+t)/np.sqrt(2), (m-t)/np.sqrt(2)
 mm, mt, pq = np.tensordot(m,m, axes=0), np.tensordot(m,t, axes=0), np.tensordot(p,q, axes=0)
 
 tau0 = 1 # results are independant of the stress magnitude
-tau_ps_mm = tau0*(np.identity(3)/3 - mm) 
-tau_ss_mt = tau0*(mt + mt.T) 
-tau_ss_pq = tau0*(pq + pq.T)
+tau_mm = tau0*(np.identity(3)/3 - mm) 
+tau_mt = tau0*(mt + mt.T) 
+tau_pq = tau0*(pq + pq.T)
 
 L = 10
 lm, nlm_len = sf.init(L) # nlm_len is the number of fabric expansion coefficients (degrees of freedom).
@@ -82,16 +82,16 @@ for nn, n_grain in enumerate(n_grain_list):
     for ii,Eca in enumerate(Eca_list):
         for jj,Ecc in enumerate(Ecc_list):
             Eij_grain = [Ecc,Eca]
-            Emm[nn,ii,jj] = sf.Evw_tranisotropic(nlm, mm,tau_ps_mm, Eij_grain,0,n_grain) 
-            Emt[nn,ii,jj] = sf.Evw_tranisotropic(nlm, mt,tau_ss_mt, Eij_grain,0,n_grain)
-            Epq[nn,ii,jj] = sf.Evw_tranisotropic(nlm, pq,tau_ss_pq, Eij_grain,0,n_grain)
+            Emm[nn,ii,jj] = sf.Evw_tranisotropic(nlm, m,m,tau_mm, Eij_grain,0,n_grain) 
+            Emt[nn,ii,jj] = sf.Evw_tranisotropic(nlm, m,t,tau_mt, Eij_grain,0,n_grain)
+            Epq[nn,ii,jj] = sf.Evw_tranisotropic(nlm, p,q,tau_pq, Eij_grain,0,n_grain)
         
 X = np.array([[ Ecc for Ecc in Ecc_list]   for Eca in Eca_list])
 Y = np.array([[ Eca for Ecc in Ecc_list]   for Eca in Eca_list])
 
 #-------------------------    
 
-panelstrs = [r"(a) $n'=1$", r"(b) $n'=3$"]
+panelstrs = [r"\textit{(a)}\, $n'=1$", r"\textit{(b)}\, $n'=3$"]
 xysim = [(1,1e4), (1,1e4)]
     
 scale = 1.35

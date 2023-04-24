@@ -13,8 +13,7 @@ module lambdasolver
     real(kind=dp), parameter :: TOL = 1d-6 
 
     ! Common block 
-    integer :: nglen_saved
-    real(kind=dp) :: Eii_saved(3)
+    real(kind=dp) :: nglen_saved, Eii_saved(3)
 
 contains
 
@@ -23,8 +22,7 @@ contains
         implicit none
 
         ! Input
-        integer :: nglen
-        real(kind=dp) :: Eii(3)
+        real(kind=dp) :: nglen, Eii(3)
 
         ! For DNQFJ
         integer :: IOPT(5)

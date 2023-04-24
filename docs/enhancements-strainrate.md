@@ -76,11 +76,11 @@ where $E_{ij}^{\mathrm{Sachs}}$ and $E_{ij}^{\mathrm{Taylor}}$ are calculated wi
 | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-monocrystal.png){: style="width:210px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} |
 
 If grains are approximately transversely isotropic, the grain rheology can be modelled using the [transversely isotropic power-law rheology](constitutive-viscoplastic.md).
-This requires specifying the three grain parameters $n'$, $E_{cc}'$ and $E_{ca}'$, and the Taylor&mdash;Sachs weight $\alpha$.
+This requires specifying the grain eigenenhancements $E_{cc}'$ and $E_{ca}'$, the power-law exponent $n'$, and the Taylor&mdash;Sachs weight $\alpha$.
 
 #### Example for glacier ice
 
-The below example for glacier ice shows how $E_{ij}$ may be calculated given `a2`, `a4`, or `nlm`. 
+The below example for glacier ice shows how bulk $E_{ij}$ may be calculated given `a2`, `a4`, or `nlm`. 
 
 ```python
 import numpy as np
@@ -103,8 +103,8 @@ else: # use a4
 #(e1,e2,e3) = (np.array([1,0,0]),np.array([0,1,0]),np.array([0,0,1])) # x,y,z cartesian basis
 
 ### Transversely isotropic monocrystal parameters for ice (Rathmann & Lilien, 2021)
-n_grain   = 1        # n=1 => linear grain rheology (nonlinear not fully supported)
-Eij_grain = (1, 1e3) # (Ecc,Eca): Enhancement factor for compression along c-axis (Ecc) and for shear parallel to basal plane (Eca)
+n_grain   = 1        # Power-law exponent: n=1 => linear grain rheology, nonlinear (n>1) is unsupported.
+Eij_grain = (1, 1e3) # Grain eigenenhancements (Ecc,Eca) for compression along c-axis (Ecc) and for shear parallel to basal plane (Eca)
 alpha     = 0.0125   # Taylor--Sachs weight
 
 ### Calculate enhancement factors w.r.t. e1, e2, e3
@@ -118,7 +118,7 @@ Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # = (E11,E22,
 | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous-monocrystal.png){: style="width:250px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
 
 If grains are approximately orthotropic, the grain rheology can be modelled using the [orthotropic power-law rheology](constitutive-viscoplastic.md).
-This requires specifying the eight grain parameters $n'$, $E_{11}'$, $E_{22}'$, $E_{33}'$, $E_{12}'$, $E_{13}'$, $E_{23}'$, and the Taylor&mdash;Sachs weight $\alpha$.
+This requires specifying the grain eigenenhancements ($E_{11}'$, $E_{22}'$, $E_{33}'$, $E_{23}'$, $E_{13}'$, $E_{12}'$), the power-law exponent $n'$, and the Taylor&mdash;Sachs weight $\alpha$.
 
 #### Example for olivine
 

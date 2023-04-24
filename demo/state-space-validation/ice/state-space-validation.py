@@ -298,8 +298,8 @@ for xii, x_ in enumerate(x):
             nlm_[0], nlm_[3], nlm_[10] = 1, x_, y_
             m, t = np.array([0,0,1]), np.array([1,0,0])
             mm, mt = np.tensordot(m,m, axes=0), np.tensordot(m,t, axes=0)
-            tau_ps_mm = 1*(np.identity(3)-3*mm) 
-            Ezz[yii,xii] = sf.Evw_tranisotropic(nlm_, mm,tau_ps_mm, Eij_grain,alpha,n_grain)
+            tau_mm = 1*(np.identity(3)-3*mm) 
+            Ezz[yii,xii] = sf.Evw_tranisotropic(nlm_, m,m,tau_mm, Eij_grain,alpha,n_grain)
         else:
             Ezz[yii,xii] = np.nan
                 

@@ -28,7 +28,7 @@ where
 | `Elam`, `Emu`, `Egam` | Anisotropic enhancement factors $\hat{\lambda}$, $\hat{\mu}$, and $\hat{\gamma}$  |
 
 !!! note
-    P-wave modulus is $\gamma \equiv \lambda + 2\mu$ (i.e. not a free parameter).
+    P-wave modulus is not a free parameter but given by $\gamma \equiv \lambda + 2\mu$.
     
 !!! tip "Tip: convert from $C_{ij}$ to Lamé parameters"
 

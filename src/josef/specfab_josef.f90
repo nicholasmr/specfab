@@ -68,11 +68,11 @@ subroutine mtframe_2d_josef(nlm, m,t, am,at, Emm,Emt, Exx,Exz, fabtype,  Eij_gra
 !        stop 'm not normalized!'
     end if
     
-    Emm = Evw_tranisotropic(outerprod(m3,m3), tau_vv(m3),     nlm, Eij_grain,alpha,n_grain) ! Longitidinal
-    Emt = Evw_tranisotropic(outerprod(m3,t3), tau_vw(m3,t3),  nlm, Eij_grain,alpha,n_grain) ! Shear
+    Emm = Evw_tranisotropic(m3,m3, tau_vv(m3),     nlm, Eij_grain,alpha,n_grain) ! Longitidinal
+    Emt = Evw_tranisotropic(m3,t3, tau_vw(m3,t3),  nlm, Eij_grain,alpha,n_grain) ! Shear
 
-    Exx = Evw_tranisotropic(outerprod(ex,ex), tau_vv(ex),     nlm, Eij_grain,alpha,n_grain) ! Longitidinal
-    Exz = Evw_tranisotropic(outerprod(ex,ez), tau_vw(ex,ez),  nlm, Eij_grain,alpha,n_grain) ! Shear
+    Exx = Evw_tranisotropic(ex,ex, tau_vv(ex),     nlm, Eij_grain,alpha,n_grain) ! Longitidinal
+    Exz = Evw_tranisotropic(ex,ez, tau_vw(ex,ez),  nlm, Eij_grain,alpha,n_grain) ! Shear
 
 end
 
@@ -121,12 +121,12 @@ subroutine mtframe_3d_josef(nlm, m,t, am,at1,at2, Emm,Emt, Exx,Exy,Exz, fabtype,
         t = -1.0*t
     end if
     
-    Emm = Evw_tranisotropic(outerprod(m,m), tau_vv(m),   nlm, Eij_grain,alpha,n_grain) ! Longitidinal
-    Emt = Evw_tranisotropic(outerprod(m,t), tau_vw(m,t), nlm, Eij_grain,alpha,n_grain) ! Shear
+    Emm = Evw_tranisotropic(m,m, tau_vv(m),   nlm, Eij_grain,alpha,n_grain) ! Longitidinal
+    Emt = Evw_tranisotropic(m,t, tau_vw(m,t), nlm, Eij_grain,alpha,n_grain) ! Shear
 
-    Exx = Evw_tranisotropic(outerprod(ex,ex), tau_vv(ex),     nlm, Eij_grain,alpha,n_grain) ! Longitidinal
-    Exy = Evw_tranisotropic(outerprod(ex,ey), tau_vw(ex,ey),  nlm, Eij_grain,alpha,n_grain) ! Shear
-    Exz = Evw_tranisotropic(outerprod(ex,ez), tau_vw(ex,ez),  nlm, Eij_grain,alpha,n_grain) ! Shear
+    Exx = Evw_tranisotropic(ex,ex, tau_vv(ex),     nlm, Eij_grain,alpha,n_grain) ! Longitidinal
+    Exy = Evw_tranisotropic(ex,ey, tau_vw(ex,ey),  nlm, Eij_grain,alpha,n_grain) ! Shear
+    Exz = Evw_tranisotropic(ex,ez, tau_vw(ex,ez),  nlm, Eij_grain,alpha,n_grain) ! Shear
 
 end
 

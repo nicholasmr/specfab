@@ -1,4 +1,4 @@
-! D. A. Lilien and N. M. Rathmann, 2019-2022
+! D. A. Lilien and N. M. Rathmann, 2019-2023
 
 !-------------------
 ! AUX
@@ -38,8 +38,7 @@ function Cmat_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(C)
     ! Returns 9x9 matrix "C" such that vec(tau) = matmul(C, vec(eps)), where vec(tau) and vec(eps) are 9x1 column vectors.
 
     implicit none
-    real(kind=dp), intent(in)     :: A, m1(3),m2(3),m3(3), Eij(6)
-    integer, intent(in)           :: n
+    real(kind=dp), intent(in)     :: A,n, m1(3),m2(3),m3(3), Eij(6)
     real(kind=dp)                 :: eps(3,3), C(9,9)
     real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
     real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
@@ -50,14 +49,14 @@ function Cmat_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(C)
     call rheo_structs_orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
     call rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
 
-    viscosity = A**(-1.d0/n) * ( &
+    viscosity = A**(-1/n) * ( &
         + lam1/gam * J23**2 &
         + lam2/gam * J31**2 & 
         + lam3/gam * J12**2 &
         + 4 * (1/lam4) * J4**2 &
         + 4 * (1/lam5) * J5**2 &
         + 4 * (1/lam6) * J6**2 &
-    )**((1-n)/(2.d0*n))
+    )**((1-n)/(2*n))
 
     C = viscosity * ( &
         -3/4.0d0 * lam1/gam * outerprod9(vectorize9(identity - 3*M11), vectorize9(M11)) &
@@ -82,8 +81,7 @@ function Cmandel_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(Cmandel)
     ! To get the usual 3x3 form of tau, use: tau = vec_to_mat( matmul(Cmandel, mat_to_vec(eps)) )
 
     implicit none
-    real(kind=dp), intent(in)     :: A, m1(3),m2(3),m3(3), Eij(6)
-    integer, intent(in)           :: n
+    real(kind=dp), intent(in)     :: A,n, m1(3),m2(3),m3(3), Eij(6)
     real(kind=dp)                 :: eps(3,3), Cmandel(6,6)
     real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
     real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
@@ -94,14 +92,14 @@ function Cmandel_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(Cmandel)
     call rheo_structs_orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
     call rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
 
-    viscosity = A**(-1.d0/n) * ( &
+    viscosity = A**(-1/n) * ( &
         + lam1/gam * J23**2 &
         + lam2/gam * J31**2 & 
         + lam3/gam * J12**2 &
         + 4 * (1/lam4) * J4**2 &
         + 4 * (1/lam5) * J5**2 &
         + 4 * (1/lam6) * J6**2 &
-    )**((1.0d0-n)/(2.d0*n))
+    )**((1-n)/(2*n))
 
     Cmandel = viscosity * ( &
         -3/4.0d0 * lam1/gam * outerprod_to_Mandel(identity-3*M11,M11) &
@@ -126,9 +124,8 @@ subroutine Cmat_inverse_orthotropic_dimless(eps, n, m1,m2,m3, Eij, MinInVar, vis
     ! To get the usual 3x3 form of tau, use: tau = vec_to_mat( matmul(Cmandel, mat_to_vec(eps)) )
 
     implicit none
-    real(kind=dp), intent(in)     :: m1(3),m2(3),m3(3), Eij(6), MinInVar
+    real(kind=dp), intent(in)     :: m1(3),m2(3),m3(3), Eij(6),n, MinInVar
     real(kind=dp), intent(out)    :: viscosity, C6(6,6) 
-    integer, intent(in)           :: n
     real(kind=dp)                 :: eps(3,3), Cmandel(6,6)
     real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
     real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam

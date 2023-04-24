@@ -152,17 +152,17 @@ p, q = (m+t)/np.sqrt(2), (m-t)/np.sqrt(2)
 mm, mt, pq = np.tensordot(m,m, axes=0), np.tensordot(m,t, axes=0), np.tensordot(p,q, axes=0)
 
 # Idealized stress states (aligned with fabric axes)
-tau_ps_mm = 1*(np.identity(3)-3*mm) 
-tau_ss_mt = 1*(mt + np.transpose(mt)) 
-tau_ss_pq = 1*(pq + np.transpose(pq))
+tau_mm = 1*(np.identity(3)-3*mm) 
+tau_mt = 1*(mt + np.transpose(mt)) 
+tau_pq = 1*(pq + np.transpose(pq))
 
 print('Calculating E_zz map ...', end='')
 for xii, x_ in enumerate(x):
     for yii, y_ in enumerate(y): 
         nlm_ = np.zeros((nlm_len), dtype=np.complex64) # The expansion coefficients
         nlm_[0], nlm_[3], nlm_[10] = 1, x_, y_
-        Ezz[yii,xii] = sf.Evw_tranisotropic(nlm_, mm,tau_ps_mm, Eij_grain,alpha,n_grain)
-        Exz[yii,xii] = sf.Evw_tranisotropic(nlm_, mt,tau_ss_mt, Eij_grain,alpha,n_grain)
+        Ezz[yii,xii] = sf.Evw_tranisotropic(nlm_, m,m,tau_mm, Eij_grain,alpha,n_grain)
+        Exz[yii,xii] = sf.Evw_tranisotropic(nlm_, m,t,tau_mt, Eij_grain,alpha,n_grain)
 
 print('done')
 
@@ -171,9 +171,9 @@ if DEBUG:
     a2 = np.tensordot(m,m, axes=0)
     a4 = np.tensordot(a2,a2, axes=0)
     nlm_sm = sf.a4_to_nlm(a4)
-    Ezz_sm = sf.Evw_tranisotropic(nlm_sm, mm,tau_ps_mm, Eij_grain,alpha,n_grain)
-    Exz_sm = sf.Evw_tranisotropic(nlm_sm, mt,tau_ss_mt, Eij_grain,alpha,n_grain)
-    Epq_sm = sf.Evw_tranisotropic(nlm_sm, pq,tau_ss_pq, Eij_grain,alpha,n_grain)
+    Ezz_sm = sf.Evw_tranisotropic(nlm_sm, m,m,tau_mm, Eij_grain,alpha,n_grain)
+    Exz_sm = sf.Evw_tranisotropic(nlm_sm, m,t,tau_mt, Eij_grain,alpha,n_grain)
+    Epq_sm = sf.Evw_tranisotropic(nlm_sm, p,q,tau_pq, Eij_grain,alpha,n_grain)
     print(nlm_sm)
     print('Ezz_sm, Exz_sm, Exz_sm/Epq_sm = %.1e, %.1e, %.1e'%(Ezz_sm,Exz_sm, Exz_sm/Epq_sm))
 
