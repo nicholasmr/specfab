@@ -32,133 +32,119 @@ include "elmer/include/IBOF.f90"
 ! VECTORIZED RHEOLOGIES
 !-------------------
     
-function Cmat_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(C)
+function Cmat_inverse_orthotropic(eps, A, n, m1,m2,m3, Eij) result(C)
 
-    ! Vectorized inverse orthotropic flow law "tau_of_eps_orthotropic()".
+    ! Vectorized inverse orthotropic rheology
     ! Returns 9x9 matrix "C" such that vec(tau) = matmul(C, vec(eps)), where vec(tau) and vec(eps) are 9x1 column vectors.
 
     implicit none
-    real(kind=dp), intent(in)     :: A,n, m1(3),m2(3),m3(3), Eij(6)
-    real(kind=dp)                 :: eps(3,3), C(9,9)
-    real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
-    real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
-    real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
-    real(kind=dp)                 :: viscosity
+    real(kind=dp), intent(in) :: eps(3,3), A, n, m1(3),m2(3),m3(3), Eij(6)
+    real(kind=dp)             :: C(9,9), lami(6), ci(6), cvi(6), gam, Mij(6,3,3), Fij(6,3,3), Ii(6), viscosity
 
-    call rheo_params_orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-    call rheo_structs_orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
-    call rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
+    call rheo_params_orthotropic(Eij, n, lami, gam)
+    call rheo_structs_orthotropic(eps,m1,m2,m3, 'R', Fij, Ii)
+    Mij = Mij_orthotropic(m1,m2,m3)
 
-    viscosity = A**(-1/n) * ( &
-        + lam1/gam * J23**2 &
-        + lam2/gam * J31**2 & 
-        + lam3/gam * J12**2 &
-        + 4 * (1/lam4) * J4**2 &
-        + 4 * (1/lam5) * J5**2 &
-        + 4 * (1/lam6) * J6**2 &
-    )**((1-n)/(2*n))
+    cvi(1:3) = 4.0d0/3 * lami(1:3)/gam
+    cvi(4:6) =       2 * 1/lami(4:6)
 
+    ci(1:3) = -3/4.0d0 * cvi(1:3)
+    ci(4:6) = cvi(4:6)
+
+    viscosity = A**(-1/n) * sum(cvi*Ii**2)**powlawexp_rev(n)
     C = viscosity * ( &
-        -3/4.0d0 * lam1/gam * outerprod9(vectorize9(identity - 3*M11), vectorize9(M11)) &
-        -3/4.0d0 * lam2/gam * outerprod9(vectorize9(identity - 3*M22), vectorize9(M22)) &
-        -3/4.0d0 * lam3/gam * outerprod9(vectorize9(identity - 3*M33), vectorize9(M33)) &
-        + 2/lam4            * outerprod9(vectorize9(M23 + transpose(M23)), vectorize9(M23)) &
-        + 2/lam5            * outerprod9(vectorize9(M31 + transpose(M31)), vectorize9(M31)) &
-        + 2/lam6            * outerprod9(vectorize9(M12 + transpose(M12)), vectorize9(M12)) &
+        + ci(1) * outerprod9(vectorize9(identity - 3*Mij(1,:,:)), vectorize9(Mij(1,:,:))) &
+        + ci(2) * outerprod9(vectorize9(identity - 3*Mij(2,:,:)), vectorize9(Mij(2,:,:))) &
+        + ci(3) * outerprod9(vectorize9(identity - 3*Mij(3,:,:)), vectorize9(Mij(3,:,:))) &
+        + ci(4) * outerprod9(vectorize9(symmetricpart(Mij(4,:,:))), vectorize9(Mij(4,:,:))) &
+        + ci(5) * outerprod9(vectorize9(symmetricpart(Mij(5,:,:))), vectorize9(Mij(5,:,:))) &
+        + ci(6) * outerprod9(vectorize9(symmetricpart(Mij(6,:,:))), vectorize9(Mij(6,:,:))) &
     )
 end
 
-function Cmandel_inverse_orthotropic(eps, A,n, m1,m2,m3, Eij) result(Cmandel)
+function Cmandel_inverse_orthotropic(eps, A, n, m1,m2,m3, Eij) result(C)
 
-    ! Vectorized inverse orthotropic flow law "tau_of_eps_orthotropic()" in Mandel's form.
-    
-    ! Returns 6x6 matrix "Cmandel" such that: 
-    !       mat_to_vec(tau) = matmul(Cmandel, mat_to_vec(eps))
-    ! where 
+    ! Vectorized inverse orthotropic rheology
+    ! Returns 6x6 Mandel matrix "C" such that mat_to_vec(tau) = matmul(Cmandel, mat_to_vec(eps)), where
     !       mat_to_vec(H) = [H_xx, H_yy, H_zz, sqrt(2)*H_yz, sqrt(2)*H_xz, sqrt(2)*H_xy] 
-    ! is a 6x1 Mandel vector (see mandel.f90).
-    
-    ! To get the usual 3x3 form of tau, use: tau = vec_to_mat( matmul(Cmandel, mat_to_vec(eps)) )
+    ! defines the 6x1 Mandel vector (see mandel.f90).
+    ! To get the usual 3x3 form of tau: tau = vec_to_mat( matmul(Cmandel, mat_to_vec(eps)) )
 
     implicit none
-    real(kind=dp), intent(in)     :: A,n, m1(3),m2(3),m3(3), Eij(6)
-    real(kind=dp)                 :: eps(3,3), Cmandel(6,6)
-    real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
-    real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
-    real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
-    real(kind=dp)                 :: viscosity
+    real(kind=dp), intent(in) :: eps(3,3), A, n, m1(3),m2(3),m3(3), Eij(6)
+    real(kind=dp)             :: C(6,6), lami(6), ci(6), cvi(6), gam, Mij(6,3,3), Fij(6,3,3), Ii(6), viscosity
 
-    call rheo_params_orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-    call rheo_structs_orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
-    call rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
+    call rheo_params_orthotropic(Eij, n, lami, gam)
+    call rheo_structs_orthotropic(eps,m1,m2,m3, 'R', Fij, Ii)
+    Mij = Mij_orthotropic(m1,m2,m3)
 
-    viscosity = A**(-1/n) * ( &
-        + lam1/gam * J23**2 &
-        + lam2/gam * J31**2 & 
-        + lam3/gam * J12**2 &
-        + 4 * (1/lam4) * J4**2 &
-        + 4 * (1/lam5) * J5**2 &
-        + 4 * (1/lam6) * J6**2 &
-    )**((1-n)/(2*n))
+    cvi(1:3) = 4.0d0/3 * lami(1:3)/gam
+    cvi(4:6) =       2 * 1/lami(4:6)
 
-    Cmandel = viscosity * ( &
-        -3/4.0d0 * lam1/gam * outerprod_to_Mandel(identity-3*M11,M11) &
-        -3/4.0d0 * lam2/gam * outerprod_to_Mandel(identity-3*M22,M22) &
-        -3/4.0d0 * lam3/gam * outerprod_to_Mandel(identity-3*M33,M33) &
-        + 1/lam4 * outerprod_to_Mandel(M23+transpose(M23), M23+transpose(M23)) &
-        + 1/lam5 * outerprod_to_Mandel(M31+transpose(M31), M31+transpose(M31)) &
-        + 1/lam6 * outerprod_to_Mandel(M12+transpose(M12), M12+transpose(M12)) &
+    ci(1:3) = -3/4.0d0 * cvi(1:3)
+    ci(4:6) = cvi(4:6)
+
+    viscosity = A**(-1/n) * sum(cvi*Ii**2)**powlawexp_rev(n)
+
+    C = viscosity * ( &
+        + ci(1) * outerprod_to_Mandel(identity-3*Mij(1,:,:),Mij(1,:,:)) &
+        + ci(2) * outerprod_to_Mandel(identity-3*Mij(2,:,:),Mij(2,:,:)) &
+        + ci(3) * outerprod_to_Mandel(identity-3*Mij(3,:,:),Mij(3,:,:)) &
+        + ci(4) * outerprod_to_Mandel(symmetricpart(Mij(4,:,:)), symmetricpart(Mij(4,:,:))) &
+        + ci(5) * outerprod_to_Mandel(symmetricpart(Mij(5,:,:)), symmetricpart(Mij(5,:,:))) &
+        + ci(6) * outerprod_to_Mandel(symmetricpart(Mij(6,:,:)), symmetricpart(Mij(6,:,:))) &
     )
 end
 
 subroutine Cmat_inverse_orthotropic_dimless(eps, n, m1,m2,m3, Eij, MinInVar, viscosity, C6)
 
-    ! Vectorized inverse orthotropic flow law "tau_of_eps_orthotropic()" in Mandel's form.
-    
-    ! Returns 6x6 matrix "Cmandel" such that: 
-    !       mat_to_vec(tau) = matmul(Cmandel, mat_to_vec(eps))
-    ! where 
-    !       mat_to_vec(H) = [H_xx, H_yy, H_zz, sqrt(2)*H_yz, sqrt(2)*H_xz, sqrt(2)*H_xy] 
-    ! is a 6x1 Mandel vector (see mandel.f90).
-    
-    ! To get the usual 3x3 form of tau, use: tau = vec_to_mat( matmul(Cmandel, mat_to_vec(eps)) )
+    ! Same as Cmandel_inverse_orthotropic(), but returns the decomposed problem (tensorial and viscosity parts) for Lilien's Elmer/Ice interface.
 
     implicit none
-    real(kind=dp), intent(in)     :: m1(3),m2(3),m3(3), Eij(6),n, MinInVar
-    real(kind=dp), intent(out)    :: viscosity, C6(6,6) 
-    real(kind=dp)                 :: eps(3,3), Cmandel(6,6)
-    real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
-    real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
-    real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
+    real(kind=dp), intent(in)  :: eps(3,3), n, m1(3),m2(3),m3(3), Eij(6), MinInVar
+    real(kind=dp)              :: C(6,6), lami(6), ci(6), cvi(6), gam, Mij(6,3,3), Fij(6,3,3), Ii(6)
+    real(kind=dp), intent(out) :: viscosity, C6(6,6) 
 
-    call rheo_params_orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-    call rheo_structs_orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
-    call rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
+    call rheo_params_orthotropic(Eij, n, lami, gam)
+    call rheo_structs_orthotropic(eps,m1,m2,m3, 'R', Fij, Ii)
+    Mij = Mij_orthotropic(m1,m2,m3)
 
-    viscosity = ( &
-        + lam1/gam * J23**2 &
-        + lam2/gam * J31**2 & 
-        + lam3/gam * J12**2 &
-        + 4 * (1/lam4) * J4**2 &
-        + 4 * (1/lam5) * J5**2 &
-        + 4 * (1/lam6) * J6**2 &
-    )
+    cvi(1:3) = 4.0d0/3 * lami(1:3)/gam
+    cvi(4:6) =       2 * 1/lami(4:6)
 
-    IF (viscosity.LT.MinInVar) viscosity = MinInVar
-    viscosity = (2.0_dp * viscosity) ** ((1.0_dp-n)/(2.0_dp*n))
+    ci(1:3) = -3/4.0d0 * cvi(1:3)
+    ci(4:6) = cvi(4:6)
 
-    Cmandel = ( &
-        -3/4.0d0 * lam1/gam * outerprod_to_Mandel(identity-3*M11,M11) &
-        -3/4.0d0 * lam2/gam * outerprod_to_Mandel(identity-3*M22,M22) &
-        -3/4.0d0 * lam3/gam * outerprod_to_Mandel(identity-3*M33,M33) &
-        + 1/lam4 * outerprod_to_Mandel(M23+transpose(M23), M23+transpose(M23)) &
-        + 1/lam5 * outerprod_to_Mandel(M31+transpose(M31), M31+transpose(M31)) &
-        + 1/lam6 * outerprod_to_Mandel(M12+transpose(M12), M12+transpose(M12)) &
-    )
-    C6 = CMandel([1, 2, 3, 6, 4, 5], [1, 2, 3, 6, 4, 5])
+    viscosity = sum(cvi*Ii**2)
+    if (viscosity .lt. MinInVar) viscosity = MinInVar
+    viscosity = (2.0d0 * viscosity)**powlawexp_rev(n)
+
+    C = + ci(1) * outerprod_to_Mandel(identity-3*Mij(1,:,:),Mij(1,:,:)) &
+        + ci(2) * outerprod_to_Mandel(identity-3*Mij(2,:,:),Mij(2,:,:)) &
+        + ci(3) * outerprod_to_Mandel(identity-3*Mij(3,:,:),Mij(3,:,:)) &
+        + ci(4) * outerprod_to_Mandel(symmetricpart(Mij(4,:,:)), symmetricpart(Mij(4,:,:))) &
+        + ci(5) * outerprod_to_Mandel(symmetricpart(Mij(5,:,:)), symmetricpart(Mij(5,:,:))) &
+        + ci(6) * outerprod_to_Mandel(symmetricpart(Mij(6,:,:)), symmetricpart(Mij(6,:,:))) 
+        
+    C6 = C([1, 2, 3, 6, 4, 5], [1, 2, 3, 6, 4, 5])
     C6(1:3, 1:3) = 2.0_dp * C6(1:3, 1:3)
     C6(4:6, 1:3) = C6(4:6, 1:3) / sqrt(2.0_dp)
     C6(1:3, 4:6) = C6(1:3, 4:6) * sqrt(2.0_dp)
+end
+
+function rheo_rev_orthotropic_dimless(eps, n, m1,m2,m3, Eij) result(tau)
+
+    implicit none
+    real(kind=dp), intent(in) :: eps(3,3), n, m1(3),m2(3),m3(3), Eij(6)
+    real(kind=dp)             :: tau(3,3), lami(6), gam, Gij(6,3,3), Ji(6)
+
+    call rheo_params_orthotropic(Eij, n, lami, gam)
+    call rheo_structs_orthotropic(eps,m1,m2,m3, 'R', Gij, Ji)
+    
+    lami(1:3) = 4.0d0/3 * lami(1:3)/gam
+    lami(4:6) =       2 * 1/lami(4:6)
+
+    tau = singleinner13(lami*Ji, Gij)
 end
 
 !-------------------

@@ -1,6 +1,6 @@
 ! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2022
 
-! Fabric (ODF) dynamics in spectral space.
+! CPO dynamics in spectral space.
 
 module dynamics  
 

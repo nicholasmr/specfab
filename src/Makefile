@@ -8,6 +8,8 @@ COMPILER=gfortran -ffree-line-length-none -m64 -Wall -fPIC -Wno-integer-division
 OPTS=-O2 -mcmodel=medium -lm -llapack -lblas
 OPTSNETCDF=-lnetcdff -I/usr/include -L/usr/lib 
 
+VERBOSE_F2PY=--quiet
+
 #-------------------
 # Core modules
 #-------------------
@@ -89,8 +91,8 @@ specfabpy: $(SPECFAB).o
 	for pyver in $(PYVERS); do \
 		echo "*** Making specfabpy for python$$pyver"; \
 		rm -f specfabpy.pyf; \
-		python$$pyver -m numpy.f2py --no-lower -m specfabpy -h specfabpy.pyf specfabpy.f90 --quiet; \
-		python$$pyver -m numpy.f2py -lm -llapack -lblas -I. $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" --quiet; \
+		python$$pyver -m numpy.f2py --no-lower -m specfabpy -h specfabpy.pyf specfabpy.f90 $(VERBOSE_F2PY); \
+		python$$pyver -m numpy.f2py -lm -llapack -lblas -I. $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" $(VERBOSE_F2PY); \
 	done
 	@cp specfabpy.cpython* $(PATHDEMO)/
 	@echo "\n*** Python module (specfabpy) installed in /demo"

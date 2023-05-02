@@ -19,9 +19,13 @@ program demo
 
     ! Set a synthetic enhancement-factor (fluidity) structure that we later want to recover (test self consistency)
    
-    Eij(1) = 1d-2 ! m1--m1 longitudinal enhancement 
-    Eij(2) = 1d+0 ! m2--m2 longitudinal enhancement 
-    Eij(3) = 1d+2 ! m3--m3 longitudinal enhancement 
+!    Eij(1) = 1d-2 ! m1--m1 longitudinal enhancement 
+!    Eij(2) = 1d+0 ! m2--m2 longitudinal enhancement 
+!    Eij(3) = 1d+2 ! m3--m3 longitudinal enhancement 
+
+    Eij(1) = 5 ! m1--m1 longitudinal enhancement 
+    Eij(2) = 10 ! m2--m2 longitudinal enhancement 
+    Eij(3) = 50 ! m3--m3 longitudinal enhancement 
 
     Eij(4) = 50 ! m2--m3 shear enhancement 
     Eij(5) = 60 ! m3--m1 shear enhancement 

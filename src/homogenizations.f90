@@ -227,7 +227,7 @@ contains
         complex(kind=dp), intent(in) :: nlm_r1(:), nlm_r2(:), nlm_r3(:)
         integer, intent(in)          :: n_grain
         
-        real(kind=dp) :: eps(3,3), lam1,lam2,lam3,lam4,lam5,lam6, gam
+        real(kind=dp) :: eps(3,3), lami(6), ci(6), gam
 !        real(kind=dp) :: a2v_r1(6),a2v_r2(6),a2v_r3(6), a4v_r1(6,6),a4v_r2(6,6),a4v_r3(6,6), a4v_r1r2(6,6),a4v_r1r3(6,6),a4v_r2r3(6,6)
         real(kind=dp) :: a2v_r1(6),a2v_r2(6),a2v_r3(6), a4v_r1(6,6),a4v_r2(6,6),a4v_r3(6,6), a4_r1r2(3,3,3,3),a4_r1r3(3,3,3,3),a4_r2r3(3,3,3,3)  
         real(kind=dp) :: tauv(6), Q(6,6)
@@ -238,7 +238,10 @@ contains
 !        real(kind=dp) :: ev_r1(3,3), ev_r2(3,3), ev_r3(3,3)   
 !        real(kind=dp) :: ev_r1r2_sym(3,3), ev_r1r3_sym(3,3), ev_r2r3_sym(3,3)
 
-        call rheo_params_orthotropic(Eij_grain, DFLOAT(n_grain), lam1,lam2,lam3,lam4,lam5,lam6, gam)
+        call rheo_params_orthotropic(Eij_grain, DFLOAT(n_grain), lami, gam)
+        ci(1:3) = 4.0d0/3 * lami(1:3)
+        ci(4:6) =       2 * lami(4:6)
+
         tauv = mat_to_vec(tau)
             
         ! Linear grain fluidity    
@@ -281,12 +284,12 @@ contains
             call structensors_for_homogenized_orthotropic_rheology(nlm_r1,nlm_r2,nlm_r3, a2v_r1,a2v_r2,a2v_r3, a4v_r1,a4v_r2,a4v_r3, a4_r2r3,a4_r1r3,a4_r1r2)
             
             ! Matrix "Q" of the vectorized bulk Sachs rheology: vec(eps) = matmul(Q, vec(tau))
-            Q = + lam1 * (a4v_r2 + a4v_r3 - 2*a4_to_mat(a4_sym(a4_r2r3)))/4.0d0 &
-                + lam2 * (a4v_r1 + a4v_r3 - 2*a4_to_mat(a4_sym(a4_r1r3)))/4.0d0 &
-                + lam3 * (a4v_r1 + a4v_r2 - 2*a4_to_mat(a4_sym(a4_r1r2)))/4.0d0 &
-                + lam4 * a4_to_mat(a4_altsym(a4_r2r3)) &
-                + lam5 * a4_to_mat(a4_altsym(a4_r1r3)) &
-                + lam6 * a4_to_mat(a4_altsym(a4_r1r2))
+            Q = + ci(1) * (a4v_r2 + a4v_r3 - 2*a4_to_mat(a4_sym(a4_r2r3)))/4.0d0 &
+                + ci(2) * (a4v_r1 + a4v_r3 - 2*a4_to_mat(a4_sym(a4_r1r3)))/4.0d0 &
+                + ci(3) * (a4v_r1 + a4v_r2 - 2*a4_to_mat(a4_sym(a4_r1r2)))/4.0d0 &
+                + ci(4) * a4_to_mat(a4_altsym(a4_r2r3)) &
+                + ci(5) * a4_to_mat(a4_altsym(a4_r1r3)) &
+                + ci(6) * a4_to_mat(a4_altsym(a4_r1r2))
                 
             eps = vec_to_mat(matmul(Q,tauv))
         else
@@ -304,14 +307,16 @@ contains
         complex(kind=dp), intent(in) :: nlm_r1(:), nlm_r2(:), nlm_r3(:)
         integer, intent(in)          :: n_grain
 
-        real(kind=dp) :: eps(3,3), lam1,lam2,lam3,lam4,lam5,lam6, gam
+        real(kind=dp) :: eps(3,3), lami(6), ci(6), gam
         real(kind=dp) :: a2v_r1(6),a2v_r2(6),a2v_r3(6), a4v_r1(6,6),a4v_r2(6,6),a4v_r3(6,6), a4_r1r2(3,3,3,3),a4_r1r3(3,3,3,3),a4_r2r3(3,3,3,3)  
  
         real(kind=dp) :: P(6,6), tau_vec(6,1), P_reg(6,6), tau_vec_reg(6,1)
         integer       :: info
     !    integer :: ipiv(9), work
                                                                
-        call rheo_params_orthotropic(Eij_grain, DFLOAT(n_grain), lam1,lam2,lam3,lam4,lam5,lam6, gam)
+        call rheo_params_orthotropic(Eij_grain, DFLOAT(n_grain), lami, gam)
+        ci(1:3) = 4.0d0/3 * lami(1:3)/gam
+        ci(4:6) =       2 * 1/lami(4:6)
 
         ! Linear grain viscosity    
         if (n_grain .eq. 1) then
@@ -319,12 +324,12 @@ contains
             call structensors_for_homogenized_orthotropic_rheology(nlm_r1,nlm_r2,nlm_r3, a2v_r1,a2v_r2,a2v_r3, a4v_r1,a4v_r2,a4v_r3, a4_r2r3,a4_r1r3,a4_r1r2)
             
             ! Matrix "P" of the vectorized bulk Taylor rheology: tau = matmul(P, eps)
-            P = + lam1/gam * (-3.0d0/2) * (outerprod6(identity_vec6,a2v_r1) - 3*a4v_r1)/2 &
-                + lam2/gam * (-3.0d0/2) * (outerprod6(identity_vec6,a2v_r2) - 3*a4v_r2)/2 &
-                + lam3/gam * (-3.0d0/2) * (outerprod6(identity_vec6,a2v_r3) - 3*a4v_r3)/2 &
-                + 4 * (1/lam4) * a4_to_mat(a4_altsym(a4_r2r3)) &
-                + 4 * (1/lam5) * a4_to_mat(a4_altsym(a4_r1r3)) &
-                + 4 * (1/lam6) * a4_to_mat(a4_altsym(a4_r1r2))
+            P = + ci(1) * (-3.0d0/2) * (outerprod6(identity_vec6,a2v_r1) - 3*a4v_r1)/2 &
+                + ci(2) * (-3.0d0/2) * (outerprod6(identity_vec6,a2v_r2) - 3*a4v_r2)/2 &
+                + ci(3) * (-3.0d0/2) * (outerprod6(identity_vec6,a2v_r3) - 3*a4v_r3)/2 &
+                + ci(4) * a4_to_mat(a4_altsym(a4_r2r3)) &
+                + ci(5) * a4_to_mat(a4_altsym(a4_r1r3)) &
+                + ci(6) * a4_to_mat(a4_altsym(a4_r1r2))
             
             ! Solve inverse problem; we are seeking eps given tau in tau = matmul(P, eps).
             tau_vec(:,1) = mat_to_vec(tau)

@@ -1,15 +1,13 @@
 ! N. M. Rathmann <rathmann@nbi.ku.dk>, 2021
 
-! Module for solving for lambda'_i given nglen, E_11, E_22, E_33 
+! Module for solving for lambda_i given n, E_11, E_22, E_33 
 ! Required for Martin's forward orthotropic rheology
 
 module lambdasolver
 
     implicit none 
-
     integer, parameter, private :: dp = 8 ! Default precision
     integer, parameter :: NMAX = 3, LWA = 3+(15*NMAX+3*NMAX*NMAX)/2 
-
     real(kind=dp), parameter :: TOL = 1d-6 
 
     ! Common block 
@@ -20,9 +18,7 @@ contains
     function lambdaprime(nglen, Eii) result(X)
 
         implicit none
-
-        ! Input
-        real(kind=dp) :: nglen, Eii(3)
+        real(kind=dp) :: nglen, Eii(3) ! input
 
         ! For DNQFJ
         integer :: IOPT(5)
@@ -54,13 +50,11 @@ contains
     subroutine DNQFJ(N, X, FVEC, FJAC, IFLAG)
 
         implicit none
-
         integer       :: IFLAG, N
         real(kind=dp) :: FJAC(N,N), FVEC(N), X(N)
         real(kind=dp) :: expo, f0, f1
 
         expo = (nglen_saved-1)/2.0d0
-
         f0 = 3.0d0/8 
         f1 = 3.0d0/16
 
@@ -69,7 +63,6 @@ contains
             FVEC(2) = f0 * (f1)**(expo) * (x(3)+x(1))*(x(3)**2+x(3)*x(1)+x(1)**2)**(expo) - Eii_saved(2)
             FVEC(3) = f0 * (f1)**(expo) * (x(1)+x(2))*(x(1)**2+x(1)*x(2)+x(2)**2)**(expo) - Eii_saved(3)
         endif
-        
         return
     end
 

@@ -7,10 +7,10 @@
 !-----------
 !   eps = Strain-rate tensor (3x3)
 !   tau = Deviatoric stress tensor (3x3)
-!   A   = Strain-rate (flow rate) factor
-!   n   = Nonlinear flow exponent
-!   mi  = Material/rheological symmetry axes (m1,m2,m3)
-!   Eij = Directional enhancement factors w.r.t. axes "mi"
+!   A   = Flow-rate factor
+!   n   = Flow exponent (n=1 => linear, n->inf => plastic)
+!   mi  = Rheological symmetry axes (m1,m2,m3)
+!   Eij = Directional enhancement factors w.r.t. mi axes
 !-----------
 
 module rheologies
@@ -38,13 +38,6 @@ contains
         expo = (1-n)/(2*n)
     end
 
-    function symm(M) result(Msymm)
-        implicit none
-        real(kind=dp), intent(in) :: M(3,3)
-        real(kind=dp) :: Msymm(3,3)
-        Msymm = (M + transpose(M))/2
-    end
-
     !---------------------------------
     ! ISOTROPIC RHEOLOGY
     !---------------------------------
@@ -69,7 +62,6 @@ contains
         tau = viscosity * eps
     end
     
-
     !---------------------------------
     ! COMPRESSIBLE (POROUS) ISOTROPIC RHEOLOGY
     !---------------------------------
@@ -77,7 +69,7 @@ contains
     function rheo_fwd_isotropic_compressible(sig, A,n, fa,fb) result(eps)
 
         implicit none
-        real(kind=dp), intent(in)     :: sig(3,3), A,n, fa,fb
+        real(kind=dp), intent(in)     :: sig(3,3), A, n, fa,fb
         real(kind=dp)                 :: eps(3,3), fluidity, I1, I2
 
         I1 = sig(1,1)+sig(2,2)+sig(3,3)
@@ -90,7 +82,7 @@ contains
     function rheo_rev_isotropic_compressible(eps, A,n, fa,fb) result(sig)
 
         implicit none
-        real(kind=dp), intent(in)     :: eps(3,3), A,n, fa,fb
+        real(kind=dp), intent(in)     :: eps(3,3), A, n, fa,fb
         real(kind=dp)                 :: sig(3,3), viscosity, J1, J2
 
         J1 = eps(1,1)+eps(2,2)+eps(3,3)
@@ -104,211 +96,152 @@ contains
     ! TRANSVERSELY ISOTROPIC RHEOLOGY
     !---------------------------------
 
-    function rheo_fwd_tranisotropic(tau, A,n, m,Eij) result(eps)
+    function rheo_fwd_tranisotropic(tau, A,n, m1,Eij) result(eps)
 
         implicit none
-        real(kind=dp), intent(in) :: tau(3,3), A,n, m(3), Eij(2)
-        real(kind=dp)             :: eps(3,3), fluidity, kI,kM,kL, I2,I4,I5, mm(3,3),tausq(3,3)
+        real(kind=dp), intent(in) :: tau(3,3), A, n, m1(3), Eij(2)
+        real(kind=dp)             :: eps(3,3), fluidity, cI,cM,cL, M(3,3), I2,I4,I5
         
-        call rheo_params_tranisotropic(Eij,3,n,1, kI,kM,kL)
-
-        mm = outerprod(m,m)
-        tausq = matmul(tau,tau)    
-        I2 = doubleinner22(tau,tau)
-        I4 = doubleinner22(tau,mm)
-        I5 = doubleinner22(tausq,mm)
+        call rheo_params_tranisotropic(Eij,3,n,1, cI,cM,cL)
+        call rheo_structs_tranisotropic(tau,m1, M,I2,I4,I5)
         
-        fluidity = A*(I2 + kM*I4**2 + 2*kL*I5)**powlawexp_fwd(n)
-        eps = fluidity*( tau - kI*I4*identity + kM*I4*mm + kL*(matmul(tau,mm)+matmul(mm,tau)) )
+        fluidity = A * (I2 + cM*I4**2 + 2*cL*I5)**powlawexp_fwd(n)
+        eps = fluidity * (tau - cI*I4*identity + cM*I4*M + cL*anticommutator(tau,M))
     end
 
-    function rheo_rev_tranisotropic(eps, A,n, m,Eij) result(tau)
+    function rheo_rev_tranisotropic(eps, A,n, m1,Eij) result(tau)
 
         implicit none
-        real(kind=dp), intent(in) :: eps(3,3), A,n, m(3), Eij(2)
-        real(kind=dp)             :: tau(3,3), viscosity, kI,kM,kL, I2,I4,I5, mm(3,3),epssq(3,3)
+        real(kind=dp), intent(in) :: eps(3,3), A, n, m1(3), Eij(2)
+        real(kind=dp)             :: tau(3,3), viscosity, cI,cM,cL, M(3,3), J2,J4,J5
 
-        call rheo_params_tranisotropic(Eij,3,n,-1, kI,kM,kL)
+        call rheo_params_tranisotropic(Eij,3,n,-1, cI,cM,cL)
+        call rheo_structs_tranisotropic(eps,m1, M,J2,J4,J5)
 
-        mm = outerprod(m,m)
-        epssq = matmul(eps,eps)    
-        I2 = doubleinner22(eps,eps)
-        I4 = doubleinner22(eps,mm)
-        I5 = doubleinner22(epssq,mm)
-
-        viscosity = A**(-1/n)*(I2 + kM*I4**2 + 2*kL*I5)**powlawexp_rev(n)
-        tau = viscosity*( eps - kI*I4*identity + kM*I4*mm + kL*(matmul(eps,mm)+matmul(mm,eps)) )
+        viscosity = A**(-1/n) * (J2 + cM*J4**2 + 2*cL*J5)**powlawexp_rev(n)
+        tau = viscosity * (eps - cI*J4*identity + cM*J4*M + cL*anticommutator(eps,M))
     end
 
-    subroutine rheo_params_tranisotropic(Eij, d, n, expofactor, kI,kM,kL)
+    subroutine rheo_params_tranisotropic(Eij, d, n, ef, cI,cM,cL)
 
         implicit none
-        real(kind=dp), intent(in)  :: Eij(2), n ! Eij := (Emm,Emt)
-        integer, intent(in)        :: d, expofactor
-        real(kind=dp), intent(out) :: kI, kM, kL
-        real(kind=dp)              :: nexpo
+        real(kind=dp), intent(in)  :: Eij(2), n ! Eij = (Emm,Emt)
+        integer, intent(in)        :: d, ef
+        real(kind=dp), intent(out) :: cI, cM, cL
+        real(kind=dp)              :: ne
 
-        nexpo = expofactor * 2/(n+1) 
-        kI = (Eij(1)**nexpo - 1)/(d-1)
-        kM = (d*(Eij(1)**nexpo+1) - 2)/(d-1) - 2*Eij(2)**nexpo
-        kL = Eij(2)**nexpo - 1
+        ne = ef * 2/(n+1) ! ef is exponent (pre)factor
+        cI = (Eij(1)**ne - 1)/(d-1)
+        cM = (d*(Eij(1)**ne+1) - 2)/(d-1) - 2*Eij(2)**ne
+        cL = Eij(2)**ne - 1
+    end
+
+    subroutine rheo_structs_tranisotropic(X,m1, M,I2,I4,I5)
+
+        implicit none    
+        real(kind=dp), intent(in)  :: X(3,3), m1(3) ! X = eps or tau, m1 = rotational symmetry axis
+        real(kind=dp), intent(out) :: M(3,3), I2, I4, I5
+
+        M = outerprod(m1,m1)
+        I2 = doubleinner22(X,X)
+        I4 = doubleinner22(X,M)
+        I5 = doubleinner22(matmul(X,X),M)
     end
 
     !---------------------------------
     ! ORTHOTROPIC RHEOLOGY
     !---------------------------------
 
-    function rheo_fwd_orthotropic(tau, A,n, m1,m2,m3, Eij) result(eps)
+    function rheo_fwd_orthotropic(tau, A, n, m1,m2,m3, Eij) result(eps)
 
         implicit none
-        real(kind=dp), intent(in)     :: tau(3,3), A,n, m1(3),m2(3),m3(3), Eij(6)
-        real(kind=dp)                 :: eps(3,3)
-        real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
-        real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
-        real(kind=dp)                 :: I1,I2,I3,I4,I5,I6
-        real(kind=dp)                 :: fluidity
+        real(kind=dp), intent(in) :: tau(3,3), A, n, m1(3),m2(3),m3(3), Eij(6)
+        real(kind=dp)             :: eps(3,3), lami(6), ci(6), gam, Fij(6,3,3), Ii(6), fluidity
 
-        call rheo_params_orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-        call rheo_structs_orthotropic(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12, I1,I2,I3,I4,I5,I6)
-
-        fluidity = A * ( &
-            + lam1 * I1**2 &
-            + lam2 * I2**2 &
-            + lam3 * I3**2 &
-            + lam4 * I4**2 &
-            + lam5 * I5**2 &
-            + lam6 * I6**2 &
-        )**powlawexp_fwd(n)
+        call rheo_params_orthotropic(Eij, n, lami, gam)
+        call rheo_structs_orthotropic(tau,m1,m2,m3, 'F', Fij,Ii)
         
-        eps = fluidity * ( &
-            + lam1 * I1 * (M22 - M33)/2 &
-            + lam2 * I2 * (M33 - M11)/2 &
-            + lam3 * I3 * (M11 - M22)/2 &
-            + lam4 * I4 * (M23 + transpose(M23))/2 &
-            + lam5 * I5 * (M31 + transpose(M31))/2 &
-            + lam6 * I6 * (M12 + transpose(M12))/2 &
-        )
+        ci(1:3) = 4.0d0/3 * lami(1:3)
+        ci(4:6) =       2 * lami(4:6)
+
+        fluidity = A * sum(ci*Ii**2)**powlawexp_fwd(n)
+        eps = fluidity * singleinner13(ci*Ii, Fij)
+
     end
 
-    function rheo_rev_orthotropic(eps, A,n, m1,m2,m3, Eij) result(tau)
+    function rheo_rev_orthotropic(eps, A, n, m1,m2,m3, Eij) result(tau)
 
         implicit none
-        real(kind=dp), intent(in)     :: eps(3,3), A,n, m1(3),m2(3),m3(3), Eij(6)
-        real(kind=dp)                 :: tau(3,3)
-        real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
-        real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
-        real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
-        real(kind=dp)                 :: viscosity
+        real(kind=dp), intent(in) :: eps(3,3), A, n, m1(3),m2(3),m3(3), Eij(6)
+        real(kind=dp)             :: tau(3,3), lami(6), ci(6), gam, Fij(6,3,3), Ii(6), viscosity
 
-        call rheo_params_orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-        call rheo_structs_orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
-        call rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
+        call rheo_params_orthotropic(Eij, n, lami, gam)
+        call rheo_structs_orthotropic(eps,m1,m2,m3, 'R', Fij, Ii)
 
-        viscosity = A**(-1/n) * ( &
-            + lam1/gam * J23**2 &
-            + lam2/gam * J31**2 & 
-            + lam3/gam * J12**2 &
-            + 4 * (1/lam4) * J4**2 &
-            + 4 * (1/lam5) * J5**2 &
-            + 4 * (1/lam6) * J6**2 &
-        )**powlawexp_rev(n)
+        ci(1:3) = 4.0d0/3 * lami(1:3)/gam
+        ci(4:6) =       2 * 1/lami(4:6)
 
-        tau = viscosity * ( &
-            + lam1/gam * J23 * (identity - 3*M11)/2 &
-            + lam2/gam * J31 * (identity - 3*M22)/2 &
-            + lam3/gam * J12 * (identity - 3*M33)/2 &
-            + 4 * (1/lam4) * J4 * (M23 + transpose(M23))/2 &
-            + 4 * (1/lam5) * J5 * (M31 + transpose(M31))/2 &
-            + 4 * (1/lam6) * J6 * (M12 + transpose(M12))/2 &
-        )
+        viscosity = A**(-1/n) * sum(ci*Ii**2)**powlawexp_rev(n)
+        tau = viscosity * singleinner13(ci*Ii, Fij)
     end
 
-    function rheo_rev_orthotropic_dimless(eps, n, m1,m2,m3, Eij) result(tau)
+    subroutine rheo_params_orthotropic(Eij, n, lami, gam)
 
         implicit none
-        real(kind=dp), intent(in)     :: eps(3,3), n, m1(3),m2(3),m3(3), Eij(6)
-        real(kind=dp)                 :: tau(3,3)
-        real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
-        real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
-        real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
+        real(kind=dp), intent(in)  :: Eij(6), n ! Eij = (E11,E22,E33,E23,E13,E12)
+        real(kind=dp), intent(out) :: lami(6), gam
+        real(kind=dp)              :: Bij(6)
 
-        call rheo_params_orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-        call rheo_structs_orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
-        call rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
-
-        tau = ( &
-            + lam1/gam * J23 * (identity - 3*M11)/2 &
-            + lam2/gam * J31 * (identity - 3*M22)/2 &
-            + lam3/gam * J12 * (identity - 3*M33)/2 &
-            + 4 * (1/lam4) * J4 * (M23 + transpose(M23))/2 &
-            + 4 * (1/lam5) * J5 * (M31 + transpose(M31))/2 &
-            + 4 * (1/lam6) * J6 * (M12 + transpose(M12))/2 &
-        )
-    end
-
-    subroutine rheo_params_orthotropic(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-
-        implicit none
-        real(kind=dp), intent(in)  :: Eij(6), n ! E11,E22,E33,E23(E32),E13(E31),E12(E21)
-        real(kind=dp), intent(out) :: lam1,lam2,lam3,lam4,lam5,lam6, gam
-        real(kind=dp)              :: Eexpo, E11n,E22n,E33n !,E12n,E31n,E23n
-
-        Eexpo = 2/(n+1) 
+        Bij = Eij**(2/(n+1))
         
-        E11n = Eij(1)**Eexpo
-        E22n = Eij(2)**Eexpo
-        E33n = Eij(3)**Eexpo
-
-        lam1 = 4/3.0d0*(-E11n+E22n+E33n)
-        lam2 = 4/3.0d0*(+E11n-E22n+E33n)
-        lam3 = 4/3.0d0*(+E11n+E22n-E33n)
-        lam4 = 2* Eij(4)**Eexpo
-        lam5 = 2* Eij(5)**Eexpo
-        lam6 = 2* Eij(6)**Eexpo
+        lami(1) = -Bij(1)+Bij(2)+Bij(3)
+        lami(2) = +Bij(1)-Bij(2)+Bij(3)
+        lami(3) = +Bij(1)+Bij(2)-Bij(3)
+        lami(4:6) = Bij(4:6)
         
-        gam = -(E11n**2 + E22n**2 + E33n**2) + 2*(E11n*E22n + E11n*E33n + E22n*E33n)
-        !gam = abs(gam) 
+        gam = 2*Bij(1)*Bij(2) + 2*Bij(1)*Bij(3) + 2*Bij(2)*Bij(3) - Bij(1)**2 - Bij(2)**2 - Bij(3)**2
     end
 
-    subroutine rheo_structs_orthotropic(X, m1,m2,m3, M11,M22,M33,M23,M31,M12, I1,I2,I3,I4,I5,I6)
+    subroutine rheo_structs_orthotropic(tau, m1,m2,m3, OPT, Fij, Ii)
 
         implicit none    
-        real(kind=dp), intent(in)  :: X(3,3), m1(3),m2(3),m3(3)
-        real(kind=dp), intent(out) :: M11(3,3), M22(3,3), M33(3,3), M23(3,3), M31(3,3), M12(3,3)
-        real(kind=dp), intent(out) :: I1, I2, I3, I4, I5, I6
-        real(kind=dp)              :: X11, X22, X33, X23, X31, X12
+        real(kind=dp), intent(in)    :: tau(3,3), m1(3),m2(3),m3(3)
+        character(len=1), intent(in) :: OPT
+        real(kind=dp), intent(out)   :: Fij(6,3,3), Ii(6)
+        real(kind=dp)                :: Mij(6,3,3)
+        integer :: jj
        
-        M11 = outerprod(m1,m1)
-        M22 = outerprod(m2,m2)
-        M33 = outerprod(m3,m3)
-        M23 = outerprod(m2,m3)
-        M31 = outerprod(m3,m1)
-        M12 = outerprod(m1,m2)
+        Mij = Mij_orthotropic(m1,m2,m3)
 
-        X11 = doubleinner22(X, M11) 
-        X22 = doubleinner22(X, M22) 
-        X33 = doubleinner22(X, M33) 
-        X23 = doubleinner22(X, M23) 
-        X31 = doubleinner22(X, M31) 
-        X12 = doubleinner22(X, M12) 
+        if (OPT == 'F') then 
+            Fij(1,:,:) = (Mij(2,:,:) - Mij(3,:,:))/2
+            Fij(2,:,:) = (Mij(3,:,:) - Mij(1,:,:))/2
+            Fij(3,:,:) = (Mij(1,:,:) - Mij(2,:,:))/2
+        else ! OPT == 'R'
+            Fij(1,:,:) = (identity - 3*Mij(1,:,:))/2
+            Fij(2,:,:) = (identity - 3*Mij(2,:,:))/2
+            Fij(3,:,:) = (identity - 3*Mij(3,:,:))/2
+        end if 
         
-        I1 = (X22 - X33)/2 
-        I2 = (X33 - X11)/2 
-        I3 = (X11 - X22)/2 
-        I4 = X23 ! I4 := (X23 + X32)/2 (but X is symmetric)
-        I5 = X31 ! I5 := (X31 + X13)/2 (but X is symmetric)
-        I6 = X12 ! I6 := (X12 + X21)/2 (but X is symmetric)
+        Fij(4,:,:) = symmetricpart(Mij(4,:,:))
+        Fij(5,:,:) = symmetricpart(Mij(5,:,:))
+        Fij(6,:,:) = symmetricpart(Mij(6,:,:))
+
+        Ii = [(doubleinner22(tau, Fij(jj,:,:)), jj=1,6)]
     end
+    
+    function Mij_orthotropic(m1,m2,m3) result(Mij)
 
-    subroutine rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
+        implicit none 
+        real(kind=dp), intent(in) :: m1(3),m2(3),m3(3)
+        real(kind=dp)             :: Mij(6,3,3)
 
-        implicit none    
-        real(kind=dp), intent(in)  :: J1,J2,J3
-        real(kind=dp), intent(out) :: J23,J31,J12
-       
-        J23 = J2-J3 ! J23 := J2-J3 = (X22 + X33 - 2*X11)/2.0d0 = -3/2.0d0 * X11
-        J31 = J3-J1 ! J31 := J3-J1 = (X11 + X33 - 2*X22)/2.0d0 = -3/2.0d0 * X22
-        J12 = J1-J2 ! J12 := J1-J2 = (X11 + X22 - 2*X33)/2.0d0 = -3/2.0d0 * X33
+        Mij(1,:,:) = outerprod(m1,m1)
+        Mij(2,:,:) = outerprod(m2,m2)
+        Mij(3,:,:) = outerprod(m3,m3)
+        Mij(4,:,:) = outerprod(m2,m3)
+        Mij(5,:,:) = outerprod(m3,m1)
+        Mij(6,:,:) = outerprod(m1,m2)
     end
 
     !---------------------------------
@@ -316,65 +249,40 @@ contains
     ! ... with Pettit's hypothesis that the *fluidity* is orientation independant.
     !---------------------------------
 
-    function rheo_fwd_orthotropic_Pettit(tau, A,n, m1,m2,m3, Eij) result(eps)
+    function rheo_fwd_orthotropic_Pettit(tau, A, n, m1,m2,m3, Eij) result(eps)
 
         implicit none
-        real(kind=dp), intent(in)     :: tau(3,3), A,n, m1(3),m2(3),m3(3), Eij(6)
-        real(kind=dp)                 :: eps(3,3)
-        real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
-        real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
-        real(kind=dp)                 :: I1,I2,I3,I4,I5,I6
-        real(kind=dp)                 :: fluidity
+        real(kind=dp), intent(in) :: tau(3,3), A, n, m1(3),m2(3),m3(3), Eij(6)
+        real(kind=dp)             :: eps(3,3), lami(6), ci(6), gam, Fij(6,3,3), Ii(6), fluidity
 
-        call rheo_params_orthotropic(Eij, 1.0d0, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-        call rheo_structs_orthotropic(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12, I1,I2,I3,I4,I5,I6)
+        call rheo_params_orthotropic(Eij, 1.0d0, lami, gam) ! note n = 1 for Eij exponents
+        call rheo_structs_orthotropic(tau,m1,m2,m3, 'F', Fij,Ii)
 
-        fluidity = A * (doubleinner22(tau,tau))**((n-1.0d0)/2) ! Pettit's hypothesis: fluidity = Glen's isotropic fluidity 
-        
-        eps = fluidity * ( &
-            + lam1 * I1 * (M22 - M33)/2 &
-            + lam2 * I2 * (M33 - M11)/2 &
-            + lam3 * I3 * (M11 - M22)/2 &
-            + lam4 * I4 * (M23 + transpose(M23))/2 &
-            + lam5 * I5 * (M31 + transpose(M31))/2 &
-            + lam6 * I6 * (M12 + transpose(M12))/2 &
-        )
+        ci(1:3) = 4.0d0/3 * lami(1:3)
+        ci(4:6) =       2 * lami(4:6)
+
+        fluidity = A * (doubleinner22(tau,tau))**powlawexp_fwd(n) ! Pettit's hypothesis: fluidity = Glen's isotropic fluidity 
+        eps = fluidity * singleinner13(ci*Ii, Fij)
     end
 
-    function rheo_rev_orthotropic_Pettit(eps, A,n, m1,m2,m3, Eij) result(tau)
+    function rheo_rev_orthotropic_Pettit(eps, A, n, m1,m2,m3, Eij) result(tau)
 
         implicit none
-        real(kind=dp), intent(in)     :: eps(3,3), A,n, m1(3),m2(3),m3(3), Eij(6)
-        real(kind=dp)                 :: tau(3,3)
-        real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
-        real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
-        real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
-        real(kind=dp)                 :: viscosity 
+        real(kind=dp), intent(in) :: eps(3,3), A, n, m1(3),m2(3),m3(3), Eij(6)
+        real(kind=dp)             :: tau(3,3), lami(6), ci(6), cvi(6), gam, Fij(6,3,3), Ii(6), viscosity, vx
 
-        call rheo_params_orthotropic(Eij, 1.0d0, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-        call rheo_structs_orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
-        call rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
+        call rheo_params_orthotropic(Eij, 1.0d0, lami, gam)
+        call rheo_structs_orthotropic(eps,m1,m2,m3, 'R', Fij, Ii)
 
-        viscosity = A**(-1/n) * ( &
-            + 3.0d0/2 * lam1**2/gam**2 * J23**2 &
-            + 3.0d0/2 * lam2**2/gam**2 * J31**2 & 
-            + 3.0d0/2 * lam3**2/gam**2 * J12**2 &
-            - 3.0d0/2 * lam2*lam3/gam**2 * J12*J31 &
-            - 3.0d0/2 * lam3*lam1/gam**2 * J12*J23 &
-            - 3.0d0/2 * lam1*lam2/gam**2 * J23*J31 &
-            + 8 * (1/lam4**2) * J4**2 &
-            + 8 * (1/lam5**2) * J5**2 &
-            + 8 * (1/lam6**2) * J6**2 &
-        )**powlawexp_rev(n)
+        ci(1:3) = 4.0d0/3 * lami(1:3)/gam
+        ci(4:6) =       2 * 1/lami(4:6)
+        
+        cvi(1:3) = sqrt(3.0d0/2)*ci(1:3)
+        cvi(4:6) = sqrt(1.0d0/2)*ci(4:6)
 
-        tau = viscosity * ( &
-            + lam1/gam * J23 * (identity - 3*M11)/2 &
-            + lam2/gam * J31 * (identity - 3*M22)/2 &
-            + lam3/gam * J12 * (identity - 3*M33)/2 &
-            + 4 * (1/lam4) * J4 * (M23 + transpose(M23))/2 &
-            + 4 * (1/lam5) * J5 * (M31 + transpose(M31))/2 &
-            + 4 * (1/lam6) * J6 * (M12 + transpose(M12))/2 &
-        )
+        vx = cvi(2)*cvi(3)*Ii(2)*Ii(3) + cvi(3)*cvi(1)*Ii(3)*Ii(1) + cvi(1)*cvi(2)*Ii(1)*Ii(2) ! extra term appearing in viscosity expression
+        viscosity = A**(-1/n) * (sum(cvi**2*Ii**2) - vx)**powlawexp_rev(n)
+        tau = viscosity * singleinner13(ci*Ii, Fij)
     end
 
     !---------------------------------
@@ -382,94 +290,54 @@ contains
     ! ... with Martin's hypothesis that the *viscosity* is orientation independant.
     !---------------------------------
 
-    function rheo_fwd_orthotropic_Martin(tau, A,n, m1,m2,m3, Eij) result(eps)
+    function rheo_fwd_orthotropic_Martin(tau, A, n, m1,m2,m3, Eij) result(eps)
 
         implicit none
-        real(kind=dp), intent(in)     :: tau(3,3), A,n, m1(3),m2(3),m3(3), Eij(6)
-        real(kind=dp)                 :: eps(3,3)
-        real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
-        real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
-        real(kind=dp)                 :: I1,I2,I3,I4,I5,I6
-        real(kind=dp)                 :: fluidity 
-        real(kind=dp)                 :: c1,c2,c3, fc
+        real(kind=dp), intent(in) :: tau(3,3), A, n, m1(3),m2(3),m3(3), Eij(6)
+        real(kind=dp)             :: eps(3,3), lami(6), ci(6), cvi(6), gam, Fij(6,3,3), Ii(6), fluidity
 
-        call rheo_params_orthotropic_Martin(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-        call rheo_structs_orthotropic(tau, m1,m2,m3, M11,M22,M33,M23,M31,M12, I1,I2,I3,I4,I5,I6)
-
-        fc = 1.0d0/16 
-        c1 = fc * 4*(2*lam1**2 + lam1*(lam2+lam3) - lam2*lam3)
-        c2 = fc * 4*(2*lam2**2 + lam2*(lam3+lam1) - lam3*lam1)
-        c3 = fc * 4*(2*lam3**2 + lam3*(lam1+lam2) - lam1*lam2)
-
-        fluidity = A * ( &
-            + c1 * I1**2 &
-            + c2 * I2**2 &
-            + c3 * I3**2 &
-            + 0.5d0 * lam4**2 * I4**2 &
-            + 0.5d0 * lam5**2 * I5**2 &
-            + 0.5d0 * lam6**2 * I6**2 &
-        )**powlawexp_fwd(n)
+        call rheo_params_orthotropic_Martin(Eij, n, lami, gam) 
+        call rheo_structs_orthotropic(tau,m1,m2,m3, 'F', Fij,Ii)
         
-        eps = fluidity * ( &
-            + lam1 * I1 * (M22 - M33)/2 &
-            + lam2 * I2 * (M33 - M11)/2 &
-            + lam3 * I3 * (M11 - M22)/2 &
-            + lam4 * I4 * (M23 + transpose(M23))/2 &
-            + lam5 * I5 * (M31 + transpose(M31))/2 &
-            + lam6 * I6 * (M12 + transpose(M12))/2 &
-        )
+        ci(1:6) = lami(1:6)
+        
+        ! lambda prime, eqn. (15) in Rathmann & Lilien (2022)
+        cvi(1) = 1.0d0/2 * (ci(1)**2 + ci(1)*(ci(2)+ci(3))/2 - ci(2)*ci(3)/2)
+        cvi(2) = 1.0d0/2 * (ci(2)**2 + ci(2)*(ci(3)+ci(1))/2 - ci(3)*ci(1)/2)
+        cvi(3) = 1.0d0/2 * (ci(3)**2 + ci(3)*(ci(1)+ci(2))/2 - ci(1)*ci(2)/2)
+        cvi(4:6) = 0.5d0 * ci(4:6)**2
+
+        fluidity = A * sum(cvi*Ii**2)**powlawexp_fwd(n)
+        eps = fluidity * singleinner13(ci*Ii, Fij)
     end
 
-    function rheo_rev_orthotropic_Martin(eps, A,n, m1,m2,m3, Eij) result(tau)
+    function rheo_rev_orthotropic_Martin(eps, A, n, m1,m2,m3, Eij) result(tau)
 
         implicit none
-        real(kind=dp), intent(in)     :: eps(3,3), A,n, m1(3),m2(3),m3(3), Eij(6)
-        real(kind=dp)                 :: tau(3,3)
-        real(kind=dp), dimension(3,3) :: M11,M22,M33,M23,M31,M12
-        real(kind=dp)                 :: lam1,lam2,lam3,lam4,lam5,lam6, gam
-        real(kind=dp)                 :: J1,J2,J3,J4,J5,J6, J23,J31,J12
-        real(kind=dp)                 :: viscosity
+        real(kind=dp), intent(in) :: eps(3,3), A, n, m1(3),m2(3),m3(3), Eij(6)
+        real(kind=dp)             :: tau(3,3), lami(6), ci(6), gam, Fij(6,3,3), Ii(6), viscosity
 
-        call rheo_params_orthotropic_Martin(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
-        call rheo_structs_orthotropic(eps, m1,m2,m3, M11,M22,M33,M23,M31,M12, J1,J2,J3,J4,J5,J6)
-        call rheo_auxinvars_orthotropic(J1,J2,J3, J23,J31,J12)
+        call rheo_params_orthotropic_Martin(Eij, n, lami, gam)
+        call rheo_structs_orthotropic(eps,m1,m2,m3, 'R', Fij, Ii)
 
-        viscosity = A**(-1/n) * (doubleinner22(eps,eps))**powlawexp_rev(n) ! Martin's hypothesis: viscosity = Glen's isotropic viscosity
+        ci(1:3) = lami(1:3)/gam
+        ci(4:6) = 4/lami(4:6)
 
-        tau = viscosity * ( &
-            + lam1/gam * J23 * (identity - 3*M11)/2 &
-            + lam2/gam * J31 * (identity - 3*M22)/2 &
-            + lam3/gam * J12 * (identity - 3*M33)/2 &
-            + 4 * (1/lam4) * J4 * (M23 + transpose(M23))/2 &
-            + 4 * (1/lam5) * J5 * (M31 + transpose(M31))/2 &
-            + 4 * (1/lam6) * J6 * (M12 + transpose(M12))/2 &
-        )
-
+        viscosity = A**(-1/n) * doubleinner22(eps,eps)**powlawexp_rev(n) ! Martin's hypothesis: viscosity = Glen's isotropic viscosity
+        tau = viscosity * singleinner13(ci*Ii, Fij)
     end
 
-    subroutine rheo_params_orthotropic_Martin(Eij, n, lam1,lam2,lam3,lam4,lam5,lam6, gam)
+    subroutine rheo_params_orthotropic_Martin(Eij, n, lami, gam)
 
         use lambdasolver
         
         implicit none
         real(kind=dp), intent(in)  :: Eij(6), n
-        real(kind=dp), intent(out) :: lam1,lam2,lam3,lam4,lam5,lam6, gam
-        real(kind=dp)              :: Eexpo, lami(3), Eii(3), f1
+        real(kind=dp), intent(out) :: lami(6), gam
 
-        ! Logitudinal 
-        Eii = [Eij(1),Eij(2),Eij(3)] ! Init guess
-        lami = lambdaprime(n, Eii)
-        lam1 = lami(1)
-        lam2 = lami(2)
-        lam3 = lami(3)
-        f1 = 3.0d0/16
-        gam = 3 * f1 * (lam2*lam3 + lam3*lam1 + lam1*lam2)
-
-        ! Shear
-        Eexpo = 1/n
-        lam4 = 2 * Eij(4)**Eexpo
-        lam5 = 2 * Eij(5)**Eexpo
-        lam6 = 2 * Eij(6)**Eexpo
+        lami(1:3) = lambdaprime(n, [Eij(1),Eij(2),Eij(3)])
+        lami(4:6) = 2 * Eij(4:6)**(1/n)
+        gam = 9.0d0/16 * (lami(2)*lami(3) + lami(3)*lami(1) + lami(1)*lami(2))
     end
 
 end module rheologies

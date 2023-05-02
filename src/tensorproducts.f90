@@ -13,6 +13,26 @@ module tensorproducts
 contains      
 
     !------------------------
+    ! GENERAL
+    !------------------------
+
+    function symmetricpart(A) result(Y)
+        ! (A + A^T)/2
+        implicit none
+        real(kind=dp), intent(in) :: A(3,3)
+        real(kind=dp) :: Y(3,3)
+        Y = (A + transpose(A))/2
+    end
+    
+    function anticommutator(A,B) result(Y)
+        ! A.B + B.A
+        implicit none
+        real(kind=dp), intent(in) :: A(3,3), B(3,3)
+        real(kind=dp) :: Y(3,3)
+        Y = matmul(A,B) + matmul(B,A)
+    end    
+
+    !------------------------
     ! OUTER PRODUCTS
     !------------------------
 
@@ -51,6 +71,18 @@ contains
     !------------------------
     ! INNER PRODUCTS
     !------------------------
+
+    function singleinner13(x, F) result(Y)
+        ! Y_jk = x_i F_ijk
+        implicit none
+        real(kind=dp), intent(in) :: x(:)
+        real(kind=dp), intent(in) :: F(size(x),3,3)
+        real(kind=dp) :: Y(3,3)
+        Y = 0.0d0
+        do ii=1,size(x) 
+            Y = Y + x(ii)*F(ii,:,:)
+        end do
+    end
 
     function doubleinner22(A,B) 
         ! A_ij B_ji = scalar
