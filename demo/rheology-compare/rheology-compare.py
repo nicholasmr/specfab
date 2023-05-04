@@ -196,7 +196,7 @@ fig = plt.figure(figsize=(7.0*scale,5*scale), constrained_layout=False)
 gs = gridspec.GridSpec(2, 2, height_ratios=[1,0.55])
 gs.update(hspace=0.53, wspace=0.26, left=0.10, right=0.97, top=0.98, bottom=0.12)
 
-ax_Y   = fig.add_subplot(gs[0, :])
+ax_Y = fig.add_subplot(gs[0, :])
 
 gs_parcels = gridspec.GridSpecFromSubplotSpec(1, len(ODF_tsteps), subplot_spec=gs[1,:], width_ratios=[1,1,1,1], hspace=0.6, wspace=+0.2)
 inclination = 50 # view angle
@@ -207,7 +207,7 @@ geo = ccrs.Geodetic()
 ii0, jj0 = 0, 0
 ax_ODF = [fig.add_subplot(gs_parcels[ii0, jj0+ii], projection=prj) for ii,nn in enumerate(ODF_tsteps)]
 
-### Plot relative stresses
+### Plot relative strain-rates
 
 rect1 = plt.Rectangle((strain[0],0), DDRX_strainthres,  10, color='#deebf7')
 rect2 = plt.Rectangle((DDRX_strainthres,0), strain[-1], 10, color='#fee0d2')
@@ -276,12 +276,6 @@ ax_Y.text(DDRX_strainthres*(1+dx), y0, r'{\bf DDRX}',             color=color_da
 
 colax = 'k'
 
-def getPolarAngles(vec):
-    x,y,z = vec
-    phi   = np.rad2deg(np.arctan2(y,x))
-    theta = 90 - np.rad2deg(np.arccos(z))
-    return (theta, phi)
-
 for ii,nn in enumerate(ODF_tsteps):
 
     ax = ax_ODF[ii]
@@ -327,12 +321,11 @@ for ii,nn in enumerate(ODF_tsteps):
             ax.plot([phi],[theta], marker='o', ms=ms, markerfacecolor='none', markeredgecolor=color, markeredgewidth=1.0, transform=geo)
 
         
-### Plot parcel deformations (on seperated "inset" axes)
+### Plot parcel deformations on seperated inset axes
 
 # Parcel geometry
 xyz0_init = (1,1,1)
 ex,ey,ez = np.array([xyz0_init[0],0,0]),np.array([0,xyz0_init[1],0]),np.array([0,0,xyz0_init[2]])
-dzx, dzy, dyx = 0,0,0
 time_ = dt*np.arange(0,Nt) 
 
 axsize = 0.14
@@ -347,18 +340,20 @@ if T_EXP==T_EXP_CC: steps_to_plot_ODF = [ODF_tsteps[0], ODF_tsteps[2]]
 for ii,nn in enumerate(steps_to_plot_ODF):
 
     if T_EXP==T_EXP_SS:
+        xyz0 = xyz0_init
         dyx = np.dot(np.matmul(SS.F(time_[nn])-np.eye(3), ey), ex)
         dzx = np.dot(np.matmul(SS.F(time_[nn])-np.eye(3), ez), ex)
         dzy = 0
         pcoords = np.array([[0.106,axy0],[0.28,axy0]])
         
     if T_EXP==T_EXP_CC:
-        xyz0_init = np.matmul(PS.F(time_[nn]), np.array(xyz0_init))
+        xyz0 = np.matmul(PS.F(time_[nn]), np.array(xyz0_init))
+        dzx, dzy, dyx = 0,0,0
         pcoords = np.array([[0.106,axy0],[0.55,axy0]])
 
     ax_sub = fig.add_axes([pcoords[ii,0],pcoords[ii,1], axsize,axsize], projection='3d')
     ax_sub.patch.set_alpha(0.01)
-    plot_parcel(ax_sub, xyz0_init, dzx,dzy,dyx, color='0.5', plotaxlbls=True, scale=scale)
+    plot_parcel(ax_sub, xyz0, dzx,dzy,dyx, color='0.5', plotaxlbls=True, scale=scale)
     ax_sub.set_title(r'$\epsilon=%.1f$'%(strain[nn]), fontsize=FSSMALL,  x=0.5, y=0.92)
     
     if T_EXP==T_EXP_SS:
