@@ -16,12 +16,12 @@ import matplotlib.gridspec as gridspec
 import scipy.special as sp
 from matplotlib.ticker import LogFormatter 
 
-MAKE_FRAME_Eij = 0
-MAKE_FRAME_vi  = 0
+MAKE_FRAME_Eij = 1
+MAKE_FRAME_vi  = 1
 
 MAKE_GIFS = 1
 
-transparent = True
+transparent = False
 
 ### CPO dynamics
 
@@ -136,18 +136,19 @@ def mkframe_Eij(nlm, Err,Ert,Erp, nn):
 
     # Plot Err
     cmap = 'RdBu'
-    lvls = [0.1,0.5, 1, 5, 9]
+    lvls = [0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 9]
+    tickintvl = 2
     tick_labels = [str(v) if v <=1 else str(int(v)) for v in lvls]
     norm = colors.TwoSlopeNorm(vmin=lvls[0], vcenter=1, vmax=lvls[-1])
-    plot_field(Err, ax2, lvls, cmap=cmap, cblbl=r'$E_{rr}$', norm=norm, aspect=aspect, fraction=fraction, tick_labels=tick_labels) # , norm=colors.LogNorm()
+    plot_field(Err, ax2, lvls, cmap=cmap, cblbl=r'$E_{rr}$', tickintvl=tickintvl, norm=norm, aspect=aspect, fraction=fraction, tick_labels=tick_labels) # , norm=colors.LogNorm()
 
     # Plot Ert
-    lvls = np.linspace(1, 9, 5)
-    tickintvl = 2
-    plot_field(Ert, ax3, lvls, cmap='Blues', cblbl=r'$E_{r\theta}$', tickintvl=tickintvl, aspect=aspect, fraction=fraction)
+#    lvls = np.linspace(1, 9, 5)
+#    tickintvl = 2
+    plot_field(Ert, ax3, lvls, cmap=cmap, cblbl=r'$E_{r\theta}$', tickintvl=tickintvl, norm=norm, aspect=aspect, fraction=fraction, tick_labels=tick_labels)
 
     # Plot Erp
-    plot_field(Erp, ax4, lvls, cmap='Blues', cblbl=r'$E_{r\phi}$', tickintvl=tickintvl, aspect=aspect, fraction=fraction)
+    plot_field(Erp, ax4, lvls, cmap=cmap, cblbl=r'$E_{r\phi}$', tickintvl=tickintvl, norm=norm, aspect=aspect, fraction=fraction, tick_labels=tick_labels)
 
     # Axis labels
     set_axis_labels(axlist)
@@ -210,7 +211,7 @@ def plot_field(F, ax, lvls, cmap='Greys', cblbl=r'$E_{??}$', titlestr='', tickin
     else:
         cb1 = plt.colorbar(hdistr, ax=ax, fraction=fraction, aspect=aspect,  orientation='horizontal', pad=0.1)   
     cb1.set_label(cblbl)
-    if tick_labels is not None: cb1.set_ticklabels(tick_labels)
+    if tick_labels is not None: cb1.set_ticklabels(tick_labels[::tickintvl])
     ax.set_title(titlestr, fontsize=FS, pad=10)
 
 
