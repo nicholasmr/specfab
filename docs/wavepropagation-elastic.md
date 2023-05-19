@@ -51,6 +51,12 @@ theta, phi = np.deg2rad([90,70,]), np.deg2rad([0,10,]) # wave-vector directions 
 Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta,phi) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
 ```
 
+!!! tip "Uniaxial compression of glacier ice"
+    The below animation shows the phase velocities for an evolving CPO under uniaxial compression along ${\hat {\bf z}}$.
+    Enhancement factors are calculated w.r.t. the spherical coordinate basis vectors ${\bf m}_1, {\bf m}_2, {\bf m}_3 = {\hat{\bf r}},{\hat{\boldsymbol \theta}},{\hat{\boldsymbol \phi}}$.
+    
+    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/S2-maps-of-Eij-and-Vi/S2-vi.gif){: style="width:660px"}
+
 ## Orthotropic grains
 
 | Monocrystal | Polycrystal |
