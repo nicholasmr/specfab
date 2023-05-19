@@ -16,7 +16,7 @@ import matplotlib.gridspec as gridspec
 import scipy.special as sp
 from matplotlib.ticker import LogFormatter 
 
-MAKE_FRAME_Eij = 1
+MAKE_FRAME_Eij = 0
 MAKE_FRAME_vi  = 1
 
 MAKE_GIFS = 1
@@ -180,10 +180,10 @@ def mkframe_vi(nlm, vP, vS1, vS2, nn):
     plot_field(vP, ax2, lvls, cmap='RdBu', cblbl=r'$V_{P}/V^{\mathrm{iso}}_{P}-1$  (\%)', tickintvl=tickintvl, aspect=aspect, fraction=fraction) 
 
     # Plot vS1
-    plot_field(vS1, ax3, lvls, cmap='PRGn', cblbl=r'$V_{\mathrm{S}1}/V^{\mathrm{iso}}_{\mathrm{S}1}-1$  (\%)', tickintvl=tickintvl, aspect=aspect, fraction=fraction)
+    plot_field(vS1, ax3, lvls, cmap='RdBu', cblbl=r'$V_{\mathrm{S}1}/V^{\mathrm{iso}}_{\mathrm{S}1}-1$  (\%)', tickintvl=tickintvl, aspect=aspect, fraction=fraction)
 
     # Plot vS2
-    plot_field(vS2, ax4, lvls, cmap='PRGn', cblbl=r'$V_{\mathrm{S}2}/V^{\mathrm{iso}}_{\mathrm{S}2}-1$  (\%)', tickintvl=tickintvl, aspect=aspect, fraction=fraction)
+    plot_field(vS2, ax4, lvls, cmap='RdBu', cblbl=r'$V_{\mathrm{S}2}/V^{\mathrm{iso}}_{\mathrm{S}2}-1$  (\%)', tickintvl=tickintvl, aspect=aspect, fraction=fraction)
 
     # Axis labels
     set_axis_labels(axlist)

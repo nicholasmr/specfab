@@ -52,8 +52,7 @@ Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta,ph
 ```
 
 !!! tip "Uniaxial compression of glacier ice"
-    The below animation shows the phase velocities for an evolving CPO under uniaxial compression along ${\hat {\bf z}}$.
-    Enhancement factors are calculated w.r.t. the spherical coordinate basis vectors ${\bf m}_1, {\bf m}_2, {\bf m}_3 = {\hat{\bf r}},{\hat{\boldsymbol \theta}},{\hat{\boldsymbol \phi}}$.
+    The below animation shows the phase velocities for an evolving CPO under uniaxial compression along ${\hat {\bf z}}$, relative to an isotropic CPO.
     
     ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/S2-maps-of-Eij-and-Vi/S2-vi.gif){: style="width:660px"}
 
