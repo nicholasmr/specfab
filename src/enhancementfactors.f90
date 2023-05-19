@@ -65,7 +65,7 @@ contains
         Evw_taylor = doubleinner22(rheo_fwd_tranisotropic_taylorhomo(           tau, nlm, Eij_grain,n_grain), vw) / &
                      doubleinner22(rheo_fwd_tranisotropic_taylorhomo__isotropic(tau,      Eij_grain,n_grain), vw)
 
-        Evw = (1-alpha)*Evw_Sachs + alpha*Evw_taylor       
+        Evw = (1-alpha)*Evw_Sachs + alpha*Evw_taylor
     end
 
     ! Orthotropic grains

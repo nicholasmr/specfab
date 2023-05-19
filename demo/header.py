@@ -20,9 +20,6 @@ import cartopy.crs as ccrs
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-from mpl_toolkits.mplot3d import proj3d
-from matplotlib.patches import FancyArrowPatch
-
 ### Setup matplotlib fonts etc.
 
 FS = 12
@@ -55,7 +52,9 @@ c_gray   = 'gray'
 ODF plotting
 """
 
-def plot_ODF(nlm, lm, ax=None, cmap='Greys', cblabel='$\psi$', rot0=-40, lvls=lvls_default, tickintvl=tickintvl_default, latres=60, nchunk=5):
+def plot_ODF(nlm, lm, ax=None, cmap='Greys', cblabel='$\psi$', rot0=-40, \
+        lvls=lvls_default, tickintvl=tickintvl_default, latres=60, nchunk=5, \
+        fraction=0.075, aspect=9,  orientation='horizontal', pad=0.1, ):
     
     ### Plot ODF (harmonic distribution) on S^2 given vector of spectral coefficients (nlm)
     
@@ -85,7 +84,7 @@ def plot_ODF(nlm, lm, ax=None, cmap='Greys', cblabel='$\psi$', rot0=-40, lvls=lv
     gl.xlocator = mticker.FixedLocator(np.array([-135, -90, -45, 0, 90, 45, 135, 180]))
 
     # Colorbar
-    cb1 = plt.colorbar(h, ax=ax, fraction=0.075, aspect=9,  orientation='horizontal', pad=0.1, ticks=lvls[::tickintvl])   
+    cb1 = plt.colorbar(h, ax=ax, fraction=fraction, aspect=aspect, orientation=orientation, pad=pad, ticks=lvls[::tickintvl])   
     cb1.set_label(cblabel)
     cb1.ax.xaxis.set_ticks(lvls, minor=True)
     

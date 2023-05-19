@@ -98,6 +98,9 @@ contains
             ev_etac0 = I2 * 1.0d0
             ev_etac2 = I2 * vec_to_mat(a2v) ! = I2*a2 = I2*ev_c2
             a4tau    = I2 * vec_to_mat(matmul(a4v,mat_to_vec(tau))) ! = I2 * a4 : tau = I2 * doubleinner42(ev_etac4,tau)
+        else
+            print *, "n'=", n_grain
+            stop "specfab error: unsupported n'"
         end if
 
         eps = ev_etac0*tau - coefA*doubleinner22(ev_etac2,tau)*identity + coefB*a4tau + coefC*(matmul(tau,ev_etac2)+matmul(ev_etac2,tau))
@@ -163,15 +166,20 @@ contains
         call rheo_params_tranisotropic(Eij_grain,3,DFLOAT(n_grain),1, coefA,coefB,coefC)
         I2 = doubleinner22(tau,tau)
                     
-        if (n_grain .eq.  1) eps = (1 + 2.0d0/15*coefB + 2.0d0/3*coefC)*tau ! n'=1
-        if (n_grain .eq. -3) eps = I2*eps ! Same as n'=3 but disregarding the orientation-dependent terms in the nonlinear grain fluidity.
-        if (n_grain .eq.  3) then
+        if (n_grain .eq.  1) then 
+            eps = (1 + 2.0d0/15*coefB + 2.0d0/3*coefC)*tau ! n'=1
+        else if (n_grain .eq. -3) then 
+            eps = I2*eps ! Same as n'=3 but disregarding the orientation-dependent terms in the nonlinear grain fluidity.
+        else if (n_grain .eq.  3) then 
             tausq = matmul(tau,tau)
             ev_etac0 = I2*1.0       + coefB*doubleinner22(doubleinner42(ev_c4_iso,tau),tau) + 2*coefC*doubleinner22(ev_c2_iso,tausq)
             ev_etac2 = I2*ev_c2_iso + coefB*doubleinner42(doubleinner62(ev_c6_iso,tau),tau) + 2*coefC*doubleinner42(ev_c4_iso,tausq)
             ev_etac4 = I2*ev_c4_iso + coefB*doubleinner62(doubleinner82(ev_c8_iso,tau),tau) + 2*coefC*doubleinner62(ev_c6_iso,tausq)
             a4tau = doubleinner42(ev_etac4,tau)
             eps = ev_etac0*tau - coefA*doubleinner22(ev_etac2,tau)*identity + coefB*a4tau + coefC*(matmul(tau,ev_etac2)+matmul(ev_etac2,tau))
+        else
+            print *, "n'=", n_grain
+            stop "specfab error: unsupported n'"
         end if
     end
     
