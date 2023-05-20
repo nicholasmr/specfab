@@ -5,15 +5,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Orthotropic grains - specfab documentation</title>
+    <title>Radar-derived CPOs of ice - specfab documentation</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Orthotropic grains";
-        var mkdocs_page_input_path = "cpo-dynamics-orthotropic.md";
+        var mkdocs_page_name = "Radar-derived CPOs of ice";
+        var mkdocs_page_input_path = "radar-derived-quantities.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -54,24 +54,10 @@
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">CPO dynamics</span></p>
-              <ul class="current">
+              <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-tranisotropic/">Transversely isotropic grains</a>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Orthotropic grains</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#lagrangian-material-parcel">Lagrangian material parcel</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#notation">Notation</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#lattice-rotation">Lattice rotation</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#regularization">Regularization</a>
-    </li>
-    </ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-orthotropic/">Orthotropic grains</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Rheology</span></p>
@@ -89,8 +75,8 @@
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Application examples</span></p>
-              <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../radar-derived-quantities/">Radar-derived CPOs of ice</a>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Radar-derived CPOs of ice</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../FEM-integration-fenics/">FEniCS FEM integration</a>
                   </li>
@@ -111,8 +97,8 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
-          <li>CPO dynamics &raquo;</li>
-      <li>Orthotropic grains</li>
+          <li>Application examples &raquo;</li>
+      <li>Radar-derived CPOs of ice</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -121,74 +107,13 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="cpo-dynamics-orthotropic-grains">CPO dynamics &mdash; Orthotropic grains</h1>
-<h2 id="introduction">Introduction</h2>
-<p>This tutorial focuses on modelling the CPO evolution of polycrystalline olivine, understood as the distribution of (easy) slip-plane normals and slip directions of grains, <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span>.</p>
-<table>
-<thead>
-<tr>
-<th align="center">Polycrystal</th>
-<th align="center">Slip system</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png" style="width:200px" /></td>
-<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slipplane.png" style="width:170px" /></td>
-</tr>
-</tbody>
-</table>
-<p>The distributions <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span> refer to certain crystallographic axes (<span class="arithmatex">\({\bf r}_i\)</span>) depending on the fabric type; i.e. thermodynamic conditions, water content, and stress magnitude that control which of the crystallographic slip systems is activated.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The distributions may also be understood as the mass density fraction of grains with a given slip-plane-normal and slip-direction orientation.
-See <a href="../cpo-representation/">CPO representation</a> for details.</p>
-</div>
-<h3 id="lagrangian-material-parcel">Lagrangian material parcel</h3>
-<p>The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different modes of deformation/stress:</p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center" style="width:620px" /></p>
-<h3 id="notation">Notation</h3>
-<p>Given the expansions</p>
-<div class="arithmatex">\[
-n({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}({\bf x},t) Y_{l}^{m}(\theta,\phi) \quad\text{(distribution of slip-plane normals)}, 
-\\
-b({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}b_{l}^{m}({\bf x},t) Y_{l}^{m}(\theta,\phi) \quad\text{(distribution of slip directions)}, 
-\]</div>
-<p>CPO evolution can be written as a matrix problem involving the (block) state vector</p>
-<div class="arithmatex">\[
-{\bf s} = \begin{bmatrix} {\bf s}_n \\ {\bf s}_b \end{bmatrix} \quad\text{(state vector)},
-\]</div>
-<p>where</p>
-<div class="arithmatex">\[
-{\bf s}_n = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}]^{\mathrm{T}} \quad\text{($n$ state vector)},
-\\
-{\bf s}_b = [b_0^0,b_2^{-2},b_2^{-1},b_2^{0},b_2^{1},b_2^{2},b_4^{-4},\cdots,b_4^{4},\cdots,b_L^{-L},\cdots,b_L^{L}]^{\mathrm{T}} \quad\text{($b$ state vector)},
-\]</div>
-<p>such that </p>
-<div class="arithmatex">\[
-\frac{\mathrm{D}{\bf s}}{\mathrm{D} t} = {\bf M} \cdot {\bf s} \quad\text{(state evolution)},
-\]</div>
-<p>where the operator (matrix) <span class="arithmatex">\({\bf M}\)</span> represents the effect of a given CPO process, which may depend on stress, strain-rate, temperature, etc.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Only lattice rotation is so far supported: <span class="arithmatex">\({\bf M} = {\bf M}_{\mathrm{LROT}}\)</span>.</p>
-</div>
-<hr />
-<h2 id="lattice-rotation">Lattice rotation</h2>
-<p>To be published before documented here.</p>
-<!--
-### Example
--->
-
-<hr />
-<h2 id="regularization">Regularization</h2>
-<p>Same as <a href="../cpo-dynamics-tranisotropic/">CPO dynamics for transversely isotropic grains</a></p>
+                
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../cpo-dynamics-tranisotropic/" class="btn btn-neutral float-left" title="Transversely isotropic grains"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../enhancements-strainrate/" class="btn btn-neutral float-right" title="Strain-rate enhancements">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../constitutive-elastic/" class="btn btn-neutral float-left" title="Constitutive equations"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../FEM-integration-fenics/" class="btn btn-neutral float-right" title="FEniCS FEM integration">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -211,10 +136,10 @@ b({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}b_{l}^{m}({\bf x},t) Y_{l}
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../cpo-dynamics-tranisotropic/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../constitutive-elastic/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../enhancements-strainrate/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../FEM-integration-fenics/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
