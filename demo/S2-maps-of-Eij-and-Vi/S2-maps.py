@@ -17,11 +17,11 @@ import scipy.special as sp
 from matplotlib.ticker import LogFormatter 
 
 MAKE_FRAME_Eij = 0
-MAKE_FRAME_vi  = 1
+MAKE_FRAME_vi  = 0
 
 MAKE_GIFS = 1
 
-transparent = False
+transparent = True
 
 ### CPO dynamics
 
@@ -275,12 +275,20 @@ if MAKE_FRAME_Eij or MAKE_FRAME_vi:
 
 
 if MAKE_GIFS:
+
     for ii in np.arange(Nt,Nt+40):
         os.system('cp frames/S2-Eij-%03d.png frames/S2-Eij-%03d.png'%(Nt-1, ii))
         os.system('cp frames/S2-vi-%03d.png  frames/S2-vi-%03d.png'%(Nt-1, ii))
     os.system('ffmpeg -y -f image2 -framerate 50 -stream_loop 0 -i frames/S2-Eij-%03d.png -vcodec libx264 -crf 20  -pix_fmt yuv420p S2-Eij.avi')
     os.system('ffmpeg -y -f image2 -framerate 50 -stream_loop 0 -i frames/S2-vi-%03d.png  -vcodec libx264 -crf 20  -pix_fmt yuv420p S2-vi.avi')
-    os.system('rm S2-Eij.gif S2-vi.gif')
-    os.system('ffmpeg -i S2-Eij.avi -vf "fps=22,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 S2-Eij.gif')
-    os.system('ffmpeg -i S2-vi.avi  -vf "fps=22,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 S2-vi.gif')
+
+#    os.system('rm S2-Eij.gif S2-vi.gif')
+
+#    os.system('convert -fuzz 4% -dispose previous -delay 1x22 frames/S2-Eij-*.png -coalesce -layers OptimizeTransparency S2-Eij.gif')
+#    os.system('gifsicle -O3 --colors 256 --lossy=150 --resize 650x -o S2-Eij-lowres.gif S2-Eij.gif')
+
+    os.system('convert -fuzz 4% -dispose previous -delay 1x22 frames/S2-vi-*.png -coalesce -layers OptimizeTransparency S2-vi.gif')
+    os.system('gifsicle -O3 --colors 256 --lossy=150 --resize 650x -o S2-vi-lowres.gif S2-vi.gif')
+
+       
        
