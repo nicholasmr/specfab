@@ -177,7 +177,7 @@ theta, phi = np.deg2rad([90,70,]), np.deg2rad([0,10,]) # wave-vector directions 
 # Calculate phase velocities
 Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta,phi) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
 </code></pre>
-<p>The below animation shows the phase velocities for an evolving CPO under uniaxial compression along <span class="arithmatex">\({\hat {\bf z}}\)</span>, relative to an isotropic CPO.</p>
+<p>The below animation shows directional P- and S-wave velocities for a CPO evolving under uniaxial compression along <span class="arithmatex">\({\hat {\bf z}}\)</span>, relative to an isotropic CPO, when subject to <a href="../cpo-dynamics-tranisotropic/">lattice rotation</a>.</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/S2-maps-of-Eij-and-Vi/S2-vi.gif" style="width:660px" /></p>
 <h2 id="orthotropic-grains">Orthotropic grains</h2>
 <table>
