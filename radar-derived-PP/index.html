@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Radar-derived physical properties - specfab documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Radar-derived physical properties";
+        var mkdocs_page_input_path = "radar-derived-PP.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> specfab documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">About</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">CPO representation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-representation/">Representation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-structuretensors/">Structure tensors</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plotting</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">CPO dynamics</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-tranisotropic/">Transversely isotropic grains</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-orthotropic/">Orthotropic grains</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Rheology</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain-rate enhancements</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-viscoplastic/">Constitutive equations</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Elasticity</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-elastic/">Wave propagation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Constitutive equations</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Application gallery</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Radar-derived physical properties</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#radar-measurements-rightarrow-cpo">Radar measurements \(\rightarrow\) CPO</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#cpo-rightarrow-enhancement-factors">CPO \(\rightarrow\) Enhancement factors</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration-fenics/">FEniCS FEM integration</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration-elmer/">Elmer FEM integration</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">specfab documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Application gallery &raquo;</li>
+      <li>Radar-derived physical properties</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="radar-derived-physical-properties">Radar-derived physical properties</h1>
+<h2 id="introduction">Introduction</h2>
+<p>The dielectric permittivity of a single ice crystal is approximately transversely isotropic w.r.t. the crystal <span class="arithmatex">\(c\)</span>-axis:
+$$
+\epsilon_{ij} = \frac{2\epsilon_{\perp} + \epsilon_{\parallel}}{3}
++ (\epsilon_{\parallel}-\epsilon_{\perp})(c_i c_j - \delta_{ij}/3),
+$$
+where <span class="arithmatex">\(\epsilon_{\parallel}\)</span> and <span class="arithmatex">\(\epsilon_{\perp}\)</span> are the permittivities parallel and perpendicular to the <span class="arithmatex">\(c\)</span>-axis that depend on ice temperature and EM-wave frequency (<a href="https://eprints.lib.hokudai.ac.jp/dspace/bitstream/2115/32469/1/P185-212.pdf">Fujita et al., 2000</a>).</p>
+<p>If EM-wave lengths are much longer than the average grain size, the bulk permittivity tensor of polycrystalline ice may be approximated as the grain-average permittivity tensor, constructed by averaging over all grain orientations (over the CPO):</p>
+<div class="arithmatex">\[
+\langle\epsilon_{ij}\rangle = \frac{2\epsilon_{\perp} + \epsilon_{\parallel}}{3}
++ (\epsilon_{\parallel}-\epsilon_{\perp})(  \langle c_i c_j \rangle - \delta_{ij}/3)
+,
+\]</div>
+<p>where <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> is the second-order structure tensor, defined as the average outer product of grain <span class="arithmatex">\(c\)</span>-axes (assuming grain sizes are uncorrelated with orientation):</p>
+<div class="arithmatex">\[ 
+\langle c_i c_j \rangle = 
+\frac{1}{N}\sum_{k=1}^N { c_i^{(k)} c_j^{(k)} }.
+\]</div>
+<p>Here, the Cartesian components of <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> are written as</p>
+<div class="arithmatex">\[
+\langle c_i c_j \rangle =
+\left[\begin{matrix}
+a_{xx} &amp; a_{xy} &amp; a_{xz}\\ 
+a_{xy} &amp; a_{yy} &amp; a_{yz}\\ 
+a_{xz} &amp; a_{yz} &amp; a_{zz}
+\end{matrix}\right]
+.
+\]</div>
+<p>Properties like EM-wave speed and radar return-power anomalies depend on the bulk permittivity tensor <span class="arithmatex">\(\langle\epsilon_{ij}\rangle\)</span>, and therefore, given measurements of such quantities, information about <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> can be inferred (see e.g. <a href="https://www.nature.com/articles/s41467-023-38139-8">Gerber et al., 2023</a>, and references therein).</p>
+<h2 id="radar-measurements-rightarrow-cpo">Radar measurements <span class="arithmatex">\(\rightarrow\)</span> CPO</h2>
+<p>A useful approximation over large parts of ice sheets is that <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> has a vertical (<span class="arithmatex">\({\bf z}\)</span>) eigen vector, and hence</p>
+<div class="arithmatex">\[
+\langle c_i c_j \rangle 
+=
+\left[\begin{matrix}
+a_{xx} &amp; a_{xy} &amp; 0\\ 
+a_{xy} &amp; a_{yy} &amp; 0\\ 
+0 &amp; 0 &amp; a_{zz}
+\end{matrix}\right]
+.
+\]</div>
+<p>In this tutorial, we consider the common case where the difference in horizontal eigen values of <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> can be inferred from ice-penetrating radar, that is
+$$
+\Delta \lambda = \lambda_2 - \lambda_1,
+$$</p>
+<p>where <span class="arithmatex">\({\bf m}_1\)</span> and <span class="arithmatex">\({\bf m}_2\)</span> are the corresponding (horizontal) eigen vectors, and the eigen values sorted such that <span class="arithmatex">\(\lambda_1 \leq \lambda_2\)</span>, or more precisely</p>
+<div class="arithmatex">\[ 
+0 \leq \lambda_1 \leq 1/3 \leq \lambda_2 \leq 1.
+\]</div>
+<p>In this eigen frame (<span class="arithmatex">\({\bf m}_1, {\bf m}_2, {\bf z}\)</span>), the structure tensor can therefore be written as </p>
+<div class="arithmatex">\[
+\langle c_i c_j \rangle 
+=
+\left[\begin{matrix}
+\lambda_1  &amp; 0 &amp; 0 \\ 
+0 &amp; \lambda_1 + \Delta\lambda  &amp; 0 \\ 
+0 &amp; 0 &amp; 1 - \Delta \lambda - 2\lambda_1
+\end{matrix}\right]
+.
+\]</div>
+<p>where <span class="arithmatex">\(\operatorname{tr}(\langle c_i c_j \rangle) = 1\)</span> was used.</p>
+<p>Since <span class="arithmatex">\(\lambda_1\)</span> is unknown, different assumptions may be made about <span class="arithmatex">\(\lambda_1\)</span> given the local/upstream flow regime to close the problem, such as proposed by <a href="https://www.nature.com/articles/s41467-023-38139-8">Gerber et al. (2023)</a>:</p>
+<div class="admonition tip">
+<p class="admonition-title">Planar confined CPOs</p>
+<p>Suppose <span class="arithmatex">\(\Delta\lambda\)</span> is measured in region where <span class="arithmatex">\(c\)</span>-axes are suspected, to a good approximation, to be distributed on the <span class="arithmatex">\({\bf m}_2\)</span>&mdash;<span class="arithmatex">\({\bf z}\)</span> plane because the smallest eigenvalue is vanishing <span class="arithmatex">\(\lambda_1 \simeq 0\)</span>.
+In this case, <span class="arithmatex">\(\Delta \lambda = 0, 0.5, 1\)</span> represent, respectively, a perfect single-maximum along <span class="arithmatex">\({\bf z}\)</span>, a perfect girdle in the <span class="arithmatex">\({\bf m}_2\)</span>&mdash;<span class="arithmatex">\({\bf z}\)</span> plane, and a perfect single-maximum along <span class="arithmatex">\({\bf m}_2\)</span>.</p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/plane-CPOs.png" style="width:660px" /></p>
+<p>To plot the above, <code>sf.a2_to_nlm(a2)</code> was used where <code>a2</code><span class="arithmatex">\(=\langle c_i c_j \rangle\)</span>.</p>
+</div>
+<h2 id="cpo-rightarrow-enhancement-factors">CPO <span class="arithmatex">\(\rightarrow\)</span> Enhancement factors</h2>
+<p>If <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> can be inferred from radar sounding following the above method, so can the strain-rate enhancement factors <span class="arithmatex">\(E_{ij}\)</span> in the same eigen frame (i.e. <a href="../enhancements-strainrate/">eigenenhancements</a>).</p>
+<p>The eigenenhancements depend, however, also on the fourth-order structure tensor <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span>, which the bulk permittivity <span class="arithmatex">\(\langle\epsilon_{ij}\rangle\)</span> &mdash; and therefore radar-sounding methods &mdash; is insensitive to.
+If, however, the CPO is rotationally symmetry around one of the eigen vectors, <span class="arithmatex">\({\bf m}_i\)</span>, an empirical correlation exists that allows determining <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span> given <span class="arithmatex">\(\langle c_i c_j\rangle\)</span>.</p>
+<p><strong>[...not finished]</strong></p>
+<!--
+
+<pre><code class="language-python">import numpy as np
+from specfabpy import specfabpy as sf
+lm, nlm_len = sf.init(4) 
+
+a4 = sf.a2_to_a4(a2) 
+nlm = sf.a4_to_nlm(a4)
+</code></pre>
+
+-->
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../constitutive-elastic/" class="btn btn-neutral float-left" title="Constitutive equations"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../FEM-integration-fenics/" class="btn btn-neutral float-right" title="FEniCS FEM integration">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../constitutive-elastic/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../FEM-integration-fenics/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
