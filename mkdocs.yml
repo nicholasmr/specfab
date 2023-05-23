@@ -4,6 +4,7 @@ nav:
     - About: index.md
     - 'CPO representation':
         - Representation: cpo-representation.md
+        - Structure tensors: cpo-structuretensors.md
         - Rotation: cpo-rotation.md
         - Plotting: cpo-plot.md
     - 'CPO dynamics':
@@ -15,9 +16,10 @@ nav:
     - 'Elasticity':
         - Wave propagation: wavepropagation-elastic.md
         - Constitutive equations: constitutive-elastic.md
-    - 'Finite-element modelling': 
-        - FEniCS: FEM-integration-fenics.md
-        - Elmer: FEM-integration-elmer.md
+    - 'Application gallery': 
+        - Radar-derived physical properties: radar-derived-PP.md
+        - FEniCS FEM integration: FEM-integration-fenics.md
+        - Elmer FEM integration: FEM-integration-elmer.md
 
 theme: 
     name: 'readthedocs'

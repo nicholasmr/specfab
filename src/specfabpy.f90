@@ -74,7 +74,8 @@ module specfabpy
         Gamma0__sf => Gamma0, &
 
         ! AUX
-        vec_to_mat_voigt__sf => vec_to_mat_voigt
+        vec_to_mat_voigt__sf => vec_to_mat_voigt, &
+        nhat40_empcorr_ice__sf => nhat40_empcorr_ice
         
     implicit none
     
@@ -665,6 +666,15 @@ contains
         real(kind=dp)             :: M(3,3) 
         
         M = vec_to_mat_voigt__sf(v)
+    end
+    
+    function nhat40_empcorr_ice(nhat20) result(nhat40)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: nhat20(:)
+        real(kind=dp)             :: nhat40(size(nhat20))
+
+        nhat40 = nhat40_empcorr_ice__sf(nhat20)
     end
     
     !---------------------------------

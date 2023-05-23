@@ -358,4 +358,23 @@ contains
         q1m = fsq1*[r*M(y,z)-i*M(x,z), r*sqrt(2.)*M(x,y), -r*M(y,z)-i*M(x,z)]
     end
     
+    !---------------------------------
+    ! CORRELATIONS
+    !---------------------------------
+    
+    function nhat40_empcorr_ice(nhat20) result(nhat40)
+    
+        ! Emperical correlation between nhat40=n40/n00 and nhat20=n20/n00 in a vertically symmetric frame, based on ice cores.
+    
+        implicit none
+        
+        real(kind=dp), intent(in) :: nhat20(:)
+        real(kind=dp)             :: nhat40(size(nhat20))
+        real(kind=dp), parameter  :: a=0.07283201, b=0.47585027, c=-0.27165286, d=0.14299372
+        
+        if (any(nhat20 > +sqrt(5.0d0)))   stop 'nhat40_empcorr_ice() error: nhat20 > sqrt(5)'
+        if (any(nhat20 < -sqrt(5.0d0)/2)) stop 'nhat40_empcorr_ice() error: nhat20 < -sqrt(5)/2'
+        nhat40(:) = a*nhat20(:) + b*nhat20(:)**2 + c*nhat20(:)**3 + d*nhat20(:)**4
+    end
+    
 end module dynamics

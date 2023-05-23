@@ -25,6 +25,8 @@ This requires specifying the grain elastic parameters $\lambda'$, $\mu'$, $\hat{
 
 ### Example for glacier ice
 
+The below example for glacier ice shows how bulk phase velocities may be calculated given `a2`, `a4`, or `nlm`. 
+
 ```python
 import numpy as np
 from specfabpy import specfabpy as sf
@@ -51,10 +53,9 @@ theta, phi = np.deg2rad([90,70,]), np.deg2rad([0,10,]) # wave-vector directions 
 Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta,phi) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
 ```
 
-!!! tip "Uniaxial compression of glacier ice"
-    The below animation shows the phase velocities for an evolving CPO under uniaxial compression along ${\hat {\bf z}}$, relative to an isotropic CPO.
-    
-    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/S2-maps-of-Eij-and-Vi/S2-vi.gif){: style="width:660px"}
+The below animation shows directional P- and S-wave velocities for a CPO evolving under uniaxial compression along ${\hat {\bf z}}$, relative to an isotropic CPO, when subject to [lattice rotation](cpo-dynamics-tranisotropic.md).
+
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/S2-maps-of-Eij-and-Vi/S2-vi.gif){: style="width:660px"}
 
 ## Orthotropic grains
 

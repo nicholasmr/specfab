@@ -111,11 +111,10 @@ alpha     = 0.0125   # Taylor--Sachs weight
 Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # = (E11,E22,E33,E23,E13,E12)
 ```
 
-!!! tip "Uniaxial compression of glacier ice"
-    The below animation shows the directional enhancement factors for an evolving CPO under uniaxial compression along ${\hat {\bf z}}$.
-    Enhancement factors are calculated w.r.t. the spherical coordinate basis vectors ${\bf m}_1, {\bf m}_2, {\bf m}_3 = {\hat{\bf r}},{\hat{\boldsymbol \theta}},{\hat{\boldsymbol \phi}}$.
-    
-    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/S2-maps-of-Eij-and-Vi/S2-Eij.gif){: style="width:660px"}
+The below animation shows the directional enhancement factors for a CPO evolving under uniaxial compression along ${\hat {\bf z}}$ when subject to [lattice rotation](cpo-dynamics-tranisotropic.md).
+Enhancement factors are calculated w.r.t. the spherical coordinate basis vectors ${\bf e}_1, {\bf e}_2, {\bf e}_3 = {\hat{\bf r}},{\hat{\boldsymbol \theta}},{\hat{\boldsymbol \phi}}$.
+
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/S2-maps-of-Eij-and-Vi/S2-Eij.gif){: style="width:660px"}
 
 ### Orthotropic grains
 
