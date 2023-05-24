@@ -67,4 +67,4 @@ for ii, dlam in enumerate([0, 0.25, 0.50, 0.75, 1]):
 
 set_axis_labels(axlist)
 
-plt.savefig('plan-CPOs.png', transparent=True, dpi=150)
+plt.savefig('plane-CPOs.png', transparent=True, dpi=150)
