@@ -350,7 +350,10 @@ However, <code>sf.M_REG()</code> is currently only calibrated for <span class="a
 This, in turn, means that <a href="../cpo-representation/">structure tensors</a> <code>a2</code> and <code>a4</code>, and hence <a href="../enhancements-strainrate/">calculated enhancement factors</a>, will be affected by regularization unless <span class="arithmatex">\(L{\geq}8\)</span> is chosen. </p>
 </div>
 <h2 id="validation">Validation</h2>
-<p>...</p>
+<p>If the CPO is rotated into an approximatly rotationally-symmetric frame about the <span class="arithmatex">\(z\)</span>-axis, then only <span class="arithmatex">\(n_l^0\)</span> components are nonzero.
+This conviniently allows validating modelled CPO processes by comparing modelled to observed correlations between, e.g., the lowest-order normalized components <span class="arithmatex">\(\hat{n}_2^0 \equiv n_2^0/n_0^0\)</span> and <span class="arithmatex">\(\hat{n}_4^0 \equiv n_4^0/n_0^0\)</span>.
+The below plot shows the observed correlation structure (markers) compared to the above CPO model(s) for different modes of deformation, suggesting that modelled CPO processes capture observations reasonably well.</p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/state-space-validation/ice/state-space-validation.png" style="width:700px" /></p>
               
             </div>
           </div><footer>
