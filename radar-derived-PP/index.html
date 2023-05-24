@@ -255,7 +255,7 @@ nlm_vs[0]  = n00
 nlm_vs[3]  = nhat20*n00
 nlm_vs[10] = nhat40*n00
 
-### Rotate spectral CPO state back to origional (m1,m2,z) eigenframe 
+### Rotate spectral CPO state back to original (m1,m2,z) eigenframe 
 if dl &lt; 0.4:         nlm = nlm_vs # Already in vertical symmetric frame
 if 0.4 &lt;= dl &lt;= 0.6: nlm = sf.rotate_nlm(nlm_vs, -np.pi/2, 0) # Rotate horizontal (m1--m2) girdle back into vertical (m2--z) girdle
 if dl &gt; 0.6:         nlm = sf.rotate_nlm(sf.rotate_nlm(nlm_vs, -np.pi/2, 0), 0 ,-np.pi/2) # Rotate vertical (z) single-maximum back into horizontal (m2) single-maximum
