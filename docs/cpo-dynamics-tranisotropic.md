@@ -261,4 +261,11 @@ However, `sf.M_REG()` is currently only calibrated for $L = 4,6,8,20$ &mdash; th
     As a rule-of-thumb, regularization affects the highest and next-highest modes $l{\geq}L-2$ and can therefore not be expected to evolve freely. 
     This, in turn, means that [structure tensors](cpo-representation.md) `a2` and `a4`, and hence [calculated enhancement factors](enhancements-strainrate.md), will be affected by regularization unless $L{\geq}8$ is chosen. 
 
+## Validation
+
+If the CPO is rotated into an approximatly rotationally-symmetric frame about the $z$-axis, then only $n_l^0$ components are nonzero.
+This conviniently allows validating modelled CPO processes by comparing modelled to observed correlations between, e.g., the lowest-order normalized components $\hat{n}_2^0 \equiv n_2^0/n_0^0$ and $\hat{n}_4^0 \equiv n_4^0/n_0^0$.
+The below plot shows the observed correlation structure (markers) compared to the above CPO model(s) for different modes of deformation, suggesting that modelled CPO processes capture observations reasonably well.
+
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/state-space-validation/ice/state-space-validation.png){: style="width:700px"}
 

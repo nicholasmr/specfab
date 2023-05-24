@@ -467,8 +467,10 @@ for ii,expr in enumerate(experiments):
 ### Aux
 
 plt.sca(ax)
-plt.xlabel(r'$\hat{\psi}_2^0$')
-plt.ylabel(r'$\hat{\psi}_4^0$')
+#plt.xlabel(r'$\hat{\psi}_2^0$')
+#plt.ylabel(r'$\hat{\psi}_4^0$')
+plt.xlabel(r'$\hat{n}_2^0$')
+plt.ylabel(r'$\hat{n}_4^0$')
 
 leg = plt.legend(bbox_to_anchor=(1.41,1.02), title=r'{\bf Observations}', title_fontsize=FSLEG, fontsize=FSLEG, frameon=True, **legkwargs); 
 leg.get_frame().set_linewidth(0.7);
