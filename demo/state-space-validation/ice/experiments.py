@@ -13,7 +13,7 @@ import glob
 
 expr_Hunter = {\
     'path': 'Hunter_etal', \
-    'plotname': 'H22, unconf. compr., warm', \
+    'plotname': 'H22, uniax. compr., warm', \
     'type':'ucw', \
     'coords':'quaternion', \
     'flist': ['MD14/md14.csv','MD12/md12.csv','MD4/md4.csv','MD22/md22.csv', \
@@ -41,7 +41,7 @@ expr_Qi = {\
 # (Fan et al., 2020, 2021)
 expr_Fan_30 = {\
     'path': 'Fan_etal_-30', \
-    'plotname': 'F20, unconf. compr., cold', \
+    'plotname': 'F20, uniax. compr., cold', \
     'type':'uc', \
     'coords':'quaternion', \
     'flist': ['series_-30/PIL165_30mu.ctf.csv', 'series_-30/PIL166_30mu.ctf.csv', 'series_-30/PIL243_30mu.ctf.csv'], \
@@ -63,7 +63,7 @@ expr_Fan_20 = {\
 
 expr_Fan_10 = {\
     'path': 'Fan_etal_-10', \
-    'plotname': 'F20, unconf. compr., warm', \
+    'plotname': 'F20, uniax. compr., warm', \
     'type':'ucw', \
     'coords':'quaternion', \
 #    'flist': ['series_-10/PIL007_30mu.crc.csv','series_-10/PIL163_30mu.crc.csv','series_-10/PIL176_30mu.crc.csv','series_-10/PIL177_30mu.crc.csv','series_-10/PIL178_30mu.crc.csv',], \

@@ -81,6 +81,18 @@ p_model = np.poly1d(np.flipud(nhat40_pc))
 y_corr = sf.nhat40_empcorr_ice(x_corr) 
 
 #--------------------
+# IBOF closure from Elmer/Ice
+#--------------------
+
+y_IBOF = y_corr * 0 # init
+
+for ii, x in enumerate(x_corr):
+    nlm_hat = np.zeros((nlm_len), dtype=np.complex128)
+    nlm_hat[[0,3]] = [1, x]
+    nlm_ = sf.a4_to_nlm(sf.a4_IBOF(sf.a2(nlm_hat*1/np.sqrt(4*np.pi))))
+    y_IBOF[ii] = nlm_[10]/nlm_[0] # nhat40 
+
+#--------------------
 # Construct plot
 #--------------------
 
@@ -177,15 +189,14 @@ nlm_girdle = np.real(sf.a4_to_nlm(a4))
 #print(nlm_girdle, nlm_girdle[3],nlm_girdle[10])
 x_, y_ = np.real(nlm_girdle[3])/normfac, np.real(nlm_girdle[10])/normfac
 ax.plot(x_, y_, marker='o', ms=mse, ls='none', c=c_girdle, label=None, zorder=20)
-plt.text(x_, y_+dytext, '{\\bf Planar}\n\\bf{isotropic}', color=c_girdle, ha='center', va='bottom', ma='center', fontsize=FSANNO)
+plt.text(x_, y_+dytext, '{\\bf Planar}\n\\bf{confined}', color=c_girdle, ha='center', va='bottom', ma='center', fontsize=FSANNO)
 
-print(n40_delta, y_)
+#print(n40_delta, y_)
 
 # Shading labels
 plt.text(0.26/normfac, 0.1/normfac, '{\\bf Single maximum}', color=c_smax, ha='center', rotation=30, fontsize=FSANNO)
 plt.text(-0.175/normfac, 0.125/normfac, '{\\bf Girdle}', color=c_girdle, ha='center', rotation=-40, fontsize=FSANNO)
-
-plt.text(-0.25/normfac, -0.32/normfac, '{\\bf Unphysical}\n\\bf{eigenvalues}', color='0.3', ha='center', rotation=0, fontsize=FSANNO)
+plt.text(2.1, -1, '{\\bf Unphysical}\n\\bf{eigenvalues}', color='0.3', ha='center', rotation=0, fontsize=FSANNO)
 
 ### Experimental data points
 
@@ -201,6 +212,8 @@ for ii,expr in enumerate(experiments):
 ### Plot correlation
 
 ax.plot(x_corr, y_corr, '-k', lw=2, label='Empirical correlation', zorder=10)
+
+ax.plot(x_corr, y_IBOF, ':k', lw=2, label='IBOF closure', zorder=10)
 
 ### Aux
 
@@ -218,10 +231,64 @@ plt.ylim(ylims)
 ### Second x axis for a_zz^(2) comparrison 
 
 secax = ax.secondary_xaxis('top', functions=(n20_to_azz, azz_to_n20))
-secax.set_xlabel(r'$a^{(2)}_{zz}$')
+#secax.set_xlabel(r'$a^{(2)}_{zz}$')
+secax.set_xlabel(r'$\ev*{c_i c_j}_{zz}$')
 xticks = np.arange(0,1+1e-3,0.1)
 secax.set_xticks(xticks[0::2])
 secax.set_xticks(xticks[::1], minor=True)
+
+
+### Plot ODF insets?
+
+if 1:
+
+    inclination = 50 # view angle
+    rot0 = -90
+    rot = -20 + rot0 
+    prj = ccrs.Orthographic(rot, 90-inclination)
+    geo = ccrs.Geodetic()     
+
+    W = 0.125 # ax width
+    tickintvl=1
+    
+    ### Modeled data
+    
+    arrmag = 0.125
+    arr = lambda ang: arrmag*np.array([np.cos(np.deg2rad(ang)),np.sin(np.deg2rad(ang))])
+    n00 = 1/np.sqrt(4*np.pi)
+    nlm_constructor = lambda nhat20: np.array([n00, 0,0,nhat20*n00,0,0, 0,0,0,0,sf.nhat40_empcorr_ice(nhat20)[0]*n00,0,0,0,0], dtype=np.complex128)
+    ODF_plots = (\
+        {'nlm':nlm_constructor(-0.75), 'title':'', 'axloc':(0.205, 0.16), 'darr':arr(-90), 'lvlmax':0.4}, \
+        {'nlm':nlm_constructor(+1.00), 'title':'', 'axloc':(0.577, 0.17), 'darr':arr(-90), 'lvlmax':0.4}, \
+        {'nlm':nlm_constructor(+1.75), 'title':'', 'axloc':(0.737, 0.33), 'darr':arr(-90), 'lvlmax':0.4}, \
+    )
+
+    for ODF in ODF_plots:
+
+        axpos = [ODF['axloc'][0],ODF['axloc'][1], W,W]
+        axin = plt.axes(axpos, projection=prj) #, transform=ax.transData)
+        axin.set_global()
+        
+        nlm = ODF['nlm']
+        lvls = np.linspace(0.0,ODF['lvlmax'],6)
+    
+        F, lon,lat = discretize_ODF(nlm, lm)
+        F[F<0] = 0 # fix numerical/truncation errors
+        h = axin.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), levels=lvls, extend=('max' if lvls[0]==0.0 else 'both'), cmap='Greys', nchunk=5) # "nchunk" argument must be larger than 0 for constant-ODF (e.g. isotropy) is plotted correctly.
+
+        # Arrow to ODF state
+        n20_, n40_ = np.real(nlm[3])/normfac, np.real(nlm[10])/normfac
+        ax.annotate("", xy=(n20_, n40_), xycoords='data', \
+                        xytext=(n20_+ODF['darr'][0]/normfac, n40_+sc**2*ODF['darr'][1]/normfac), textcoords='data', \
+                        arrowprops=dict(arrowstyle="-|>", connectionstyle="arc3", linewidth=1.5, edgecolor='0.2', facecolor='0.2'),zorder=20)            
+
+        # Add grid lines
+        kwargs_gridlines = {'ylocs':np.arange(-90,90+30,30), 'xlocs':np.arange(0,360+45,45), 'linewidth':0.5, 'color':'black', 'alpha':0.25, 'linestyle':'-'}
+        gl = axin.gridlines(crs=ccrs.PlateCarree(), **kwargs_gridlines)
+        gl.xlocator = mticker.FixedLocator(np.array([-135, -90, -45, 0, 90, 45, 135, 180]))
+
+        axin.set_title(ODF['title'], fontsize=FS-3)
+
 
 ### Save figure
 

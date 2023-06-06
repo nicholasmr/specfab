@@ -216,10 +216,10 @@ legkwargs = {'handlelength':1.4, 'framealpha':1.0, 'fancybox':False, 'handletext
 ### Setup figure
 
 scale = 4.7
-fig = plt.figure(figsize=(1.8*scale,1.1*scale))
+fig = plt.figure(figsize=(1.6*scale,1.1*scale))
 plt.subplots_adjust(left=0.08, right=0.725, top=0.90, bottom=0.125)
 ax = plt.gca()
-xlims, ylims = [-1.45,2.65], [-1.8,3.75]
+xlims, ylims = [-1.40,2.65], [-1.8,3.75]
 sc = np.diff(ylims)/np.diff(xlims)
 x = np.linspace(xlims[0],xlims[1],RESX)
 y = np.linspace(ylims[0],ylims[1],RESY)
@@ -326,7 +326,7 @@ h_cc = plot_trajectory(ax, nlm_cc, arrpos=9,  c=c_smax)
 h_ce = plot_trajectory(ax, nlm_ce, arrpos=17, c=c_girdle)
 
 h_modellines = [h_ce, h_cc, h_ss, h_ddrx1, h_cdrx1]
-legend_strings = ['Lattice rotation, unconf. extension', 'Lattice rotation, unconf. compression', 'Lattice rotation, simple shear', 'DDRX', 'CDRX']
+legend_strings = ['Lattice rotation, uniaxial extension', 'Lattice rotation, uniaxial compression', 'Lattice rotation, simple shear', 'DDRX', 'CDRX']
 legend_modellines = plt.legend(h_modellines, legend_strings, title=r'{\bf Modelled fabric state trajectories}', title_fontsize=FSLEG, loc=2, ncol=1, fontsize=FSLEG, frameon=False, **legkwargs)
 
 ### End-member cases
@@ -354,7 +354,7 @@ nlm_girdle = np.real(sf.a4_to_nlm(a4))
 #print(nlm_girdle, nlm_girdle[3],nlm_girdle[10])
 x_, y_ = np.real(nlm_girdle[3])/normfac, np.real(nlm_girdle[10])/normfac
 ax.plot(x_, y_, marker='o', ms=mse, ls='none', c=c_girdle, label=None)
-plt.text(x_, y_+dytext, '{\\bf Planar}\n\\bf{isotropic}', color=c_girdle, ha='center', va='bottom', ma='center', fontsize=FSANNO)
+plt.text(x_, y_+dytext, '{\\bf Planar}\n\\bf{confined}', color=c_girdle, ha='center', va='bottom', ma='center', fontsize=FSANNO)
 
 # DDRX steady state
 x_, y_ = np.real(nlm_ddrx2[-1,3]),np.real(nlm_ddrx2[-1,10])
@@ -378,7 +378,7 @@ if 1:
     prj = ccrs.Orthographic(rot, 90-inclination)
     geo = ccrs.Geodetic()     
 
-    W = 0.13 # ax width
+    W = 0.12 # ax width
     tickintvl=1
 
     ### Load measured data
@@ -472,7 +472,7 @@ plt.sca(ax)
 plt.xlabel(r'$\hat{n}_2^0$')
 plt.ylabel(r'$\hat{n}_4^0$')
 
-leg = plt.legend(bbox_to_anchor=(1.41,1.02), title=r'{\bf Observations}', title_fontsize=FSLEG, fontsize=FSLEG, frameon=True, **legkwargs); 
+leg = plt.legend(bbox_to_anchor=(1.43,1.02), title=r'{\bf Observations}', title_fontsize=FSLEG, fontsize=FSLEG, frameon=True, **legkwargs); 
 leg.get_frame().set_linewidth(0.7);
 ax.add_artist(legend_modellines)
 
