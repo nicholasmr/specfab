@@ -114,19 +114,19 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="structure-tensors">Structure tensors</h1>
-<p>The 2nd-, 4th- and 6th-order structure tensors (<code>a2</code>, <code>a4</code>, <code>a6</code>) are the average outer products of a crystallographic axis <span class="arithmatex">\({\bf r}_i\)</span> (here assuming equal grain weight/size/mass for simplicity)</p>
+<p>The 2nd-, 4th- and 6th-order structure tensors (<code>a2</code>, <code>a4</code>, <code>a6</code>) are the average outer products (vector moments) of a crystallographic axis, e.g. <span class="arithmatex">\({\bf c}\)</span>:</p>
 <div class="arithmatex">\[ 
-{\bf a}^{(2)}=\frac{1}{N}\sum_i^N {\bf r}_i\otimes{\bf r}_i 
+{\bf a}^{(2)}=\frac{1}{N}\sum_i^N {\bf c}\otimes{\bf c} 
 ,\quad 
-{\bf a}^{(4)}=\frac{1}{N}\sum_i^N ({\bf r}_i\otimes)^4
+{\bf a}^{(4)}=\frac{1}{N}\sum_i^N ({\bf c}\otimes)^4
 ,\quad 
-{\bf a}^{(6)}=\frac{1}{N}\sum_i^N ({\bf r}_i\otimes)^6
+{\bf a}^{(6)}=\frac{1}{N}\sum_i^N ({\bf c}\otimes)^6
 ,
 \]</div>
-<p>where <span class="arithmatex">\(N\)</span> is the total number of grains. 
-In terms of the spectral expansion <span class="arithmatex">\(n(\theta,\phi)\)</span>, the structure tensors are</p>
+<p>where <span class="arithmatex">\(N\)</span> is the total number of grains (here assuming equal grain weight/size/mass for simplicity). 
+In terms of the distribution of <span class="arithmatex">\({\bf c}\)</span> axes, <span class="arithmatex">\(n(\theta,\phi)\)</span>, the structure tensors are</p>
 <div class="arithmatex">\[ 
-{\bf a}^{(k)}=\frac{1}{N} \int_{S^2} ({\bf r}_i\otimes)^k n(\theta,\phi) \, \mathrm{d}\Omega
+{\bf a}^{(k)}=\frac{1}{N} \int_{S^2} ({\bf c}\otimes)^k n(\theta,\phi) \, \mathrm{d}\Omega
 ,
 \]</div>
 <p>where <span class="arithmatex">\(N=\int_{S^2} n(\theta,\phi) \, \mathrm{d}\Omega\)</span> and <span class="arithmatex">\(\mathrm{d}\Omega = \mathrm{d}\theta \mathrm{d}\phi\)</span> is the infinitesimal solid angle.</p>
