@@ -3,6 +3,7 @@
 
 import copy, os, sys, code # code.interact(local=locals())
 import numpy as np
+from scipy.spatial.transform import Rotation as R
 sys.path.insert(0, '..')
 os.system('mkdir -p ./frames')
 
@@ -29,6 +30,9 @@ f = 2
 Nt = f*40 # Number of time steps
 dt = 1/f*0.0782404601085629 # Time-step size (gives a vertical strain of -0.98 for experiment "uc_zz")
 ugrad = np.diag([0.5, 0.5, -1.0]) # Uniaxial compression along z
+if 0: # debug, off angle compression
+    rotmat = R.from_rotvec(np.pi/4 * np.array([1, 0, 0])).as_matrix()
+    ugrad = np.matmul(rotmat,np.matmul(ugrad,rotmat.T))
 eps = (ugrad+np.transpose(ugrad))/2 # Symmetric part (strain-rate)
 omg = (ugrad-np.transpose(ugrad))/2 # Anti-symmetric part (spin)
 te = 1/eps[-1,-1]
@@ -45,7 +49,8 @@ nlm[:,0] = 1/np.sqrt(4*np.pi) # Normalized such that N(t=0) = 1
 
 (Eij_grain, alpha, n_grain) = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
 
-latres = 50
+latres = 40
+#latres = 25
 lat = np.deg2rad(np.linspace(-90,90,latres))
 lon = np.deg2rad(np.linspace(0,360,2*latres))
 colat = np.deg2rad(90) - lat
@@ -237,7 +242,7 @@ if MAKE_FRAME_Eij or MAKE_FRAME_vi:
 
         ### Save S2 maps of Eij 
         
-        for ii, theta in enumerate(lat):
+        for ii, theta in enumerate(colat):
             for jj, phi in enumerate(lon):
 
                 ct, st = np.cos(theta), np.sin(theta)
@@ -260,7 +265,7 @@ if MAKE_FRAME_Eij or MAKE_FRAME_vi:
                 Ert[nn,ii,jj] = sf.Evw_tranisotropic(nlm[nn,:], vr,vt,tau_rt, Eij_grain,alpha,n_grain)
                 Erp[nn,ii,jj] = sf.Evw_tranisotropic(nlm[nn,:], vr,vp,tau_rp, Eij_grain,alpha,n_grain)
         
-                vi = sf.Vi_elastic_tranisotropic(nlm[nn,:], alpha, lam,mu,Elam,Emu,Egam, rho, colat[ii],phi) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
+                vi = sf.Vi_elastic_tranisotropic(nlm[nn,:], alpha, lam,mu,Elam,Emu,Egam, rho, theta,phi) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
                 vP[nn,ii,jj], vS1[nn,ii,jj], vS2[nn,ii,jj] = vi[2,0], vi[0,0], vi[1,0]
 
                 

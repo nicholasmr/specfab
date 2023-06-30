@@ -22,7 +22,7 @@ class sfconst():
     # Effective grain parameters for polycrystalline olivine
     olivine = {
         'viscoplastic': {
-            'linear':    ((1,1e3), 0.0125, 1), # (Eij_grain, alpha, n_grain)
+            'linear':    ((1,1,1, 1,1,1e1), 0.3, 1), # (Eij_grain, alpha, n_grain)
             'nonlinear': None,
         },
         'elastic': {

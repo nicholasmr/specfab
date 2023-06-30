@@ -173,7 +173,7 @@ class SimpleShear():
     def strain(self, t): return 0.5*(self.F(t) + np.transpose(self.F(t))) - np.eye(3)
         
     # Strain-rate and spin tensors
-    def ugrad(self): return self.kappa*self.Frel # velocity gradient
+    def ugrad(self): return self.kappa*self.Fshear # velocity gradient
     def D(self): return 0.5*(self.ugrad() + self.ugrad().T) # strain-rate
     def W(self): return 0.5*(self.ugrad() - self.ugrad().T) # spin
     

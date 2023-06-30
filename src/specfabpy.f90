@@ -48,13 +48,14 @@ module specfabpy
         Vi_elastic_tranisotropic__sf => Vi_elastic_tranisotropic, &
         Vi_elastic_orthotropic__sf => Vi_elastic_orthotropic, &
         Vi_elastic_orthotropic__discrete__sf => Vi_elastic_orthotropic__discrete, &
-        Qnorm__sf => Qnorm, &
+        Qnorm_tranisotropic__sf => Qnorm_tranisotropic, &
         
         ! Fluid enhancement factors
         Eij_tranisotropic__sf => Eij_tranisotropic, &
         Eij_orthotropic__sf   => Eij_orthotropic, &
         Evw_tranisotropic__sf => Evw_tranisotropic, &
         Evw_orthotropic__sf   => Evw_orthotropic, &
+        Evw_orthotropic_discrete__sf => Evw_orthotropic_discrete, &
         frame__sf => frame, &
         
         ! nlm and rnlm representations
@@ -225,6 +226,17 @@ contains
         real(kind=dp)                :: Evw
         
         Evw = Evw_orthotropic__sf(v,w, tau, nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain)
+    end
+    
+    function Evw_orthotropic_discrete(mi, v,w,tau, Eij_grain, alpha, n_grain) result(Evw)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: mi(:,:,:) ! (3,3,N) = (m'_i, xyz comp., grain no.) 
+        real(kind=dp), intent(in) :: Eij_grain(6), alpha, v(:,:),w(:,:), tau(:,:,:)
+        integer, intent(in)       :: n_grain
+        real(kind=dp)             :: Evw(size(v)/3)
+        
+        Evw = Evw_orthotropic_discrete__sf(v,w, tau, mi, Eij_grain,alpha,n_grain)
     end
     
     function Eij_orthotropic(nlm_r1, nlm_r2, nlm_r3, e1,e2,e3, Eij_grain,alpha,n_grain) result(Eij)
@@ -523,14 +535,14 @@ contains
         Vi = Vi_elastic_tranisotropic__sf(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta_n,phi_n) 
     end
   
-    function Qnorm(nlm, alpha, lam,mu,Elam,Emu,Egam) result(Qn)
+    function Qnorm_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam) result(Qnorm)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), intent(in)    :: alpha, lam,mu,Elam,Emu,Egam
-        real(kind=dp)                :: Qn(3,3)
+        real(kind=dp)                :: Qnorm(3,3)
 
-        Qn = Qnorm__sf(nlm, alpha, lam,mu,Elam,Emu,Egam)
+        Qnorm = Qnorm_tranisotropic__sf(nlm, alpha, lam,mu,Elam,Emu,Egam)
     end
     
     !---------------------------------

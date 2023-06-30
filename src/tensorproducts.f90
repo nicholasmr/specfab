@@ -116,14 +116,14 @@ contains
         end do
     end
 
-    function doubleinner42_firstlast_symmetric(A,B) result(C)
+    function doubleinner42_firstlast(A,B) result(C)
         ! A_lkij B_lj = rank-2 tensor
         implicit none
         real(kind=dp), intent(in) :: A(3,3,3,3), B(3,3)
         real(kind=dp) :: C(3,3)
         do kk=1,3
             do ii=1,3
-                C(kk,ii) = 0.5d0*( doubleinner22(A(:,kk,ii,:),B) + doubleinner22(transpose(A(:,ii,kk,:)),B) )
+                C(kk,ii) = doubleinner22(A(:,kk,ii,:),B)
             end do
         end do
     end

@@ -222,122 +222,73 @@ contains
     !---------------------------------
     ! VISCOUS -- Orthotropic grains
     !---------------------------------
-    
-    ! *** EXPERIMENTAL / STILL BEING DEVELOPED ***
 
-    function rheo_fwd_orthotropic_sachshomo(tau, nlm_r1, nlm_r2, nlm_r3, Eij_grain, n_grain) result(eps)
+    function rheo_fwd_orthotropic_sachshomo(tau, a2v,a4v,a4v_jk_sym2,a4v_jk_sym4, Eij_grain,n_grain) result(eps)
     
         ! Grain-averaged forward orthotropic rheology subject to Sachs homogenization (constant stress over all grains).
         
         implicit none
 
         real(kind=dp), intent(in)    :: tau(3,3), Eij_grain(6)
-        complex(kind=dp), intent(in) :: nlm_r1(:), nlm_r2(:), nlm_r3(:)
+        real(kind=dp), intent(in)    :: a2v(3,6), a4v(3,6,6), a4v_jk_sym2(3,6,6), a4v_jk_sym4(3,6,6) ! see aiv_orthotropic() for defs
         integer, intent(in)          :: n_grain
-        
-        real(kind=dp) :: eps(3,3), lami(6), ci(6), gam
-!        real(kind=dp) :: a2v_r1(6),a2v_r2(6),a2v_r3(6), a4v_r1(6,6),a4v_r2(6,6),a4v_r3(6,6), a4v_r1r2(6,6),a4v_r1r3(6,6),a4v_r2r3(6,6)
-        real(kind=dp) :: a2v_r1(6),a2v_r2(6),a2v_r3(6), a4v_r1(6,6),a4v_r2(6,6),a4v_r3(6,6), a4_r1r2(3,3,3,3),a4_r1r3(3,3,3,3),a4_r2r3(3,3,3,3)  
-        real(kind=dp) :: tauv(6), Q(6,6)
-                
-!        real(kind=dp) :: a2v_r1(6), a4v_r1(6,6), a2v_r2(6), a4v_r2(6,6), a2v_r3(6), a4v_r3(6,6) 
-!        real(kind=dp) :: a4_r1r2(3,3,3,3), a4_r1r3(3,3,3,3), a4_r2r3(3,3,3,3)
+        real(kind=dp) :: eps(3,3), lami(6), ci(6), gam, Q(6,6)
 
-!        real(kind=dp) :: ev_r1(3,3), ev_r2(3,3), ev_r3(3,3)   
-!        real(kind=dp) :: ev_r1r2_sym(3,3), ev_r1r3_sym(3,3), ev_r2r3_sym(3,3)
-
+        ! Tensorial coefficients
         call rheo_params_orthotropic(Eij_grain, DFLOAT(n_grain), lami, gam)
         ci(1:3) = 4.0d0/3 * lami(1:3)
         ci(4:6) =       2 * lami(4:6)
 
-        tauv = mat_to_vec(tau)
-            
         ! Linear grain fluidity    
         if (n_grain .eq. 1) then
-
-!            call f_ev_ck_Mandel(nlm_r1, a2v_r1, a4v_r1) ! Structure tensors in Mandel (vectorized) notation
-!            call f_ev_ck_Mandel(nlm_r2, a2v_r2, a4v_r2) 
-!            ev_r1 = vec_to_mat(matmul(a4v_r1,tauv)) ! <r1^4> : tau
-!            ev_r2 = vec_to_mat(matmul(a4v_r2,tauv)) ! <r2^4> : tau
-!            a4_r1r2 = a4_joint(nlm_r1,nlm_r2)       ! <r1^2 r2^2>
-!            
-!            ! Is nlm_r3 given? Then use it, else derive it from nlm_r1 and nlm_r2            
-!            if (real(nlm_r3(1)) > 1e-10) then
-!                call f_ev_ck_Mandel(nlm_r3, a2v_r3, a4v_r3) 
-!                ev_r3 = vec_to_mat(matmul(a4v_r3,tauv)) ! <r3^4> : tau 
-!                a4_r1r3 = a4_joint(nlm_r1,nlm_r3)       ! <r1^2 r3^2>
-!                a4_r2r3 = a4_joint(nlm_r2,nlm_r3)       ! <r2^2 r3^2>
-!            else
-!                ev_r3 = doubleinner42(a4_orth(nlm_r1, nlm_r2), tau) ! <r3^4> : tau 
-!                a4_r1r3 = a4_jointcross(nlm_r1,nlm_r2) ! <r1^2 r3^2> where r3 = r1 x r2 
-!                a4_r2r3 = a4_jointcross(nlm_r2,nlm_r1) ! <r2^2 r3^2> where r3 = r1 x r2 
-!            end if
-
-!            ! Symmetric double inner products
-!            ev_r1r2_sym = doubleinner24(tau, a4_r1r2) + doubleinner42(a4_r1r2, tau) ! tau : <r1^2 r2^2> + <r2^2 r1^2> : tau
-!            ev_r1r3_sym = doubleinner24(tau, a4_r1r3) + doubleinner42(a4_r1r3, tau) ! tau : <r1^2 r3^2> + <r3^2 r1^2> : tau
-!            ev_r2r3_sym = doubleinner24(tau, a4_r2r3) + doubleinner42(a4_r2r3, tau) ! tau : <r2^2 r3^2> + <r3^2 r2^2> : tau
-
-!            ! Finally, the strain-rate is:
-!            eps = + lam1 * (ev_r2 + ev_r3 - ev_r2r3_sym)/4.0d0 &
-!                  + lam2 * (ev_r1 + ev_r3 - ev_r1r3_sym)/4.0d0 &
-!                  + lam3 * (ev_r1 + ev_r2 - ev_r1r2_sym)/4.0d0 &
-!                  + lam4 * vec_to_mat(matmul(a4_to_mat(a4_symmetrize_orthotropic(a4_r2r3)),tauv)) &
-!                  + lam5 * vec_to_mat(matmul(a4_to_mat(a4_symmetrize_orthotropic(a4_r1r3)),tauv)) &
-!                  + lam6 * vec_to_mat(matmul(a4_to_mat(a4_symmetrize_orthotropic(a4_r1r2)),tauv))
-!!                  + lam4 * (4*doubleinner42_firstlast_symmetric(a4_r2r3, tau))/4.0d0 &
-!!                  + lam5 * (4*doubleinner42_firstlast_symmetric(a4_r1r3, tau))/4.0d0 &
-!!                  + lam6 * (4*doubleinner42_firstlast_symmetric(a4_r1r2, tau))/4.0d0 
-
-            call structensors_for_homogenized_orthotropic_rheology(nlm_r1,nlm_r2,nlm_r3, a2v_r1,a2v_r2,a2v_r3, a4v_r1,a4v_r2,a4v_r3, a4_r2r3,a4_r1r3,a4_r1r2)
-            
-            ! Matrix "Q" of the vectorized bulk Sachs rheology: vec(eps) = matmul(Q, vec(tau))
-            Q = + ci(1) * (a4v_r2 + a4v_r3 - 2*a4_to_mat(a4_sym(a4_r2r3)))/4.0d0 &
-                + ci(2) * (a4v_r1 + a4v_r3 - 2*a4_to_mat(a4_sym(a4_r1r3)))/4.0d0 &
-                + ci(3) * (a4v_r1 + a4v_r2 - 2*a4_to_mat(a4_sym(a4_r1r2)))/4.0d0 &
-                + ci(4) * a4_to_mat(a4_altsym(a4_r2r3)) &
-                + ci(5) * a4_to_mat(a4_altsym(a4_r1r3)) &
-                + ci(6) * a4_to_mat(a4_altsym(a4_r1r2))
+    
+            ! 6x6 matrix of the vectorized bulk Sachs rheology: vec(eps) = matmul(Q, vec(tau))
+            Q = + ci(1) * ( a4v(2,:,:) + a4v(3,:,:) - 2*a4v_jk_sym2(1,:,:) )/4 &
+                + ci(2) * ( a4v(1,:,:) + a4v(3,:,:) - 2*a4v_jk_sym2(2,:,:) )/4 &
+                + ci(3) * ( a4v(1,:,:) + a4v(2,:,:) - 2*a4v_jk_sym2(3,:,:) )/4 &
+                + ci(4) * a4v_jk_sym4(1,:,:) &
+                + ci(5) * a4v_jk_sym4(2,:,:) &
+                + ci(6) * a4v_jk_sym4(3,:,:)
                 
-            eps = vec_to_mat(matmul(Q,tauv))
+            eps = vec_to_mat(matmul(Q,mat_to_vec(tau)))
         else
             eps(:,:) = 0.0d0 ! n_grain not supported, silently return 0
         end if
     end
 
-    function rheo_fwd_orthotropic_taylorhomo(tau, nlm_r1, nlm_r2, nlm_r3, Eij_grain, n_grain) result(eps)
+    function rheo_fwd_orthotropic_taylorhomo(tau, a2v,a4v,a4v_jk_sym2,a4v_jk_sym4, Eij_grain,n_grain) result(eps)
         
-        ! Grain-averaged forward orthotropic rheology subject to Taylor homogenization (constant strainrate over all grains).
+        ! Grain-averaged forward orthotropic rheology subject to Taylor homogenization (constant strain rate over all grains).
         
         implicit none
         
         real(kind=dp), intent(in)    :: tau(3,3), Eij_grain(6)
-        complex(kind=dp), intent(in) :: nlm_r1(:), nlm_r2(:), nlm_r3(:)
+        real(kind=dp), intent(in)    :: a2v(3,6), a4v(3,6,6), a4v_jk_sym2(3,6,6), a4v_jk_sym4(3,6,6) ! see aiv_orthotropic() for defs
         integer, intent(in)          :: n_grain
-
-        real(kind=dp) :: eps(3,3), lami(6), ci(6), gam
-        real(kind=dp) :: a2v_r1(6),a2v_r2(6),a2v_r3(6), a4v_r1(6,6),a4v_r2(6,6),a4v_r3(6,6), a4_r1r2(3,3,3,3),a4_r1r3(3,3,3,3),a4_r2r3(3,3,3,3)  
- 
-        real(kind=dp) :: P(6,6), tau_vec(6,1), P_reg(6,6), tau_vec_reg(6,1)
+        real(kind=dp) :: eps(3,3), lami(6), ci(6), gam, P(6,6), I66(6,6)
+        real(kind=dp) :: tau_vec(6,1), P_reg(6,6), tau_vec_reg(6,1)
         integer       :: info
     !    integer :: ipiv(9), work
-                                                               
+                                                 
+        ! Tensorial coefficients              
         call rheo_params_orthotropic(Eij_grain, DFLOAT(n_grain), lami, gam)
         ci(1:3) = 4.0d0/3 * lami(1:3)/gam
         ci(4:6) =       2 * 1/lami(4:6)
 
+        I66 = outerprod6(identity_vec6,identity_vec6)
+        
         ! Linear grain viscosity    
         if (n_grain .eq. 1) then
 
-            call structensors_for_homogenized_orthotropic_rheology(nlm_r1,nlm_r2,nlm_r3, a2v_r1,a2v_r2,a2v_r3, a4v_r1,a4v_r2,a4v_r3, a4_r2r3,a4_r1r3,a4_r1r2)
-            
-            ! Matrix "P" of the vectorized bulk Taylor rheology: tau = matmul(P, eps)
-            P = + ci(1) * (-3.0d0/2) * (outerprod6(identity_vec6,a2v_r1) - 3*a4v_r1)/2 &
-                + ci(2) * (-3.0d0/2) * (outerprod6(identity_vec6,a2v_r2) - 3*a4v_r2)/2 &
-                + ci(3) * (-3.0d0/2) * (outerprod6(identity_vec6,a2v_r3) - 3*a4v_r3)/2 &
-                + ci(4) * a4_to_mat(a4_altsym(a4_r2r3)) &
-                + ci(5) * a4_to_mat(a4_altsym(a4_r1r3)) &
-                + ci(6) * a4_to_mat(a4_altsym(a4_r1r2))
+!            P = + ci(1) * ( I66 - 3*(outerprod6(identity_vec6,a2v(1,:)) + outerprod6(a2v(1,:),identity_vec6)) + 9*a4v(1,:,:) )/4 &
+!                + ci(2) * ( I66 - 3*(outerprod6(identity_vec6,a2v(2,:)) + outerprod6(a2v(2,:),identity_vec6)) + 9*a4v(2,:,:) )/4 &
+!                + ci(3) * ( I66 - 3*(outerprod6(identity_vec6,a2v(3,:)) + outerprod6(a2v(3,:),identity_vec6)) + 9*a4v(3,:,:) )/4 &
+            P = + ci(1) * ( I66 - 3*(outerprod6(identity_vec6,a2v(1,:)) + outerprod6(a2v(1,:),identity_vec6)) + 9*a4v(1,:,:) )/4 &
+                + ci(2) * ( I66 - 3*(outerprod6(identity_vec6,a2v(2,:)) + outerprod6(a2v(2,:),identity_vec6)) + 9*a4v(2,:,:) )/4 &
+                + ci(3) * ( I66 - 3*(outerprod6(identity_vec6,a2v(3,:)) + outerprod6(a2v(3,:),identity_vec6)) + 9*a4v(3,:,:) )/4 &
+                + ci(4) * a4v_jk_sym4(1,:,:) &
+                + ci(5) * a4v_jk_sym4(2,:,:) &
+                + ci(6) * a4v_jk_sym4(3,:,:)
             
             ! Solve inverse problem; we are seeking eps given tau in tau = matmul(P, eps).
             tau_vec(:,1) = mat_to_vec(tau)
@@ -350,54 +301,90 @@ contains
                 call dposv('L', 6, 1, P_reg, 6, tau_vec_reg, 6, info)
                 tau_vec = tau_vec_reg
                 if (info /= 0) then
-                    stop 'specfab error: Taylor viscosity-matrix inversion failed! Please check the CPO is correct (reducing the fabric integration time-step, and/or increasing regularization, for transient problems can often help).'
+                    stop 'specfab error: Taylor viscosity-matrix inversion failed! Please check the CPO is correct (reducing the fabric integration time step, and/or increasing regularization, for transient problems can often help).'
                 end if
             end if
             
             ! Revert solution to 3x3
             eps = vec_to_mat(tau_vec)
-        
         else
             eps(:,:) = 0.0d0 ! n_grain not supported, silently return 0
         end if
     end
 
-    subroutine structensors_for_homogenized_orthotropic_rheology(nlm_r1,nlm_r2,nlm_r3, a2v_r1,a2v_r2,a2v_r3, a4v_r1,a4v_r2,a4v_r3, a4_r2r3,a4_r1r3,a4_r1r2)
-    
-        ! Structure tensors in Mandel (vectorized) notation used by homogenized orthtropic rheology
+    subroutine aiv_orthotropic(nlm_1,nlm_2,nlm_3, a2v,a4v,a4v_jk_sym2,a4v_jk_sym4)
     
         implicit none
         
-        complex(kind=dp), intent(in) :: nlm_r1(:), nlm_r2(:), nlm_r3(:)
-!        real(kind=dp), intent(out)   :: a2v_r1(6),a2v_r2(6),a2v_r3(6), a4v_r1(6,6),a4v_r2(6,6),a4v_r3(6,6), a4v_r2r3(6,6),a4v_r1r3(6,6),a4v_r1r2(6,6) 
-
-        real(kind=dp), intent(out) :: a2v_r1(6),a2v_r2(6),a2v_r3(6), a4v_r1(6,6),a4v_r2(6,6),a4v_r3(6,6)
-        real(kind=dp), dimension(3,3,3,3), intent(out) :: a4_r2r3,a4_r1r3,a4_r1r2 
+        complex(kind=dp), intent(in) :: nlm_1(:), nlm_2(:), nlm_3(:)
+        real(kind=dp), intent(out)   :: a2v(3,6), a4v(3,6,6), a4v_jk_sym2(3,6,6), a4v_jk_sym4(3,6,6) ! a2v=(a2_1,a2_2,a2_3), a4v=(a4_11,a4_22,a4_33), a4_jk_*=symi(a4_23,a4_13,a4_12) where subscripts refer to subscripts of m'^2_i vector
+        real(kind=dp) :: a4_jk(3, 3,3,3,3) 
+        integer :: ii
     
-        call f_ev_ck_Mandel(nlm_r1, a2v_r1, a4v_r1)   ! <r1^2> and <r1^4>
-        call f_ev_ck_Mandel(nlm_r2, a2v_r2, a4v_r2)   ! <r2^2> and <r2^4>
-        a4_r1r2 = a4_joint(nlm_r1,nlm_r2) ! <r1^2 r2^2>
+        call f_ev_ck_Mandel(nlm_1, a2v(1,:), a4v(1,:,:)) ! <m1'^2> and <m1'^4>
+        call f_ev_ck_Mandel(nlm_2, a2v(2,:), a4v(2,:,:)) ! <m2'^2> and <m2'^4>
+        a4_jk(3,:,:,:,:) = a4_joint(nlm_1,nlm_2) ! <m1'^2 m2'^2>
         
-        ! Is nlm_r3 given? Then use it, else derive it from nlm_r1 and nlm_r2            
-        if (real(nlm_r3(1)) > 1e-10) then
-            call f_ev_ck_Mandel(nlm_r3, a2v_r3, a4v_r3)   ! <r3^2> and <r3^4>
-            a4_r1r3 = a4_joint(nlm_r1,nlm_r3) ! <r1^2 r3^2>
-            a4_r2r3 = a4_joint(nlm_r2,nlm_r3) ! <r2^2 r3^2>
+        ! Is nlm_3 given? Then use it, else derive it from nlm_1 and nlm_2            
+        if (real(nlm_3(1)) > 1e-8) then
+            call f_ev_ck_Mandel(nlm_3, a2v(3,:), a4v(3,:,:))   ! <m3'^2> and <m3'^4>
+            a4_jk(1,:,:,:,:) = a4_joint(nlm_2,nlm_3) ! <m2'^2 m3'^2>
+            a4_jk(2,:,:,:,:) = a4_joint(nlm_1,nlm_3) ! <m1'^2 m3'^2>
+!            a4_jk(1,:,:,:,:) = outerprod22(vec_to_mat(a2v(2,:)),vec_to_mat(a2v(3,:)))  ! ...this is how its done in wavepropagation.f90?
+!            a4_jk(2,:,:,:,:) = outerprod22(vec_to_mat(a2v(1,:)),vec_to_mat(a2v(3,:)))
         else
-            a2v_r3 = mat_to_vec(a2_orth(nlm_r1, nlm_r2)) ! <r3^2> 
-            a4v_r3 = a4_to_mat( a4_orth(nlm_r1, nlm_r2)) ! <r3^4> 
-            a4_r1r3 = a4_jointcross(nlm_r1,nlm_r2) ! <r1^2 r3^2> 
-            a4_r2r3 = a4_jointcross(nlm_r2,nlm_r1) ! <r2^2 r3^2> 
+            a2v(3,:)   = mat_to_vec(a2_orth(nlm_1, nlm_2)) ! <m3'^2> 
+            a4v(3,:,:) = a4_to_mat(a4_orth(nlm_1, nlm_2)) ! <m3'^4>
+            a4_jk(1,:,:,:,:) = a4_jointcross(nlm_2,nlm_1) ! <m2'^2 m3'^2> 
+            a4_jk(2,:,:,:,:) = a4_jointcross(nlm_1,nlm_2) ! <m1'^2 m3'^2> 
         end if
-        
-    end
 
-    function a4_sym(a4) result(a4sym)
+        do ii=1,3
+            a4v_jk_sym2(ii,:,:) = a4v_sym2(a4_jk(ii,:,:,:,:))
+            a4v_jk_sym4(ii,:,:) = a4v_sym4(a4_jk(ii,:,:,:,:))
+        end do
+    end
+    
+    subroutine aiv_orthotropic_discrete(mi, a2v,a4v,a4v_jk_sym2,a4v_jk_sym4)
+
+        implicit none
+        
+        real(kind=dp), intent(in)  :: mi(:,:,:) ! (3,3,N) = (m'_i, xyz comp., grain no.) 
+        real(kind=dp), intent(out) :: a2v(3,6), a4v(3,6,6), a4v_jk_sym2(3,6,6), a4v_jk_sym4(3,6,6) ! a2v=(a2_1,a2_2,a2_3), a4v=(a4_11,a4_22,a4_33), a4_jk_*=symi(a4_23,a4_13,a4_12) where subscripts refer to subscripts of m'^2_i vector
+        real(kind=dp) :: a2_(3,3,3), a2_i(3,3,3), a4_ii(3,3,3,3,3), a4_jk(3,3,3,3,3)
+        integer       :: ii,nn, N
+
+        a2_i  = 0.0d0
+        a4_ii = 0.0d0
+        a4_jk = 0.0d0
+        
+        N = size(mi, dim=3) ! num of grains
+        do nn=1,N
+            do ii=1,3
+                a2_(ii,:,:) = outerprod(mi(ii,:,nn),mi(ii,:,nn))
+                a2_i(ii,:,:)      = a2_i(ii,:,:)      + a2_(ii,:,:)/N
+                a4_ii(ii,:,:,:,:) = a4_ii(ii,:,:,:,:) + outerprod22(a2_(ii,:,:), a2_(ii,:,:))/N
+            end do 
+            
+            a4_jk(1,:,:,:,:) = a4_jk(1,:,:,:,:) + outerprod22(a2_(2,:,:), a2_(3,:,:))/N
+            a4_jk(2,:,:,:,:) = a4_jk(2,:,:,:,:) + outerprod22(a2_(1,:,:), a2_(3,:,:))/N
+            a4_jk(3,:,:,:,:) = a4_jk(3,:,:,:,:) + outerprod22(a2_(1,:,:), a2_(2,:,:))/N
+        end do
+        
+        do ii=1,3
+            a2v(ii,:)           = mat_to_vec(a2_i(ii,:,:))
+            a4v(ii,:,:)         = a4_to_mat(a4_ii(ii,:,:,:,:))
+            a4v_jk_sym2(ii,:,:) = a4v_sym2(a4_jk(ii,:,:,:,:))
+            a4v_jk_sym4(ii,:,:) = a4v_sym4(a4_jk(ii,:,:,:,:))
+        end do
+    end
+    
+    function a4v_sym2(a4) result(a4vsym)
     
         implicit none
         
         real(kind=dp), intent(in) :: a4(3,3,3,3)
-        real(kind=dp) :: a4sym(3,3,3,3)
+        real(kind=dp) :: a4sym(3,3,3,3), a4vsym(6,6)
         integer :: ii,jj,kk,ll ! loop indices
         
         do ii=1,3
@@ -409,14 +396,15 @@ contains
                 end do
             end do
         end do
+        a4vsym = a4_to_mat(a4sym)
     end
 
-    function a4_altsym(a4) result(a4sym)
+    function a4v_sym4(a4) result(a4vsym)
     
         implicit none
         
         real(kind=dp), intent(in) :: a4(3,3,3,3)
-        real(kind=dp) :: a4sym(3,3,3,3)
+        real(kind=dp) :: a4sym(3,3,3,3), a4vsym(6,6)
         integer :: ii,jj,kk,ll ! loop indices
         
         do ii=1,3
@@ -424,10 +412,12 @@ contains
                 do kk=1,3
                     do ll=1,3
                         a4sym(ii,jj,kk,ll) = (a4(ii,kk,jj,ll) + a4(kk,jj,ii,ll) + a4(ii,ll,kk,jj) + a4(ll,jj,kk,ii))/4
+                        ! e.g. mimimjmj: iijj = ijij + jiij + ijji + jiji
                     end do
                 end do
             end do
-        end do    
+        end do
+        a4vsym = a4_to_mat(a4sym)
     end
     
     !---------------------------------

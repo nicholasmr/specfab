@@ -70,41 +70,43 @@ contains
 
     ! Orthotropic grains
     
-    function Eij_orthotropic(nlm_r1,nlm_r2,nlm_r3, e1,e2,e3, Eij_grain,alpha,n_grain)  result(Eij)
+    function Eij_orthotropic(nlm_1,nlm_2,nlm_3, e1,e2,e3, Eij_grain,alpha,n_grain)  result(Eij)
 
         ! Enhancement factors w.r.t. (e1,e2,e3) axes.
         ! Note: if (e1,e2,e3) coincide with fabric symmetry axes, then these are the fabric eigenenhancements.
 
         implicit none
 
-        complex(kind=dp), intent(in) :: nlm_r1(:), nlm_r2(:), nlm_r3(:)
+        complex(kind=dp), intent(in) :: nlm_1(:), nlm_2(:), nlm_3(:)
         real(kind=dp), dimension(3)  :: e1,e2,e3
         real(kind=dp), intent(in)    :: Eij_grain(6), alpha
         integer, intent(in)          :: n_grain
         real(kind=dp)                :: Eij(6)
         
         ! Longitudinal
-        Eij(1) = Evw_orthotropic(e1,e1, tau_vv(e1),    nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain) 
-        Eij(2) = Evw_orthotropic(e2,e2, tau_vv(e2),    nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain)
-        Eij(3) = Evw_orthotropic(e3,e3, tau_vv(e3),    nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain)    
+        Eij(1) = Evw_orthotropic(e1,e1, tau_vv(e1),    nlm_1,nlm_2,nlm_3, Eij_grain,alpha,n_grain) 
+        Eij(2) = Evw_orthotropic(e2,e2, tau_vv(e2),    nlm_1,nlm_2,nlm_3, Eij_grain,alpha,n_grain)
+        Eij(3) = Evw_orthotropic(e3,e3, tau_vv(e3),    nlm_1,nlm_2,nlm_3, Eij_grain,alpha,n_grain)    
 
         ! Shear
-        Eij(4) = Evw_orthotropic(e2,e3, tau_vw(e2,e3), nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain)
-        Eij(5) = Evw_orthotropic(e1,e3, tau_vw(e1,e3), nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain) 
-        Eij(6) = Evw_orthotropic(e1,e2, tau_vw(e1,e2), nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain) 
+        Eij(4) = Evw_orthotropic(e2,e3, tau_vw(e2,e3), nlm_1,nlm_2,nlm_3, Eij_grain,alpha,n_grain)
+        Eij(5) = Evw_orthotropic(e1,e3, tau_vw(e1,e3), nlm_1,nlm_2,nlm_3, Eij_grain,alpha,n_grain) 
+        Eij(6) = Evw_orthotropic(e1,e2, tau_vw(e1,e2), nlm_1,nlm_2,nlm_3, Eij_grain,alpha,n_grain) 
     end
     
-    function Evw_orthotropic(v,w,tau, nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain)  result(Evw)
+    function Evw_orthotropic(v,w,tau, nlm_1,nlm_2,nlm_3, Eij_grain,alpha,n_grain)  result(Evw)
 
         ! Generalized enhancement factor for orthotropic grains and a linear Taylor--Sachs homogenization scheme.
 
         implicit none
         
-        complex(kind=dp), intent(in) :: nlm_r1(:), nlm_r2(:), nlm_r3(:)
+        complex(kind=dp), intent(in) :: nlm_1(:), nlm_2(:), nlm_3(:)
         real(kind=dp), intent(in)    :: Eij_grain(6), alpha, v(3),w(3), tau(3,3)
         integer, intent(in)          :: n_grain
         real(kind=dp)                :: vw(3,3), Evw_sachs, Evw_taylor, Evw
-        complex(kind=dp)             :: nlm_iso(size(nlm_r1))
+        complex(kind=dp)             :: nlm_iso(size(nlm_1))
+        real(kind=dp)                :: a2v(3,6), a4v(3,6,6), a4v_jk_sym2(3,6,6), a4v_jk_sym4(3,6,6) ! see aiv_orthotropic() for defs
+        real(kind=dp)                :: a2v_iso(3,6), a4v_iso(3,6,6), a4v_jk_sym2_iso(3,6,6), a4v_jk_sym4_iso(3,6,6) 
     
         vw = outerprod(v,w)
         Evw_sachs  = 0.0d0
@@ -113,13 +115,53 @@ contains
         nlm_iso(:) = 0.0d0
         nlm_iso(1) = 1.0d0
     
-        Evw_sachs = doubleinner22(rheo_fwd_orthotropic_sachshomo(tau, nlm_r1,  nlm_r2,  nlm_r3,  Eij_grain,n_grain), vw) / &
-                    doubleinner22(rheo_fwd_orthotropic_sachshomo(tau, nlm_iso, nlm_iso, nlm_iso, Eij_grain,n_grain), vw)
+        call aiv_orthotropic(nlm_1,nlm_2,nlm_3, a2v,a4v,a4v_jk_sym2,a4v_jk_sym4)
+        call aiv_orthotropic(nlm_iso,nlm_iso,nlm_iso, a2v_iso,a4v_iso,a4v_jk_sym2_iso,a4v_jk_sym4_iso)
+    
+        Evw_sachs = doubleinner22(rheo_fwd_orthotropic_sachshomo(tau, a2v,    a4v,    a4v_jk_sym2,    a4v_jk_sym4,     Eij_grain,n_grain), vw) / &
+                    doubleinner22(rheo_fwd_orthotropic_sachshomo(tau, a2v_iso,a4v_iso,a4v_jk_sym2_iso,a4v_jk_sym4_iso, Eij_grain,n_grain), vw)
                     
-        Evw_taylor = doubleinner22(rheo_fwd_orthotropic_taylorhomo(tau, nlm_r1,  nlm_r2,  nlm_r3,  Eij_grain,n_grain), vw) / &
-                     doubleinner22(rheo_fwd_orthotropic_taylorhomo(tau, nlm_iso, nlm_iso, nlm_iso, Eij_grain,n_grain), vw)
+        Evw_taylor = doubleinner22(rheo_fwd_orthotropic_taylorhomo(tau, a2v,    a4v,    a4v_jk_sym2,    a4v_jk_sym4,     Eij_grain,n_grain), vw) / &
+                     doubleinner22(rheo_fwd_orthotropic_taylorhomo(tau, a2v_iso,a4v_iso,a4v_jk_sym2_iso,a4v_jk_sym4_iso, Eij_grain,n_grain), vw)
                     
         Evw = (1-alpha)*Evw_Sachs + alpha*Evw_taylor                    
+    end
+    
+    function Evw_orthotropic_discrete(v,w,tau, mi, Eij_grain,alpha,n_grain)  result(Evw)
+
+        ! ... same as Evw_orthotropic() but for discrete grain orientations
+
+        implicit none
+        
+        real(kind=dp), intent(in)    :: mi(:,:,:) ! (3,3,N) = (m'_i, xyz comp., grain no.) 
+        real(kind=dp), intent(in)    :: Eij_grain(6), alpha, v(:,:),w(:,:), tau(:,:,:) 
+        integer, intent(in)          :: n_grain
+        real(kind=dp)                :: vw(3,3), Evw_sachs, Evw_taylor, Evw(size(v,dim=2))
+        integer                      :: nn
+        complex(kind=dp)             :: nlm_iso(1+5+9)
+        real(kind=dp)                :: a2v(3,6), a4v(3,6,6), a4v_jk_sym2(3,6,6), a4v_jk_sym4(3,6,6) ! see aiv_orthotropic() for defs
+        real(kind=dp)                :: a2v_iso(3,6), a4v_iso(3,6,6), a4v_jk_sym2_iso(3,6,6), a4v_jk_sym4_iso(3,6,6) 
+    
+        Evw_sachs  = 0.0d0
+        Evw_taylor = 0.0d0
+    
+        nlm_iso(:) = 0.0d0
+        nlm_iso(1) = 1.0d0
+    
+        call aiv_orthotropic_discrete(mi, a2v,a4v,a4v_jk_sym2,a4v_jk_sym4) ! this is the only difference from the continuous version, Evw_orthotropic()
+        call aiv_orthotropic(nlm_iso,nlm_iso,nlm_iso, a2v_iso,a4v_iso,a4v_jk_sym2_iso,a4v_jk_sym4_iso)
+    
+        do nn = 1,size(v,dim=2)
+            vw = outerprod(v(:,nn),w(:,nn))
+            
+            Evw_sachs = doubleinner22(rheo_fwd_orthotropic_sachshomo(tau(:,:,nn), a2v,    a4v,    a4v_jk_sym2,    a4v_jk_sym4,     Eij_grain,n_grain), vw) / &
+                        doubleinner22(rheo_fwd_orthotropic_sachshomo(tau(:,:,nn), a2v_iso,a4v_iso,a4v_jk_sym2_iso,a4v_jk_sym4_iso, Eij_grain,n_grain), vw)
+                        
+            Evw_taylor = doubleinner22(rheo_fwd_orthotropic_taylorhomo(tau(:,:,nn), a2v,    a4v,    a4v_jk_sym2,    a4v_jk_sym4,     Eij_grain,n_grain), vw) / &
+                         doubleinner22(rheo_fwd_orthotropic_taylorhomo(tau(:,:,nn), a2v_iso,a4v_iso,a4v_jk_sym2_iso,a4v_jk_sym4_iso, Eij_grain,n_grain), vw)
+                        
+            Evw(nn) = (1-alpha)*Evw_Sachs + alpha*Evw_taylor
+        end do
     end
     
     !---------------------------------
