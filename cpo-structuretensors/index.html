@@ -50,7 +50,19 @@
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Structure tensors</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#example">Example</a>
+    <li class="toctree-l2"><a class="reference internal" href="#definition">Definition</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#converting-to-spectral-representation">Converting to spectral representation</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#example">Example</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#constructing-cpos-from-measurements">Constructing CPOs from measurements</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#example_1">Example</a>
+    </li>
+        </ul>
     </li>
     </ul>
                   </li>
@@ -114,38 +126,52 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="structure-tensors">Structure tensors</h1>
-<p>The 2nd-, 4th- and 6th-order structure tensors (<code>a2</code>, <code>a4</code>, <code>a6</code>) are the average outer products (vector moments) of a crystallographic axis, e.g. <span class="arithmatex">\({\bf c}\)</span>:</p>
+<h2 id="definition">Definition</h2>
+<p>The 2nd-, 4th- and 6th-order structure tensors (<code>a2</code>, <code>a4</code> and <code>a6</code> in specfab) are the average outer products of a crystallographic axis (vector moments).</p>
+<p>For example, in the case of a discrete ensemble of <span class="arithmatex">\({\bf c}\)</span> axes they are</p>
 <div class="arithmatex">\[ 
-{\bf a}^{(2)}=\frac{1}{N}\sum_i^N {\bf c}\otimes{\bf c} 
+{\bf a}^{(2)}=\frac{1}{N}\sum_i^N {\bf c}_i\otimes{\bf c}_i
+,\quad
+{\bf a}^{(4)}=\frac{1}{N}\sum_i^N ({\bf c}_i\otimes)^4
 ,\quad 
-{\bf a}^{(4)}=\frac{1}{N}\sum_i^N ({\bf c}\otimes)^4
-,\quad 
-{\bf a}^{(6)}=\frac{1}{N}\sum_i^N ({\bf c}\otimes)^6
+{\bf a}^{(6)}=\frac{1}{N}\sum_i^N ({\bf c}_i\otimes)^6
 ,
 \]</div>
-<p>where <span class="arithmatex">\(N\)</span> is the total number of grains (here assuming equal grain weight/size/mass for simplicity). 
-In terms of the distribution of <span class="arithmatex">\({\bf c}\)</span> axes, <span class="arithmatex">\(n(\theta,\phi)\)</span>, the structure tensors are</p>
+<p>where <span class="arithmatex">\(N\)</span> is the total number of grains (equal grain weight/size/mass for assumed simplicity). </p>
+<p>Alternatively, if the distribution function of <span class="arithmatex">\({\bf c}\)</span> axes is known, <span class="arithmatex">\(n(\theta,\phi)\)</span>, the structure tensors are</p>
 <div class="arithmatex">\[ 
-{\bf a}^{(k)}=\frac{1}{N} \int_{S^2} ({\bf c}\otimes)^k n(\theta,\phi) \, \mathrm{d}\Omega
+{\bf a}^{(k)}=\frac{1}{N} \int_{S^2} (\hat{{\bf r}}\otimes)^k n(\theta,\phi) \, \mathrm{d}\Omega
 ,
 \]</div>
-<p>where <span class="arithmatex">\(N=\int_{S^2} n(\theta,\phi) \, \mathrm{d}\Omega\)</span> and <span class="arithmatex">\(\mathrm{d}\Omega = \mathrm{d}\theta \mathrm{d}\phi\)</span> is the infinitesimal solid angle.</p>
+<p>where <span class="arithmatex">\(\mathrm{d}\Omega = \sin(\theta) \mathrm{d}\theta \mathrm{d}\phi\)</span> is the infinitesimal solid angle, <span class="arithmatex">\(\hat{{\bf r}}\)</span> is the radial unit vector, and <span class="arithmatex">\(N=\int_{S^2} n(\theta,\phi) \, \mathrm{d}\Omega\)</span>.</p>
+<h2 id="converting-to-spectral-representation">Converting to spectral representation</h2>
 <p>Converting between spectral and tensorial representations is a linear problem in the sense that </p>
 <div class="arithmatex">\[ {\bf a}^{(2)} = {\bf f}(\hat{n}_2^{m})
 ,\quad
-{\bf a}^{(4)} = {\bf g}(\hat{n}_0^0, \hat{n}_2^{m}, \hat{n}_4^{m}) 
+{\bf a}^{(4)} = {\bf g}(\hat{n}_2^{m}, \hat{n}_4^{m}) 
 ,\quad
 {\bf a}^{(6)} = {\bf h}(\hat{n}_2^{m}, \hat{n}_4^{m}, \hat{n}_6^{m}) 
 ,
-\qquad\text{(for all $m$)}
+\qquad\text{(for all possible $m$)}
 \]</div>
 <p>where <span class="arithmatex">\({\bf f}\)</span>, <span class="arithmatex">\({\bf g}\)</span>, <span class="arithmatex">\({\bf h}\)</span> are linear in their arguments, and </p>
 <div class="arithmatex">\[
-\hat{n}_l^m \equiv n_l^m/n_0^0
+\hat{n}_l^m = n_l^m/n_0^0
 .
 \]</div>
-<h2 id="example">Example</h2>
-<p>The following example shows how to convert between the representations:</p>
+<p>In the case of <span class="arithmatex">\({\bf a}^{(2)}\)</span> the relation is simple:</p>
+<div class="arithmatex">\[
+{\bf a}^{(2)} = \frac{{\bf I}}{3} + \sqrt{\frac{2}{15}}
+\left[\begin{matrix}
+\operatorname{Re}[\hat{n}_2^2] - \dfrac{1}{2}\sqrt{\dfrac{2}{3}} \hat{n}_2^0 &amp; -\operatorname{Im}[\hat{n}_2^2] &amp; -\operatorname{Re}[\hat{n}_2^1] \\ 
+ &amp; -\operatorname{Re}[\hat{n}_2^2] - \dfrac{1}{2}\sqrt{\dfrac{2}{3}} \hat{n}_2^0  &amp; \operatorname{Im}[\hat{n}_2^1] \\ 
+\mathrm{sym.} &amp;  &amp; \sqrt{\dfrac{2}{3}} \hat{n}_2^0
+\end{matrix}\right]
+,
+\]</div>
+<p>but for higher-order structure tensors the expressions are long (not shown).</p>
+<h3 id="example">Example</h3>
+<p>The following code example shows how to convert between the representations:</p>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfabpy as sf
 lm, nlm_len = sf.init(6) # L=6 truncation is sufficient in this case
@@ -171,10 +197,10 @@ nlm[:] = sf.a6_to_nlm(a6) # Determine l=2,4,6 expansion coefficients of ODF (a6 
 a6 = sf.a6(nlm) # nlm back to a6
 print('a6 is: ', a6)
 </code></pre>
-<h1 id="constructing-cpos-from-measurements">Constructing CPOs from measurements</h1>
+<h2 id="constructing-cpos-from-measurements">Constructing CPOs from measurements</h2>
 <p>The spectral expansion coefficients of any CPO may be determined from discrete measurements of crystallographic axes.
 This requires constructing the corresponding structure tensors (for each crystallographic axis), from which the expansion coefficients may be derived.</p>
-<h2 id="example_1">Example</h2>
+<h3 id="example_1">Example</h3>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfabpy as sf
 lm, nlm_len = sf.init(6) 

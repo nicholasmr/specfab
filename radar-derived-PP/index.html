@@ -141,7 +141,7 @@ where <span class="arithmatex">\(\epsilon_{\parallel}\)</span> and <span class="
 + (\epsilon_{\parallel}-\epsilon_{\perp})(  \langle c_i c_j \rangle - \delta_{ij}/3)
 ,
 \]</div>
-<p>where <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> is the second-order structure tensor (<code>a2</code> in specfab), defined as the average outer product of grain <span class="arithmatex">\(c\)</span>-axes (assuming grain sizes are uncorrelated with orientation):</p>
+<p>where <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> is the second-order structure tensor (<code>a2</code> in specfab; a.k.a. <span class="arithmatex">\({\bf a}^{(2)}\)</span>), defined as the average outer product of grain <span class="arithmatex">\(c\)</span>-axes (assuming grain sizes are uncorrelated with orientation):</p>
 <div class="arithmatex">\[ 
 \langle c_i c_j \rangle = 
 \frac{1}{N}\sum_{k=1}^N { c_i^{(k)} c_j^{(k)} }.
@@ -191,19 +191,23 @@ $$</p>
 <p>where <span class="arithmatex">\(\operatorname{tr}(\langle c_i c_j \rangle) = 1\)</span> was used.</p>
 <h3 id="gerbers-approximation">Gerber's approximation</h3>
 <p>Since <span class="arithmatex">\(\lambda_1\)</span> is unknown, the problem can be closed by making different assumptions about <span class="arithmatex">\(\lambda_1\)</span> given the local/upstream flow regime, such as proposed by <a href="https://www.nature.com/articles/s41467-023-38139-8">Gerber et al. (2023)</a>.
-Suppose <span class="arithmatex">\(\Delta\lambda\)</span> is measured in region where <span class="arithmatex">\(c\)</span>-axes are suspected, to a good approximation, to be distributed on the <span class="arithmatex">\({\bf m}_2\)</span>&mdash;<span class="arithmatex">\({\bf z}\)</span> plane because the smallest eigenvalue is vanishing, <span class="arithmatex">\(\lambda_1 \rightarrow 0\)</span>.
+Suppose <span class="arithmatex">\(\Delta\lambda\)</span> is measured in region where <span class="arithmatex">\(c\)</span>-axes are, to a good approximation, suspected to be distributed on the <span class="arithmatex">\({\bf m}_2\)</span>&mdash;<span class="arithmatex">\({\bf z}\)</span> plane because the smallest eigenvalue is vanishing, <span class="arithmatex">\(\lambda_1 \rightarrow 0\)</span>.
 In this case, <span class="arithmatex">\(\Delta \lambda = 0\)</span> represents a perfect single-maximum along <span class="arithmatex">\({\bf z}\)</span>, <span class="arithmatex">\(\Delta \lambda = 0.5\)</span> a perfect girdle in the <span class="arithmatex">\({\bf m}_2\)</span>&mdash;<span class="arithmatex">\({\bf z}\)</span> plane, and <span class="arithmatex">\(\Delta \lambda = 1\)</span> a perfect single-maximum along <span class="arithmatex">\({\bf m}_2\)</span>, respectively:</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/plane-CPOs.png" style="width:660px" /></p>
-<p>The above <a href="../cpo-plot/">plot</a> was generated from the normalized spectral expansion coefficients <span class="arithmatex">\(\hat{n}_l^m \equiv n_l^m/n_0^0\)</span> for <span class="arithmatex">\(l\leq 2\)</span>, <a href="../cpo-structuretensors/">derived from</a></p>
-<div class="arithmatex">\[
+<!--
+The above [plot](cpo-plot.md) was generated from the normalized spectral expansion coefficients $\hat{n}_l^m \equiv n_l^m/n_0^0$ for $l\leq 2$, [derived from](cpo-structuretensors.md)
+
+$$
 \langle c_i c_j\rangle = \frac{{\bf I}}{3} + \sqrt{\frac{2}{15}}
 \left[\begin{matrix}
-\operatorname{Re}[\hat{n}_2^2] - \dfrac{1}{2}\sqrt{\dfrac{2}{3}} \hat{n}_2^0 &amp; -\operatorname{Im}[\hat{n}_2^2] &amp; -\operatorname{Re}[\hat{n}_2^1] \\ 
- &amp; -\operatorname{Re}[\hat{n}_2^2] - \dfrac{1}{2}\sqrt{\dfrac{2}{3}} \hat{n}_2^0  &amp; \operatorname{Im}[\hat{n}_2^1] \\ 
-\mathrm{sym.} &amp;  &amp; \sqrt{\dfrac{2}{3}} \hat{n}_2^0
+\operatorname{Re}[\hat{n}_2^2] - \dfrac{1}{2}\sqrt{\dfrac{2}{3}} \hat{n}_2^0 & -\operatorname{Im}[\hat{n}_2^2] & -\operatorname{Re}[\hat{n}_2^1] \\ 
+ & -\operatorname{Re}[\hat{n}_2^2] - \dfrac{1}{2}\sqrt{\dfrac{2}{3}} \hat{n}_2^0  & \operatorname{Im}[\hat{n}_2^1] \\ 
+\mathrm{sym.} &  & \sqrt{\dfrac{2}{3}} \hat{n}_2^0
 \end{matrix}\right]
 .
-\]</div>
+$$
+-->
+
 <h2 id="cpo-rightarrow-enhancement-factors">CPO <span class="arithmatex">\(\rightarrow\)</span> Enhancement factors</h2>
 <p>If <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> can be inferred from radar sounding following the above method, so can the bulk strain-rate enhancement factors, <span class="arithmatex">\(E_{ij}\)</span>, in the same eigenframe (i.e. <a href="../enhancements-strainrate/">eigenenhancements</a>).</p>
 <p>The eigenenhancements depend, however, also on the fourth-order structure tensor, <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span>, but the bulk permittivity <span class="arithmatex">\(\langle\epsilon_{ij}\rangle\)</span> &mdash; and therefore radar-sounding methods &mdash; is insensitive to <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span>.
