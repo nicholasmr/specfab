@@ -73,6 +73,8 @@
               <ul class="current">
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Wave propagation</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#problem">Problem</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#transversely-isotropic-grains">Transversely isotropic grains</a>
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#example-for-glacier-ice">Example for glacier ice</a>
@@ -88,6 +90,11 @@
     </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Constitutive equations</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Electromagnetic</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Wave propagation</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Application gallery</span></p>
@@ -124,19 +131,42 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="elastic-wave-propagation">Elastic wave propagation</h1>
-<p>Elastic P and S plan-wave velocities, permitted in a polycrystal with an arbitrary CPO, can be determined for any linear combination of the Voigt and Reuss homogenization schemes by solving for the eigenvalues of the <a href="https://www.brown.edu/Departments/Engineering/Courses/En221/Notes/Elasticity/Elasticity.htm">acoustic tensor</a>:</p>
-<p>$$
-{\bf {Q}}= (1-\alpha){\bf Q_{\mathrm{Reuss}}} + \alpha{\bf Q_{\mathrm{Voigt}}},
-$$
-which depends on the CPO, grain elastic parameters, and direction of propagation.</p>
+<h2 id="problem">Problem</h2>
+<p>We seek plane wave solutions of the Cauchy-Navier equation of motion</p>
+<div class="arithmatex">\[
+\nabla\cdot {\boldsymbol \sigma} = \rho \frac{\partial^2 {\bf d}}{\partial t^2},
+\]</div>
+<p>where <span class="arithmatex">\({\boldsymbol \sigma}\)</span> is the bulk stress tensor, <span class="arithmatex">\({\bf d}\)</span> is the displacement field, and <span class="arithmatex">\(\rho\)</span> the mass density.</p>
+<p>Substituting <span class="arithmatex">\({\bf d}\)</span> for a plane wave solution, <span class="arithmatex">\({\bf d} = {\bf d}_0 \exp[i({\bf k}\cdot {\bf x} - \omega t)]\)</span>, the problem reduces to</p>
+<div class="arithmatex">\[
+(k^2\hat{{\bf Q}} - \omega^2 \rho {\bf I}) {\bf d} = {\bf 0},
+\]</div>
+<p>where <span class="arithmatex">\(\hat{{\bf Q}}(\hat{{\bf k}})\)</span> is the normalized <a href="https://www.brown.edu/Departments/Engineering/Courses/En221/Notes/Elasticity/Elasticity.htm">acoustic tensor</a> that varies depending on the bulk <a href="../constitutive-elastic/">constitutive equation</a> substituted for <span class="arithmatex">\({\boldsymbol \sigma}({\bf d})\)</span>.</p>
+<p>The above equation requires </p>
+<div class="arithmatex">\[
+\det( k^2\hat{{\bf Q}} - \omega^2 \rho {\bf I} ) = 0
+.
+\]</div>
+<p>Evidently, the eigenvalues and eigenvectors of <span class="arithmatex">\(\hat{{\bf Q}}/\rho\)</span> are the permitted wave velocities squared and wave polarization, respectively, where </p>
+<div class="arithmatex">\[
+V^2 = \frac{\omega^2}{k^2}
+\]</div>
+<p>is the wave velocity squared.</p>
 <div class="admonition note">
 <p class="admonition-title">Voigt and Reuss homogenizations</p>
-<p>The Voigt scheme (<span class="arithmatex">\(\alpha=1\)</span>) assumes the strain field is homogeneous over the polycrystal scale, whereas the Reuss scheme (<span class="arithmatex">\(\alpha=0\)</span>) assumes the stress is homogeneous.
-Moreover, in these homogenizations, grains are assumed interactionless and the bulk elastic behaviour is therefore simply the grain-orientation-averaged elastic behaviour subject to either homogeneous stress or strain assumptions over the polycrystal scale.</p>
+<p>The problem may be closed by approximating <span class="arithmatex">\(\hat{{\bf Q}}\)</span> by the grain-averaged acoustic tensor, subject to a  linear combination of the Voigt and Reuss homogenization schemes:</p>
+<div class="arithmatex">\[
+\hat{{\bf Q}} = (1-\alpha) \langle\hat{{\bf Q}}'_{\mathrm{Reuss}}\rangle + \alpha \langle \hat{{\bf Q}}'_{\mathrm{Voigt}}\rangle
+.
+\]</div>
+<p>The Voigt scheme (<span class="arithmatex">\(\alpha=1\)</span>) assumes the strain field is homogeneous over the polycrystal scale, whereas the Reuss scheme (<span class="arithmatex">\(\alpha=0\)</span>) assumes the stress is homogeneous.</p>
+<p>In these homogenizations, grains are therefore assumed interactionless and the bulk elastic behaviour is therefore simply the grain-orientation-averaged elastic behaviour subject to either homogeneous stress or strain assumptions over the polycrystal scale.</p>
+<!--  <br />Elastic P and S plan-wave velocities, permitted in a polycrystal with an arbitrary CPO, can be determined for any linear combination of the Voigt and Reuss homogenization schemes by solving for the eigenvalues of the <a href="https://www.brown.edu/Departments/Engineering/Courses/En221/Notes/Elasticity/Elasticity.htm">acoustic tensor</a>:
+-->
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Grain parameters</p>
-<p>The grain elastic parameters should be understood as the <em>effective</em> polycrystal values needed to reproduce experimental results, and not measured values derived from experiments on single crystals.</p>
+<p>The grain elastic parameters, assumed when homogenizing, should be understood as the <em>effective</em> polycrystal values needed to reproduce experimental results, and not measured values derived from experiments on single crystals.</p>
 </div>
 <h2 id="transversely-isotropic-grains">Transversely isotropic grains</h2>
 <table>

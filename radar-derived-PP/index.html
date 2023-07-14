@@ -76,6 +76,11 @@
                   <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Constitutive equations</a>
                   </li>
               </ul>
+              <p class="caption"><span class="caption-text">Electromagnetic</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Wave propagation</a>
+                  </li>
+              </ul>
               <p class="caption"><span class="caption-text">Application gallery</span></p>
               <ul class="current">
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Radar-derived physical properties</a>
@@ -129,15 +134,15 @@
               
                 <h1 id="radar-derived-physical-properties-of-glacier-ice">Radar-derived physical properties of glacier ice</h1>
 <h2 id="introduction">Introduction</h2>
-<p>The dielectric permittivity of a single ice crystal is approximately transversely isotropic w.r.t. the crystal <span class="arithmatex">\(c\)</span>-axis:
+<p>The dielectric permittivity tensor of a single ice crystal is approximately transversely isotropic w.r.t. the crystal <span class="arithmatex">\(c\)</span>-axis:
 $$
-\epsilon_{ij} = \frac{2\epsilon_{\perp} + \epsilon_{\parallel}}{3}
+\epsilon_{ij} = (2\epsilon_{\perp} + \epsilon_{\parallel}) \delta_{ij}/3
 + (\epsilon_{\parallel}-\epsilon_{\perp})(c_i c_j - \delta_{ij}/3),
 $$
 where <span class="arithmatex">\(\epsilon_{\parallel}\)</span> and <span class="arithmatex">\(\epsilon_{\perp}\)</span> are the permittivities parallel and perpendicular to the <span class="arithmatex">\(c\)</span>-axis, which depend on ice temperature and EM-wave frequency (<a href="https://eprints.lib.hokudai.ac.jp/dspace/bitstream/2115/32469/1/P185-212.pdf">Fujita et al., 2000</a>).</p>
 <p>If EM-wave lengths are much longer than the average grain size, the bulk permittivity tensor of polycrystalline ice may be approximated as the grain-average permittivity tensor, constructed by averaging over all grain orientations (over the CPO):</p>
 <div class="arithmatex">\[
-\langle\epsilon_{ij}\rangle = \frac{2\epsilon_{\perp} + \epsilon_{\parallel}}{3}
+\langle\epsilon_{ij}\rangle = (2\epsilon_{\perp} + \epsilon_{\parallel}) \delta_{ij}/3
 + (\epsilon_{\parallel}-\epsilon_{\perp})(  \langle c_i c_j \rangle - \delta_{ij}/3)
 ,
 \]</div>
@@ -156,7 +161,7 @@ a_{xz} &amp; a_{yz} &amp; a_{zz}
 \end{matrix}\right]
 .
 \]</div>
-<p>Properties like EM-wave speed and radar return-power anomalies depend on the bulk permittivity tensor <span class="arithmatex">\(\langle\epsilon_{ij}\rangle\)</span>, and therefore, given measurements of such quantities, information about <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> can be inferred (see e.g. <a href="https://www.nature.com/articles/s41467-023-38139-8">Gerber et al., 2023</a>, and references therein).</p>
+<p>Properties like <a href="../wavepropagation-electromagnetic/">EM-wave speed</a> and radar return-power anomalies depend on the bulk permittivity tensor <span class="arithmatex">\(\langle\epsilon_{ij}\rangle\)</span>, and therefore, given measurements of such quantities, information about <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> can be inferred (see e.g. <a href="https://www.nature.com/articles/s41467-023-38139-8">Gerber et al., 2023</a>, and references therein).</p>
 <h2 id="radar-measurements-rightarrow-cpo">Radar measurements <span class="arithmatex">\(\rightarrow\)</span> CPO</h2>
 <p>A useful approximation over large parts of ice sheets is that <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> has a vertical (<span class="arithmatex">\({\bf z}\)</span>) eigenvector, and hence</p>
 <div class="arithmatex">\[
@@ -288,7 +293,7 @@ print(Eij) # (E_{m1,m1},E_{m2,m2},E_{zz},E_{m2,z),E_{m1,z},E_{m1,m2})
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../constitutive-elastic/" class="btn btn-neutral float-left" title="Constitutive equations"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../wavepropagation-electromagnetic/" class="btn btn-neutral float-left" title="Wave propagation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
         <a href="../FEM-integration-fenics/" class="btn btn-neutral float-right" title="FEniCS FEM integration">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
@@ -312,7 +317,7 @@ print(Eij) # (E_{m1,m1},E_{m2,m2},E_{zz},E_{m2,z),E_{m1,z},E_{m1,m2})
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../constitutive-elastic/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../wavepropagation-electromagnetic/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
       <span><a href="../FEM-integration-fenics/" style="color: #fcfcfc">Next &raquo;</a></span>
