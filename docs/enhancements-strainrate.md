@@ -67,7 +67,7 @@ $$
 where $E_{ij}^{\mathrm{Sachs}}$ and $E_{ij}^{\mathrm{Taylor}}$ are calculated with (1) assuming constant $\bf{S}$ and $\bf{D}$, respectively.
 
 !!! warning "Grain parameters"
-    The grain viscous parameters below should be understood as the *effective* polycrystal values needed to reproduce deformation experiments, and not measured values derived from experiments on single crystals.
+    The grain viscous parameters, used for homogenization, should be understood as the *effective* polycrystal values needed to reproduce deformation experiments, and not measured values derived from experiments on single crystals.
 
 ### Transversely isotropic grains
 
@@ -108,13 +108,15 @@ Eij_grain = (1, 1e3) # Grain eigenenhancements (Ecc,Eca) for compression along c
 alpha     = 0.0125   # Taylor--Sachs weight
 
 ### Calculate enhancement factors w.r.t. e1, e2, e3
-Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # = (E11,E22,E33,E23,E13,E12)
+Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # Eij=(E11,E22,E33,E23,E13,E12)
 ```
 
-The below animation shows the directional enhancement factors for a CPO evolving under uniaxial compression along ${\hat {\bf z}}$ when subject to [lattice rotation](cpo-dynamics-tranisotropic.md).
-Enhancement factors are calculated w.r.t. the spherical coordinate basis vectors ${\bf e}_1, {\bf e}_2, {\bf e}_3 = {\hat{\bf r}},{\hat{\boldsymbol \theta}},{\hat{\boldsymbol \phi}}$.
+!!! tip "Evolving CPO"
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/S2-maps-of-Eij-and-Vi/S2-Eij.gif){: style="width:660px"}
+    The below animation shows the directional enhancement factors for a CPO evolving under uniaxial compression along ${\hat {\bf z}}$ when subject to [lattice rotation](cpo-dynamics-tranisotropic.md).
+    Enhancement factors are calculated w.r.t. the spherical coordinate basis vectors $({\bf e}_1, {\bf e}_2, {\bf e}_3) = ({\hat{\bf r}},{\hat{\boldsymbol \theta}},{\hat{\boldsymbol \phi}})$.
+
+    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/S2-maps-of-Eij-and-Vi/S2-Eij.gif){: style="width:660px"}
 
 ### Orthotropic grains
 

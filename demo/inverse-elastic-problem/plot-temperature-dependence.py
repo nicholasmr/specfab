@@ -194,7 +194,7 @@ if 0:
     nlm[0] = 1/np.sqrt(4*np.pi)
     alpha = 1 # Reuss-Voigt weight
     theta, phi = 0,0 # propagation direction (doesn't matter, considering an isotropic fabric)
-    vi = sf.Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rhoi, theta,phi)
+    vi = sf.Vi_elastic_tranisotropic(nlm, alpha, gB68, rhoi, theta,phi)
     vP,vS1,vS2  = vi[2,0], vi[0,0], vi[1,0]
 
     # Compare...

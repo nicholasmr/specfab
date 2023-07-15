@@ -44,6 +44,14 @@ contains
         outerprod = reshape( [( [( a(ii)*b(jj), ii=1,3)], jj=1,3)] , [3,3])
     end
     
+    function outerprod4(a,b,c,d) 
+        ! a_i b_j c_k d_l = rank-4 tensor
+        implicit none
+        real(kind=dp), intent(in) :: a(3), b(3), c(3), d(3)
+        real(kind=dp) :: outerprod4(3,3,3,3)
+        outerprod4 = reshape( [( [( [( [( a(ii)*b(jj)*c(kk)*d(ll), ii=1,3)], jj=1,3)], kk=1,3)], ll=1,3)] , [3,3,3,3])
+    end
+    
     function outerprod6(a,b) 
         ! a_i b_j = rank-2 tensor
         implicit none

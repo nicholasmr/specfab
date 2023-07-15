@@ -8,7 +8,7 @@ This tutorial focuses on modelling the CPO evolution of polycrystalline olivine,
 | :-: | :-: |
 | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:200px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slipplane.png){: style="width:170px"} |
 
-The distributions $n(\theta,\phi)$ and $b(\theta,\phi)$ refer to certain crystallographic axes (${\bf r}_i$) depending on the fabric type; i.e. thermodynamic conditions, water content, and stress magnitude that control which of the crystallographic slip systems is activated.
+The distributions $n(\theta,\phi)$ and $b(\theta,\phi)$ refer to certain crystallographic axes (${\bf m}'_i$) depending on the fabric type; i.e. thermodynamic conditions, water content, and stress magnitude that control which of the crystallographic slip systems is activated.
 
 !!! note 
     The distributions may also be understood as the mass density fraction of grains with a given slip-plane-normal and slip-direction orientation.

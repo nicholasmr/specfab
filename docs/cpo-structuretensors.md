@@ -1,48 +1,69 @@
 # Structure tensors
 
-The 2nd-, 4th- and 6th-order structure tensors (`a2`, `a4`, `a6`) are the average outer products of a crystallographic axis ${\bf r}_i$ (here assuming equal grain weight/size/mass for simplicity)
+## Definition
+
+The 2nd-, 4th- and 6th-order structure tensors (`a2`, `a4` and `a6` in specfab) are the average outer products of a crystallographic axis (vector moments).
+
+For example, in the case of a discrete ensemble of ${\bf c}$ axes they are
 
 $$ 
-{\bf a}^{(2)}=\frac{1}{N}\sum_i^N {\bf r}_i\otimes{\bf r}_i 
+{\bf a}^{(2)}=\frac{1}{N}\sum_i^N {\bf c}_i\otimes{\bf c}_i
+,\quad
+{\bf a}^{(4)}=\frac{1}{N}\sum_i^N ({\bf c}_i\otimes)^4
 ,\quad 
-{\bf a}^{(4)}=\frac{1}{N}\sum_i^N ({\bf r}_i\otimes)^4
-,\quad 
-{\bf a}^{(6)}=\frac{1}{N}\sum_i^N ({\bf r}_i\otimes)^6
+{\bf a}^{(6)}=\frac{1}{N}\sum_i^N ({\bf c}_i\otimes)^6
 ,
 $$
 
-where $N$ is the total number of grains. 
-In terms of the spectral expansion $n(\theta,\phi)$, the structure tensors are
+where $N$ is the total number of grains (equal grain weight/size/mass for assumed simplicity). 
+
+Alternatively, if the distribution function of ${\bf c}$ axes is known, $n(\theta,\phi)$, the structure tensors are
 
 $$ 
-{\bf a}^{(k)}=\frac{1}{N} \int_{S^2} ({\bf r}_i\otimes)^k n(\theta,\phi) \, \mathrm{d}\Omega
+{\bf a}^{(k)}=\frac{1}{N} \int_{S^2} (\hat{{\bf r}}\otimes)^k n(\theta,\phi) \, \mathrm{d}\Omega
 ,
 $$
 
-where $N=\int_{S^2} n(\theta,\phi) \, \mathrm{d}\Omega$ and $\mathrm{d}\Omega = \mathrm{d}\theta \mathrm{d}\phi$ is the infinitesimal solid angle.
+where $\mathrm{d}\Omega = \sin(\theta) \mathrm{d}\theta \mathrm{d}\phi$ is the infinitesimal solid angle, $\hat{{\bf r}}$ is the radial unit vector, and $N=\int_{S^2} n(\theta,\phi) \, \mathrm{d}\Omega$.
 
+## Converting to spectral representation
 
 Converting between spectral and tensorial representations is a linear problem in the sense that 
 
 $$ {\bf a}^{(2)} = {\bf f}(\hat{n}_2^{m})
 ,\quad
-{\bf a}^{(4)} = {\bf g}(\hat{n}_0^0, \hat{n}_2^{m}, \hat{n}_4^{m}) 
+{\bf a}^{(4)} = {\bf g}(\hat{n}_2^{m}, \hat{n}_4^{m}) 
 ,\quad
 {\bf a}^{(6)} = {\bf h}(\hat{n}_2^{m}, \hat{n}_4^{m}, \hat{n}_6^{m}) 
 ,
-\qquad\text{(for all $m$)}
+\qquad\text{(for all possible $m$)}
 $$
 
 where ${\bf f}$, ${\bf g}$, ${\bf h}$ are linear in their arguments, and 
 
 $$
-\hat{n}_l^m \equiv n_l^m/n_0^0
+\hat{n}_l^m = n_l^m/n_0^0
 .
 $$
 
-## Example
+In the case of ${\bf a}^{(2)}$ the relation is simple:
 
-The following example shows how to convert between the representations:
+$$
+{\bf a}^{(2)} = \frac{{\bf I}}{3} + \sqrt{\frac{2}{15}}
+\left[\begin{matrix}
+\operatorname{Re}[\hat{n}_2^2] - \dfrac{1}{2}\sqrt{\dfrac{2}{3}} \hat{n}_2^0 & -\operatorname{Im}[\hat{n}_2^2] & -\operatorname{Re}[\hat{n}_2^1] \\ 
+ & -\operatorname{Re}[\hat{n}_2^2] - \dfrac{1}{2}\sqrt{\dfrac{2}{3}} \hat{n}_2^0  & \operatorname{Im}[\hat{n}_2^1] \\ 
+\mathrm{sym.} &  & \sqrt{\dfrac{2}{3}} \hat{n}_2^0
+\end{matrix}\right]
+,
+$$
+
+but for higher-order structure tensors the expressions are long (not shown).
+
+
+### Example
+
+The following code example shows how to convert between the representations:
 
 ```python
 import numpy as np
@@ -71,12 +92,12 @@ a6 = sf.a6(nlm) # nlm back to a6
 print('a6 is: ', a6)
 ```
 
-# Constructing CPOs from measurements
+## Constructing CPOs from measurements
 
 The spectral expansion coefficients of any CPO may be determined from discrete measurements of crystallographic axes.
 This requires constructing the corresponding structure tensors (for each crystallographic axis), from which the expansion coefficients may be derived.
 
-## Example
+### Example
 ```python
 import numpy as np
 from specfabpy import specfabpy as sf

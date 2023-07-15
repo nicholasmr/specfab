@@ -1,4 +1,4 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk>, 2022
+! N. M. Rathmann <rathmann@nbi.ku.dk>, 2022-2023
 
 ! Solid elasticities (constitutive equations)
 
@@ -12,6 +12,7 @@ module elasticities
     real(kind=dp), parameter, private :: identity(3,3)  = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
     
     ! Bennett (1968) parameters
+    ! @TODO: Delete because unused? 
     real(kind=dp), parameter :: lam_B68  = 7.15d9
     real(kind=dp), parameter :: mu_B68   = 3.455d9
     real(kind=dp), parameter :: Elam_B68 = 0.8223776223776224
@@ -49,8 +50,6 @@ contains
         call elas_structs_tranisotropic(stress,m, mm,L,I1,I4)
         strain = k1*I1*identity + k2*stress + k3*(I4*identity + I1*mm) + k4*I4*mm + k5*L 
     end
-
-    !--- AUX ---
 
     subroutine elas_structs_tranisotropic(X,m, mm,L,I1,I4)
 
@@ -97,21 +96,48 @@ contains
         k5 = (1-Emu)/(2*Emu*mu)
     end
 
-    subroutine Cij_to_Lame_tranisotropic(C11,C33,C55,C12,C13, lam,mu,Elam,Emu,Egam)
-
-        ! Unique coefficients of stiffness matrix --> Lame parameters
+    !---------------------------------
+    ! ORTHOTROPIC ELASTICITY
+    !---------------------------------
+   
+    ! TO BE IMPLEMENTED
+   
+    !---------------------------------
+    ! AUX ROUTINES
+    !--------------------------------- 
+    
+    subroutine Cij_to_Lame_tranisotropic(Cij, Lame)
 
         implicit none
-        real(kind=dp), intent(in)  :: C11,C33,C55,C12,C13
-        real(kind=dp), intent(out) :: lam,mu, Elam,Emu,Egam
+        real(kind=dp), intent(in)  :: Cij(5)  ! C11,C33,C55,C12,C13
+        real(kind=dp), intent(out) :: Lame(5) ! lam,mu, Elam,Emu,Egam
         real(kind=dp)              :: C66
 
-        C66 = (C11-C12)/2
-        lam  = C12
-        mu   = C66
-        Elam = C13/C12
-        Emu  = C55/C66
-        Egam = C33/C11
+        C66 = (Cij(1)-Cij(4))/2
+        Lame(1) = Cij(4)
+        Lame(2) = C66
+        Lame(3) = Cij(5)/Cij(4)
+        Lame(4) = Cij(3)/C66
+        Lame(5) = Cij(2)/Cij(1)
+    end
+    
+    subroutine Cij_to_Lame_orthotropic(Cij, Lame)
+
+        implicit none
+        real(kind=dp), intent(in)  :: Cij(9)  ! C11,C22,C33,C44,C55,C66, C23,C13,C12
+        real(kind=dp), intent(out) :: Lame(9) ! lam11,lam22,lam33, lam23,lam13,lam12, mu1,mu2,mu3
+
+        Lame(7) = Cij(5)+Cij(6)-Cij(4) ! mu1
+        Lame(8) = Cij(4)+Cij(6)-Cij(5) ! mu2
+        Lame(9) = Cij(4)+Cij(5)-Cij(6) ! mu3
+        
+        Lame(1) = Cij(1)-2*Lame(7)
+        Lame(2) = Cij(2)-2*Lame(8)
+        Lame(3) = Cij(3)-2*Lame(9)
+        
+        Lame(4) = Cij(7)
+        Lame(5) = Cij(8)
+        Lame(6) = Cij(9)
     end
     
 end module elasticities

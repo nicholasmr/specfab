@@ -351,7 +351,7 @@ contains
         
         real(kind=dp), intent(in)  :: mi(:,:,:) ! (3,3,N) = (m'_i, xyz comp., grain no.) 
         real(kind=dp), intent(out) :: a2v(3,6), a4v(3,6,6), a4v_jk_sym2(3,6,6), a4v_jk_sym4(3,6,6) ! a2v=(a2_1,a2_2,a2_3), a4v=(a4_11,a4_22,a4_33), a4_jk_*=symi(a4_23,a4_13,a4_12) where subscripts refer to subscripts of m'^2_i vector
-        real(kind=dp) :: a2_(3,3,3), a2_i(3,3,3), a4_ii(3,3,3,3,3), a4_jk(3,3,3,3,3)
+        real(kind=dp) :: m1(3),m2(3),m3(3), a2_i(3,3,3), a4_ii(3,3,3,3,3), a4_jk(3,3,3,3,3)
         integer       :: ii,nn, N
 
         a2_i  = 0.0d0
@@ -361,14 +361,17 @@ contains
         N = size(mi, dim=3) ! num of grains
         do nn=1,N
             do ii=1,3
-                a2_(ii,:,:) = outerprod(mi(ii,:,nn),mi(ii,:,nn))
-                a2_i(ii,:,:)      = a2_i(ii,:,:)      + a2_(ii,:,:)/N
-                a4_ii(ii,:,:,:,:) = a4_ii(ii,:,:,:,:) + outerprod22(a2_(ii,:,:), a2_(ii,:,:))/N
+                m1 = mi(ii,:,nn) ! use m1 as dummy
+                a2_i(ii,:,:)      = a2_i(ii,:,:)      + outerprod(m1,m1)/N
+                a4_ii(ii,:,:,:,:) = a4_ii(ii,:,:,:,:) + outerprod4(m1,m1,m1,m1)/N
             end do 
             
-            a4_jk(1,:,:,:,:) = a4_jk(1,:,:,:,:) + outerprod22(a2_(2,:,:), a2_(3,:,:))/N
-            a4_jk(2,:,:,:,:) = a4_jk(2,:,:,:,:) + outerprod22(a2_(1,:,:), a2_(3,:,:))/N
-            a4_jk(3,:,:,:,:) = a4_jk(3,:,:,:,:) + outerprod22(a2_(1,:,:), a2_(2,:,:))/N
+            m1 = mi(1,:,nn) ! use m1 as dummy
+            m2 = mi(2,:,nn) ! use m1 as dummy
+            m3 = mi(3,:,nn) ! use m1 as dummy
+            a4_jk(1,:,:,:,:) = a4_jk(1,:,:,:,:) + outerprod4(m2,m2, m3,m3)/N
+            a4_jk(2,:,:,:,:) = a4_jk(2,:,:,:,:) + outerprod4(m1,m1, m3,m3)/N
+            a4_jk(3,:,:,:,:) = a4_jk(3,:,:,:,:) + outerprod4(m1,m1, m2,m2)/N
         end do
         
         do ii=1,3

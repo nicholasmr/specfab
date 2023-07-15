@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This tutorial focuses on modelling the CPO evolution of polycrystalline glacier ice, understood as the ${\bf c}$-axis distribution or, equivelently, the distribution of (easy) slip-plane normals of grains, $n(\theta,\phi)$.
+This tutorial focuses on modelling the CPO evolution of polycrystalline glacier ice, understood as the distribution of ${c}$-axes; that is, the distribution of (easy) slip-plane normals of grains, $n(\theta,\phi)$.
 
 | Polycrystal | Slip system |
 | :-: | :-: |
@@ -59,11 +59,11 @@ The model is a kinematic model in the sense that $c$-axes rotate in response to 
 The modelled $c$-axes are taken to rotate with the bulk continuum spin (${\bf W}$), plus some plastic spin correction (${\bf W}_{\mathrm{p}}$), so that the $c$-axis velocity field on the unit sphere is
 
 $$
-{\bf \dot{c}} = ({\bf W} + {\bf W}_{\mathrm{p}}) \cdot {\bf c} \quad\text{($c$-axis velocity field)}
+{\bf \dot{c}} = ({\bf W} + {\bf W}_{\mathrm{p}}) \cdot {\bf c} \quad\text{($c$-axis velocity field on $S^2$)}
 ,
 $$
 
-where the plastic spin generally depends on ${\bf D}$ to lowest and second lowest order as (Wang, 1969; [Aravas, 1994](https://www.doi.org/10.1088/0965-0393/2/3A/005)) 
+where ${\bf c}(\theta,\phi)$ is the radial unit vector, and the plastic spin depends on ${\bf D}$ to lowest and second lowest order following Wang (1969) and [Aravas (1994)](https://www.doi.org/10.1088/0965-0393/2/3A/005): 
 
 $$
 {\bf W}_{\mathrm{p}} = 

@@ -10,13 +10,15 @@ nav:
     - 'CPO dynamics':
         - Transversely isotropic grains: cpo-dynamics-tranisotropic.md
         - Orthotropic grains: cpo-dynamics-orthotropic.md
-    - 'Rheology':
+    - 'Viscous':
         - Strain-rate enhancements: enhancements-strainrate.md
         - Constitutive equations: constitutive-viscoplastic.md
-    - 'Elasticity':
+    - 'Elastic':
         - Wave propagation: wavepropagation-elastic.md
         - Constitutive equations: constitutive-elastic.md
-    - 'Application gallery': 
+    - 'Electromagnetic':
+        - Wave propagation: wavepropagation-electromagnetic.md
+    - 'Further applications': 
         - Radar-derived physical properties: radar-derived-PP.md
         - FEniCS FEM integration: FEM-integration-fenics.md
         - Elmer FEM integration: FEM-integration-elmer.md

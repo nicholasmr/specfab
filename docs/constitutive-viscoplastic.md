@@ -51,6 +51,8 @@ $$
 
 ### `S = sf.rheo_rev_tranisotropic(D, A, n, m, Eij)`
 
+where 
+
 | Arguments | Type |
 | --- | --- |
 | `S`, `D` | Deviatoric-stress and strain-rate tensor (3x3) |
@@ -95,6 +97,8 @@ $$
 ### `D = sf.rheo_fwd_orthotropic(S, A, n, m1,m2,m3, Eij)`
 
 ### `S = sf.rheo_rev_orthotropic(D, A, n, m1,m2,m3, Eij)`
+
+where 
 
 | Arguments | Type |
 | --- | --- |

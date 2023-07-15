@@ -17,10 +17,10 @@ import matplotlib.gridspec as gridspec
 import scipy.special as sp
 from matplotlib.ticker import LogFormatter 
 
-MAKE_FRAME_Eij = 0
-MAKE_FRAME_vi  = 0
+MAKE_FRAME_Eij = 1
+MAKE_FRAME_vi  = 1
 
-MAKE_GIFS = 1
+MAKE_GIFS = 0
 
 transparent = True
 
@@ -64,12 +64,12 @@ Erp = np.ones(dims) # r-p shear
 ### Phase velocities
 
 # Physical parameters
-rho = 917 # density of ice
-C11,C33,C55,C12,C13 = 14.060e9, 15.240e9, 3.060e9, 7.150e9, 5.880e9 # Bennett (1968) parameters
-lam,mu,Elam,Emu,Egam = sf.Cij_to_Lame_tranisotropic(C11,C33,C55,C12,C13) 
+rho = sfconst.ice['density'] # density of ice
+Cij = sfconst.ice['elastic']['Bennett1968'] # Bennett (1968) parameters
+lame_grain = sf.Cij_to_Lame_tranisotropic(Cij) 
 alpha = 0.5 # Voigt--Reuss weight, where 0.5 = Hill average
 
-vi_iso = sf.Vi_elastic_tranisotropic(nlm[0,:], alpha, lam,mu,Elam,Emu,Egam, rho, 0,0) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
+vi_iso = sf.Vi_elastic_tranisotropic(nlm[0,:], alpha, lame_grain, rho, 0,0) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
 vP_iso, vS1_iso, vS2_iso = vi_iso[2,0], vi_iso[0,0], vi_iso[1,0]
 vP, vS1, vS2  = np.zeros(dims), np.zeros(dims), np.zeros(dims) 
 
@@ -87,8 +87,8 @@ nlm_sm = np.zeros((nlm_len), dtype=np.complex128)
 #nlm[:(1+5)] = n2m[:]
 nlm_sm[:(1+5+9)] = n4m[:]
 
-vi_sm_vert = sf.Vi_elastic_tranisotropic(nlm_sm, alpha, lam,mu,Elam,Emu,Egam, rho, 0,0) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
-vi_sm_hori = sf.Vi_elastic_tranisotropic(nlm_sm, alpha, lam,mu,Elam,Emu,Egam, rho, 90,0) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
+vi_sm_vert = sf.Vi_elastic_tranisotropic(nlm_sm, alpha, lame_grain, rho, 0,0) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
+vi_sm_hori = sf.Vi_elastic_tranisotropic(nlm_sm, alpha, lame_grain, rho, 90,0) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
 
 print('vi_sm_vert/vi_iso = ', vi_rel(vi_sm_vert,vi_iso))
 print('vi_sm_hori/vi_iso = ', vi_rel(vi_sm_hori,vi_iso))
@@ -265,7 +265,7 @@ if MAKE_FRAME_Eij or MAKE_FRAME_vi:
                 Ert[nn,ii,jj] = sf.Evw_tranisotropic(nlm[nn,:], vr,vt,tau_rt, Eij_grain,alpha,n_grain)
                 Erp[nn,ii,jj] = sf.Evw_tranisotropic(nlm[nn,:], vr,vp,tau_rp, Eij_grain,alpha,n_grain)
         
-                vi = sf.Vi_elastic_tranisotropic(nlm[nn,:], alpha, lam,mu,Elam,Emu,Egam, rho, theta,phi) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
+                vi = sf.Vi_elastic_tranisotropic(nlm[nn,:], alpha, lame_grain, rho, theta,phi) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
                 vP[nn,ii,jj], vS1[nn,ii,jj], vS2[nn,ii,jj] = vi[2,0], vi[0,0], vi[1,0]
 
                 

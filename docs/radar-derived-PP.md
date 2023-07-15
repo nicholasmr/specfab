@@ -2,9 +2,9 @@
 
 ## Introduction
 
-The dielectric permittivity of a single ice crystal is approximately transversely isotropic w.r.t. the crystal $c$-axis:
+The dielectric permittivity tensor of a single ice crystal is approximately transversely isotropic w.r.t. the crystal $c$-axis:
 $$
-\epsilon_{ij} = \frac{2\epsilon_{\perp} + \epsilon_{\parallel}}{3}
+\epsilon_{ij} = (2\epsilon_{\perp} + \epsilon_{\parallel}) \delta_{ij}/3
 + (\epsilon_{\parallel}-\epsilon_{\perp})(c_i c_j - \delta_{ij}/3),
 $$
 where $\epsilon_{\parallel}$ and $\epsilon_{\perp}$ are the permittivities parallel and perpendicular to the $c$-axis, which depend on ice temperature and EM-wave frequency ([Fujita et al., 2000](https://eprints.lib.hokudai.ac.jp/dspace/bitstream/2115/32469/1/P185-212.pdf)).
@@ -12,12 +12,12 @@ where $\epsilon_{\parallel}$ and $\epsilon_{\perp}$ are the permittivities paral
 If EM-wave lengths are much longer than the average grain size, the bulk permittivity tensor of polycrystalline ice may be approximated as the grain-average permittivity tensor, constructed by averaging over all grain orientations (over the CPO):
 
 $$
-\langle\epsilon_{ij}\rangle = \frac{2\epsilon_{\perp} + \epsilon_{\parallel}}{3}
+\langle\epsilon_{ij}\rangle = (2\epsilon_{\perp} + \epsilon_{\parallel}) \delta_{ij}/3
 + (\epsilon_{\parallel}-\epsilon_{\perp})(  \langle c_i c_j \rangle - \delta_{ij}/3)
 ,
 $$
 
-where $\langle c_i c_j \rangle$ is the second-order structure tensor (`a2` in specfab), defined as the average outer product of grain $c$-axes (assuming grain sizes are uncorrelated with orientation):
+where $\langle c_i c_j \rangle$ is the second-order structure tensor (`a2` in specfab; a.k.a. ${\bf a}^{(2)}$), defined as the average outer product of grain $c$-axes (assuming grain sizes are uncorrelated with orientation):
 
 $$ 
 \langle c_i c_j \rangle = 
@@ -36,7 +36,7 @@ a_{xz} & a_{yz} & a_{zz}
 .
 $$
 
-Properties like EM-wave speed and radar return-power anomalies depend on the bulk permittivity tensor $\langle\epsilon_{ij}\rangle$, and therefore, given measurements of such quantities, information about $\langle c_i c_j \rangle$ can be inferred (see e.g. [Gerber et al., 2023](https://www.nature.com/articles/s41467-023-38139-8), and references therein).
+Properties like [EM-wave speed](wavepropagation-electromagnetic.md) and radar return-power anomalies depend on the bulk permittivity tensor $\langle\epsilon_{ij}\rangle$, and therefore, given measurements of such quantities, information about $\langle c_i c_j \rangle$ can be inferred (see e.g. [Gerber et al., 2023](https://www.nature.com/articles/s41467-023-38139-8), and references therein).
 
 ## Radar measurements $\rightarrow$ CPO
 
@@ -82,11 +82,12 @@ where $\operatorname{tr}(\langle c_i c_j \rangle) = 1$ was used.
 ### Gerber's approximation 
 
 Since $\lambda_1$ is unknown, the problem can be closed by making different assumptions about $\lambda_1$ given the local/upstream flow regime, such as proposed by [Gerber et al. (2023)](https://www.nature.com/articles/s41467-023-38139-8).
-Suppose $\Delta\lambda$ is measured in region where $c$-axes are suspected, to a good approximation, to be distributed on the ${\bf m}_2$&mdash;${\bf z}$ plane because the smallest eigenvalue is vanishing, $\lambda_1 \rightarrow 0$.
+Suppose $\Delta\lambda$ is measured in region where $c$-axes are, to a good approximation, suspected to be distributed on the ${\bf m}_2$&mdash;${\bf z}$ plane because the smallest eigenvalue is vanishing, $\lambda_1 \rightarrow 0$.
 In this case, $\Delta \lambda = 0$ represents a perfect single-maximum along ${\bf z}$, $\Delta \lambda = 0.5$ a perfect girdle in the ${\bf m}_2$&mdash;${\bf z}$ plane, and $\Delta \lambda = 1$ a perfect single-maximum along ${\bf m}_2$, respectively:
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/plane-CPOs.png){: style="width:660px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/plane-CPOs.png){: style="width:610px"}
 
+<!--
 The above [plot](cpo-plot.md) was generated from the normalized spectral expansion coefficients $\hat{n}_l^m \equiv n_l^m/n_0^0$ for $l\leq 2$, [derived from](cpo-structuretensors.md)
 
 $$
@@ -98,7 +99,7 @@ $$
 \end{matrix}\right]
 .
 $$
-
+-->
 
 
 ## CPO $\rightarrow$ Enhancement factors

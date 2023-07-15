@@ -121,7 +121,7 @@ contains
         implicit none
         
         complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp), intent(inout) :: ev_c2_Mandel(6),ev_c4_Mandel(6,6)
+        real(kind=dp), intent(out)   :: ev_c2_Mandel(6),ev_c4_Mandel(6,6)
         complex(kind=dp)             :: n00, n2m(-2:2), n4m(-4:4), n6m(-6:6)
         
         call decompose_nlm(nlm, n00,n2m,n4m,n6m)

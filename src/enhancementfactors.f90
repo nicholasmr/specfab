@@ -117,6 +117,8 @@ contains
     
         call aiv_orthotropic(nlm_1,nlm_2,nlm_3, a2v,a4v,a4v_jk_sym2,a4v_jk_sym4)
         call aiv_orthotropic(nlm_iso,nlm_iso,nlm_iso, a2v_iso,a4v_iso,a4v_jk_sym2_iso,a4v_jk_sym4_iso)
+        
+!        print *, 'cont.: ',a2v
     
         Evw_sachs = doubleinner22(rheo_fwd_orthotropic_sachshomo(tau, a2v,    a4v,    a4v_jk_sym2,    a4v_jk_sym4,     Eij_grain,n_grain), vw) / &
                     doubleinner22(rheo_fwd_orthotropic_sachshomo(tau, a2v_iso,a4v_iso,a4v_jk_sym2_iso,a4v_jk_sym4_iso, Eij_grain,n_grain), vw)
@@ -150,6 +152,8 @@ contains
     
         call aiv_orthotropic_discrete(mi, a2v,a4v,a4v_jk_sym2,a4v_jk_sym4) ! this is the only difference from the continuous version, Evw_orthotropic()
         call aiv_orthotropic(nlm_iso,nlm_iso,nlm_iso, a2v_iso,a4v_iso,a4v_jk_sym2_iso,a4v_jk_sym4_iso)
+        
+        !print *, 'desc.: ',a2v
     
         do nn = 1,size(v,dim=2)
             vw = outerprod(v(:,nn),w(:,nn))

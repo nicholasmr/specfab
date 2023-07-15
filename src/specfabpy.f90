@@ -44,11 +44,12 @@ module specfabpy
         ! Elasticities 
         elas_rev_tranisotropic__sf => elas_rev_tranisotropic, &
         elas_fwd_tranisotropic__sf => elas_fwd_tranisotropic, &
-        Cij_to_Lame_tranisotropic__sf => Cij_to_Lame_tranisotropic, &
         Vi_elastic_tranisotropic__sf => Vi_elastic_tranisotropic, &
         Vi_elastic_orthotropic__sf => Vi_elastic_orthotropic, &
         Vi_elastic_orthotropic__discrete__sf => Vi_elastic_orthotropic__discrete, &
         Qnorm_tranisotropic__sf => Qnorm_tranisotropic, &
+        Cij_to_Lame_tranisotropic__sf => Cij_to_Lame_tranisotropic, &
+        Cij_to_Lame_orthotropic__sf   => Cij_to_Lame_orthotropic, &
         
         ! Fluid enhancement factors
         Eij_tranisotropic__sf => Eij_tranisotropic, &
@@ -485,13 +486,26 @@ contains
         strain = elas_fwd_tranisotropic__sf(stress, lam,mu, Elam,Emu,Egam,m)
     end
     
-    subroutine Cij_to_Lame_tranisotropic(C11,C33,C55,C12,C13, lam,mu,Elam,Emu,Egam)
+    subroutine Cij_to_Lame_tranisotropic(Cij, Lame)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in)  :: C11,C33,C55,C12,C13
-        real(kind=dp), intent(out) :: lam,mu, Elam,Emu,Egam ! Lame parameters and their directional enhancements
+        real(kind=dp), intent(in)  :: Cij(5)
+        real(kind=dp), intent(out) :: Lame(5)
         
-        call Cij_to_Lame_tranisotropic__sf(C11,C33,C55,C12,C13, lam,mu,Elam,Emu,Egam)
+        call Cij_to_Lame_tranisotropic__sf(Cij, Lame)
+    end
+    
+    !---------------------------------
+    ! ORTHOTROPIC ELASTICITY 
+    !---------------------------------
+    
+    subroutine Cij_to_Lame_orthotropic(Cij, Lame)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in)  :: Cij(9)
+        real(kind=dp), intent(out) :: Lame(9) 
+        
+        call Cij_to_Lame_orthotropic__sf(Cij, Lame)
     end
     
     !---------------------------------
@@ -500,49 +514,49 @@ contains
     
     ! For a composite material consisting of orthotropic grains
     
-    function Vi_elastic_orthotropic(nlm_r1,nlm_r2,nlm_r3, alpha,lam,mu,rho, theta_n,phi_n) result(Vi)
+    function Vi_elastic_orthotropic(nlm_r1,nlm_r2,nlm_r3, alpha,lame_grain,rho, theta_n,phi_n) result(Vi)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm_r1(:), nlm_r2(:), nlm_r3(:)
-        real(kind=dp), intent(in)    :: alpha, lam(6), mu(3), rho
+        real(kind=dp), intent(in)    :: alpha, lame_grain(9), rho
         real(kind=dp), intent(in)    :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities along
         real(kind=dp)                :: Vi(3,size(theta_n)) ! qS1, qS2, qP phase velocities
 
-        Vi = Vi_elastic_orthotropic__sf(nlm_r1,nlm_r2,nlm_r3, alpha,lam,mu,rho, theta_n,phi_n) 
+        Vi = Vi_elastic_orthotropic__sf(nlm_r1,nlm_r2,nlm_r3, alpha,lame_grain,rho, theta_n,phi_n) 
     end
     
-    function Vi_elastic_orthotropic__discrete(r1,r2,r3, alpha,lam,mu,rho, theta_n,phi_n) result(Vi)
+    function Vi_elastic_orthotropic__discrete(r1,r2,r3, alpha,lame_grain,rho, theta_n,phi_n) result(Vi)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in) :: r1(:,:), r2(:,:), r3(:,:)
-        real(kind=dp), intent(in) :: alpha, lam(6), mu(3), rho
+        real(kind=dp), intent(in) :: alpha, lame_grain(9), rho
         real(kind=dp), intent(in) :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities along
         real(kind=dp)             :: Vi(3,size(theta_n)) ! qS1, qS2, qP phase velocities
 
-        Vi = Vi_elastic_orthotropic__discrete__sf(r1,r2,r3, alpha,lam,mu,rho, theta_n,phi_n) 
+        Vi = Vi_elastic_orthotropic__discrete__sf(r1,r2,r3, alpha,lame_grain,rho, theta_n,phi_n) 
     end
     
     ! For a composite material consisting of transversely isotropic grains
     
-    function Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta_n,phi_n) result(Vi)
+    function Vi_elastic_tranisotropic(nlm, alpha, lame_grain, rho, theta_n,phi_n) result(Vi)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp), intent(in)    :: alpha, lam,mu,Elam,Emu,Egam, rho
+        real(kind=dp), intent(in)    :: alpha, lame_grain(5), rho
         real(kind=dp), intent(in)    :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities along
         real(kind=dp)                :: Vi(3,size(theta_n)) ! qS1, qS2, qP phase velocities
 
-        Vi = Vi_elastic_tranisotropic__sf(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta_n,phi_n) 
+        Vi = Vi_elastic_tranisotropic__sf(nlm, alpha, lame_grain, rho, theta_n,phi_n) 
     end
   
-    function Qnorm_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam) result(Qnorm)
+    function Qnorm_tranisotropic(nlm, alpha, lame_grain) result(Qnorm)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp), intent(in)    :: alpha, lam,mu,Elam,Emu,Egam
+        real(kind=dp), intent(in)    :: alpha, lame_grain(5)
         real(kind=dp)                :: Qnorm(3,3)
 
-        Qnorm = Qnorm_tranisotropic__sf(nlm, alpha, lam,mu,Elam,Emu,Egam)
+        Qnorm = Qnorm_tranisotropic__sf(nlm, alpha, lame_grain)
     end
     
     !---------------------------------
@@ -687,6 +701,19 @@ contains
         real(kind=dp)             :: nhat40(size(nhat20))
 
         nhat40 = nhat40_empcorr_ice__sf(nhat20)
+    end
+    
+    ! DELETE ONCE DEBUG FINISHED:
+    subroutine orthstructs(nlm_1,nlm_2,nlm_3, mi,  a2v_nlm, a2v_mi, a4v_nlm, a4v_mi)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm_1(:), nlm_2(:), nlm_3(:)
+        real(kind=dp), intent(in)    :: mi(:,:,:) ! (3,3,N) = (m'_i, xyz comp., grain no.) 
+        real(kind=dp)                :: a4v_jk_sym2(3,6,6), a4v_jk_sym4(3,6,6) ! see aiv_orthotropic() for defs
+        real(kind=dp), intent(out)   :: a2v_nlm(3,6), a2v_mi(3,6), a4v_nlm(3,6,6), a4v_mi(3,6,6)
+            
+        call aiv_orthotropic(nlm_1,nlm_2,nlm_3, a2v_nlm,a4v_nlm, a4v_jk_sym2,a4v_jk_sym4)
+        call aiv_orthotropic_discrete(mi, a2v_mi,a4v_mi, a4v_jk_sym2,a4v_jk_sym4)
     end
     
     !---------------------------------

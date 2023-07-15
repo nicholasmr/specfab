@@ -118,10 +118,9 @@ Shared structure and routines
 
 lm_L4 = np.array([(0,0), (2,-2),(2,-1),(2,0),(2,1),(2,2), (4,-4),(4,-3),(4,-2),(4,-1),(4,0),(4,+1),(4,+2),(4,+3),(4,+4)]).T 
 
-def get_vi_map(nlm, alpha, g, rho, theta, phi):
+def get_vi_map(nlm, alpha, lame_grain, rho, theta, phi):
     # specfabpy wrapper
-    (lam,mu,Elam,Emu,Egam) = g
-    vi = sf.Vi_elastic_tranisotropic(nlm, alpha, lam,mu,Elam,Emu,Egam, rho, theta,phi)
+    vi = sf.Vi_elastic_tranisotropic(nlm, alpha, lame_grain, rho, theta,phi)
     vS1_true, vS2_true, vP_true = vi[0,:], vi[1,:], vi[2,:]
     return np.array([vP_true, vS1_true, vS2_true])
 
