@@ -84,14 +84,16 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#transversely-isotropic-grains">Transversely isotropic grains</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#example">Example</a>
+    <li class="toctree-l3"><a class="reference internal" href="#example-for-glacier-ice">Example for glacier ice</a>
     </li>
         </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#orthotropic-grains">Orthotropic grains</a>
     </li>
     </ul>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">Application gallery</span></p>
+              <p class="caption"><span class="caption-text">Further applications</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
                   </li>
@@ -126,23 +128,24 @@
               
                 <h1 id="electromagnetic-wave-propagation">Electromagnetic wave propagation</h1>
 <h2 id="problem">Problem</h2>
-<p>We seek plane wave solutions to Maxwell's equations in a non-conducting, source-free, anisotropic dielectric medium</p>
+<p>We seek plane wave solutions to Maxwell's equations in a non-conducting, source-free, anisotropic linear dielectric medium</p>
 <div class="arithmatex">\[
 \nabla^2 {\bf E} = \mu {\boldsymbol \epsilon} \frac{\partial^2 {\bf E}}{\partial t^2},
 \]</div>
 <p>where <span class="arithmatex">\({\bf E}\)</span> is the electric field, <span class="arithmatex">\({\boldsymbol \epsilon}\)</span> is the bulk dielectric permittivity tensor, and <span class="arithmatex">\(\mu\)</span> the bulk isotropic permeability of the medium.</p>
 <p>Substituting <span class="arithmatex">\({\bf E}\)</span> for a plane wave solution, <span class="arithmatex">\({\bf E} = {\bf E}_0 \exp[i({\bf k}\cdot {\bf x} - \omega t)]\)</span>, the problem reduces to</p>
 <div class="arithmatex">\[
-({\bf k}^2 - \omega^2 \mu {\boldsymbol \epsilon}) {\bf E} = {\bf 0},
+({\bf K} + \omega^2 \mu {\boldsymbol \epsilon}) {\bf E} = {\bf 0},
 \]</div>
-<p>which requires</p>
+<p>where <span class="arithmatex">\({\bf K} = {\bf k}\times{\bf k} \times\)</span> is the <a href="https://en.wikipedia.org/wiki/Cross_product#Alternative_ways_to_compute">matrix representation</a> of the twice-applied cross product.</p>
+<p>The above equation requires </p>
 <div class="arithmatex">\[
-\det( {\bf k}^2 - \omega^2 \mu {\boldsymbol \epsilon} ) = 0
+\det( {\bf K} + \omega^2 \mu {\boldsymbol \epsilon} ) = 0
 .
 \]</div>
 <!--{\boldsymbol \epsilon}^{-1} \frac{\hat{{\bf k}}^2}{\mu} {\bf E} = \frac{\omega^2}{k^2} {\bf E} -->
 
-<p>Evidently, the eigenvalues and eigenvectors of <span class="arithmatex">\({\boldsymbol \epsilon}^{-1} \hat{{\bf k}}^2 /(\mu k^2)\)</span> are the permitted wave velocities squared and wave polarization, respectively, where</p>
+<p>Evidently, the eigenvalues and eigenvectors of <span class="arithmatex">\({\boldsymbol \epsilon}^{-1} {\bf K}/(\mu k^2)\)</span> are the permitted wave velocities squared and wave polarization, respectively, where</p>
 <div class="arithmatex">\[
 V^2 = \frac{\omega^2}{k^2}
 \]</div>
@@ -154,42 +157,58 @@ V^2 = \frac{\omega^2}{k^2}
 <p>constructed by averaging over all grain orientations (over the CPO).</p>
 </div>
 <h2 id="transversely-isotropic-grains">Transversely isotropic grains</h2>
-<p>The dielectric permittivity tensor of a single ice crystal, <span class="arithmatex">\({\boldsymbol \epsilon}'\)</span>, is approximately transversely isotropic w.r.t. the crystal <span class="arithmatex">\(c\)</span>-axis:
+<table>
+<thead>
+<tr>
+<th align="center">Monocrystal</th>
+<th align="center">Polycrystal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-electromagnetic-monocrystal.png" style="width:210px" /></td>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png" style="width:220px" /></td>
+</tr>
+</tbody>
+</table>
+<p>If grains are approximately transversely isotropic w.r.t. the symmetry axis <span class="arithmatex">\({\bf m}'\)</span>, the dielectric permittivity tensor of a single crystal can be written as
 $$
-{\boldsymbol \epsilon}' =  (2\epsilon_{\perp} + \epsilon_{\parallel}) \frac{\bf I}{3}
-+ (\epsilon_{\parallel}-\epsilon_{\perp}) \left( {\bf c}^2 - \frac{\bf I}{3} \right),
+{\boldsymbol \epsilon}' =  (2\epsilon_{t}' + \epsilon_{m}') \frac{\bf I}{3}
++ (\epsilon_{m}'-\epsilon_{t}') \left( {\bf m}'^2 - \frac{\bf I}{3} \right),
 $$
-where <span class="arithmatex">\(\epsilon_{\parallel}\)</span> and <span class="arithmatex">\(\epsilon_{\perp}\)</span> are the permittivities parallel and perpendicular to the <span class="arithmatex">\(c\)</span>-axis, which depend on ice temperature and EM-wave frequency (<a href="https://eprints.lib.hokudai.ac.jp/dspace/bitstream/2115/32469/1/P185-212.pdf">Fujita et al., 2000</a>).
+where <span class="arithmatex">\(\epsilon_{m}'\)</span> and <span class="arithmatex">\(\epsilon_{t}'\)</span> are the permittivities parallel and perpendicular to the symmetry axis.
 In this case, the grain-averaged permitivity is simply </p>
 <div class="arithmatex">\[
-{\boldsymbol \epsilon} = (2\epsilon_{\perp} + \epsilon_{\parallel}) \frac{\bf I}{3}
-+ (\epsilon_{\parallel}-\epsilon_{\perp}) \left( \langle {\bf c}^2 \rangle - \frac{\bf I}{3} \right)
+{\boldsymbol \epsilon} = (2\epsilon_{t}' + \epsilon_{m}') \frac{\bf I}{3}
++ (\epsilon_{m}'-\epsilon_{t}') \left( \langle {\bf m}'^2 \rangle - \frac{\bf I}{3} \right)
 ,
 \]</div>
-<p>where <span class="arithmatex">\(\langle {\bf c}^2 \rangle\)</span> is the <a href="../cpo-structuretensors/">second-order structure tensor</a> (a.k.a. <span class="arithmatex">\({\bf a}^{(2)}\)</span>).</p>
-<h3 id="example">Example</h3>
-<p><strong>To be documented... not yet implemented</strong></p>
+<p>where <span class="arithmatex">\(\langle {\bf m}'^2 \rangle\)</span> is the <a href="../cpo-structuretensors/">second-order structure tensor</a> (aka <span class="arithmatex">\({\bf a}^{(2)}\)</span>).</p>
+<h3 id="example-for-glacier-ice">Example for glacier ice</h3>
+<p>Implemented not finished (work in progress).</p>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfabpy as sf
 lm, nlm_len = sf.init(2) # L=2 is sufficient here
 nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
 
 # Physical parameters
-eps_grain = (3.17, 3.17-0.034) # (eps_para, eps_perp); relative permittivity of a single grain parallel and perpendicular to symmetry axis
-mu = 1 # relative permeability of a single grain
+# ... note eps=eps0*epsr, mu=mu0*mur
+epsr_grain = (3.17, 3.17-0.034) # (epsc, epsa); relative permittivity of a single grain parallel (c) and perpendicular (a) to symmetry axis
+mur = 1 # relative permeability of a single grain
 
-# c-axis number distribution (nlm) from fourth-order structure tensor (a4)
+# c-axis number distribution (nlm) from second-order structure tensor (a2)
 p = np.array([0,0,1]) # preferred c-axis direction
 a2 = np.einsum('i,j', p,p) # a2 if ODF = deltafunc(r-p) 
-nlm[:] = sf.a2_to_nlm(a2) # l=2 expansion coefficients for corresponding ODF (a4 is normalized)
+nlm[:] = sf.a2_to_nlm(a2) # l=2 expansion coefficients for corresponding ODF (a2 is normalized)
 
 # Propagation directions of interest
 theta, phi = np.deg2rad([90,70,]), np.deg2rad([0,10,]) # wave-vector directions (theta is colatitude, phi is longitude)
 
 # Calculate phase velocities
 Vi = sf.Vi_electromagnetic_tranisotropic(nlm, eps_grain, mu, theta,phi) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:]
-
 </code></pre>
+<h2 id="orthotropic-grains">Orthotropic grains</h2>
+<p>Not yet supported.</p>
               
             </div>
           </div><footer>

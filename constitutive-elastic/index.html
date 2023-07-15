@@ -77,6 +77,8 @@
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#transversely-isotropic">Transversely isotropic</a>
         <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#api">API</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="#e-sfelas_fwd_tranisotropics-lam-mu-elam-emu-egam-m">E = sf.elas_fwd_tranisotropic(S, lam, mu, Elam, Emu, Egam, m)</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#s-sfelas_rev_tranisotropice-lam-mu-elam-emu-egam-m">S = sf.elas_rev_tranisotropic(E, lam, mu, Elam, Emu, Egam, m)</a>
@@ -84,6 +86,14 @@
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#orthotropic">Orthotropic</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#api_1">API</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#e-sfelas_fwd_orthotropics-lame-m1m2m3">E = sf.elas_fwd_orthotropic(S, lame, m1,m2,m3)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#s-sfelas_rev_orthotropice-lame-m1m2m3">S = sf.elas_rev_orthotropic(E, lame, m1,m2,m3)</a>
+    </li>
+        </ul>
     </li>
     </ul>
                   </li>
@@ -93,7 +103,7 @@
                   <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Wave propagation</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">Application gallery</span></p>
+              <p class="caption"><span class="caption-text">Further applications</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
                   </li>
@@ -150,6 +160,7 @@ where $\bf{E}$ and $\bf{S}$ are the strain and stress tensors, respectively.
 </tr>
 </tbody>
 </table>
+<h3 id="api">API</h3>
 <h3 id="e-sfelas_fwd_tranisotropics-lam-mu-elam-emu-egam-m"><code>E = sf.elas_fwd_tranisotropic(S, lam, mu, Elam, Emu, Egam, m)</code></h3>
 <h3 id="s-sfelas_rev_tranisotropice-lam-mu-elam-emu-egam-m"><code>S = sf.elas_rev_tranisotropic(E, lam, mu, Elam, Emu, Egam, m)</code></h3>
 <p>where </p>
@@ -163,7 +174,7 @@ where $\bf{E}$ and $\bf{S}$ are the strain and stress tensors, respectively.
 <tbody>
 <tr>
 <td><code>S</code>, <code>E</code></td>
-<td>stress and strain tensor (3x3)</td>
+<td>Stress and strain tensor (3x3)</td>
 </tr>
 <tr>
 <td><code>lam</code>, <code>mu</code></td>
@@ -173,6 +184,10 @@ where $\bf{E}$ and $\bf{S}$ are the strain and stress tensors, respectively.
 <td><code>Elam</code>, <code>Emu</code>, <code>Egam</code></td>
 <td>Anisotropic enhancement factors <span class="arithmatex">\(\hat{\lambda}\)</span>, <span class="arithmatex">\(\hat{\mu}\)</span>, and <span class="arithmatex">\(\hat{\gamma}\)</span></td>
 </tr>
+<tr>
+<td><code>m</code></td>
+<td>Rotational symmetry axis <span class="arithmatex">\(\bf{m}\)</span></td>
+</tr>
 </tbody>
 </table>
 <div class="admonition note">
@@ -181,7 +196,8 @@ where $\bf{E}$ and $\bf{S}$ are the strain and stress tensors, respectively.
 </div>
 <div class="admonition tip">
 <p class="admonition-title">Tip: convert from <span class="arithmatex">\(C_{ij}\)</span> to Lamé parameters</p>
-<p><code>lam,mu,Elam,Emu,Egam = sf.Cij_to_Lame_tranisotropic(C11,C33,C55,C12,C13)</code></p>
+<p><code>Cij = (C11,C33,C55, C12,C13)
+(lam,mu, Elam,Emu,Egam) = sf.Cij_to_Lame_tranisotropic(Cij)</code></p>
 </div>
 <h2 id="orthotropic">Orthotropic</h2>
 <table>
@@ -198,7 +214,38 @@ where $\bf{E}$ and $\bf{S}$ are the strain and stress tensors, respectively.
 </tr>
 </tbody>
 </table>
-<p>Not yet available</p>
+<h3 id="api_1">API</h3>
+<p><strong>Not yet made available</strong></p>
+<h3 id="e-sfelas_fwd_orthotropics-lame-m1m2m3"><code>E = sf.elas_fwd_orthotropic(S, lame, m1,m2,m3)</code></h3>
+<h3 id="s-sfelas_rev_orthotropice-lame-m1m2m3"><code>S = sf.elas_rev_orthotropic(E, lame, m1,m2,m3)</code></h3>
+<p>where </p>
+<table>
+<thead>
+<tr>
+<th>Arguments</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>S</code>, <code>E</code></td>
+<td>Stress and strain tensor (3x3)</td>
+</tr>
+<tr>
+<td><code>lame</code></td>
+<td>Tuple of anisotropic Lamé parameters <span class="arithmatex">\((\lambda_{11},\lambda_{22},\lambda_{33}, \lambda_{23},\lambda_{13},\lambda_{12}, \mu_{1}, \mu_{2}, \mu_{3})\)</span></td>
+</tr>
+<tr>
+<td><code>m1</code>, <code>m2</code>, <code>m3</code></td>
+<td>Reflection symmetry axes <span class="arithmatex">\(\bf{m}_1\)</span>, <span class="arithmatex">\(\bf{m}_2\)</span>, and <span class="arithmatex">\(\bf{m}_3\)</span></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Tip: convert from <span class="arithmatex">\(C_{ij}\)</span> to Lamé parameters</p>
+<p><code>Cij = (C11,C22,C33,C44,C55,C66, C23,C13,C12)
+(lam11,lam22,lam33, lam23,lam13,lam12, mu1,mu2,mu3) = sf.Cij_to_Lame_orthotropic(Cij)</code></p>
+</div>
 <!--
 
 ### `E = sf.elas_fwd_orthotropic(S, lam, mu, Elam, Emu, Egam, m)`

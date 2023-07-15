@@ -105,7 +105,7 @@
                   <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Wave propagation</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">Application gallery</span></p>
+              <p class="caption"><span class="caption-text">Further applications</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
                   </li>
@@ -204,7 +204,7 @@ E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}} ,
 <p>where <span class="arithmatex">\(E_{ij}^{\mathrm{Sachs}}\)</span> and <span class="arithmatex">\(E_{ij}^{\mathrm{Taylor}}\)</span> are calculated with (1) assuming constant <span class="arithmatex">\(\bf{S}\)</span> and <span class="arithmatex">\(\bf{D}\)</span>, respectively.</p>
 <div class="admonition warning">
 <p class="admonition-title">Grain parameters</p>
-<p>The grain viscous parameters below should be understood as the <em>effective</em> polycrystal values needed to reproduce deformation experiments, and not measured values derived from experiments on single crystals.</p>
+<p>The grain viscous parameters, used for homogenization, should be understood as the <em>effective</em> polycrystal values needed to reproduce deformation experiments, and not measured values derived from experiments on single crystals.</p>
 </div>
 <h3 id="transversely-isotropic-grains">Transversely isotropic grains</h3>
 <table>
@@ -250,11 +250,14 @@ Eij_grain = (1, 1e3) # Grain eigenenhancements (Ecc,Eca) for compression along c
 alpha     = 0.0125   # Taylor--Sachs weight
 
 ### Calculate enhancement factors w.r.t. e1, e2, e3
-Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # = (E11,E22,E33,E23,E13,E12)
+Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # Eij=(E11,E22,E33,E23,E13,E12)
 </code></pre>
+<div class="admonition tip">
+<p class="admonition-title">Evolving CPO</p>
 <p>The below animation shows the directional enhancement factors for a CPO evolving under uniaxial compression along <span class="arithmatex">\({\hat {\bf z}}\)</span> when subject to <a href="../cpo-dynamics-tranisotropic/">lattice rotation</a>.
-Enhancement factors are calculated w.r.t. the spherical coordinate basis vectors <span class="arithmatex">\({\bf e}_1, {\bf e}_2, {\bf e}_3 = {\hat{\bf r}},{\hat{\boldsymbol \theta}},{\hat{\boldsymbol \phi}}\)</span>.</p>
+Enhancement factors are calculated w.r.t. the spherical coordinate basis vectors <span class="arithmatex">\(({\bf e}_1, {\bf e}_2, {\bf e}_3) = ({\hat{\bf r}},{\hat{\boldsymbol \theta}},{\hat{\boldsymbol \phi}})\)</span>.</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/S2-maps-of-Eij-and-Vi/S2-Eij.gif" style="width:660px" /></p>
+</div>
 <h3 id="orthotropic-grains">Orthotropic grains</h3>
 <table>
 <thead>

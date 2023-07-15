@@ -81,7 +81,7 @@
                   <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Wave propagation</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">Application gallery</span></p>
+              <p class="caption"><span class="caption-text">Further applications</span></p>
               <ul class="current">
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Radar-derived physical properties</a>
     <ul class="current">
@@ -122,7 +122,7 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
-          <li>Application gallery &raquo;</li>
+          <li>Further applications &raquo;</li>
       <li>Radar-derived physical properties</li>
     <li class="wy-breadcrumbs-aside">
     </li>
@@ -136,14 +136,14 @@
 <h2 id="introduction">Introduction</h2>
 <p>The dielectric permittivity tensor of a single ice crystal is approximately transversely isotropic w.r.t. the crystal <span class="arithmatex">\(c\)</span>-axis:
 $$
-\epsilon_{ij} = (2\epsilon_{\perp} + \epsilon_{\parallel}) \delta_{ij}/3
-+ (\epsilon_{\parallel}-\epsilon_{\perp})(c_i c_j - \delta_{ij}/3),
+\epsilon_{ij}' = (2\epsilon_{\perp}' + \epsilon_{\parallel}') \delta_{ij}/3
++ (\epsilon_{\parallel}'-\epsilon_{\perp}')(c_i c_j - \delta_{ij}/3),
 $$
-where <span class="arithmatex">\(\epsilon_{\parallel}\)</span> and <span class="arithmatex">\(\epsilon_{\perp}\)</span> are the permittivities parallel and perpendicular to the <span class="arithmatex">\(c\)</span>-axis, which depend on ice temperature and EM-wave frequency (<a href="https://eprints.lib.hokudai.ac.jp/dspace/bitstream/2115/32469/1/P185-212.pdf">Fujita et al., 2000</a>).</p>
-<p>If EM-wave lengths are much longer than the average grain size, the bulk permittivity tensor of polycrystalline ice may be approximated as the grain-average permittivity tensor, constructed by averaging over all grain orientations (over the CPO):</p>
+where <span class="arithmatex">\(\epsilon_{\parallel}'\)</span> and <span class="arithmatex">\(\epsilon_{\perp}'\)</span> are the permittivities parallel and perpendicular to the <span class="arithmatex">\(c\)</span>-axis, respectively, which depend on ice temperature and EM-wave frequency (<a href="https://eprints.lib.hokudai.ac.jp/dspace/bitstream/2115/32469/1/P185-212.pdf">Fujita et al., 2000</a>).</p>
+<p>If EM-wave lengths are much longer than the average grain size, the bulk permittivity tensor of polycrystalline ice may be approximated as the grain-average permittivity tensor, <span class="arithmatex">\(\epsilon_{ij} = \langle \epsilon_{ij}' \rangle\)</span>, constructed by averaging over all grain orientations (over the CPO), giving</p>
 <div class="arithmatex">\[
-\langle\epsilon_{ij}\rangle = (2\epsilon_{\perp} + \epsilon_{\parallel}) \delta_{ij}/3
-+ (\epsilon_{\parallel}-\epsilon_{\perp})(  \langle c_i c_j \rangle - \delta_{ij}/3)
+\epsilon_{ij} = (2\epsilon_{\perp}' + \epsilon_{\parallel}') \delta_{ij}/3
++ (\epsilon_{\parallel}'-\epsilon_{\perp}')(  \langle c_i c_j \rangle - \delta_{ij}/3)
 ,
 \]</div>
 <p>where <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> is the second-order structure tensor (<code>a2</code> in specfab; a.k.a. <span class="arithmatex">\({\bf a}^{(2)}\)</span>), defined as the average outer product of grain <span class="arithmatex">\(c\)</span>-axes (assuming grain sizes are uncorrelated with orientation):</p>
@@ -161,7 +161,7 @@ a_{xz} &amp; a_{yz} &amp; a_{zz}
 \end{matrix}\right]
 .
 \]</div>
-<p>Properties like <a href="../wavepropagation-electromagnetic/">EM-wave speed</a> and radar return-power anomalies depend on the bulk permittivity tensor <span class="arithmatex">\(\langle\epsilon_{ij}\rangle\)</span>, and therefore, given measurements of such quantities, information about <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> can be inferred (see e.g. <a href="https://www.nature.com/articles/s41467-023-38139-8">Gerber et al., 2023</a>, and references therein).</p>
+<p>Properties like <a href="../wavepropagation-electromagnetic/">EM-wave speed</a> and radar return-power anomalies depend on the bulk permittivity tensor <span class="arithmatex">\(\langle\epsilon_{ij}'\rangle\)</span>, and therefore, given measurements of such quantities, information about <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> can be inferred (see e.g. <a href="https://www.nature.com/articles/s41467-023-38139-8">Gerber et al., 2023</a>, and references therein).</p>
 <h2 id="radar-measurements-rightarrow-cpo">Radar measurements <span class="arithmatex">\(\rightarrow\)</span> CPO</h2>
 <p>A useful approximation over large parts of ice sheets is that <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> has a vertical (<span class="arithmatex">\({\bf z}\)</span>) eigenvector, and hence</p>
 <div class="arithmatex">\[
@@ -198,7 +198,7 @@ $$</p>
 <p>Since <span class="arithmatex">\(\lambda_1\)</span> is unknown, the problem can be closed by making different assumptions about <span class="arithmatex">\(\lambda_1\)</span> given the local/upstream flow regime, such as proposed by <a href="https://www.nature.com/articles/s41467-023-38139-8">Gerber et al. (2023)</a>.
 Suppose <span class="arithmatex">\(\Delta\lambda\)</span> is measured in region where <span class="arithmatex">\(c\)</span>-axes are, to a good approximation, suspected to be distributed on the <span class="arithmatex">\({\bf m}_2\)</span>&mdash;<span class="arithmatex">\({\bf z}\)</span> plane because the smallest eigenvalue is vanishing, <span class="arithmatex">\(\lambda_1 \rightarrow 0\)</span>.
 In this case, <span class="arithmatex">\(\Delta \lambda = 0\)</span> represents a perfect single-maximum along <span class="arithmatex">\({\bf z}\)</span>, <span class="arithmatex">\(\Delta \lambda = 0.5\)</span> a perfect girdle in the <span class="arithmatex">\({\bf m}_2\)</span>&mdash;<span class="arithmatex">\({\bf z}\)</span> plane, and <span class="arithmatex">\(\Delta \lambda = 1\)</span> a perfect single-maximum along <span class="arithmatex">\({\bf m}_2\)</span>, respectively:</p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/plane-CPOs.png" style="width:660px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/plane-CPOs.png" style="width:610px" /></p>
 <!--
 The above [plot](cpo-plot.md) was generated from the normalized spectral expansion coefficients $\hat{n}_l^m \equiv n_l^m/n_0^0$ for $l\leq 2$, [derived from](cpo-structuretensors.md)
 
@@ -215,7 +215,7 @@ $$
 
 <h2 id="cpo-rightarrow-enhancement-factors">CPO <span class="arithmatex">\(\rightarrow\)</span> Enhancement factors</h2>
 <p>If <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> can be inferred from radar sounding following the above method, so can the bulk strain-rate enhancement factors, <span class="arithmatex">\(E_{ij}\)</span>, in the same eigenframe (i.e. <a href="../enhancements-strainrate/">eigenenhancements</a>).</p>
-<p>The eigenenhancements depend, however, also on the fourth-order structure tensor, <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span>, but the bulk permittivity <span class="arithmatex">\(\langle\epsilon_{ij}\rangle\)</span> &mdash; and therefore radar-sounding methods &mdash; is insensitive to <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span>.
+<p>The eigenenhancements depend, however, also on the fourth-order structure tensor, <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span>, but the bulk permittivity <span class="arithmatex">\(\langle\epsilon_{ij}'\rangle\)</span> &mdash; and therefore radar-sounding methods &mdash; is insensitive to <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span>.
 To overcome this, a simple empirical correlation exists that allows determining <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span> given <span class="arithmatex">\(\langle c_i c_j\rangle\)</span> if the CPO has an approximate rotational symmetry axis. </p>
 <h3 id="correlation-between-langle-c_i-c_j-c_k-c_l-rangle-and-langle-c_i-c_jrangle">Correlation between <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span> and <span class="arithmatex">\(\langle c_i c_j\rangle\)</span></h3>
 <p>If the CPO rotational symmetry axis is rotated into the vertical direction, <span class="arithmatex">\(\langle c_i c_j\rangle\)</span> depends only on <span class="arithmatex">\(\hat{n}_2^0\equiv n_2^0/n_0^0:\)</span></p>

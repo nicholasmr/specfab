@@ -113,7 +113,7 @@
                   <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Wave propagation</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">Application gallery</span></p>
+              <p class="caption"><span class="caption-text">Further applications</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
                   </li>
@@ -148,17 +148,17 @@
               
                 <h1 id="cpo-dynamics-transversely-isotropic-grains">CPO dynamics &mdash; Transversely isotropic grains</h1>
 <h2 id="introduction">Introduction</h2>
-<p>This tutorial focuses on modelling the CPO evolution of polycrystalline glacier ice, understood as the <span class="arithmatex">\({\bf c}\)</span>-axis distribution or, equivelently, the distribution of (easy) slip-plane normals of grains, <span class="arithmatex">\(n(\theta,\phi)\)</span>.</p>
+<p>This tutorial focuses on modelling the CPO evolution of polycrystalline glacier ice, understood as the distribution of <span class="arithmatex">\({c}\)</span>-axes; that is, the distribution of (easy) slip-plane normals of grains, <span class="arithmatex">\(n(\theta,\phi)\)</span>.</p>
 <table>
 <thead>
 <tr>
 <th align="center">Polycrystal</th>
-<th align="center">Slip system</th>
+<th align="center">Grain slip system (<span class="arithmatex">\({\bf n}={\bf c}\)</span>)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png" style="width:200px" /></td>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png" style="width:200px" /></td>
 <td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slipplane.png" style="width:170px" /></td>
 </tr>
 </tbody>
@@ -196,10 +196,10 @@ n({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}({\bf x},t) Y_{l}
 The model is a kinematic model in the sense that <span class="arithmatex">\(c\)</span>-axes rotate in response to the bulk rate of stretching, <span class="arithmatex">\({\bf D}\)</span>, and spin, <span class="arithmatex">\({\bf W}\)</span>, thereby allowing the detailed microscopic stress and strain rate fields to be neglected and hence interactions between neighboring grains to be disregarded.</p>
 <p>The modelled <span class="arithmatex">\(c\)</span>-axes are taken to rotate with the bulk continuum spin (<span class="arithmatex">\({\bf W}\)</span>), plus some plastic spin correction (<span class="arithmatex">\({\bf W}_{\mathrm{p}}\)</span>), so that the <span class="arithmatex">\(c\)</span>-axis velocity field on the unit sphere is</p>
 <div class="arithmatex">\[
-{\bf \dot{c}} = ({\bf W} + {\bf W}_{\mathrm{p}}) \cdot {\bf c} \quad\text{($c$-axis velocity field)}
+{\bf \dot{c}} = ({\bf W} + {\bf W}_{\mathrm{p}}) \cdot {\bf c} \quad\text{($c$-axis velocity field on $S^2$)}
 ,
 \]</div>
-<p>where the plastic spin generally depends on <span class="arithmatex">\({\bf D}\)</span> to lowest and second lowest order as (Wang, 1969; <a href="https://www.doi.org/10.1088/0965-0393/2/3A/005">Aravas, 1994</a>) </p>
+<p>where <span class="arithmatex">\({\bf c}(\theta,\phi)\)</span> is the radial unit vector, and the plastic spin depends on <span class="arithmatex">\({\bf D}\)</span> to lowest and second lowest order following Wang (1969) and <a href="https://www.doi.org/10.1088/0965-0393/2/3A/005">Aravas (1994)</a>: </p>
 <div class="arithmatex">\[
 {\bf W}_{\mathrm{p}} = 
 \iota({\bf c}\otimes{\bf c}\cdot{\bf D} - {\bf D}\cdot{\bf c}\otimes{\bf c})
