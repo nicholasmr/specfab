@@ -13,7 +13,7 @@
       <script>
         // Current page data
         var mkdocs_page_name = "Strain-rate enhancements";
-        var mkdocs_page_input_path = "enhancements-strainrate.md";
+        var mkdocs_page_input_path = "enhancements-strainrate--bck.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -63,32 +63,8 @@
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Viscous</span></p>
-              <ul class="current">
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Strain-rate enhancements</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#definition">Definition</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#eigenenhancements">Eigenenhancements</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#enhancements-from-grain-homogenization">Enhancements from grain homogenization</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#transversely-isotropic-grains">Transversely isotropic grains</a>
-        <ul>
-    <li class="toctree-l4"><a class="reference internal" href="#example-for-glacier-ice">Example for glacier ice</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#orthotropic-grains">Orthotropic grains</a>
-        <ul>
-    <li class="toctree-l4"><a class="reference internal" href="#example-for-olivine">Example for olivine</a>
-    </li>
-        </ul>
-    </li>
-        </ul>
-    </li>
-    </ul>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain-rate enhancements</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../constitutive-viscoplastic/">Constitutive equations</a>
                   </li>
@@ -128,7 +104,6 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
-          <li>Viscous &raquo;</li>
       <li>Strain-rate enhancements</li>
     <li class="wy-breadcrumbs-aside">
     </li>
@@ -142,7 +117,7 @@
 <h2 id="definition">Definition</h2>
 <p>Given an anisotropic rheology <span class="arithmatex">\({\bf D}({\bf S})\)</span>, where <span class="arithmatex">\({\bf D}\)</span> and <span class="arithmatex">\({\bf S}\)</span> are the 
 strain-rate and deviatoric stress tensors, respectively, 
-the <em>directional strain-rate enhancement factors</em> <span class="arithmatex">\(E_{ij}\)</span> are defined as the <span class="arithmatex">\(({\bf e}_i, {\bf e}_j)\)</span>-components of <span class="arithmatex">\({\bf D}\)</span> relative to that of the rheology in the isotropic limit (isotropic CPO):</p>
+the <em>directional strain-rate enhancement factors</em>, <span class="arithmatex">\(E_{ij}\)</span>, are defined as the <span class="arithmatex">\(({\bf e}_i, {\bf e}_j)\)</span>-components of <span class="arithmatex">\({\bf D}\)</span> relative to that of the rheology in the isotropic limit (isotropic CPO):</p>
 <div class="arithmatex">\[ 
 E_{ij} = \frac{
 {\bf e}_i \cdot {\bf D}({\bf S}({\bf e}_i, {\bf e}_j)) \cdot {\bf e}_j 
@@ -169,10 +144,8 @@ E_{ij} = \frac{
 <li>
 <p><span class="arithmatex">\({E_{12}}\)</span> is the <span class="arithmatex">\({\bf e}_{1}\)</span>&mdash;<span class="arithmatex">\({\bf e}_{2}\)</span> shear strain-rate enhancement when subject to shear in the <span class="arithmatex">\({\bf e}_{1}\)</span>&mdash;<span class="arithmatex">\({\bf e}_{2}\)</span> plane</p>
 </li>
-<li>
-<p>...and so on.</p>
-</li>
 </ul>
+<p>and so on.</p>
 <div class="admonition note">
 <p class="admonition-title">Hard or soft</p>
 <p><span class="arithmatex">\(E_{ij}&gt;1\)</span> implies the material response is <em>softened</em> due to fabric (compared to an isotropic CPO), whereas <span class="arithmatex">\(E_{ij}&lt;1\)</span> implies <em>hardening</em>.</p>
@@ -196,47 +169,17 @@ E_{ij} = \frac{
 </tbody>
 </table>
 <h2 id="enhancements-from-grain-homogenization">Enhancements from grain homogenization</h2>
-<p>To calculate <span class="arithmatex">\(E_{ij}\)</span> for a given CPO using (1) requires an <em>effective</em> rheology that takes the microstructure into account.</p>
-<p>In the simplest case, polycrystals may be regarded as an ensemble of interactionless grains (monocrystals) subject to either a homogeneous stress field over the polycrystal scale</p>
-<div class="arithmatex">\[
-{\bf S}' = {\bf S}
-,
-\qquad\qquad \text{(Sachs's hypothesis)}
-\]</div>
-<p>or a homogeneous stain-rate field</p>
-<div class="arithmatex">\[
-{\bf D}' = {\bf D} 
-,
-\qquad\qquad \text{(Taylor's hypothesis)}
-\]</div>
-<p>where <span class="arithmatex">\({\bf S}'\)</span> and <span class="arithmatex">\({\bf D}'\)</span> are the <em>microscopic</em> (grain-scale) stress and strain-rate tensors, respectively.</p>
-<p>Hence, the effective rheology can be approximated as the orientation-averaged monocrystal rheology</p>
-<div class="arithmatex">\[
-{\bf D}^{\mathrm{Sachs}} = \langle {\bf D}'({\bf S}') \rangle = \langle {\bf D}'({\bf S}) \rangle
-,
-\qquad\qquad \text{(Sachs homogenization)}
-\]</div>
-<p>or</p>
-<div class="arithmatex">\[
-\qquad
-{\bf D}^{\mathrm{Taylor}} = \langle {\bf S}'({\bf D}') \rangle^{-1} = \langle {\bf S}'({\bf D}) \rangle^{-1}
-,
-\qquad \text{(Taylor homogenization)}
-\]</div>
-<p>where <span class="arithmatex">\(\langle \cdot \rangle^{-1}\)</span> inverts the tensorial relationship.</p>
-<p>Considering a linear combination of the two homogenizations</p>
-<div class="arithmatex">\[
-{\bf D} = (1-\alpha){\bf D}^{\mathrm{Sachs}} + {\alpha} {\bf D}^{\mathrm{Taylor}} ,
-\]</div>
-<p>the enhancement calculation also reduces to a linear combination</p>
+<p>Calculating <span class="arithmatex">\(E_{ij}\)</span> for a given CPO using (1) requires an <em>effective</em> rheology that takes the microstructure into account.</p>
+<p>In the simplest case, polycrystals may be regarded as an ensemble of interactionless grains (monocrystals) subject to either a homogeneous strain field (Taylor's hypothesis) or homogeneous stress field (Sachs's hypothesis) over the polycrystal scale. 
+In this way, the effective rheology is simply the grain-orentation-averaged rheology, assuming homogeneous stress or strain-rate over the polycrystal scale.</p>
+<p>Any linear combination of the two homogenizations is supported:</p>
 <div class="arithmatex">\[ 
-E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}}
-,
+E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}} ,
 \]</div>
-<p>where <span class="arithmatex">\(\alpha\)</span> is a free parameter.</p>
+<p>where <span class="arithmatex">\(E_{ij}^{\mathrm{Sachs}}\)</span> and <span class="arithmatex">\(E_{ij}^{\mathrm{Taylor}}\)</span> are calculated with (1) assuming constant <span class="arithmatex">\(\bf{S}\)</span> and <span class="arithmatex">\(\bf{D}\)</span>, respectively.</p>
 <div class="admonition warning">
 <p class="admonition-title">Grain parameters</p>
-<p>The grain viscous (rheological) parameters, used for homogenization, should be understood as the <em>effective</em> polycrystal values needed to reproduce deformation experiments, and not measured values derived from experiments on single crystals.</p>
+<p>The grain viscous parameters, used for homogenization, should be understood as the <em>effective</em> polycrystal values needed to reproduce deformation experiments, and not measured values derived from experiments on single crystals.</p>
 </div>
 <h3 id="transversely-isotropic-grains">Transversely isotropic grains</h3>
 <table>
@@ -312,10 +255,6 @@ This requires specifying the grain eigenenhancements (<span class="arithmatex">\
               
             </div>
           </div><footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../cpo-dynamics-orthotropic/" class="btn btn-neutral float-left" title="Orthotropic grains"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../constitutive-viscoplastic/" class="btn btn-neutral float-right" title="Constitutive equations">Next <span class="icon icon-circle-arrow-right"></span></a>
-    </div>
 
   <hr/>
 
@@ -337,10 +276,6 @@ This requires specifying the grain eigenenhancements (<span class="arithmatex">\
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../cpo-dynamics-orthotropic/" style="color: #fcfcfc">&laquo; Previous</a></span>
-    
-    
-      <span><a href="../constitutive-viscoplastic/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
