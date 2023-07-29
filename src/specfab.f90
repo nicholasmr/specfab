@@ -15,6 +15,7 @@ module specfab
     use rotation
     use reducedform
     use deformationmodes
+    use idealstate
 
     implicit none 
 

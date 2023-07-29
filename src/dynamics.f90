@@ -371,10 +371,10 @@ contains
         real(kind=dp), intent(in) :: nhat20(:)
         real(kind=dp)             :: nhat40(size(nhat20))
         real(kind=dp), parameter  :: a=0.07283201, b=0.47585027, c=-0.27165286, d=0.14299372
-        real(kind=dp), parameter  :: eps = 2.0d-3, lolim = -sqrt(5.0d0)/2, uplim = +sqrt(5.0d0)
+        real(kind=dp), parameter  :: eps = 1.0d-4, lolim = -sqrt(5.0d0)/2, uplim = +sqrt(5.0d0)
         
-        if (any(nhat20 > uplim)) stop 'nhat40_empcorr_ice() error: nhat20 > sqrt(5)'
-        if (any(nhat20 < lolim)) stop 'nhat40_empcorr_ice() error: nhat20 < -sqrt(5)/2'
+        if (any(nhat20 > uplim+eps)) stop 'nhat40_empcorr_ice() error: nhat20 > sqrt(5)'
+        if (any(nhat20 < lolim-eps)) stop 'nhat40_empcorr_ice() error: nhat20 < -sqrt(5)/2'
 
         do ii = 1, size(nhat20)
             if (nhat20(ii) > (uplim-eps)) then

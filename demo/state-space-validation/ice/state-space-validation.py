@@ -47,6 +47,8 @@ else:
     L = 20 # Spectral truncation 
     RESX = RESY = 5*100
     
+lm, nlm_len = sf.init(L) 
+    
 #--------------------
 # Experimental data to plot
 #--------------------
@@ -76,10 +78,23 @@ for expr in experiments:
     correlations.append(corr) 
     
 #--------------------
-# Modeled correlations
+# Determine ideal boundary line
 #--------------------
 
-lm, nlm_len = sf.init(L) 
+m = [0,0,1]
+
+# delta distributed
+n20_unidir, n40_unidir = np.real(sf.nlm_ideal(m, 0))[[3,10]]/normfac
+
+# x--y planar distributed
+n20_planar, n40_planar = np.real(sf.nlm_ideal(m, np.pi/2))[[3,10]]/normfac    
+
+# 45 deg. circle (DDRX attractor)
+n20_circ45, n40_circ45 = np.real(sf.nlm_ideal(m, np.pi/4))[[3,10]]/normfac
+        
+#--------------------
+# Modeled correlations
+#--------------------
 
 def integrate_model(nlm0, Mtype, ugrad, dt, Nt=Nt, rotate=False, name=None):
 
@@ -170,28 +185,6 @@ nlm_ddrx3 = np.array([ nlm_ddrx3[tt,:]/nlm_ddrx3[tt,0] for tt in np.arange(Nt) ]
 nlm_ddrx4 = np.array([ nlm_ddrx4[tt,:]/nlm_ddrx4[tt,0] for tt in np.arange(Nt) ])
 nlm_cdrx1 = np.array([ nlm_cdrx1[tt,:]/nlm_cdrx1[tt,0] for tt in np.arange(Nt) ])
 nlm_cdrx2 = np.array([ nlm_cdrx2[tt,:]/nlm_cdrx2[tt,0] for tt in np.arange(Nt) ])
-
-
-#--------------------
-# Polynomial-fitted correlation curve used by Gerber et al. (2022)
-#--------------------
-
-if 0:
-    ### ***NEEDS UPDATING IF TO BE USED AGAIN***
-    
-    Ne_girdle = 0
-    Ne_smax   = 1
-    x_model = np.hstack(( np.flipud(np.real(nlmr_sf[:,Ne_girdle,3])),  np.real(nlmr_sf[:,Ne_smax,3])))
-    y_model = np.hstack(( np.flipud(np.real(nlmr_sf[:,Ne_girdle,10])), np.real(nlmr_sf[:,Ne_smax,10])))
-
-    pc = np.polyfit(x_model, y_model, 4)  # Last argument is degree of polynomial
-    #print("Coefficient values:\n", pc)
-    p_model = np.poly1d(pc)
-    p_fit = p_model(x_model)
-    #print(p_fit-y_model)
-
-    pickle.dump([x_model, y_model, pc, p_model], open("corrpoly.p", "wb"))
-
 
 #--------------------
 # Construct plot
@@ -332,32 +325,21 @@ legend_modellines = plt.legend(h_modellines, legend_strings, title=r'{\bf Modell
 ### End-member cases
 
 # Isotropic state
-ax.plot(0,0,'o', ms=mse, c='k', label=None, zorder=20)
+ax.plot(0, 0, 'o', ms=mse, c='k', label=None, zorder=20)
 dytext = 0.04/normfac
 plt.text(0, 0+dytext, r'{\bf Isotropic}', color='k', ha='center', va='bottom', fontsize=FSANNO)
 
-# Unidirectional/delta-function (single max)
-n20_delta = np.real(sp.sph_harm(0, 2, 0,0))/normfac
-n40_delta = np.real(sp.sph_harm(0, 4, 0,0))/normfac
-ax.plot(n20_delta,n40_delta, marker='o', ms=mse, ls='none', c=c_smax, label=None)
-plt.text(n20_delta, n40_delta+dytext, '{\\bf Unidirectional}', color=c_smax, ha='center', va='bottom', ma='center', fontsize=FSANNO)
+# Unidirectional
+ax.plot(n20_unidir,n40_unidir, marker='o', ms=mse, ls='none', c=c_smax, label=None)
+plt.text(n20_unidir, n40_unidir+dytext, '{\\bf Unidirectional}', color=c_smax, ha='center', va='bottom', ma='center', fontsize=FSANNO)
 
-# Planar (great circl) isotropy 
-x, y = np.array([1,0,0]), np.array([0,1,0])
-x2, y2 = np.einsum('i,j',x,x), np.einsum('i,j',y,y)
-x4, y4 = np.einsum('i,j,k,l',x,x,x,x), np.einsum('i,j,k,l',y,y,y,y)
-xy_sym = np.einsum('i,j',x,y) + np.einsum('i,j',y,x)
-xy2 = x2 + y2
-a2 = x2/2 + y2/2
-a4 = x4/4 + y4/4 + np.einsum('ij,kl',xy2,xy2)/8 + np.einsum('ij,kl',xy_sym,xy_sym)/8 
-nlm_girdle = np.real(sf.a4_to_nlm(a4))
-#print(nlm_girdle, nlm_girdle[3],nlm_girdle[10])
-x_, y_ = np.real(nlm_girdle[3])/normfac, np.real(nlm_girdle[10])/normfac
-ax.plot(x_, y_, marker='o', ms=mse, ls='none', c=c_girdle, label=None)
-plt.text(x_, y_+dytext, '{\\bf Planar}\n\\bf{confined}', color=c_girdle, ha='center', va='bottom', ma='center', fontsize=FSANNO)
+# Planar
+ax.plot(n20_planar, n40_planar, marker='o', ms=mse, ls='none', c=c_girdle, label=None)
+plt.text(n20_planar, n40_planar+dytext, '{\\bf Planar}', color=c_girdle, ha='center', va='bottom', ma='center', fontsize=FSANNO)
 
 # DDRX steady state
-x_, y_ = np.real(nlm_ddrx2[-1,3]),np.real(nlm_ddrx2[-1,10])
+#x_, y_ = np.real(nlm_ddrx2[-1,3]),np.real(nlm_ddrx2[-1,10])
+x_, y_ = n20_circ45, n40_circ45 
 ax.plot(x_, y_, marker='o', ms=mse, fillstyle='full', ls='none', c=c_ddrx, label=None)
 plt.text(x_+0.01, y_-dytext, '{\\bf DDRX}\n\\bf{steady state}', color=c_ddrx, ha='center', va='top', ma='center', fontsize=FSANNO)
 

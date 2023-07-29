@@ -1,7 +1,7 @@
 # Deformation modes
 
-For a continuum subject to deformation, the deformation gradient tensor, ${\bf F}$, describes the relative change in position of material points.
-If ${\bf F}$ is known, then the velocity gradient tensor intermediately follows as
+For a continuum subject to deformation, the [deformation gradient tensor](https://www.continuummechanics.org/deformationgradient.html), ${\bf F}$, describes the relative change in position of material points.
+If ${\bf F}$ is known, then the [velocity gradient tensor](https://www.continuummechanics.org/velocitygradient.html) follows as
 $$
 \nabla {\bf u} = \dot{{\bf F}} {\bf F}^{-1}
 .
@@ -13,13 +13,13 @@ The resulting strain experienced (strain tensor) is
 .
 \end{align}
 
-Below we shall consider how to represent pure shear and simple shear with ${\bf F}$.
+Below, we consider how to represent pure shear and simple shear with ${\bf F}$.
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes-2.png#center){: style="width:620px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes-2.png#center){: style="width:690px"}
 
 ## Pure shear
 
-${\bf F}$ is diagonal for pure shear when the principal strain axes aligned with the coordinate system. 
+${\bf F}$ is diagonal for pure shear deformation when the principal strain axes are aligned with the coordinate system. 
 Suppose shortening takes places along the vertical axis and lengthening in the horizontal plane, then 
 
 $$
@@ -32,13 +32,13 @@ b^{(1+r)/2} & 0 & 0\\
 ,
 $$
 
-where the parameter $r\in[-1;1]$ allows controlling the relative lengthening between two horizontal directions: 
+where the parameter $r\in[-1;1]$ controls the relative lengthening between two horizontal directions: 
 
-* for $r=0$ lengthening is equal in the $x$ and $y$ directions
+* for $r=0$ lengthening is equal in the $x$ and $y$ directions,
 
-* for $r=+1$ lengthening occurs only in the $x$-direction
+* for $r=+1$ lengthening occurs only in the $x$ direction,
 
-* for $r=-1$ lengthening occurs only in the $y$-direction.
+* for $r=-1$ lengthening occurs only in the $y$ direction.
 
 Calculating the velocity gradient tensor yields
 
@@ -53,19 +53,20 @@ $$
 .
 $$
 
-If the scaling parameter, $b$, is given in terms of the $e$-folding time scale $T$, 
-\begin{align}
+If the scaling parameter, $b$, is written in terms of the $e$-folding time scale $T$ as 
+
+$$
 b(t) = \exp(t/T)
-\label{eqn:psheartime}
 ,
-\end{align}
-then the strain-rate is constant 
+$$
+
+the strain-rate becomes constant,
 
 $$
 \frac{\dot{b}}{b} = \frac{1}{T}. 
 $$
 
-The vertical strain experienced as a function of time is 
+Notice that the vertical strain experienced as a function of time is 
 
 $$
 \epsilon_{zz}(t) = \frac{1}{b(t)} - 1,
@@ -74,7 +75,7 @@ $$
 where $\epsilon_{zz} = 0$ corresponds to an undeformed ice parcel ($t=0$), 
 and $\epsilon_{zz} = -1$ is the limit of vanishing parcel height ($t\rightarrow\infty$). 
 
-Consider instead that lengthening takes place along the vertical axis and shortening in the horizontal plane. 
+Consider instead the case where lengthening takes place along the vertical axis and shortening in the horizontal plane. 
 This is achieved by substituting $b\rightarrow b^{-1}$ which implies ${\bf F}={\bf F}_{\mathrm{P}}^{-1}$ and hence is the time reversed behavior of ${\bf F}_{\mathrm{P}}$ since $b^{-1}(t)=b(-t)$.
 
 ### Example 
@@ -126,6 +127,7 @@ $$
 0 & 0 & 0\\
 0& 0& 0
 \end{bmatrix}
+.
 $$
 
 For a constant shear rate, $1/T$, the shear-angle time dependence is

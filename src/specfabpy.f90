@@ -75,17 +75,17 @@ module specfabpy
         ! Fabric processes
         Gamma0__sf => Gamma0, &
 
-        ! AUX
-        vec_to_mat_voigt__sf => vec_to_mat_voigt, &
-        nhat40_empcorr_ice__sf => nhat40_empcorr_ice, &
-        
         ! Deformation modes (code in include/specfabpy_deformationmodes.f90)
         F_to_strain__sf => F_to_strain, ugrad_to_D_and_W__sf => ugrad_to_D_and_W, &
         pureshear_b__sf => pureshear_b, pureshear_strainii_to_t__sf => pureshear_strainii_to_t, &
         pureshear_F__sf => pureshear_F, pureshear_ugrad__sf => pureshear_ugrad, &
         simpleshear_gamma__sf => simpleshear_gamma, simpleshear_gamma_to_t__sf => simpleshear_gamma_to_t, &
-        simpleshear_F__sf => simpleshear_F, simpleshear_ugrad__sf => simpleshear_ugrad
-        
+        simpleshear_F__sf => simpleshear_F, simpleshear_ugrad__sf => simpleshear_ugrad, &
+
+        ! AUX
+        vec_to_mat_voigt__sf => vec_to_mat_voigt, &
+        nhat40_empcorr_ice__sf => nhat40_empcorr_ice, &
+        nlm_ideal__sf => nlm_ideal
         
     implicit none
     
@@ -709,6 +709,15 @@ contains
         real(kind=dp)             :: nhat40(size(nhat20))
 
         nhat40 = nhat40_empcorr_ice__sf(nhat20)
+    end
+    
+    function nlm_ideal(m, colat) result(nlm)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: m(3), colat 
+        integer, parameter        :: Lmax = 8, nlmlen = int((Lmax+1)*(Lmax+2)/2)
+        complex(kind=dp)          :: nlm(nlmlen)
+        nlm(:) = nlm_ideal__sf(m, colat)
     end
     
     ! DELETE ONCE DEBUG FINISHED:

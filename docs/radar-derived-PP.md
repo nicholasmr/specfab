@@ -126,7 +126,7 @@ $$
 and $\langle c_i c_j c_k c_l \rangle$ only on $\hat{n}_2^0$ and $\hat{n}_4^0 = n_4^0/n_0^0$ (not shown).
 The figure below shows the empirical correlation between these two components based on ice-core samples.
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/state-space-validation/ice/nhat40_empcorr_ice.png){: style="width:570px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/state-space-validation/ice/state-space-empcorr.png){: style="width:570px"}
 
 Thus, if $\hat{n}_2^0$ is extracted from $\langle c_i c_j\rangle$ in this frame, $\hat{n}_4^0$ can be derived and hence $\langle c_i c_j c_k c_l \rangle$ constructed.
 To pose the CPO in the original, unrotated eigenframe (${\bf m}_1, {\bf m}_2, {\bf z}$), the resulting expansion series is rotated back.

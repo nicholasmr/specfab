@@ -37,7 +37,7 @@ else:
     
 experiments = (expr_GRIP, expr_LAWDOME,  expr_EGRIP_MAIN, expr_SPICE, expr_Priestley, expr_EGRIP_S5) 
 
-L=4
+L=8
 lm, nlm_len = sf.init(L) 
 
 #--------------------
@@ -54,6 +54,18 @@ for expr in experiments:
     corr['n40'] /= normfac
     corr['n60'] /= normfac
     correlations.append(corr) 
+
+#--------------------
+# Determine ideal boundary line
+#--------------------
+
+m = [0,0,1]
+
+# delta distributed
+n20_unidir, n40_unidir = np.real(sf.nlm_ideal(m, 0))[[3,10]]/normfac
+
+# x--y planar distributed
+n20_planar, n40_planar = np.real(sf.nlm_ideal(m, np.pi/2))[[3,10]]/normfac    
 
 #--------------------
 # Polynomial-fitted correlation curve used by Gerber et al. (2022)
@@ -74,8 +86,9 @@ nhat40_pc, pcov = curve_fit(f, x, y)
 nhat40_pc = np.concatenate(([0], nhat40_pc))
 print("Correlation coefs in f(x) = a*x + b*x**2 + c*x**3 + d*x**4 are\n", nhat40_pc)
 
-n20_delta, n20_planar = np.sqrt(5), -np.sqrt(5)/2 # 2.23606797749979, -1.1180340067479093
-x_corr = np.linspace(n20_planar,n20_delta,100)
+#n20_delta, n20_planar = np.sqrt(5), -np.sqrt(5)/2 # 2.23606797749979, -1.1180340067479093
+print(n20_planar,n20_unidir)
+x_corr = np.linspace(n20_planar,n20_unidir,100)
 p_model = np.poly1d(np.flipud(nhat40_pc))
 #y_corr = p_model(x_corr) # debug
 y_corr = sf.nhat40_empcorr_ice(x_corr) 
@@ -90,7 +103,7 @@ for ii, x in enumerate(x_corr):
     nlm_hat = np.zeros((nlm_len), dtype=np.complex128)
     nlm_hat[[0,3]] = [1, x]
     nlm_ = sf.a4_to_nlm(sf.a4_IBOF(sf.a2(nlm_hat*1/np.sqrt(4*np.pi))))
-    y_IBOF[ii] = nlm_[10]/nlm_[0] # nhat40 
+    y_IBOF[ii] = np.real(nlm_[10]/nlm_[0]) # nhat40 
 
 #--------------------
 # Construct plot
@@ -171,27 +184,13 @@ ax.plot(0,0,'o', ms=mse, c='k', label=None, zorder=20)
 dytext = 0.04/normfac
 plt.text(0, 0+dytext, r'{\bf Isotropic}', color='k', ha='center', va='bottom', fontsize=FSANNO)
 
-# Unidirectional/delta-function (single max)
-n20_delta = np.real(sp.sph_harm(0, 2, 0,0))/normfac
-n40_delta = np.real(sp.sph_harm(0, 4, 0,0))/normfac
-ax.plot(n20_delta,n40_delta, marker='o', ms=mse, ls='none', c=c_smax, label=None, zorder=20)
-plt.text(n20_delta-0.1, n40_delta+dytext, '{\\bf Unidirectional}', color=c_smax, ha='center', va='bottom', ma='center', fontsize=FSANNO)
+# Unidirectional
+ax.plot(n20_unidir,n40_unidir, marker='o', ms=mse, ls='none', c=c_smax, label=None, zorder=20)
+plt.text(n20_unidir-0.1, n40_unidir+dytext, '{\\bf Unidirectional}', color=c_smax, ha='center', va='bottom', ma='center', fontsize=FSANNO)
 
-# Planar (great circl) isotropy 
-x, y = np.array([1,0,0]), np.array([0,1,0])
-x2, y2 = np.einsum('i,j',x,x), np.einsum('i,j',y,y)
-x4, y4 = np.einsum('i,j,k,l',x,x,x,x), np.einsum('i,j,k,l',y,y,y,y)
-xy_sym = np.einsum('i,j',x,y) + np.einsum('i,j',y,x)
-xy2 = x2 + y2
-a2 = x2/2 + y2/2
-a4 = x4/4 + y4/4 + np.einsum('ij,kl',xy2,xy2)/8 + np.einsum('ij,kl',xy_sym,xy_sym)/8 
-nlm_girdle = np.real(sf.a4_to_nlm(a4))
-#print(nlm_girdle, nlm_girdle[3],nlm_girdle[10])
-x_, y_ = np.real(nlm_girdle[3])/normfac, np.real(nlm_girdle[10])/normfac
-ax.plot(x_, y_, marker='o', ms=mse, ls='none', c=c_girdle, label=None, zorder=20)
-plt.text(x_, y_+dytext, '{\\bf Planar}\n\\bf{confined}', color=c_girdle, ha='center', va='bottom', ma='center', fontsize=FSANNO)
-
-#print(n40_delta, y_)
+# Planar
+ax.plot(n20_planar, n40_planar, marker='o', ms=mse, ls='none', c=c_girdle, label=None, zorder=20)
+plt.text(n20_planar, n40_planar+dytext, '{\\bf Planar}', color=c_girdle, ha='center', va='bottom', ma='center', fontsize=FSANNO)
 
 # Shading labels
 plt.text(0.26/normfac, 0.1/normfac, '{\\bf Single maximum}', color=c_smax, ha='center', rotation=30, fontsize=FSANNO)
@@ -272,7 +271,7 @@ if 1:
         nlm = ODF['nlm']
         lvls = np.linspace(0.0,ODF['lvlmax'],6)
     
-        F, lon,lat = discretize_ODF(nlm, lm)
+        F, lon,lat = discretize_ODF(nlm, lm[:,:len(nlm)])
         F[F<0] = 0 # fix numerical/truncation errors
         h = axin.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), levels=lvls, extend=('max' if lvls[0]==0.0 else 'both'), cmap='Greys', nchunk=5) # "nchunk" argument must be larger than 0 for constant-ODF (e.g. isotropy) is plotted correctly.
 
@@ -289,10 +288,9 @@ if 1:
 
         axin.set_title(ODF['title'], fontsize=FS-3)
 
-
 ### Save figure
 
 #plt.tight_layout()
-plt.savefig('nhat40_empcorr_ice.png', transparent=1,  dpi=175)
+plt.savefig('state-space-empcorr.png', transparent=1,  dpi=175)
 plt.close()
 
