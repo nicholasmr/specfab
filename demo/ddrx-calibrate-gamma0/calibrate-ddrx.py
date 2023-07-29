@@ -78,34 +78,20 @@ for L in L_list:
     print('b = %3e m/yr'%(b))
 
     #---------------------
-    # Pure shear deformation mode
-    #---------------------
-
-    class PureShear():
-        def __init__(self, t_e, r=0, ax='z'): 
-            self.t_e = float(t_e) # e-folding time scale for for parcel height reduction
-            if ax=='z': self.Fpow = [(1+r)/2., (1-r)/2., -1] # r=0 => unconfined
-        def lam(self, t):    return np.exp(t/self.t_e) # lambda(t)
-        def F(self, t):      return np.diag(np.power(self.lam(t),self.Fpow)) # Deformation tensor
-        def strain(self, t): return 0.5*( self.F(t) + np.transpose(self.F(t)) ) - np.diag([1,1,1]) # Strain tensor
-        def strainzz2time(self,strain_zz): return -self.t_e*np.log(strain_zz+1) # time it takes to reach "strain_zz" strain with timescale t_e.
-        def D(self): return 1/self.t_e * np.diag(self.Fpow) # Strain rate. Note that F is constructed such that W and D are time-independant.
-        def W(self): return np.diag([0,0,0]) # Spin (zero when no shear)
-
-    #---------------------
     # Ice parcel model
     #---------------------
         
     # Assumes depth-constant (unconfined) vertical compression: the classical Nye model of a dome.
     b /= yr2s
     t_e = 1/(b/H) # e-folding time for uniaxial compression (strainrate_zz = MeanAccum/H)
-    ps = PureShear(t_e, r=0.0, ax='z') # r=0 => unconfined
+    r = 0 # uniaxial compression
+    ax = 2 # z axis
         
     # Constants
-    tend    = ps.strainzz2time(strain_zz_stop)
+    tend    = sf.pureshear_strainii_to_t(strain_zz_stop, t_e)
     timevec = np.linspace(0,tend,Nt)
     dt      = timevec[1]-timevec[0] # given t_e, if we want Nt time steps, this is the step size needed
-    strain_zz = np.array([ps.strain(t)[-1,-1] for ii, t in enumerate(timevec)]) # for the constant time-step size, these are the vertical parcel strains as a function of time
+    strain_zz = np.array([sf.F_to_strain(sf.pureshear_F(ax,r,t_e,t))[-1,-1] for ii, t in enumerate(timevec)]) # for the constant time-step size, these are the vertical parcel strains as a function of time
     z_sf = H*(strain_zz+1) - H # Vertical parcel strains correspond to these depths
     z_sf += -z0 # effective offset of parcel model
 
@@ -121,7 +107,7 @@ for L in L_list:
     lam = np.zeros((Nt)) # CDRX rate factor magnitude
         
     # Euler integration of fabric model
-    D, W = ps.D(), ps.W() # strain-rate and spin tensors for mode of deformation
+    D, W = sf.ugrad_to_D_and_W(sf.pureshear_ugrad(ax,r,t_e)) # strain-rate and spin tensors for mode of deformation
     T = f_T(z_sf) # Temperature at modelled parcel depths 
     
     def f_lam(D,T):

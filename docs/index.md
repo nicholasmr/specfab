@@ -28,15 +28,6 @@ Source code [available here](https://github.com/nicholasmr/specfab)
 | Fortran | The Fortran module is built by running `make specfab.o` |
 | Elmer/Ice Interface | To interface with Elmer/Ice, you need a shared version of the libraries (built with the same Fortran compiler as Elmer). If needed, change the compiler in `src/Makefile`, then run `make libspecfab.so` |
 
-## Literature 
-
-| Component | Reference |
-| :--- | :--- |
-| Lattice rotation | [Rathmann et al. (2021)](https://doi.org/10.1017/jog.2020.117) |
-| Discontinuous dynamic recrystallization | [Rathmann and Lilien (2021)](https://doi.org/10.1017/jog.2021.88) |
-| Orthotropic bulk rheologies | [Rathmann and Lilien (2022)](https://doi.org/10.1017/jog.2022.33) |
-| Elastic wave velocities | [Rathmann et al. (2022)](https://doi.org/10.1098/rspa.2022.0574) |
-
 ## Initialize 
 
 Initialize `specfabpy` by running
@@ -56,4 +47,13 @@ where
 | `nlm_len` | Number of expansion coefficients for expansion series truncated at $l=L$ |
 | `nlm`     | Vector of complex-valued expansion coefficients (state vector) |
 | `lm`      | Vector of degree and order integers (`l`,`m`) associated with each entry in `nlm` |
+
+## Literature 
+
+| Component | Reference |
+| :--- | :--- |
+| Lattice rotation | [Rathmann et al. (2021)](https://doi.org/10.1017/jog.2020.117) |
+| Discontinuous dynamic recrystallization | [Rathmann and Lilien (2021)](https://doi.org/10.1017/jog.2021.88) |
+| Orthotropic bulk rheologies | [Rathmann and Lilien (2022)](https://doi.org/10.1017/jog.2022.33) |
+| Elastic wave velocities | [Rathmann et al. (2022)](https://doi.org/10.1098/rspa.2022.0574) |
 

@@ -35,7 +35,7 @@ is the wave velocity squared.
 
 !!! note "Homogenization"
 
-    The problem may be closed by approximating $\hat{{\bf Q}}$ by the grain-averaged acoustic tensor, subject to a  linear combination of the Voigt and Reuss homogenization schemes:
+    The problem may be closed by approximating $\hat{{\bf Q}}$ as the grain-averaged acoustic tensor, subject to a  linear combination of the Voigt and Reuss homogenization schemes:
 
     $$
     \hat{{\bf Q}} = (1-\alpha) \langle\hat{{\bf Q}}'_{\mathrm{Reuss}}\rangle + \alpha \langle \hat{{\bf Q}}'_{\mathrm{Voigt}}\rangle
@@ -91,7 +91,7 @@ Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, Lame_grain, rho, theta,phi) # phase
 
 !!! tip "Evolving CPO"
 
-    The below animation shows directional P- and S-wave velocities for a CPO evolving under uniaxial compression along ${\hat {\bf z}}$, relative to an isotropic CPO, when subject to [lattice rotation](cpo-dynamics-tranisotropic.md).
+    The below animation shows directional P- and S-wave velocities for a CPO evolving under [uniaxial compression](deformation-modes.md) along ${\hat {\bf z}}$, relative to an isotropic CPO, when subject to [lattice rotation](cpo-dynamics-tranisotropic.md).
 
     ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/S2-maps-of-Eij-and-Vi/S2-vi.gif){: style="width:660px"}
 

@@ -1,4 +1,4 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2022
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2023
 
 ! Tensor products
 
@@ -24,6 +24,14 @@ contains
         Y = (A + transpose(A))/2
     end
     
+    function antisymmetricpart(A) result(Y)
+        ! (A - A^T)/2
+        implicit none
+        real(kind=dp), intent(in) :: A(3,3)
+        real(kind=dp) :: Y(3,3)
+        Y = (A - transpose(A))/2
+    end
+    
     function anticommutator(A,B) result(Y)
         ! A.B + B.A
         implicit none
@@ -31,6 +39,17 @@ contains
         real(kind=dp) :: Y(3,3)
         Y = matmul(A,B) + matmul(B,A)
     end    
+    
+    function diag(v) result(Y)
+        ! create diagonal matrix Y(:,:) with diagonal elements v(:)
+        implicit none
+        real(kind=dp), intent(in) :: v(:)
+        real(kind=dp)             :: Y(size(v),size(v))
+        Y = 0.0d0
+        do ii=1,size(v)
+            Y(ii,ii) = v(ii)
+        end do
+    end
 
     !------------------------
     ! OUTER PRODUCTS

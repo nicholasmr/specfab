@@ -4,13 +4,13 @@
 
 Given an anisotropic rheology ${\bf D}({\bf S})$, where ${\bf D}$ and ${\bf S}$ are the 
 strain-rate and deviatoric stress tensors, respectively, 
-the *directional strain-rate enhancement factors*, $E_{ij}$, are defined as the $({\bf e}_i, {\bf e}_j)$-components of ${\bf D}$ relative to that of the rheology in the isotropic limit (isotropic CPO):
+the *directional strain-rate enhancement factors* $E_{ij}$ are defined as the $({\bf e}_i, {\bf e}_j)$-components of ${\bf D}$ relative to that of the rheology in the isotropic limit (isotropic CPO):
 
 $$ 
 E_{ij} = \frac{
-{\bf e}_i \cdot {\bf D}({\bf S}({\bf e}_i, {\bf e}_j)) \cdot {\bf e}_j 
+{\bf e}_i \cdot {\bf D}({\bf S}) \cdot {\bf e}_j 
 }{
-{\bf e}_i \cdot {\bf D}_{\mathrm{iso}}({\bf S}({\bf e}_i, {\bf e}_j)) \cdot {\bf e}_j 
+{\bf e}_i \cdot {\bf D}_{\mathrm{iso}}({\bf S}) \cdot {\bf e}_j 
 }
 ,
  \qquad(1)
@@ -51,23 +51,64 @@ These are the enhancements factors needed to specify the viscous anisotropy in [
 | :-: | :-: |
 | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous.png){: style="width:260px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous.png){: style="width:350px"} |
 
-## Grain homogenization schemes 
+## Enhancements from grain homogenization 
 
-Using (1) to calculate $E_{ij}$ for a given CPO requires an effective rheology that takes the microstructure into account.
+To calculate $E_{ij}$ for a given CPO using (1) requires an *effective* rheology that takes the microstructure into account.
 
-In the simplest case, polycrystals may be regarded as an ensemble of interactionless grains (monocrystals) subject to either a homogeneous strain field (Taylor's hypothesis) or homogeneous stress field (Sachs's hypothesis) over the polycrystal scale. 
-In this way, the effective rheology is simply the grain-orentation-averaged rheology, assuming homogeneous stress or strain-rate over the polycrystal scale.
+In the simplest case, polycrystals may be regarded as an ensemble of interactionless grains (monocrystals) subject to either a homogeneous stress field over the polycrystal scale
 
-Any linear combination of the two homogenizations is supported:
-
-$$ 
-E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}} ,
+$$
+{\bf S}' = {\bf S}
+,
+\qquad\qquad \text{(Sachs's hypothesis)}
 $$
 
-where $E_{ij}^{\mathrm{Sachs}}$ and $E_{ij}^{\mathrm{Taylor}}$ are calculated with (1) assuming constant $\bf{S}$ and $\bf{D}$, respectively.
+or a homogeneous stain-rate field
+
+$$
+{\bf D}' = {\bf D} 
+,
+\qquad\qquad \text{(Taylor's hypothesis)}
+$$
+
+where ${\bf S}'$ and ${\bf D}'$ are the *microscopic* (grain-scale) stress and strain-rate tensors, respectively.
+
+Hence, the effective rheology can be approximated as the orientation-averaged monocrystal rheology
+
+$$
+{\bf D}^{\mathrm{Sachs}} = \langle {\bf D}'({\bf S}') \rangle = \langle {\bf D}'({\bf S}) \rangle
+,
+\qquad\qquad \text{(Sachs homogenization)}
+$$
+
+or
+
+$$
+\qquad
+{\bf D}^{\mathrm{Taylor}} = \langle {\bf S}'({\bf D}') \rangle^{-1} = \langle {\bf S}'({\bf D}) \rangle^{-1}
+,
+\qquad \text{(Taylor homogenization)}
+$$
+
+where $\langle \cdot \rangle^{-1}$ inverts the tensorial relationship.
+
+If a linear combination of the two homogenizations is considered
+
+$$
+{\bf D} = (1-\alpha){\bf D}^{\mathrm{Sachs}} + {\alpha} {\bf D}^{\mathrm{Taylor}} ,
+$$
+
+equation (1) becomes
+
+$$ 
+E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}}
+,
+$$
+
+where $\alpha$ is a free parameter.
 
 !!! warning "Grain parameters"
-    The grain viscous parameters, used for homogenization, should be understood as the *effective* polycrystal values needed to reproduce deformation experiments, and not measured values derived from experiments on single crystals.
+    The grain viscous (rheological) parameters, used for homogenization, should be understood as the *effective* polycrystal values needed to reproduce deformation experiments, and not measured values derived from experiments on single crystals.
 
 ### Transversely isotropic grains
 
@@ -113,7 +154,7 @@ Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # Eij=(E11,E2
 
 !!! tip "Evolving CPO"
 
-    The below animation shows the directional enhancement factors for a CPO evolving under uniaxial compression along ${\hat {\bf z}}$ when subject to [lattice rotation](cpo-dynamics-tranisotropic.md).
+    The below animation shows the directional enhancement factors for a CPO evolving under [uniaxial compression](deformation-modes.md) along ${\hat {\bf z}}$ when subject to [lattice rotation](cpo-dynamics-tranisotropic.md).
     Enhancement factors are calculated w.r.t. the spherical coordinate basis vectors $({\bf e}_1, {\bf e}_2, {\bf e}_3) = ({\hat{\bf r}},{\hat{\boldsymbol \theta}},{\hat{\boldsymbol \phi}})$.
 
     ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/S2-maps-of-Eij-and-Vi/S2-Eij.gif){: style="width:660px"}

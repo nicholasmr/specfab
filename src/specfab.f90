@@ -14,6 +14,7 @@ module specfab
     use wavepropagation 
     use rotation
     use reducedform
+    use deformationmodes
 
     implicit none 
 

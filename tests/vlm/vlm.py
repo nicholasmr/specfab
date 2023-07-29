@@ -174,12 +174,12 @@ if 1:
 
             ### Velocity gradient tensor experienced by parcel
             if exprtype=='ss':
-                ss = SimpleShear(1)
-                D, W = ss.D(), ss.W()
+                pl, T = 1, 1
+                D, W = sf.ugrad_to_D_and_W(sf.simpleshear_ugrad(pl, T))
                 Nt = 6*25 # Number of time steps
             if exprtype=='uc':
-                ps = PureShear(1, 0)
-                D, W = ps.D(), ps.W()
+                ax, r, T = 2, 0, 1
+                D, W = sf.ugrad_to_D_and_W(sf.pureshear_ugrad(ax, r, T))
                 Nt = 4*25 # Number of time steps
 
             ### Numerics 

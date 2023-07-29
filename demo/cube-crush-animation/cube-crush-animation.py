@@ -61,11 +61,11 @@ class SyntheticFabric():
 
         ### Determine dt from Nc and parcel height target
         
-        epszz = -0.95 # Target: 5% of initial parcel height (epszz = zz strain)
-        D = np.diag([0.5,0.5,-1]) # strain-rate tensor
-        te = 1/D[2,2] # characteristic time, t_e
-        t_epszz = te*np.log(epszz + 1)
-        dt = t_epszz/Nc # time step size for thresshold strain epszz in "Nc" time steps 
+        epsii_target = -0.90 # Target: 5% of initial parcel height
+        r = 0 # uniaxial compression
+        t_e = 1 # e-folding time scale
+        t_epsii = sf.pureshear_strainii_to_t(epsii_target, t_e)
+        dt = t_epsii/Nc # time step size for thresshold strain epsii_target in "Nc" time steps 
 
         ### Construct strain-rate and spin tensor histories
         
@@ -78,22 +78,22 @@ class SyntheticFabric():
         xyz0_alt  = np.ones((Nt+1,3))
         strainvec = np.zeros(Nt+1)
         
-        # Determine strain-rate and spin tensors (D and W)
+        # Determine strain history, strain-rate and spin tensors (D and W)
         for ii in np.arange(Nt0+1):
-            t = ii*dt
-            PS = PureShear(-te, 0, ax=stressdir)
+            t = ii*(dt*1)
             ii_ = ii # Nt0-ii
-            strainvec[ii_] = PS.strain(t)[stressax,stressax] # cumulative strain
-            xyz0[ii_,:] = np.matmul(PS.F(t), xyz0_init) # parcel side lengths
-            W[ii_,:,:], D[ii_,:,:] = PS.W(), PS.D()            
+            D[ii_,:,:], W[ii_,:,:] = sf.ugrad_to_D_and_W(sf.pureshear_ugrad(stressax,r,+t_e))
+            Ft = sf.pureshear_F(stressax, r, +t_e, t)
+            strainvec[ii_] = sf.F_to_strain(Ft)[stressax,stressax] # cumulative strain
+            xyz0[ii_,:] = np.matmul(Ft, xyz0_init) # parcel side lengths
 
         for ii in np.arange(Nt1+1):
-            t = ii*(dt*0.65)
-            PS = PureShear(+te, 0, ax=stressdir)
+            t = ii*(dt*0.58)
             ii_ = ii+Nt0
-            strainvec[ii_] = PS.strain(t)[stressax,stressax] # cumulative strain
-            xyz0[ii_,:] = np.matmul(PS.F(t), xyz0_init) # parcel side lengths
-            W[ii_,:,:], D[ii_,:,:] = PS.W(), PS.D()            
+            D[ii_,:,:], W[ii_,:,:] = sf.ugrad_to_D_and_W(sf.pureshear_ugrad(stressax,r,-t_e))
+            Ft = sf.pureshear_F(stressax, r, -t_e, t)
+            strainvec[ii_] = sf.F_to_strain(Ft)[stressax,stressax] # cumulative strain
+            xyz0[ii_,:] = np.matmul(Ft, xyz0_init) # parcel side lengths
 
         ### Fabric evolution 
         
@@ -124,7 +124,7 @@ class SyntheticFabric():
             tt = Nt0+ii
             D_, W_ = D[tt,:,:], W[tt,:,:]
             M = sf.M_LROT(nlm_prev, D_, W_, 1, 0) # Lattice rotation
-            nu0 = 1
+            nu0 = 4
             M += nu0 * sf.M_REG(nlm_prev, D_) # Regularization
             nlm_list[tt,:] = nlm_prev + dt * np.matmul(M, nlm_prev)
             nlm_prev = nlm_list[tt,:]
@@ -141,6 +141,9 @@ class SyntheticFabric():
             steps = [0, Nt0, Nt]
         
         for ii in steps:
+            
+#            if ii <= Nt0: continue # skip comperessive
+#            if ii != steps[-1]: continue # skip to last step
             
             scale = 0.4
             fig = plt.figure(figsize=(13*scale,10*scale), facecolor=colorbg)
@@ -258,11 +261,10 @@ for ii in np.concatenate((np.arange(0,Nts), k+np.arange(0,Nts))):
 for ii in np.arange(0,Nts+1): os.system('cp frames/frame%04d.png frames/frame%04d.png'%(Nt0+Nts-1, Nt0+Nts+ii))
 for ii in np.arange(0,Nts+1): os.system('cp frames/frame%04d.png frames/frame%04d.png'%(Nt+3*Nts-1, Nt+3*Nts+ii))
 
-# Make .avi movie
-os.system('ffmpeg -y -f image2 -framerate 50 -stream_loop 0 -i frames/frame%04d.png -vcodec libx264 -crf 20  -pix_fmt yuv420p cube-crush.avi')
-
-# Make GIF?
+# Make .avi and GIF?
 if 1:
+    os.system('ffmpeg -y -f image2 -framerate 50 -stream_loop 0 -i frames/frame%04d.png -vcodec libx264 -crf 20  -pix_fmt yuv420p cube-crush.avi')
+
     os.system('ffmpeg -y -f image2 -framerate 50 -stream_loop 0 -i frames/frame%04d.png -vcodec libx264 -crf 20  -pix_fmt yuv420p cube-crush-for-gif.avi')
     os.system('rm cube-crush.gif')
     os.system('ffmpeg -i cube-crush-for-gif.avi -vf "fps=22,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 cube-crush.gif')

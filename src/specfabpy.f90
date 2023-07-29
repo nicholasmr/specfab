@@ -77,7 +77,15 @@ module specfabpy
 
         ! AUX
         vec_to_mat_voigt__sf => vec_to_mat_voigt, &
-        nhat40_empcorr_ice__sf => nhat40_empcorr_ice
+        nhat40_empcorr_ice__sf => nhat40_empcorr_ice, &
+        
+        ! Deformation modes (code in include/specfabpy_deformationmodes.f90)
+        F_to_strain__sf => F_to_strain, ugrad_to_D_and_W__sf => ugrad_to_D_and_W, &
+        pureshear_b__sf => pureshear_b, pureshear_strainii_to_t__sf => pureshear_strainii_to_t, &
+        pureshear_F__sf => pureshear_F, pureshear_ugrad__sf => pureshear_ugrad, &
+        simpleshear_gamma__sf => simpleshear_gamma, simpleshear_gamma_to_t__sf => simpleshear_gamma_to_t, &
+        simpleshear_F__sf => simpleshear_F, simpleshear_ugrad__sf => simpleshear_ugrad
+        
         
     implicit none
     
@@ -725,6 +733,9 @@ contains
 
     ! JOSEF ice flow model 
     include "josef/specfabpy_josef.f90"
+        
+    ! Deformation modes module
+    include "include/specfabpy_deformationmodes.f90"
         
 end module specfabpy 
 

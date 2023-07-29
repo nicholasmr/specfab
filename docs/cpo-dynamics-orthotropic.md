@@ -4,7 +4,7 @@
 
 This tutorial focuses on modelling the CPO evolution of polycrystalline olivine, understood as the distribution of (easy) slip-plane normals and slip directions of grains, $n(\theta,\phi)$ and $b(\theta,\phi)$.
 
-| Polycrystal | Slip system |
+| Polycrystal | Grain slip system |
 | :-: | :-: |
 | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:200px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slipplane.png){: style="width:170px"} |
 
@@ -16,7 +16,7 @@ The distributions $n(\theta,\phi)$ and $b(\theta,\phi)$ refer to certain crystal
 
 ### Lagrangian material parcel
 
-The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different modes of deformation/stress:
+The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different [modes of deformation](deformation-modes.md):
 
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center){: style="width:620px"}
 

@@ -27,7 +27,7 @@ T_EXP_STR = {T_EXP_CC:'cc', T_EXP_SS:'ss'}
 ### Select experiment
 
 T_EXP = T_EXP_CC
-#T_EXP = T_EXP_SS
+T_EXP = T_EXP_SS
 
 DEBUG = 0
 
@@ -61,10 +61,11 @@ if T_EXP==T_EXP_CC:
     ugrad0 = 2*sf.rheo_fwd_isotropic(tau0, Aglen,nglen)[2,2]
     Nt = 3 * 200
         
-t_c = 1/ugrad0
+t_c = 1/ugrad0 # infer characteric time scale
 T = 1.3 * year2sec
 dt = T/Nt
-        
+time = dt*np.arange(0,Nt)
+            
 #----------------------
 # Grain parameters for enhancement-factor model
 #----------------------
@@ -77,20 +78,23 @@ dt = T/Nt
     
 if T_EXP==T_EXP_SS:
         
-    SS = SimpleShear(t_c, plane='zx') 
-    omg, eps = SS.W(), SS.D()
+    pl = 1 # x--z plane
+    ugrad = sf.simpleshear_ugrad(pl, t_c)
+    eps, omg = sf.ugrad_to_D_and_W(ugrad) 
     print("*** eps_xz (for parcel deformation): ",eps[0,2])
-    time = dt*np.arange(0,Nt)
-    strain = SS.kappa * time
+    Ft = np.array([sf.simpleshear_F(pl, t_c, tt) for tt in time])
+    strain = Ft[:,0,2]
     ODF_strains = [0,2,5,7]
     
 if T_EXP==T_EXP_CC:
         
-    PS = PureShear(t_c, r, ax='z') 
-    omg, eps = PS.W(), PS.D()
-    print("*** eps_zz (for parcel deformation): ",eps[2,2])
-    time = dt*np.arange(0,Nt)
-    strain = np.array([PS.strain(tt)[2,2] for tt in time])
+    t_c /= np.log(2)
+    ax = 2 # z axis
+    ugrad = sf.pureshear_ugrad(ax, r, t_c)
+    eps, omg = sf.ugrad_to_D_and_W(ugrad) 
+    print("*** eps_zz (for parcel deformation): ",eps[ax,ax])
+    Ft = np.array([sf.pureshear_F(ax, r, t_c, tt) for tt in time])
+    strain = np.array([sf.F_to_strain(Ft[ii,:,:])[ax,ax] for ii,tt in enumerate(time)])
     ODF_strains = [0, -0.3, -0.6, -0.9] # maybe use DDRX_strainthres as one of the steps
 
 ODF_tsteps = [np.argmin(np.abs(strain-thres)) for thres in ODF_strains]
@@ -326,7 +330,6 @@ for ii,nn in enumerate(ODF_tsteps):
 # Parcel geometry
 xyz0_init = (1,1,1)
 ex,ey,ez = np.array([xyz0_init[0],0,0]),np.array([0,xyz0_init[1],0]),np.array([0,0,xyz0_init[2]])
-time_ = dt*np.arange(0,Nt) 
 
 axsize = 0.14
 scale = 1
@@ -341,13 +344,13 @@ for ii,nn in enumerate(steps_to_plot_ODF):
 
     if T_EXP==T_EXP_SS:
         xyz0 = xyz0_init
-        dyx = np.dot(np.matmul(SS.F(time_[nn])-np.eye(3), ey), ex)
-        dzx = np.dot(np.matmul(SS.F(time_[nn])-np.eye(3), ez), ex)
+        dyx = np.dot(np.matmul(Ft[nn]-np.eye(3), ey), ex)
+        dzx = np.dot(np.matmul(Ft[nn]-np.eye(3), ez), ex)
         dzy = 0
         pcoords = np.array([[0.106,axy0],[0.28,axy0]])
         
     if T_EXP==T_EXP_CC:
-        xyz0 = np.matmul(PS.F(time_[nn]), np.array(xyz0_init))
+        xyz0 = np.matmul(Ft[nn], np.array(xyz0_init))
         dzx, dzy, dyx = 0,0,0
         pcoords = np.array([[0.106,axy0],[0.55,axy0]])
 

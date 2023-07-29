@@ -20,7 +20,7 @@ Supported grain symmetry groups for modelling [CPO evolution](cpo-dynamics-trani
 
 | <center>Polycrystalline ice</center> | <center>Polycrystalline olivine</center> |
 | :- | :- |
-| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png){: style="width:220px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
 | $n(\theta,\phi)$ is the ${\bf c}$-axis distribution | $n(\theta,\phi)$ and $b(\theta,\phi)$ are the distributions <br>of particular crystallographic axes (${\bf m}'_i$) <br> depending on fabric type (A&mdash;E type). |
 
 ## Series expansion
@@ -35,7 +35,7 @@ $$
 The orientation distribution function (ODF) is defined as the normalized distribution 
 
 $$ 
-\mathrm{ODF} = \frac{n(\theta,\phi)}{N} \quad\text{where}\quad N=\int_{S^2}{n} d\Omega=\sqrt{4\pi}n_0^0 .
+\mathrm{ODF} = \frac{n(\theta,\phi)}{N} \quad\text{where}\quad N=\int_{S^2}{n} \,\mathrm{d}\Omega=\sqrt{4\pi}n_0^0 .
 $$
 
 The array of complex-valued expansion coefficients, defining the CPO state, is 

@@ -6,6 +6,7 @@ nav:
         - Representation: cpo-representation.md
         - Structure tensors: cpo-structuretensors.md
         - Rotation: cpo-rotation.md
+        - Idealized states: cpo-idealized.md
         - Plotting: cpo-plot.md
     - 'CPO dynamics':
         - Transversely isotropic grains: cpo-dynamics-tranisotropic.md

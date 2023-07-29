@@ -4,16 +4,16 @@
 
 The dielectric permittivity tensor of a single ice crystal is approximately transversely isotropic w.r.t. the crystal $c$-axis:
 $$
-\epsilon_{ij} = (2\epsilon_{\perp} + \epsilon_{\parallel}) \delta_{ij}/3
-+ (\epsilon_{\parallel}-\epsilon_{\perp})(c_i c_j - \delta_{ij}/3),
+\epsilon_{ij}' = (2\epsilon_{\perp}' + \epsilon_{\parallel}') \frac{\delta_{ij}}{3}
++ (\epsilon_{\parallel}'-\epsilon_{\perp}') \left(c_i c_j - \frac{\delta_{ij}}{3} \right),
 $$
-where $\epsilon_{\parallel}$ and $\epsilon_{\perp}$ are the permittivities parallel and perpendicular to the $c$-axis, which depend on ice temperature and EM-wave frequency ([Fujita et al., 2000](https://eprints.lib.hokudai.ac.jp/dspace/bitstream/2115/32469/1/P185-212.pdf)).
+where $\epsilon_{\parallel}'$ and $\epsilon_{\perp}'$ are the permittivities parallel and perpendicular to the $c$-axis, respectively, which depend on ice temperature and EM-wave frequency ([Fujita et al., 2000](https://eprints.lib.hokudai.ac.jp/dspace/bitstream/2115/32469/1/P185-212.pdf)).
 
-If EM-wave lengths are much longer than the average grain size, the bulk permittivity tensor of polycrystalline ice may be approximated as the grain-average permittivity tensor, constructed by averaging over all grain orientations (over the CPO):
+If EM-wave lengths are much longer than the average grain size, the bulk permittivity tensor of polycrystalline ice may be approximated as the grain-average permittivity tensor, $\epsilon_{ij} = \langle \epsilon_{ij}' \rangle$, constructed by averaging over all grain orientations (over the CPO), giving
 
 $$
-\langle\epsilon_{ij}\rangle = (2\epsilon_{\perp} + \epsilon_{\parallel}) \delta_{ij}/3
-+ (\epsilon_{\parallel}-\epsilon_{\perp})(  \langle c_i c_j \rangle - \delta_{ij}/3)
+\epsilon_{ij} = (2\epsilon_{\perp}' + \epsilon_{\parallel}') \frac{\delta_{ij}}{3}
++ (\epsilon_{\parallel}'-\epsilon_{\perp}') \left(\langle c_i c_j \rangle - \frac{\delta_{ij}}{3} \right)
 ,
 $$
 
@@ -36,7 +36,7 @@ a_{xz} & a_{yz} & a_{zz}
 .
 $$
 
-Properties like [EM-wave speed](wavepropagation-electromagnetic.md) and radar return-power anomalies depend on the bulk permittivity tensor $\langle\epsilon_{ij}\rangle$, and therefore, given measurements of such quantities, information about $\langle c_i c_j \rangle$ can be inferred (see e.g. [Gerber et al., 2023](https://www.nature.com/articles/s41467-023-38139-8), and references therein).
+Properties like [EM-wave speed](wavepropagation-electromagnetic.md) and radar return-power anomalies depend on the bulk permittivity tensor $\epsilon_{ij}$, and therefore, given measurements of such quantities, information about $\langle c_i c_j \rangle$ can be inferred (see e.g. [Gerber et al., 2023](https://www.nature.com/articles/s41467-023-38139-8), and references therein).
 
 ## Radar measurements $\rightarrow$ CPO
 
@@ -106,15 +106,15 @@ $$
 
 If $\langle c_i c_j \rangle$ can be inferred from radar sounding following the above method, so can the bulk strain-rate enhancement factors, $E_{ij}$, in the same eigenframe (i.e. [eigenenhancements](enhancements-strainrate.md)).
 
-The eigenenhancements depend, however, also on the fourth-order structure tensor, $\langle c_i c_j c_k c_l \rangle$, but the bulk permittivity $\langle\epsilon_{ij}\rangle$ &mdash; and therefore radar-sounding methods &mdash; is insensitive to $\langle c_i c_j c_k c_l \rangle$.
+The eigenenhancements depend, however, also on the fourth-order structure tensor, $\langle c_i c_j c_k c_l \rangle$, but the bulk permittivity $\epsilon_{ij}$ &mdash; and therefore radar-sounding methods &mdash; is insensitive to $\langle c_i c_j c_k c_l \rangle$.
 To overcome this, a simple empirical correlation exists that allows determining $\langle c_i c_j c_k c_l \rangle$ given $\langle c_i c_j\rangle$ if the CPO has an approximate rotational symmetry axis. 
 
 ### Correlation between $\langle c_i c_j c_k c_l \rangle$ and $\langle c_i c_j\rangle$
 
-If the CPO rotational symmetry axis is rotated into the vertical direction, $\langle c_i c_j\rangle$ depends only on $\hat{n}_2^0\equiv n_2^0/n_0^0:$
+If the CPO rotational symmetry axis is rotated into the vertical direction, $\langle c_i c_j\rangle$ depends only on $\hat{n}_2^0 = n_2^0/n_0^0:$
 
 $$
-\langle c_i c_j\rangle = \frac{{\bf I}}{3} +  \frac{2\sqrt{5}}{15} \hat{n}_2^0
+\langle c_i c_j\rangle = \frac{\delta_{ij}}{3} +  \frac{2\sqrt{5}}{15} \hat{n}_2^0
 \left[\begin{matrix}
 -1/2 & 0 & 0 \\ 
 0  & -1/2  & 0 \\ 
@@ -123,7 +123,7 @@ $$
 ,
 $$
 
-and $\langle c_i c_j c_k c_l \rangle$ only on $\hat{n}_2^0$ and $\hat{n}_4^0\equiv n_4^0/n_0^0$ (not shown).
+and $\langle c_i c_j c_k c_l \rangle$ only on $\hat{n}_2^0$ and $\hat{n}_4^0 = n_4^0/n_0^0$ (not shown).
 The figure below shows the empirical correlation between these two components based on ice-core samples.
 
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/state-space-validation/ice/nhat40_empcorr_ice.png){: style="width:570px"}

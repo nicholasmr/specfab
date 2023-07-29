@@ -4,9 +4,9 @@
 
 This tutorial focuses on modelling the CPO evolution of polycrystalline glacier ice, understood as the distribution of ${c}$-axes; that is, the distribution of (easy) slip-plane normals of grains, $n(\theta,\phi)$.
 
-| Polycrystal | Slip system |
+| Polycrystal | Grain slip system (${\bf n}={\bf c}$) |
 | :-: | :-: |
-| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:200px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slipplane.png){: style="width:170px"} |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png){: style="width:200px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slipplane.png){: style="width:170px"} |
 
 
 !!! note 
@@ -15,7 +15,7 @@ This tutorial focuses on modelling the CPO evolution of polycrystalline glacier 
 
 ### Lagrangian material parcel
 
-The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different modes of deformation/stress:
+The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different [modes of deformation](deformation-modes.md):
 
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center){: style="width:620px"}
 

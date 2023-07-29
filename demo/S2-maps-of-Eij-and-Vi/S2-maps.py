@@ -18,9 +18,9 @@ import scipy.special as sp
 from matplotlib.ticker import LogFormatter 
 
 MAKE_FRAME_Eij = 1
-MAKE_FRAME_vi  = 1
+MAKE_FRAME_vi  = 0
 
-MAKE_GIFS = 0
+MAKE_GIFS = 1
 
 transparent = True
 
@@ -30,7 +30,7 @@ f = 2
 Nt = f*40 # Number of time steps
 dt = 1/f*0.0782404601085629 # Time-step size (gives a vertical strain of -0.98 for experiment "uc_zz")
 ugrad = np.diag([0.5, 0.5, -1.0]) # Uniaxial compression along z
-if 0: # debug, off angle compression
+if 0: # debug, off-angle compression
     rotmat = R.from_rotvec(np.pi/4 * np.array([1, 0, 0])).as_matrix()
     ugrad = np.matmul(rotmat,np.matmul(ugrad,rotmat.T))
 eps = (ugrad+np.transpose(ugrad))/2 # Symmetric part (strain-rate)
