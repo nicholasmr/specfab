@@ -50,15 +50,15 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-structuretensors/">Structure tensors</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotation</a>
-                  </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Idealized states</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#unidirectional">Unidirectional</a>
+    <li class="toctree-l2"><a class="reference internal" href="#unidirectional-distribution">Unidirectional distribution</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#planar">Planar</a>
+    <li class="toctree-l2"><a class="reference internal" href="#planar-and-circle-distribution">Planar and circle distribution</a>
     </li>
     </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotation</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plotting</a>
                   </li>
@@ -123,20 +123,51 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="idealized-cpos">Idealized CPOs</h1>
-<h2 id="unidirectional">Unidirectional</h2>
+<p>Idealized CPO states where crystallographic axes are </p>
+<ul>
+<li>perfectly aligned (:= unidirectional CPO), </li>
+<li>perfectly distributed in a plane, i.e. on a great circle (:= planar CPO),</li>
+<li>perfectly distributed on a small circle (:= circle CPO),</li>
+</ul>
+<p>can be expanded in terms of spherical harmonics by using the sifting property of the delta function, <span class="arithmatex">\(\delta({\hat {\bf r}})\)</span>.</p>
+<h2 id="unidirectional-distribution">Unidirectional distribution</h2>
+<p>Consider the case where grains are perfectly aligned with <span class="arithmatex">\(\hat{{\bf v}}\)</span> such that <span class="arithmatex">\(n({\hat {\bf r}}) = \delta({\hat {\bf r}}-{\hat {\bf v}})\)</span>.
+The corresponding expansion coefficients follow from the usual overlap integral:</p>
 <div class="arithmatex">\[
-u_l^m = \int_{S^2} \delta(\hat{{\bf r}}-\hat{{\bf z}}) (Y_l^m(\hat{{\bf r}}))^* \,\mathrm{d}\Omega
+n_l^m 
+= \int_{S^2} \delta(\hat{{\bf r}}-\hat{{\bf v}}) (Y_l^m(\hat{{\bf v}}))^* \,\mathrm{d}\Omega
+= (Y_l^m(\hat{{\bf v}}))^*
+.
 \]</div>
-<h2 id="planar">Planar</h2>
+<p>The figure below shows the resulting unidirectional distribution, truncated at <span class="arithmatex">\(L=8\)</span>, where the white area represents the lowest-order CPO state space given by the normalized components <span class="arithmatex">\(\hat{n}_2^0 = n_2^0/n_0^0\)</span> and <span class="arithmatex">\(\hat{n}_4^0 = n_4^0/n_0^0\)</span>:</p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/state-space-validation/ice/state-space-ideal.png#center" style="width:570px" /></p>
+<p>The code below demonstrates how to generate the distribution with specfab.</p>
+<pre><code class="language-python">import numpy as np
+from specfabpy import specfabpy as sf
+lm, nlm_len = sf.init(8) 
+
+v = [0,0,1] # symmetry axis of distribution 
+colat = 0 # 0 = unidirectional distribution, pi/2 = planar distribution, and anything in between is a small circle distribution
+nlm = sf.nlm_ideal(v, colat) # nlm for l &lt;= 8 (higher-order coefficients not calculated)
+</code></pre>
+<h2 id="planar-and-circle-distribution">Planar and circle distribution</h2>
+<p>Planar and circle distributions follow from averaging the delta function over a desired co-latitude <span class="arithmatex">\(\theta\)</span> (i.e. the co-latitude where <span class="arithmatex">\(n(\hat{{\bf r}})\)</span> should be sharply defined), in which case all zonal structure vanishes (<span class="arithmatex">\(m\neq 0\)</span> components vanish) and we are left with</p>
 <div class="arithmatex">\[
-p_l^m = \int_{S^2} \delta(\hat{{\bf r}}-\hat{{\bf z}}) (Y_l^m(\hat{{\bf r}}))^* \,\mathrm{d}\Omega
+n_l^m(\theta) = 
+\begin{cases}
+Y_l^0(\theta, \phi=0) \qquad\text{if}\quad m=0\\
+0 \qquad\qquad\qquad\quad \text{if} \quad m\neq 0
+\end{cases}
+.
 \]</div>
+<p>Here, <span class="arithmatex">\(\hat{{\bf v}}\)</span> is to be understood as the rotational symmetry axis of <span class="arithmatex">\(n(\hat{{\bf r}})\)</span> and the co-latitude is defined w.r.t <span class="arithmatex">\(\hat{{\bf v}}\)</span> (not <span class="arithmatex">\(\hat{{\bf z}}\)</span>).
+The above figure also shows the resulting <span class="arithmatex">\(n(\hat{{\bf r}})\)</span> for different <span class="arithmatex">\(\theta\)</span>, calculated using the same code as above but for nonzero <code>colat</code>.</p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../cpo-rotation/" class="btn btn-neutral float-left" title="Rotation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../cpo-plot/" class="btn btn-neutral float-right" title="Plotting">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../cpo-structuretensors/" class="btn btn-neutral float-left" title="Structure tensors"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../cpo-rotation/" class="btn btn-neutral float-right" title="Rotation">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -159,10 +190,10 @@ p_l^m = \int_{S^2} \delta(\hat{{\bf r}}-\hat{{\bf z}}) (Y_l^m(\hat{{\bf r}}))^* 
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../cpo-rotation/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../cpo-structuretensors/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../cpo-plot/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../cpo-rotation/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

@@ -50,9 +50,9 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-structuretensors/">Structure tensors</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotation</a>
-                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-idealized/">Idealized states</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotation</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plotting</a>
                   </li>
@@ -232,7 +232,7 @@ To overcome this, a simple empirical correlation exists that allows determining 
 \]</div>
 <p>and <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span> only on <span class="arithmatex">\(\hat{n}_2^0\)</span> and <span class="arithmatex">\(\hat{n}_4^0 = n_4^0/n_0^0\)</span> (not shown).
 The figure below shows the empirical correlation between these two components based on ice-core samples.</p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/state-space-validation/ice/nhat40_empcorr_ice.png" style="width:570px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/state-space-validation/ice/state-space-empcorr.png" style="width:570px" /></p>
 <p>Thus, if <span class="arithmatex">\(\hat{n}_2^0\)</span> is extracted from <span class="arithmatex">\(\langle c_i c_j\rangle\)</span> in this frame, <span class="arithmatex">\(\hat{n}_4^0\)</span> can be derived and hence <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span> constructed.
 To pose the CPO in the original, unrotated eigenframe (<span class="arithmatex">\({\bf m}_1, {\bf m}_2, {\bf z}\)</span>), the resulting expansion series is rotated back.</p>
 <h3 id="code-example">Code example</h3>
