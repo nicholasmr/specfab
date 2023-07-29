@@ -53,7 +53,7 @@ legkwargs = {'handlelength':1.4, 'framealpha':1.0, 'fancybox':False, 'columnspac
 
 scale = 4.0
 fig = plt.figure(figsize=(1.3*scale,0.9*scale))
-plt.subplots_adjust(left=0.12, right=0.99, top=0.98, bottom=0.13)
+plt.subplots_adjust(left=0.12, right=0.99, top=0.98, bottom=0.15)
 ax = plt.gca()
 xlims, ylims = [-1.45,2.65], [-1.4,3.5]
 sc = np.diff(ylims)/np.diff(xlims)
@@ -174,9 +174,9 @@ if 1:
     lvlmax = 1.42
     ODF_plots = (\
         {'nlm':nlm_ideal[:,I[0]], 'title':r'$\theta=\SI{%i}{\degree}$'%(np.rad2deg(thetavec[I[0]])), 'axloc':(0.83, 0.56), 'darr':arr(-90), 'lvlmax':lvlmax}, \
-        {'nlm':nlm_ideal[:,I[1]], 'title':r'$\theta=\SI{%i}{\degree}$'%(np.rad2deg(thetavec[I[1]])), 'axloc':(0.70, 0.16), 'darr':arr(-90), 'lvlmax':lvlmax}, \
-        {'nlm':nlm_ideal[:,I[2]], 'title':r'$\theta=\SI{%i}{\degree}$'%(np.rad2deg(thetavec[I[2]])), 'axloc':(0.47, 0.29), 'darr':arr(+90), 'lvlmax':lvlmax}, \
-        {'nlm':nlm_ideal[:,I[3]], 'title':r'$\theta=\SI{%i}{\degree}$'%(np.rad2deg(thetavec[I[3]])), 'axloc':(0.12, 0.23), 'darr':arr(-90), 'lvlmax':lvlmax}, \
+        {'nlm':nlm_ideal[:,I[1]], 'title':r'$\theta=\SI{%i}{\degree}$'%(np.rad2deg(thetavec[I[1]])), 'axloc':(0.70, 0.17), 'darr':arr(-90), 'lvlmax':lvlmax}, \
+        {'nlm':nlm_ideal[:,I[2]], 'title':r'$\theta=\SI{%i}{\degree}$'%(np.rad2deg(thetavec[I[2]])), 'axloc':(0.47, 0.31), 'darr':arr(+90), 'lvlmax':lvlmax}, \
+        {'nlm':nlm_ideal[:,I[3]], 'title':r'$\theta=\SI{%i}{\degree}$'%(np.rad2deg(thetavec[I[3]])), 'axloc':(0.12, 0.24), 'darr':arr(-90), 'lvlmax':lvlmax}, \
     )
 
     for ODF in ODF_plots:
