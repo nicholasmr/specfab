@@ -52,6 +52,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotation</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-idealized/">Idealized states</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plotting</a>
                   </li>
               </ul>
@@ -154,7 +156,7 @@ V^2 = \frac{\omega^2}{k^2}
 <p>is the wave velocity squared.</p>
 <div class="admonition note">
 <p class="admonition-title">Homogenization</p>
-<p>The problem may be closed by approximating <span class="arithmatex">\(\hat{{\bf Q}}\)</span> by the grain-averaged acoustic tensor, subject to a  linear combination of the Voigt and Reuss homogenization schemes:</p>
+<p>The problem may be closed by approximating <span class="arithmatex">\(\hat{{\bf Q}}\)</span> as the grain-averaged acoustic tensor, subject to a  linear combination of the Voigt and Reuss homogenization schemes:</p>
 <div class="arithmatex">\[
 \hat{{\bf Q}} = (1-\alpha) \langle\hat{{\bf Q}}'_{\mathrm{Reuss}}\rangle + \alpha \langle \hat{{\bf Q}}'_{\mathrm{Voigt}}\rangle
 .
@@ -210,7 +212,7 @@ Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, Lame_grain, rho, theta,phi) # phase
 </code></pre>
 <div class="admonition tip">
 <p class="admonition-title">Evolving CPO</p>
-<p>The below animation shows directional P- and S-wave velocities for a CPO evolving under uniaxial compression along <span class="arithmatex">\({\hat {\bf z}}\)</span>, relative to an isotropic CPO, when subject to <a href="../cpo-dynamics-tranisotropic/">lattice rotation</a>.</p>
+<p>The below animation shows directional P- and S-wave velocities for a CPO evolving under <a href="../deformation-modes/">uniaxial compression</a> along <span class="arithmatex">\({\hat {\bf z}}\)</span>, relative to an isotropic CPO, when subject to <a href="../cpo-dynamics-tranisotropic/">lattice rotation</a>.</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/S2-maps-of-Eij-and-Vi/S2-vi.gif" style="width:660px" /></p>
 </div>
 <h2 id="orthotropic-grains">Orthotropic grains</h2>

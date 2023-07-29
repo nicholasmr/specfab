@@ -52,6 +52,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotation</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-idealized/">Idealized states</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plotting</a>
                   </li>
               </ul>
@@ -145,9 +147,9 @@ strain-rate and deviatoric stress tensors, respectively,
 the <em>directional strain-rate enhancement factors</em> <span class="arithmatex">\(E_{ij}\)</span> are defined as the <span class="arithmatex">\(({\bf e}_i, {\bf e}_j)\)</span>-components of <span class="arithmatex">\({\bf D}\)</span> relative to that of the rheology in the isotropic limit (isotropic CPO):</p>
 <div class="arithmatex">\[ 
 E_{ij} = \frac{
-{\bf e}_i \cdot {\bf D}({\bf S}({\bf e}_i, {\bf e}_j)) \cdot {\bf e}_j 
+{\bf e}_i \cdot {\bf D}({\bf S}) \cdot {\bf e}_j 
 }{
-{\bf e}_i \cdot {\bf D}_{\mathrm{iso}}({\bf S}({\bf e}_i, {\bf e}_j)) \cdot {\bf e}_j 
+{\bf e}_i \cdot {\bf D}_{\mathrm{iso}}({\bf S}) \cdot {\bf e}_j 
 }
 ,
  \qquad(1)
@@ -169,10 +171,8 @@ E_{ij} = \frac{
 <li>
 <p><span class="arithmatex">\({E_{12}}\)</span> is the <span class="arithmatex">\({\bf e}_{1}\)</span>&mdash;<span class="arithmatex">\({\bf e}_{2}\)</span> shear strain-rate enhancement when subject to shear in the <span class="arithmatex">\({\bf e}_{1}\)</span>&mdash;<span class="arithmatex">\({\bf e}_{2}\)</span> plane</p>
 </li>
-<li>
-<p>...and so on.</p>
-</li>
 </ul>
+<p>and so on.</p>
 <div class="admonition note">
 <p class="admonition-title">Hard or soft</p>
 <p><span class="arithmatex">\(E_{ij}&gt;1\)</span> implies the material response is <em>softened</em> due to fabric (compared to an isotropic CPO), whereas <span class="arithmatex">\(E_{ij}&lt;1\)</span> implies <em>hardening</em>.</p>
@@ -224,11 +224,11 @@ E_{ij} = \frac{
 \qquad \text{(Taylor homogenization)}
 \]</div>
 <p>where <span class="arithmatex">\(\langle \cdot \rangle^{-1}\)</span> inverts the tensorial relationship.</p>
-<p>Considering a linear combination of the two homogenizations</p>
+<p>If a linear combination of the two homogenizations is considered</p>
 <div class="arithmatex">\[
 {\bf D} = (1-\alpha){\bf D}^{\mathrm{Sachs}} + {\alpha} {\bf D}^{\mathrm{Taylor}} ,
 \]</div>
-<p>the enhancement-factors (1) also reduces to a linear combination</p>
+<p>equation (1) becomes</p>
 <div class="arithmatex">\[ 
 E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}}
 ,
@@ -286,7 +286,7 @@ Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # Eij=(E11,E2
 </code></pre>
 <div class="admonition tip">
 <p class="admonition-title">Evolving CPO</p>
-<p>The below animation shows the directional enhancement factors for a CPO evolving under uniaxial compression along <span class="arithmatex">\({\hat {\bf z}}\)</span> when subject to <a href="../cpo-dynamics-tranisotropic/">lattice rotation</a>.
+<p>The below animation shows the directional enhancement factors for a CPO evolving under <a href="../deformation-modes/">uniaxial compression</a> along <span class="arithmatex">\({\hat {\bf z}}\)</span> when subject to <a href="../cpo-dynamics-tranisotropic/">lattice rotation</a>.
 Enhancement factors are calculated w.r.t. the spherical coordinate basis vectors <span class="arithmatex">\(({\bf e}_1, {\bf e}_2, {\bf e}_3) = ({\hat{\bf r}},{\hat{\boldsymbol \theta}},{\hat{\boldsymbol \phi}})\)</span>.</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/S2-maps-of-Eij-and-Vi/S2-Eij.gif" style="width:660px" /></p>
 </div>
