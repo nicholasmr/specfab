@@ -187,7 +187,10 @@ In this case, the grain-averaged permitivity is simply </p>
 \]</div>
 <p>where <span class="arithmatex">\(\langle {\bf m}'^2 \rangle\)</span> is the <a href="../cpo-structuretensors/">second-order structure tensor</a> (aka <span class="arithmatex">\({\bf a}^{(2)}\)</span>).</p>
 <h3 id="example-for-glacier-ice">Example for glacier ice</h3>
-<p>Implemented not finished (work in progress).</p>
+<p>To be documented.</p>
+<!--
+
+
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfabpy as sf
 lm, nlm_len = sf.init(2) # L=2 is sufficient here
@@ -209,6 +212,9 @@ theta, phi = np.deg2rad([90,70,]), np.deg2rad([0,10,]) # wave-vector directions 
 # Calculate phase velocities
 Vi = sf.Vi_electromagnetic_tranisotropic(nlm, eps_grain, mu, theta,phi) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:]
 </code></pre>
+
+-->
+
 <h2 id="orthotropic-grains">Orthotropic grains</h2>
 <p>Not yet supported.</p>
               
