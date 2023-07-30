@@ -122,7 +122,7 @@ class Lutz_etal_2022:
         caxes = np.array([ [np.cos(p)*np.sin(t), np.sin(p)*np.sin(t), np.cos(t)] for t, p in zip(qcolat,qlon) ])
         if weighted: a4 = np.array([ area[ii]*np.einsum('i,j,k,l',c,c,c,c) for ii,c in enumerate(caxes)]).sum(axis=0)
         else:        a4 = np.array([          np.einsum('i,j,k,l',c,c,c,c) for ii,c in enumerate(caxes)]).mean(axis=0)
-        nlm[:16] = sf.a4_to_nlm(a4)
+        nlm[:sf.L4len] = sf.a4_to_nlm(a4)
         
         return (nlm, qlat,qlon)
     

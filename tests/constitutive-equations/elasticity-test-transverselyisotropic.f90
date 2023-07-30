@@ -147,7 +147,7 @@ program demo
     a2tensor(2,2) = 0.5 
     a2tensor(3,3) = 0.5
 !    a2tensor(3,3) = 1
-    nlm(1:6) = a2_to_nlm(a2tensor)
+    nlm(:nlm_lenvec(2)) = a2_to_nlm(a2tensor)
 
     print *, '::: lam,mu,Ei=1 :::'
     call test_Q(nlm, 1.0d0,1.0d0,1.0d0,1.0d0,1.0d0) 

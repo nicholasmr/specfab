@@ -4,12 +4,10 @@
 
 module deformationmodes 
 
+    use header
     use tensorproducts
 
     implicit none 
-
-    integer, parameter, private       :: dp = 8 ! Default precision
-    real(kind=dp), parameter, private :: identity(3,3) = reshape([1.0d0,0.0d0,0.0d0, 0.0d0,1.0d0,0.0d0, 0.0d0,0.0d0,1.0d0], [3,3])
         
 contains      
 

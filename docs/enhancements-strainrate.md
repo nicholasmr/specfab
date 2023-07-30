@@ -126,7 +126,7 @@ The below example for glacier ice shows how bulk $E_{ij}$ may be calculated give
 ```python
 import numpy as np
 from specfabpy import specfabpy as sf
-lm, nlm_len = sf.init(4) # L=4 truncation is sufficient in this case
+lm, nlm_len = sf.init(8) 
 
 ### Make synthetic ODF
 # Unidirectional CPO: all c-axes aligned in z-direction (ODF = deltafunc(r-m))
@@ -134,10 +134,10 @@ m = np.array([0,0,1])
 nlm = np.zeros((nlm_len), dtype=np.complex64) # Array of expansion coefficients
 if True: # use a2
     a2 = np.einsum('i,j', m,m) # Outer product
-    nlm[:6] = sf.a2_to_nlm(a2) # Derive corresponding expansion coefficients
+    nlm[:sf.L2len] = sf.a2_to_nlm(a2) # Derive corresponding expansion coefficients
 else: # use a4
     a4 = np.einsum('i,j,k,l', m,m,m,m) # Outer product
-    nlm[:15] = sf.a4_to_nlm(a4) # Derive corresponding expansion coefficients
+    nlm[:sf.L4len] = sf.a4_to_nlm(a4) # Derive corresponding expansion coefficients
 
 ### Coordinate basis vectors for enhancement-factor calculations
 (e1,e2,e3, eigvals) = sf.frame(nlm, 'e') # a2 eigen basis

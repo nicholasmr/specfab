@@ -15,14 +15,15 @@ from specfabpy import specfabpy as sf
 # Initial, unrotated state
 #----------------------
 
-lm, nlm_len = sf.init(6)
+L = 6
+lm, nlm_len = sf.init(L)
 nlm_0 = np.zeros((nlm_len), dtype=np.complex64) # The expansion coefficients
 
 # Reference fabric to be rotated
-nlm_0[0]  = 1/np.sqrt(4*np.pi) # normalized
-nlm_0[3]  = 0.5 # n20
-nlm_0[10] = 0.5 # n40
-nlm_0[21] = 0.5 # n60
+nlm_0[0] = 1/np.sqrt(4*np.pi) # normalized
+nlm_0[sf.I20] = 0.5 # n20
+nlm_0[sf.I40] = 0.5 # n40
+nlm_0[sf.I60] = 0.5 # n60
 
 # Structure tensors of reference fabric
 a2_0 = sf.a2(nlm_0)
@@ -69,9 +70,9 @@ a6 = np.einsum('oi,pj,qk,ijklmn,rl,sm,tn', Rh,Rh,Rh, a6, Rh,Rh,Rh)
 
 # Convert to nlm for comparing against wigner-D rotated version 
 nlm_a2, nlm_a4, nlm_a6 = np.zeros((nlm_len),dtype=np.complex64), np.zeros((nlm_len),dtype=np.complex64), np.zeros((nlm_len),dtype=np.complex64)
-nlm_a2[:6]  = sf.a2_to_nlm(a2) 
-nlm_a4[:15] = sf.a4_to_nlm(a4) 
-nlm_a6[:]   = sf.a6_to_nlm(a6) 
+nlm_a2[:sf.L2len] = sf.a2_to_nlm(a2) 
+nlm_a4[:sf.L4len] = sf.a4_to_nlm(a4) 
+nlm_a6[:sf.L6len] = sf.a6_to_nlm(a6) 
 
 #----------------------
 # Print error
@@ -80,21 +81,21 @@ nlm_a6[:]   = sf.a6_to_nlm(a6)
 np.set_printoptions(linewidth=400)
 
 print('\n--- Conversion error for a2_to_nlm() ---\n')
-I = 6
+I = sf.L2len
 print(nlm[:I])
 print(nlm_a2[:I])
 print('\nError (sum abs): ', np.sum(np.abs(nlm[:I]-nlm_a2[:I])))
 print('\nDouble check: error (sum abs) of nlm - a2_to_nlm(a2(nlm)): ', np.sum(np.abs(nlm[:I]-sf.a2_to_nlm(sf.a2(nlm))[:I])) )
 
 print('\n--- Conversion error for a4_to_nlm() ---\n')
-I = 15
+I = sf.L4len
 print(nlm[:I])
 print(nlm_a4[:I])
 print('\nError (sum abs): ', np.sum(np.abs(nlm[:I]-nlm_a4[:I])))
 print('\nDouble check: error (sum abs) of nlm - a4_to_nlm(a4(nlm)): ', np.sum(np.abs(nlm[:I]-sf.a4_to_nlm(sf.a4(nlm))[:I])) )
 
 print('\n--- Conversion error for a6_to_nlm() ---\n')
-I = nlm_len # test full state-vector 
+I = sf.L6len # test full state-vector 
 print(nlm[:I])
 print(nlm_a6[:I])
 print('\nError (sum abs): ', np.sum(np.abs(nlm[:I]-nlm_a6[:I])))

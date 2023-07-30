@@ -1,9 +1,10 @@
 ! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2023
 
-! Bulk polycrystalline homogenization schemes for transversely isotropic and ortotropic grains, both viscously and elastically.
+! Bulk polycrystalline homogenization schemes for transversely isotropic and orthotropic grains, both viscously and elastically.
 
 module homogenizations  
 
+    use header
     use tensorproducts
     use mandel
     use moments
@@ -12,14 +13,8 @@ module homogenizations
 
     implicit none 
 
-    integer, parameter, private :: dp = 8 ! Default precision
-!    integer, parameter :: identity(3,3) = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
-    real(kind=dp), parameter :: identity(3,3) = reshape([1.0d0,0.0d0,0.0d0, 0.0d0,1.0d0,0.0d0, 0.0d0,0.0d0,1.0d0], [3,3])
-    
-    ! Aux
-    real, parameter, private :: Pi = 3.141592653589793
     integer, private       :: Lcap
-    complex(kind=dp)       :: nlm_iso(1+5+9+13+17) ! nlm for L=8 is needed
+    complex(kind=dp)       :: nlm_iso(nlm_lenvec(8)) ! up to L=8 is needed
     real(kind=dp), private :: ev_c2_iso(3,3), ev_c4_iso(3,3,3,3), ev_c6_iso(3,3,3,3, 3,3), ev_c8_iso(3,3,3,3, 3,3,3,3) ! <c^k> for isotropic n(theta,phi)
     real(kind=dp), private :: ev_c4_iso_Mandel(6,6) 
         

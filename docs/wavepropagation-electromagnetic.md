@@ -83,7 +83,7 @@ mur = 1 # relative permeability of a single grain
 # c-axis number distribution (nlm) from second-order structure tensor (a2)
 p = np.array([0,0,1]) # preferred c-axis direction
 a2 = np.einsum('i,j', p,p) # a2 if ODF = deltafunc(r-p) 
-nlm[:] = sf.a2_to_nlm(a2) # l=2 expansion coefficients for corresponding ODF (a2 is normalized)
+nlm[:sf.L2len] = sf.a2_to_nlm(a2) # l<=2 expansion coefficients for corresponding normalized ODF
 
 # Propagation directions of interest
 theta, phi = np.deg2rad([90,70,]), np.deg2rad([0,10,]) # wave-vector directions (theta is colatitude, phi is longitude)

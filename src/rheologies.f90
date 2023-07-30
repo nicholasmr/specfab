@@ -15,13 +15,11 @@
 
 module rheologies
 
+    use header
     use tensorproducts
 
     implicit none 
 
-    integer, parameter, private       :: dp = 8 ! Default precision
-    real(kind=dp), parameter, private :: identity(3,3)  = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
-    
 contains      
 
     function powlawexp_fwd(n) result(expo)

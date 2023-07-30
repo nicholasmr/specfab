@@ -4,8 +4,8 @@ subroutine dndt_to_daidt(ddt_nlm, n00, da2dt, da4dt)
     real(kind=dp), intent(out)   :: da2dt(3,3), da4dt(3,3,3,3)
     complex(kind=dp)             :: ddt_n2m(-2:2), ddt_n4m(-4:4)
     
-    ddt_n2m = ddt_nlm(I_l2:(I_l4-1))
-    ddt_n4m = ddt_nlm(I_l4:(I_l6-1))
+    ddt_n2m = ddt_nlm(L2rng)
+    ddt_n4m = ddt_nlm(L4rng)
     
     da2dt = f_ev_c2(n00, ddt_n2m)          - f_ev_c2(n00, 0*ddt_n2m)            ! <c^> entries are *linear* combinations of n_l^m, allowing d/dt <c^2> to be calculated by substituting "d/dt n_l^m" for "n_l^m" in "<c^2>(n_l^m)" by removing the constant part(s).
     da4dt = f_ev_c4(n00, ddt_n2m, ddt_n4m) - f_ev_c4(n00, 0*ddt_n2m, 0*ddt_n4m) ! ...same reasoning as above
@@ -22,8 +22,8 @@ subroutine daidt_LATROT(eps, omg, a2, a4, da2dt, da4dt)
     real(kind=dp), intent(out) :: da2dt(3,3), da4dt(3,3,3,3)
     complex(kind=dp)           :: nlm(nlm_len), ddt_nlm(nlm_len)
     
-    nlm = 0.0
-    nlm(1:(I_l6-1)) = a4_to_nlm(a4) ! tensorial --> spectral, truncated at L=4
+    nlm = 0.0d0
+    nlm(:nlm_lenvec(4)) = a4_to_nlm(a4) ! tensorial --> spectral, truncated at L=4
     ddt_nlm = matmul(M_LROT(eps, omg, 1.0d0, 0.0d0), nlm) ! spectral evolution  --- d/dt nlm_i = M_ij nlm_j 
     call dndt_to_daidt(ddt_nlm, nlm(1), da2dt, da4dt) ! spectral --> tensorial 
 end
@@ -38,8 +38,8 @@ subroutine daidt_DDRX(tau, Gamma0, a2, a4, da2dt, da4dt)
     real(kind=dp), intent(out) :: da2dt(3,3), da4dt(3,3,3,3)
     complex(kind=dp)           :: nlm(nlm_len), ddt_nlm(nlm_len)
     
-    nlm = 0.0
-    nlm(1:(I_l6-1)) = a4_to_nlm(a4) ! tensorial --> spectral, truncated at L=4
+    nlm = 0.0d0
+    nlm(:nlm_lenvec(4)) = a4_to_nlm(a4) ! tensorial --> spectral, truncated at L=4
     ddt_nlm = Gamma0 * matmul(M_DDRX(nlm, tau), nlm) ! spectral evolution  --- d/dt nlm_i = M_ij nlm_j 
     call dndt_to_daidt(ddt_nlm, nlm(1) , da2dt, da4dt) ! spectral --> tensorial 
 end
@@ -54,8 +54,8 @@ subroutine daidt_REG(eps, a2, a4, da2dt, da4dt)
     real(kind=dp), intent(out) :: da2dt(3,3), da4dt(3,3,3,3)
     complex(kind=dp)           :: nlm(nlm_len), ddt_nlm(nlm_len)
     
-    nlm = 0.0
-    nlm(1:(I_l6-1)) = a4_to_nlm(a4) ! tensorial --> spectral, truncated at L=4
+    nlm = 0.0d0
+    nlm(:nlm_lenvec(4)) = a4_to_nlm(a4) ! tensorial --> spectral, truncated at L=4
     ddt_nlm = matmul(M_REG(eps), nlm) ! spectral evolution  --- d/dt nlm_i = M_ij nlm_j  
     call dndt_to_daidt(ddt_nlm, nlm(1), da2dt, da4dt) ! spectral --> tensorial 
 end
@@ -70,12 +70,12 @@ function a6_CBT(a2,a4)
     real(kind=dp)             :: a6_CBT(3,3,3,3,3,3)
     complex(kind=dp)          :: nlm(nlm_len), n00, n2m(-2:2), n4m(-4:4), n6m(-6:6)
         
-    nlm = 0.0
-    nlm(1:(I_l6-1)) = a4_to_nlm(a4) ! Reconstruct n_l^m
+    nlm = 0.0d0
+    nlm(:nlm_lenvec(4)) = a4_to_nlm(a4) ! Reconstruct n_l^m
 
     n00 = nlm(1)
-    n2m = nlm(I_l2:(I_l4-1))
-    n4m = nlm(I_l4:(I_l6-1))
+    n2m = nlm(L2rng)
+    n4m = nlm(L4rng)
     n6m = 0 
     
     a6_CBT = f_ev_c6(n00, n2m, n4m, n6m) ! Calculate a^(6) given the spectral truncation n_l^m = 0 for l>4

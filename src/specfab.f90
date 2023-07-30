@@ -4,6 +4,7 @@ module specfab
 
     ! Top level module that includes all functionalities (all submodules).
 
+    use header
     use tensorproducts
     use mandel
     use moments
@@ -19,17 +20,10 @@ module specfab
 
     implicit none 
 
-    integer, parameter, private :: dp = 8 ! Default precision
-    integer, private :: ll, mm ! Loop indices
-    
     ! Distribution expansion series: n(theta,phi) = sum_{l,m}^{Lcap,:} n_l^m Y_l^m(theta,phi) 
     ! where "nlm" vector := n_l^m = (n_0^0, n_2^-2, n_2^-1, n_2^0, n_2^1, n_2^2, n_4^-4, ... ) 
     integer, private   :: Lcap    ! Truncation "L" of expansion series (internal copy of what was passed to the init routine).
     integer            :: nlm_len ! Total number of expansion coefficients (i.e. DOFs)
-    integer, parameter :: nlm_lenvec(0:Lcap__max) = [((ll+1)*(ll+2)/2, ll=0, Lcap__max, 1)] ! nlm length for a given Lcap: sum_{l=0}^L (2*l+1) **for even l** = sum_{l=0}^{L/2} (4*l+1) = (L+1)*(L+2)/2
-    
-    ! (l,m) vector, etc. (nlm_lenmax set by dynamics.f90)
-    integer, parameter :: lm(2,nlm_lenmax) = reshape([( (ll,mm, mm=-ll,ll), ll=0,  Lcap__max,2)], [2,nlm_lenmax]) ! These are the (l,m) values corresponding to the coefficients in "nlm".
 
 contains      
 

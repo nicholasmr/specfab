@@ -60,12 +60,13 @@ for expr in experiments:
 #--------------------
 
 m = [0,0,1]
+Il24 = [sf.I20, sf.I40] # l=2,4, m=0 coefs
 
 # delta distributed
-n20_unidir, n40_unidir = np.real(sf.nlm_ideal(m, 0))[[3,10]]/normfac
+n20_unidir, n40_unidir = np.real(sf.nlm_ideal(m, 0, L))[Il24]/normfac
 
 # x--y planar distributed
-n20_planar, n40_planar = np.real(sf.nlm_ideal(m, np.pi/2))[[3,10]]/normfac    
+n20_planar, n40_planar = np.real(sf.nlm_ideal(m, np.pi/2, L))[Il24]/normfac    
 
 #--------------------
 # Polynomial-fitted correlation curve used by Gerber et al. (2022)
@@ -101,9 +102,9 @@ y_IBOF = y_corr * 0 # init
 
 for ii, x in enumerate(x_corr):
     nlm_hat = np.zeros((nlm_len), dtype=np.complex128)
-    nlm_hat[[0,3]] = [1, x]
+    nlm_hat[[0,sf.I20]] = [1, x]
     nlm_ = sf.a4_to_nlm(sf.a4_IBOF(sf.a2(nlm_hat*1/np.sqrt(4*np.pi))))
-    y_IBOF[ii] = np.real(nlm_[10]/nlm_[0]) # nhat40 
+    y_IBOF[ii] = np.real(nlm_[sf.I40]/nlm_[0]) # nhat40 
 
 #--------------------
 # Construct plot
@@ -136,22 +137,9 @@ y = np.linspace(ylims[0],ylims[1],RESY)
 
 ### Determine valid subspace (valid eigenvalues)
 
-validregion = np.zeros((RESY, RESX)) # 0 = invalid, 1 = valid 
-validregion_lowerbound = np.zeros((RESX)) # points along lower boundary, used for colouring the background (shading) of subspace with ~circle fabrics.
-print('Determining subspace of valid eigenvalues...', end='')
-for xii, x_ in enumerate(x):
-    for yii, y_ in enumerate(y): 
-        nlm_ = np.zeros((nlm_len), dtype=np.complex64) # The expansion coefficients
-        nlm_[0], nlm_[3], nlm_[10] = 1, x_, y_
-        a2_ = sf.a2(nlm_) # diagional
-        a2_eigvals = np.sort(np.diag(a2_))
-        Q1,Q2,Q3,Q4,Q5,Q6, a4_eigvals = sf.a4_eigentensors(nlm_)
-        isvalid_a2_eig = (np.amin(a2_eigvals)>=0) and (np.amax(a2_eigvals)<=1)  
-        isvalid_a4_eig = (np.amin(a4_eigvals)>=0) and (np.amax(a4_eigvals)<=1)
-        validregion[yii,xii] = isvalid_a2_eig and isvalid_a4_eig
-    validregion_lowerbound[xii] = y[np.argmax(validregion[:,xii])]
-            
-print('done')
+print('Determining subspace of valid eigenvalues...')
+xv, yv = np.meshgrid(x, y, indexing='xy')
+validregion = np.reshape(sf.nlm_isvalid(xv.flatten(), yv.flatten()), (RESY, RESX))
 
 ### Determine subspace shadings
 
@@ -276,7 +264,7 @@ if 1:
         h = axin.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), levels=lvls, extend=('max' if lvls[0]==0.0 else 'both'), cmap='Greys', nchunk=5) # "nchunk" argument must be larger than 0 for constant-ODF (e.g. isotropy) is plotted correctly.
 
         # Arrow to ODF state
-        n20_, n40_ = np.real(nlm[3])/normfac, np.real(nlm[10])/normfac
+        n20_, n40_ = np.real(nlm[sf.I20])/normfac, np.real(nlm[sf.I40])/normfac
         ax.annotate("", xy=(n20_, n40_), xycoords='data', \
                         xytext=(n20_+ODF['darr'][0]/normfac, n40_+sc**2*ODF['darr'][1]/normfac), textcoords='data', \
                         arrowprops=dict(arrowstyle="-|>", connectionstyle="arc3", linewidth=1.5, edgecolor='0.2', facecolor='0.2'),zorder=20)            

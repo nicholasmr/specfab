@@ -28,7 +28,7 @@ if DEBUG:
 else:
     RESX = RESY = 5*100
 
-L=8
+L = 8
 lm, nlm_len = sf.init(L) 
 
 #--------------------
@@ -62,40 +62,23 @@ y = np.linspace(ylims[0],ylims[1],RESY)
 
 ### Determine valid subspace (valid eigenvalues)
 
-validregion = np.zeros((RESY, RESX)) # 0 = invalid, 1 = valid 
-validregion_lowerbound = np.zeros((RESX)) # points along lower boundary, used for colouring the background (shading) of subspace with ~circle fabrics.
-print('Determining subspace of valid eigenvalues...', end='')
-for xii, x_ in enumerate(x):
-    for yii, y_ in enumerate(y): 
-        nlm_ = np.zeros((nlm_len), dtype=np.complex64) # The expansion coefficients
-        nlm_[0], nlm_[3], nlm_[10] = 1, x_, y_
-        a2_ = sf.a2(nlm_) # diagional
-        a2_eigvals = np.sort(np.diag(a2_))
-        Q1,Q2,Q3,Q4,Q5,Q6, a4_eigvals = sf.a4_eigentensors(nlm_)
-        isvalid_a2_eig = (np.amin(a2_eigvals)>=0) and (np.amax(a2_eigvals)<=1)  
-        isvalid_a4_eig = (np.amin(a4_eigvals)>=0) and (np.amax(a4_eigvals)<=1)
-        validregion[yii,xii] = isvalid_a2_eig and isvalid_a4_eig
-    validregion_lowerbound[xii] = y[np.argmax(validregion[:,xii])]
-            
-print('done')
+print('Determining subspace of valid eigenvalues...')
+xv, yv = np.meshgrid(x, y, indexing='xy')
+validregion = np.reshape(sf.nlm_isvalid(xv.flatten(), yv.flatten()), (RESY, RESX))
 
 ### Determine subspace shadings
 
 imdat = np.empty((RESY, RESX, 4), dtype=float) # color (0,1,2) and alpha (3)
-
-print('Determining shading regions for different fabric types...', end='')
+imdat[:,:,0:-1] = [1.0]*3 # OK
+            
+print('Determining shading regions for different fabric types...')
 for xii, x_ in enumerate(x):
     for yii, y_ in enumerate(y): 
-        if validregion[yii,xii]:
-#            distnn = np.amin( np.sqrt(np.real((x_-x_corr[I])**2 + (1/sc*(y_-y_corr[I]))**2)) ) # distance from model-line points
-#            var, expo = 1e-3, 6
-#            imdat[yii,xii,-1] = 1 #np.exp(-distnn**expo/var) # set alpha depending on distance to model lines/points
-            imdat[yii,xii,0:-1] = [1]*3 # OK
-        else: 
-            imdat[yii,xii,0:-1] = [0.85]*3 # bad 
-            imdat[yii,xii,-1] = 1
+        if not validregion[yii,xii]: 
+            imdat[yii,xii,0:-1] = [0.85]*3
+            imdat[yii,xii,-1] = 1.0
 
-print('done')
+print('Plotting...')
 
 # Plot valid/invalid subspaces and fabric-type shadings within valid subspace
 imdat0 = np.ones((RESY, RESX, 4), dtype=float) # color (0,1,2) and alpha (3)
@@ -110,9 +93,9 @@ thetavec = np.linspace(0, np.pi/2, N)
 nlm_ideal = np.zeros((nlm_len, N))
 n20_ideal, n40_ideal = np.zeros(N), np.zeros(N)
 for ii, colat in enumerate(thetavec):
-    nlm_ideal[:,ii] = np.real(sf.nlm_ideal(m, colat))
-    n20_ideal[ii] = nlm_ideal[3,ii]/normfac
-    n40_ideal[ii] = nlm_ideal[10,ii]/normfac
+    nlm_ideal[:,ii] = np.real(sf.nlm_ideal(m, colat, L))
+    n20_ideal[ii] = nlm_ideal[sf.I20,ii]/normfac
+    n40_ideal[ii] = nlm_ideal[sf.I40,ii]/normfac
 
 n20_unidir, n40_unidir = n20_ideal[0], n40_ideal[0]   # delta distributed
 n20_planar, n40_planar = n20_ideal[-1], n40_ideal[-1] # x--y planar distributed
@@ -171,12 +154,14 @@ if 1:
     arr = lambda ang: arrmag*np.array([np.cos(np.deg2rad(ang)),np.sin(np.deg2rad(ang))])
     n00 = 1/np.sqrt(4*np.pi)
     I = [0, int(N/4*1.15), int(N/2), -1]
-    lvlmax = 1.42
+    lvlmax = 1.0
+    lvlmin = 0.2
+    title = lambda Ii: r'$\theta=\SI{%i}{\degree}$'%(np.rad2deg(thetavec[Ii]))
     ODF_plots = (\
-        {'nlm':nlm_ideal[:,I[0]], 'title':r'$\theta=\SI{%i}{\degree}$'%(np.rad2deg(thetavec[I[0]])), 'axloc':(0.83, 0.56), 'darr':arr(-90), 'lvlmax':lvlmax}, \
-        {'nlm':nlm_ideal[:,I[1]], 'title':r'$\theta=\SI{%i}{\degree}$'%(np.rad2deg(thetavec[I[1]])), 'axloc':(0.70, 0.17), 'darr':arr(-90), 'lvlmax':lvlmax}, \
-        {'nlm':nlm_ideal[:,I[2]], 'title':r'$\theta=\SI{%i}{\degree}$'%(np.rad2deg(thetavec[I[2]])), 'axloc':(0.47, 0.31), 'darr':arr(+90), 'lvlmax':lvlmax}, \
-        {'nlm':nlm_ideal[:,I[3]], 'title':r'$\theta=\SI{%i}{\degree}$'%(np.rad2deg(thetavec[I[3]])), 'axloc':(0.12, 0.24), 'darr':arr(-90), 'lvlmax':lvlmax}, \
+        {'nlm':nlm_ideal[:,I[0]], 'title':title(I[0]), 'axloc':(0.83, 0.56), 'darr':arr(-90), 'lvlmax':lvlmax, 'lvlmin':lvlmin*1.8}, \
+        {'nlm':nlm_ideal[:,I[1]], 'title':title(I[1]), 'axloc':(0.70, 0.17), 'darr':arr(-90), 'lvlmax':lvlmax, 'lvlmin':lvlmin}, \
+        {'nlm':nlm_ideal[:,I[2]], 'title':title(I[2]), 'axloc':(0.47, 0.31), 'darr':arr(+90), 'lvlmax':lvlmax, 'lvlmin':lvlmin}, \
+        {'nlm':nlm_ideal[:,I[3]], 'title':title(I[3]), 'axloc':(0.12, 0.24), 'darr':arr(-90), 'lvlmax':lvlmax, 'lvlmin':lvlmin}, \
     )
 
     for ODF in ODF_plots:
@@ -186,11 +171,13 @@ if 1:
         axin.set_global()
         
         nlm = ODF['nlm']
-        lvls = np.linspace(0.0,ODF['lvlmax'],6)
+        lvls = np.linspace(ODF['lvlmin'], ODF['lvlmax'], 8)
+        cmap = cmr.get_sub_cmap('Greys', 0.25, 1) # don't include pure white.
+        cmap.set_under('w')
     
         F, lon,lat = discretize_ODF(nlm, lm)
         F[F<0] = 0 # fix numerical/truncation errors
-        h = axin.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), levels=lvls, extend=('max' if lvls[0]==0.0 else 'both'), cmap='Greys', nchunk=5) # "nchunk" argument must be larger than 0 for constant-ODF (e.g. isotropy) is plotted correctly.
+        h = axin.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), levels=lvls, extend=('max' if lvls[0]==0.0 else 'both'), cmap=cmap, nchunk=5) 
 
         # Arrow to ODF state
         n20_, n40_ = np.real(nlm[3])/normfac, np.real(nlm[10])/normfac
@@ -203,7 +190,7 @@ if 1:
         gl = axin.gridlines(crs=ccrs.PlateCarree(), **kwargs_gridlines)
         gl.xlocator = mticker.FixedLocator(np.array([-135, -90, -45, 0, 90, 45, 135, 180]))
 
-        axin.set_title(ODF['title'], fontsize=FS-1)
+        axin.set_title(ODF['title'], fontsize=FS)
 
 ### Save figure
 

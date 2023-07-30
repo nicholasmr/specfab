@@ -2,9 +2,8 @@
 
 ## Definition
 
-CPOs are represented by the distribution(s) of crystallographic axes in orientation space, $S^2$.
-<br>
-Supported grain symmetry groups for modelling [CPO evolution](cpo-dynamics-tranisotropic.md) are
+CPOs are represented by their distributions of crystallographic axes in orientation space, $S^2$.
+Supported grain symmetry groups for modelling CPO evolution and wave propagation in polycrystals are:
 
 | Grain symmetry | CPO components | Interpretation |
 | --- | --- | --- | 
@@ -25,26 +24,29 @@ Supported grain symmetry groups for modelling [CPO evolution](cpo-dynamics-trani
 
 ## Series expansion
 
-CPOs are represented by expanding their distributions of crystallographic axes in terms of spherical harmonic expansion series.
-
+The distributions of crystallographic axes are represented as spherical harmonic expansion series.
+<br>
 E.g. for transversely isotropic grains where only $n(\theta,\phi)$ is relevant:
 $$ 
 n(\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}Y_{l}^{m}(\theta,\phi) \quad\text{(distribution of slip-plane normals)}.
 $$
 
-The orientation distribution function (ODF) is defined as the normalized distribution 
 
-$$ 
-\mathrm{ODF} = \frac{n(\theta,\phi)}{N} \quad\text{where}\quad N=\int_{S^2}{n} \,\mathrm{d}\Omega=\sqrt{4\pi}n_0^0 .
-$$
-
-The array of complex-valued expansion coefficients, defining the CPO state, is 
+Thus, the CPO state is defined as the array of complex-valued expansion coefficients:
 
 $$
 {\bf s} = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}] \quad\text{(state vector)}.
 $$
 
 $$ $$ <!-- half space -->
+
+!!! note "ODF definition"
+
+    The orientation distribution function (ODF) is defined as the normalized distribution 
+
+    $$ 
+    \mathrm{ODF} = \frac{n(\theta,\phi)}{N} \quad\text{where}\quad N=\int_{S^2}{n} \,\mathrm{d}\Omega=\sqrt{4\pi}n_0^0 .
+    $$
 
 !!! warning "Normalization"
 
@@ -62,10 +64,10 @@ $$
 n_l^{-m}=(-1)^m(n_l^m)^* .
 $$
 
-This can be taken advantage of for large problems where many (e.g. gridded) CPOs need to be stored in memory, thereby effectively reducing the size of the problem. 
+This can be taken advantage of for large problems where many (e.g. gridded) CPOs must be stored in memory, thereby effectively reducing the size of the problem. 
 The array of reduced expansion coefficients is defined as
 
-$\qquad$ `rnlm` $= [n_0^0,n_2^{0},n_2^{1},n_2^{2},n_4^{0},\cdots,n_4^{4},\cdots,n_L^{0},\cdots,n_L^{L}] \quad\text{(reduced state vector)}$
+$\qquad$ `rnlm` $= [n_0^0,n_2^{0},n_2^{1},n_2^{2},n_4^{0},\cdots,n_4^{4},\cdots,n_L^{0},\cdots,n_L^{L}] \quad\text{(reduced state vector)}.$
 
 ### Example 
 

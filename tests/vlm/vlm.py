@@ -206,8 +206,8 @@ if 1:
                 blm[tt,:] = blm_prev + dt*np.matmul(M_LROT_b+M_REG, blm_prev) # Euler step
                 nlm[tt,:] = nlm_prev + dt*np.matmul(M_LROT_n+M_REG, nlm_prev) # Euler step
 
-                if Ltrunc == 2: vlm[tt,:len_L] = sf.a2_to_nlm(sf.a2_orth(blm[tt,:],nlm[tt,:]))
-                if Ltrunc == 4: vlm[tt,:len_L] = sf.a4_to_nlm(sf.a4_orth(blm[tt,:],nlm[tt,:]))
+                if Ltrunc == 2: vlm[tt,:sf.L2len] = sf.a2_to_nlm(sf.a2_orth(blm[tt,:],nlm[tt,:]))
+                if Ltrunc == 4: vlm[tt,:sf.L4len] = sf.a4_to_nlm(sf.a4_orth(blm[tt,:],nlm[tt,:]))
 
             fig, gs = make_fig(rows=2, figsize=(figsize[0],0.4*figsize[1]))
             (ax1,ax2,ax3) = get_axes(gs,0)

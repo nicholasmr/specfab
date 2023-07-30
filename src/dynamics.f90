@@ -4,24 +4,19 @@
 
 module dynamics  
 
+    use header
     use tensorproducts
     use moments ! used by tensorial dynamics routines
     use gaunt
 
     implicit none 
 
-    integer, parameter, private :: dp = 8 ! Default precision
-    real,    parameter, private :: Pi = 3.141592653589793
     integer, parameter, private :: x = 1, y = 2, z = 3 ! Matrix indices (used for readability)
     complex(kind=dp), parameter, private :: r = (1,0), i = (0,1) ! real and imag units
-    integer, private :: ii, ll, mm ! Loop indices
 
-    integer, private   :: Lcap    ! Truncation "L" of expansion series (internal copy of what was passed to the init routine).
-    integer, private   :: nlm_len ! Total number of expansion coefficients (i.e. DOFs)
+    integer, private :: Lcap    ! Truncation "L" of expansion series (internal copy of what was passed to the init routine).
+    integer, private :: nlm_len ! Total number of expansion coefficients (i.e. DOFs)
 
-    integer, parameter :: Lcap__max  = 30 ! Hard limit
-    integer, parameter :: nlm_lenmax = (Lcap__max+1)*(Lcap__max+2)/2
-    
     ! Static (constant) matrices used for spectral dynamics
     real(kind=dp), parameter :: Ldiag(nlm_lenmax) = [( (-ll*(ll+1),mm=-ll,ll), ll=0,  Lcap__max,2)] ! Diagonal entries of Laplacian diffusion operator.
     
@@ -62,7 +57,7 @@ contains
 
         real(kind=dp), intent(in) :: eps(3,3), omg(3,3), iota, zeta ! strain-rate (eps), spin (omg), eps^1 coefficient (iota), eps^2 coefficient (zeta)
         complex(kind=dp)          :: M_LROT(nlm_len,nlm_len), qe(-2:2), qo(-1:1)
-        integer, parameter        :: SHI_LATROT = 6 ! Scope of harmonic interactions (in wave space) for LATROT
+        integer, parameter        :: SHI_LATROT = 1+5 ! Scope of harmonic interactions (in wave space) for LATROT
         complex(kind=dp), dimension(SHI_LATROT) :: g0,     gz,     gn,     gp
         complex(kind=dp), dimension(SHI_LATROT) :: g0_rot, gz_rot, gn_rot, gp_rot
         complex(kind=dp), dimension(SHI_LATROT) :: g0_Tay, gz_Tay, gn_Tay, gp_Tay
@@ -295,12 +290,12 @@ contains
         
         if (S2_rel > 1.0d0) then
             ! if S(2) > S_delta(2), then scale n2m such that S(2) = S_delta(2) (ensures a2 eigen values are correctly bounded: 0 <= lam1,lam2,lam3 <= 1)
-            nlm_bounded(I_l2:(I_l4-1)) = nlm(I_l2:(I_l4-1)) / sqrt(S2_rel) 
+            nlm_bounded(L2rng) = nlm(L2rng) / sqrt(S2_rel) 
         end if
         
         if (S4_rel > 1.0d0) then
             ! if S(4) > S_delta(4), then scale n4m such that S(4) = S_delta(4)
-            nlm_bounded(I_l4:(I_l6-1)) = nlm(I_l4:(I_l6-1)) / sqrt(S4_rel)
+            nlm_bounded(L4rng) = nlm(L4rng) / sqrt(S4_rel)
         end if
     end
 
@@ -314,11 +309,8 @@ contains
         integer, intent(in)          :: l
         real(kind=dp)                :: Sl
         complex(kind=dp)             :: nlm_sub(2*l+1)
-        integer                      :: I0, I1
         
-        I1 = (l+1)*(l+2)/2      ! number of coefs if L=l
-        I0 = I1 - (2*l+1) + 1   ! 2*l+1 coefs (possible m) for a given l
-        nlm_sub(:) = nlm(I0:I1) ! nlm subrange with all "m" components for "l"
+        nlm_sub(:) = nlm(IL(l):(IL(l+2)-1)) ! [n_l^-l, ... n_l^l]
         Sl = 1.0d0/(2*l+1) * sum(abs(nlm_sub)**2) 
     end
 

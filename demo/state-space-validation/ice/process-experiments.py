@@ -100,16 +100,16 @@ for expr in experiments:
         if 1: # use a6 to determine nlm? else a4
             print('Using a6_to_nlm()')
             a6 = np.array([ np.einsum('i,j,k,l,m,n',c,c,c,c,c,c) for c in caxes]).mean(axis=0) # construct <c^6>
-            nlm[:]   = sf.a6_to_nlm(a6) 
+            nlm[:sf.L6len] = sf.a6_to_nlm(a6) 
         else:
             print('Using a4_to_nlm()')
             a4 = np.array([ np.einsum('i,j,k,l',c,c,c,c) for c in caxes]).mean(axis=0) # construct <c^6>
-            nlm[:15] = sf.a4_to_nlm(a4) 
+            nlm[:sf.L4len] = sf.a4_to_nlm(a4) 
 
         # lowest order representation for reference
         a2 = sf.a2(nlm)        
         nlm_L2 = nlm.copy()
-        nlm_L2[6:] = 0
+        nlm_L2[sf.L2len:] = 0
 
         ### Rotated frame 
            

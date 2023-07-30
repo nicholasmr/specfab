@@ -2,21 +2,19 @@
 
 module wavepropagation  
 
+    use header
     use tensorproducts
     use mandel
     use elasticities
     use homogenizations
     use moments
-    use dynamics
+!    use dynamics
     use rotation
 
     implicit none 
 
-    integer, parameter, private :: dp = 8 ! Default precision
-    integer, private            :: ii,nn ! loop index
-    
 !    real(kind=dp), private, parameter :: k(3) = [0.0d0, 0.0d0, 1.0d0]
-    real(kind=dp), private, parameter :: kk(3,3) = reshape([0.0d0,0.0d0,0.0d0, 0.0d0,0.0d0,0.0d0, 0.0d0,0.0d0,1.0d0], [3,3]) ! k outer k, where k = [0,0,1]
+    real(kind=dp), private, parameter :: ksq(3,3) = reshape([0.0d0,0.0d0,0.0d0, 0.0d0,0.0d0,0.0d0, 0.0d0,0.0d0,1.0d0], [3,3]) ! k outer k, where k = [0,0,1]
        
 contains      
 
@@ -59,14 +57,15 @@ contains
         real(kind=dp)                :: Vi(3,size(theta_n)) ! qS1, qS2, qP phase velocities (in that order)
         complex(kind=dp)             :: nlm_3_est(size(nlm_1))
         
-        complex(kind=dp)             :: nlm4_1(15), nlm4_rot_1(15) ! truncated at L=4, and its rotated form
-        complex(kind=dp)             :: nlm4_2(15), nlm4_rot_2(15) 
-        complex(kind=dp)             :: nlm4_3(15), nlm4_rot_3(15) 
+        integer, parameter           :: n4mlen = nlm_lenvec(4)
+        complex(kind=dp)             :: nlm4_1(n4mlen), nlm4_rot_1(n4mlen) ! truncated at L=4, and its rotated form
+        complex(kind=dp)             :: nlm4_2(n4mlen), nlm4_rot_2(n4mlen) 
+        complex(kind=dp)             :: nlm4_3(n4mlen), nlm4_rot_3(n4mlen) 
         
         ! Estimate nlm_3 from nlm_1 and nlm_2 ?
         if (real(nlm_3(1)) < 1e-10) then
             nlm_3_est(:) = 0.0d0
-            nlm_3_est(:(I_l6-1)) = a4_to_nlm(a4_orth(nlm_2,nlm_1))
+            nlm_3_est(:n4mlen) = a4_to_nlm(a4_orth(nlm_2,nlm_1))
             OPT = 'e' ! estimated
         else
             nlm_3_est = nlm_3 ! use passed nlm_3
@@ -74,9 +73,9 @@ contains
         end if
         
         ! l=0,2,4 coefficients
-        nlm4_1 = nlm_1(:(I_l6-1)) 
-        nlm4_2 = nlm_2(:(I_l6-1)) 
-        nlm4_3 = nlm_3_est(:(I_l6-1)) 
+        nlm4_1 = nlm_1(:n4mlen) 
+        nlm4_2 = nlm_2(:n4mlen) 
+        nlm4_3 = nlm_3_est(:n4mlen) 
 
         do nn = 1,size(theta_n)
             nlm4_rot_1 = rotate_nlm4(nlm4_1, -theta_n(nn), -phi_n(nn)) ! negative angles because we are are rotating the specified direction (back) into the vertical orientation
@@ -155,15 +154,15 @@ contains
         mu(:)  = Lame_grain(7:9)
 
         Qnorm = 0.0d0 ! initialize
-        Qnorm = Qnorm + mu(1)/2*(a2(1,:,:) + matmul(kk,a2(1,:,:)) + matmul(a2(1,:,:),kk) + doubleinner22(a2(1,:,:),kk)*identity)
-        Qnorm = Qnorm + mu(2)/2*(a2(2,:,:) + matmul(kk,a2(2,:,:)) + matmul(a2(2,:,:),kk) + doubleinner22(a2(2,:,:),kk)*identity)
-        Qnorm = Qnorm + mu(3)/2*(a2(3,:,:) + matmul(kk,a2(3,:,:)) + matmul(a2(3,:,:),kk) + doubleinner22(a2(3,:,:),kk)*identity)
-        Qnorm = Qnorm + lam(1)*vec_to_mat(matmul(a4v(1,:,:),mat_to_vec(kk)))
-        Qnorm = Qnorm + lam(2)*vec_to_mat(matmul(a4v(2,:,:),mat_to_vec(kk)))
-        Qnorm = Qnorm + lam(3)*vec_to_mat(matmul(a4v(3,:,:),mat_to_vec(kk)))
-        Qnorm = Qnorm + lam(4)*( doubleinner42_firstlast(a4_jk(1,:,:,:,:),kk) + transpose(doubleinner42_firstlast(a4_jk(1,:,:,:,:),kk)) ) ! j,k=2,3
-        Qnorm = Qnorm + lam(5)*( doubleinner42_firstlast(a4_jk(2,:,:,:,:),kk) + transpose(doubleinner42_firstlast(a4_jk(2,:,:,:,:),kk)) ) ! j,k=1,3
-        Qnorm = Qnorm + lam(6)*( doubleinner42_firstlast(a4_jk(3,:,:,:,:),kk) + transpose(doubleinner42_firstlast(a4_jk(3,:,:,:,:),kk)) ) ! j,k=1,2
+        Qnorm = Qnorm + mu(1)/2*(a2(1,:,:) + matmul(ksq,a2(1,:,:)) + matmul(a2(1,:,:),ksq) + doubleinner22(a2(1,:,:),ksq)*identity)
+        Qnorm = Qnorm + mu(2)/2*(a2(2,:,:) + matmul(ksq,a2(2,:,:)) + matmul(a2(2,:,:),ksq) + doubleinner22(a2(2,:,:),ksq)*identity)
+        Qnorm = Qnorm + mu(3)/2*(a2(3,:,:) + matmul(ksq,a2(3,:,:)) + matmul(a2(3,:,:),ksq) + doubleinner22(a2(3,:,:),ksq)*identity)
+        Qnorm = Qnorm + lam(1)*vec_to_mat(matmul(a4v(1,:,:),mat_to_vec(ksq)))
+        Qnorm = Qnorm + lam(2)*vec_to_mat(matmul(a4v(2,:,:),mat_to_vec(ksq)))
+        Qnorm = Qnorm + lam(3)*vec_to_mat(matmul(a4v(3,:,:),mat_to_vec(ksq)))
+        Qnorm = Qnorm + lam(4)*( doubleinner42_firstlast(a4_jk(1,:,:,:,:),ksq) + transpose(doubleinner42_firstlast(a4_jk(1,:,:,:,:),ksq)) ) ! j,k=2,3
+        Qnorm = Qnorm + lam(5)*( doubleinner42_firstlast(a4_jk(2,:,:,:,:),ksq) + transpose(doubleinner42_firstlast(a4_jk(2,:,:,:,:),ksq)) ) ! j,k=1,3
+        Qnorm = Qnorm + lam(6)*( doubleinner42_firstlast(a4_jk(3,:,:,:,:),ksq) + transpose(doubleinner42_firstlast(a4_jk(3,:,:,:,:),ksq)) ) ! j,k=1,2
     end
 
     !--------------
@@ -250,10 +249,11 @@ contains
         real(kind=dp), intent(in)    :: theta(:), phi(:) ! arrays of theta and phi values to calculate phase velocities (vi) along
 
         real(kind=dp)                :: Vi(3,size(theta)) ! qS1, qS2, qP phase velocities
-        complex(kind=dp)             :: nlm4(15), nlm4_rot(15) ! nlm truncated at L=4, and its rotated form
+        integer, parameter           :: n4mlen = nlm_lenvec(4)
+        complex(kind=dp)             :: nlm4(n4mlen), nlm4_rot(n4mlen) ! nlm truncated at L=4, and its rotated form
         real(kind=dp)                :: Qnorm(3,3)
         
-        nlm4 = nlm(:(I_l6-1)) ! l=0,2,4 coefficients
+        nlm4 = nlm(:n4mlen) ! l=0,2,4 coefficients
 
         do nn = 1,size(theta)
             nlm4_rot = rotate_nlm4(nlm4, -theta(nn), -phi(nn)) ! negative angles because we are are rotating the specified direction (back) into the vertical orientation
@@ -301,8 +301,8 @@ contains
         call elas_revparams_tranisotropic(lam,mu,Elam,Emu,Egam, k1,k2,k3,k4,k5) ! (k1, ..., k5) are effective elastic coefficients, *not* related to wave vector.
         call f_ev_ck_Mandel(nlm, a2v, a4v) ! Structure tensors in Mandel notation: a2v = ev_c2_Mandel, B = ev_c4_Mandel
         a2mat = vec_to_mat(a2v) ! = a2
-        KM_anticomm = matmul(kk,a2mat) + matmul(a2mat,kk) ! = {a2,kk} for k=kvert=[0,0,1]
-        Qnorm = k2/2*identity + (k1+k2/2)*kk + k3*KM_anticomm + k4*vec_to_mat(matmul(a4v,mat_to_vec(kk))) + 0.5d0*k5*(a2mat + doubleinner22(a2mat,kk)*identity + KM_anticomm)
+        KM_anticomm = matmul(ksq,a2mat) + matmul(a2mat,ksq) ! = {a2,ksq} for k=kvert=[0,0,1]
+        Qnorm = k2/2*identity + (k1+k2/2)*ksq + k3*KM_anticomm + k4*vec_to_mat(matmul(a4v,mat_to_vec(ksq))) + 0.5d0*k5*(a2mat + doubleinner22(a2mat,ksq)*identity + KM_anticomm)
     end
 
     function Qnorm_tranisotropic_Reuss(nlm, lam,mu,Elam,Emu,Egam) result(Qnorm)

@@ -4,13 +4,11 @@
 
 module elasticities
 
+    use header
     use tensorproducts
 
     implicit none 
 
-    integer, parameter, private       :: dp = 8 ! Default precision
-    real(kind=dp), parameter, private :: identity(3,3)  = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
-    
     ! Bennett (1968) parameters
     ! @TODO: Delete because unused? 
     real(kind=dp), parameter :: lam_B68  = 7.15d9

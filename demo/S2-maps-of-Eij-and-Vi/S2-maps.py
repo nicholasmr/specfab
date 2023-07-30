@@ -84,8 +84,8 @@ a4_sm = np.einsum('i,j,k,l',m,m,m,m)
 n2m = sf.a2_to_nlm(a2_sm)
 n4m = sf.a4_to_nlm(a4_sm)
 nlm_sm = np.zeros((nlm_len), dtype=np.complex128)
-#nlm[:(1+5)] = n2m[:]
-nlm_sm[:(1+5+9)] = n4m[:]
+#nlm[:sf.L2len] = n2m[:]
+nlm_sm[:sf.L4len] = n4m[:]
 
 vi_sm_vert = sf.Vi_elastic_tranisotropic(nlm_sm, alpha, lame_grain, rho, 0,0) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
 vi_sm_hori = sf.Vi_elastic_tranisotropic(nlm_sm, alpha, lame_grain, rho, 90,0) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]

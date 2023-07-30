@@ -29,8 +29,8 @@ def pfile(fname): return "specfab-state-trajectories/%s--%s.p"%(SELFNAME, fname)
 # Flags
 #--------------------
 
-INTEGRATE_MODEL = 0  # Generate model lines from scratch? Else load saved Pickle files.
-DEBUG           = 0  # For faster plotting (lower resolution)
+INTEGRATE_MODEL = 0 # Generate model lines from scratch? Else load saved Pickle files.
+DEBUG           = 0 # For faster plotting (lower resolution)
             
 #--------------------
 # Config
@@ -38,6 +38,8 @@ DEBUG           = 0  # For faster plotting (lower resolution)
 
 Nt = 300 # Number of integration steps for model trajectories (should be large enough to reach steady state)
 RESX = RESY = 1*100 if DEBUG else 15*100 # Fast plotting (debug)?
+
+L = 8 if DEBUG else 20 # Example of high-order truncation
 
 #--------------------
 # Modeled correlations
@@ -74,7 +76,6 @@ if INTEGRATE_MODEL:
 
     ### Solve for state-vector time evolution
     
-    L = 8 if DEBUG else 20 # Example of high-order truncation
     lm, nlm_len = sf.init(L) 
     nlm_iso = np.zeros((nlm_len), dtype=np.complex64)
     nlm_iso[0] = normfac
@@ -107,6 +108,18 @@ nlm_uc6    = np.array([ nlm_uc6[tt,:]/nlm_uc6[tt,0]   for tt in np.arange(Nt) ])
 nlm_ue6    = np.array([ nlm_ue6[tt,:]/nlm_ue6[tt,0]   for tt in np.arange(Nt) ])
 nlm_uc6lap = np.array([ nlm_uc6lap[tt,:]/nlm_uc6lap[tt,0] for tt in np.arange(Nt) ])
 nlm_ue6lap = np.array([ nlm_ue6lap[tt,:]/nlm_ue6lap[tt,0] for tt in np.arange(Nt) ])
+
+
+### Determine ideal boundary line
+
+m = [0,0,1]
+Il24 = [sf.I20, sf.I40] # l=2,4, m=0 coefs
+
+# delta distributed
+n20_unidir, n40_unidir = np.real(sf.nlm_ideal(m, 0, L))[Il24]/normfac
+
+# x--y planar distributed
+n20_planar, n40_planar = np.real(sf.nlm_ideal(m, np.pi/2, L))[Il24]/normfac    
 
 #--------------------
 # Construct plot
@@ -160,7 +173,7 @@ print('Calculating E_zz map ...', end='')
 for xii, x_ in enumerate(x):
     for yii, y_ in enumerate(y): 
         nlm_ = np.zeros((nlm_len), dtype=np.complex64) # The expansion coefficients
-        nlm_[0], nlm_[3], nlm_[10] = 1, x_, y_
+        nlm_[0], nlm_[sf.I20], nlm_[sf.I40] = 1, x_, y_
         Ezz[yii,xii] = sf.Evw_tranisotropic(nlm_, m,m,tau_mm, Eij_grain,alpha,n_grain)
         Exz[yii,xii] = sf.Evw_tranisotropic(nlm_, m,t,tau_mt, Eij_grain,alpha,n_grain)
 
@@ -213,37 +226,24 @@ legend_modellines = ax.legend(h_modellines, legend_strings, title=r'{\bf Modelle
 ### End-member cases
 
 # Isotropic state
-ax.plot(0,0,'o', ms=mse, c='k', label=None, zorder=20)
+ax.plot(0, 0, 'o', ms=mse, c='k', label=None, zorder=20)
 dytext = 0.04/normfac
 ax.text(0, 0-dytext, r'{\bf Isotropic}', color='k', ha='center', va='top', fontsize=FSANNO)
 
-# Unidirectional/delta-function (single max)
-n20_delta = np.real(sp.sph_harm(0, 2, 0,0))/normfac
-n40_delta = np.real(sp.sph_harm(0, 4, 0,0))/normfac
-#print(n20_delta*normfac,n40_delta*normfac)
-ax.plot(n20_delta,n40_delta, marker='o', ms=mse, ls='none', c=c_smax, label=None)
-ax.text(n20_delta-0.4*dytext, n40_delta+dytext, '{\\bf Unidirectional}', color=c_smax, ha='center', va='bottom', ma='center', fontsize=FSANNO)
+# Unidirectional
+ax.plot(n20_unidir, n40_unidir, marker='o', ms=mse, ls='none', c=c_smax, label=None)
+ax.text(n20_unidir-0.4*dytext, n40_unidir+dytext, '{\\bf Unidirectional}', color=c_smax, ha='center', va='bottom', ma='center', fontsize=FSANNO)
 
-# Planar (great circle) isotropy 
-x, y = np.array([1,0,0]), np.array([0,1,0])
-x2, y2 = np.einsum('i,j',x,x), np.einsum('i,j',y,y)
-x4, y4 = np.einsum('i,j,k,l',x,x,x,x), np.einsum('i,j,k,l',y,y,y,y)
-xy_sym = np.einsum('i,j',x,y) + np.einsum('i,j',y,x)
-xy2 = x2 + y2
-a2 = x2/2 + y2/2
-a4 = x4/4 + y4/4 + np.einsum('ij,kl',xy2,xy2)/8 + np.einsum('ij,kl',xy_sym,xy_sym)/8 
-nlm_girdle = np.real(sf.a4_to_nlm(a4))
-#print(nlm_girdle, nlm_girdle[3],nlm_girdle[10])
-x_, y_ = np.real(nlm_girdle[3])/normfac, np.real(nlm_girdle[10])/normfac
-ax.plot(x_, y_, marker='o', ms=mse, ls='none', c=c_girdle, label=None)
-ax.text(x_, y_+dytext, '{\\bf Planar}\n\\bf{confined}', color=c_girdle, ha='center', va='bottom', ma='center', fontsize=FSANNO)
+# Planar
+ax.plot(n20_planar, n40_planar, marker='o', ms=mse, ls='none', c=c_girdle, label=None)
+ax.text(n20_planar, n40_planar+dytext, '{\\bf Planar}', color=c_girdle, ha='center', va='bottom', ma='center', fontsize=FSANNO)
 
 ### Power-spectrum cap
 if 1:
     badspec = np.ones((RESY, RESX)) 
-    I = np.argmin(np.abs(X-n20_delta))
+    I = np.argmin(np.abs(X-n20_unidir))
     badspec[:,I:] = 0
-    I = np.argmin(np.abs(Y-n40_delta))
+    I = np.argmin(np.abs(Y-n40_unidir))
     badspec[I:,:] = 0
     lvls = [0, 0.5]
     plt.rcParams['hatch.color'] = '0.3'
@@ -253,8 +253,8 @@ if 1:
     ax.text(-1.2, 3.3, r'\bf Restricted', fontsize=FS-2, color='0.1')
 else:
     lw = 1.1
-    ax.plot([n20_delta,n20_delta],[-10,n40_delta],':k', lw=lw)
-    ax.plot([-10,n20_delta],[n40_delta,n40_delta],':k', lw=lw)
+    ax.plot([n20_unidir,n20_unidir],[-10,n40_unidir],':k', lw=lw)
+    ax.plot([-10,n20_unidir],[n40_unidir,n40_unidir],':k', lw=lw)
 
 ### Aux
 ax.set_xlabel(r'$\hat{\psi}_2^0$')
@@ -270,10 +270,10 @@ secax.set_xlabel(r'$a^{(2)}_{zz}$')
 
 ### Print quantification of truncation error
 if DEBUG:
-    n20_delta = np.real(sp.sph_harm(0, 2, 0,0))/normfac
-    n40_delta = np.real(sp.sph_harm(0, 4, 0,0))/normfac
-    print(nlm_uc20[-1,3]/n20_delta, nlm_uc20[-1,10]/n40_delta)
-    print( nlm_uc6[-1,3]/n20_delta,  nlm_uc6[-1,10]/n40_delta)
+    n20_unidir = np.real(sp.sph_harm(0, 2, 0,0))/normfac
+    n40_unidir = np.real(sp.sph_harm(0, 4, 0,0))/normfac
+    print(nlm_uc20[-1,sf.I20]/n20_unidir, nlm_uc20[-1,sf.I40]/n40_unidir)
+    print( nlm_uc6[-1,sf.I20]/n20_unidir,  nlm_uc6[-1,sf.I40]/n40_unidir)
 
 ### Save figure
 plt.savefig('%s.png'%(SELFNAME), dpi=175)

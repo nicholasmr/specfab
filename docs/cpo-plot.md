@@ -5,7 +5,7 @@ The orientation distribution function (ODF; normalized expansion series) can be 
 ```python
 import numpy as np
 from specfabpy import specfabpy as sf
-lm, nlm_len = sf.init(4) # L=4 truncation is sufficient in this case
+lm, nlm_len = sf.init(4) 
 
 import scipy.special as sp
 import matplotlib.pyplot as plt
@@ -51,7 +51,7 @@ def plot_ODF(nlm, lm, ax, geo, cmap='Greys', cblabel='$n/N$ (ODF)', lvls=np.lins
 # Make synthetic ODF
 a2 = np.diag([0.0,0.5,0.5]) # an arbitrary a2
 nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
-nlm[:6] = sf.a2_to_nlm(a2) # a2 contains information about the lowest-order harmonics l=2 only
+nlm[:sf.L2len] = sf.a2_to_nlm(a2) # a2 contains information about the lowest-order harmonics l=2 only
 
 # Setup figure
 fig = plt.figure(figsize=(3,4))

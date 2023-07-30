@@ -1,6 +1,7 @@
 ! General 
 
 function F_to_strain(F) result (strain)
+    use specfabpy_const
     implicit none
     real(kind=dp), intent(in) :: F(3,3)      ! deformation gradient
     real(kind=dp)             :: strain(3,3) ! strain tensor 
@@ -8,6 +9,7 @@ function F_to_strain(F) result (strain)
 end
 
 subroutine ugrad_to_D_and_W(ugrad, D,W)
+    use specfabpy_const
     implicit none
     real(kind=dp), intent(in)  :: ugrad(3,3)
     real(kind=dp), intent(out) :: D(3,3), W(3,3)
@@ -55,6 +57,7 @@ end
 ! Simple shear 
 
 function simpleshear_gamma(T, time) result (gam)
+    use specfabpy_const
     implicit none
     real(kind=dp), intent(in) :: T, time
     real(kind=dp)             :: gam
@@ -63,6 +66,7 @@ end
 
 function simpleshear_gamma_to_t(gam, T) result (time)
     ! Time taken to reach shear angle gam
+    use specfabpy_const
     implicit none
     real(kind=dp), intent(in) :: gam,T
     real(kind=dp)             :: time
@@ -70,6 +74,7 @@ function simpleshear_gamma_to_t(gam, T) result (time)
 end
 
 function simpleshear_F(plane,T, time) result (F)
+    use specfabpy_const
     implicit none
     integer, intent(in)       :: plane
     real(kind=dp), intent(in) :: T,time
@@ -78,6 +83,7 @@ function simpleshear_F(plane,T, time) result (F)
 end
    
 function simpleshear_ugrad(plane,T) result(ugrad)
+    use specfabpy_const
     implicit none
     integer, intent(in)       :: plane
     real(kind=dp), intent(in) :: T

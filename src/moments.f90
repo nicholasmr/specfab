@@ -4,15 +4,10 @@
 
 module moments 
 
+    use header
     use mandel
 
     implicit none 
-
-    integer, parameter, private :: dp = 8 ! Default precision
-    real, parameter, private    :: Pi = 3.141592653589793
-    integer, parameter, private :: identity(3,3)  = reshape([1,0,0, 0,1,0, 0,0,1], [3,3])
-    integer, parameter          :: I_l0=1, I_l2=I_l0+1, I_l4=I_l2+(2*2+1), I_l6=I_l4+(2*4+1), I_l8=I_l6+(2*6+1), I_l10=I_l8+(2*8+1) ! Indices for extracting l=0,2,4,6,8 coefs of nlm
-    integer, parameter          :: I_l12=I_l10+(2*10+1), I_l14=I_l12+(2*12+1), I_l16=I_l14+(2*14+1), I_l18=I_l16+(2*16+1), I_l20=I_l18+(2*18+1)
 
 contains      
 
@@ -25,10 +20,8 @@ contains
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp)                :: a2(3,3)
-        complex(kind=dp)             :: n2m(-2:2) 
-        
-        n2m = nlm(I_l2:(I_l4-1))
-        a2 = f_ev_c2(nlm(1),n2m)
+
+        a2 = f_ev_c2(nlm(L0rng),nlm(L2rng))
     end
 
     function a4(nlm) 
@@ -39,7 +32,7 @@ contains
         complex(kind=dp)             :: n00, n2m(-2:2), n4m(-4:4), n6m(-6:6)
 
         call decompose_nlm(nlm, n00,n2m,n4m,n6m)
-        a4 = f_ev_c4(nlm(1),n2m,n4m)
+        a4 = f_ev_c4(n00,n2m,n4m)
     end
     
     function a6(nlm) 
@@ -50,14 +43,14 @@ contains
         complex(kind=dp)             :: n00, n2m(-2:2), n4m(-4:4), n6m(-6:6)
         
         call decompose_nlm(nlm, n00,n2m,n4m,n6m)
-        a6 = f_ev_c6(nlm(1),n2m,n4m,n6m)
+        a6 = f_ev_c6(n00,n2m,n4m,n6m)
     end
     
     function a2_to_nlm(a2) result(nlm)
         ! Get n_2^m from a^(2)
         implicit none
         real(kind=dp), intent(in) :: a2(3,3)
-        complex(kind=dp)          :: nlm(1+5) ! [n00, n2m]
+        complex(kind=dp)          :: nlm(nlm_lenvec(2)) 
         nlm = (0.0, 0.0) ! init
         include "include/a2_to_nlm__body.f90"
     end
@@ -66,7 +59,7 @@ contains
         ! Get n_2^m and n_4^m from a^(4)
         implicit none
         real(kind=dp), intent(in) :: a4(3,3,3,3)
-        complex(kind=dp)          :: nlm(1+5+9) ! [n00, n2m, n4m]
+        complex(kind=dp)          :: nlm(nlm_lenvec(4)) 
         real(kind=dp)             :: a4Mandel(6,6)        
         nlm = 0.0 ! init
         a4Mandel = a4_to_mat(a4) ! 6x6 Mandel matrix of a4
@@ -77,7 +70,7 @@ contains
         ! Get n_2^m and n_4^m from a^(4)
         implicit none
         real(kind=dp), intent(in) :: a6(3,3,3,3,3,3)
-        complex(kind=dp)          :: nlm(1+5+9+13) ! [n00, n2m, n4m, n6m]
+        complex(kind=dp)          :: nlm(nlm_lenvec(6)) 
         nlm = 0.0 ! init
         include "include/a6_to_nlm__body.f90"
     end
@@ -103,7 +96,7 @@ contains
         
         if (opt == 'f') then
             ! Full calculation?
-            n8m = nlm(I_l8:(I_l10-1))
+            n8m = nlm(L8rng)
             ev_c6 = f_ev_c6(n00,n2m,n4m,n6m)
             ev_c8 = f_ev_c8(n00,n2m,n4m,n6m,n8m)
         else
@@ -358,10 +351,10 @@ contains
         n4m = 0.0d0
         n6m = 0.0d0
         
-        n00 = nlm(1)
-        n2m = nlm(I_l2:(I_l4-1))
-        if (size(nlm) >= I_l6-1) n4m = nlm(I_l4:(I_l6-1))
-        if (size(nlm) >= I_l8-1) n6m = nlm(I_l6:(I_l8-1))
+        n00 = nlm(L0rng)
+        n2m = nlm(L2rng)
+        if (size(nlm) >= nlm_lenvec(4)) n4m = nlm(L4rng)
+        if (size(nlm) >= nlm_lenvec(6)) n6m = nlm(L6rng)
     end
     
 end module moments

@@ -4,14 +4,13 @@
 
 module enhancementfactors  
 
+    use header
     use tensorproducts
     use moments
     use homogenizations
 
     implicit none 
 
-    integer, parameter, private :: dp = 8 ! Default precision
-    
 contains      
 
     !---------------------------------

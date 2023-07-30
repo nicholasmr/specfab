@@ -6,13 +6,13 @@ module specfabpy_const
 
     implicit none
     integer, parameter :: dp = 8 ! Default precision
-    real, parameter    :: Pi = 3.141592653589793
+    real(kind=dp), parameter :: Pi = 3.141592653589793d0
     integer, parameter :: x = 1, y = 2, z = 3 ! Matrix indices
     
 end module specfabpy_const
 
 module specfabpy
-    
+
     use specfabpy_const
     
     use specfab, &
@@ -85,11 +85,23 @@ module specfabpy
         ! AUX
         vec_to_mat_voigt__sf => vec_to_mat_voigt, &
         nhat40_empcorr_ice__sf => nhat40_empcorr_ice, &
-        nlm_ideal__sf => nlm_ideal
+        nlm_ideal__sf => nlm_ideal, &        
+        nlm_isvalid__sf => nlm_isvalid, &
+        L2len__sf => L2len, L4len__sf => L4len, L6len__sf => L6len, L8len__sf => L8len
         
     implicit none
     
     integer :: Lcap
+
+    integer, parameter :: L2len = L2len__sf
+    integer, parameter :: L4len = L4len__sf
+    integer, parameter :: L6len = L6len__sf
+    integer, parameter :: L8len = L8len__sf
+    
+    integer, parameter :: I20 = ILm(2)-1
+    integer, parameter :: I40 = ILm(4)-1
+    integer, parameter :: I60 = ILm(6)-1
+    integer, parameter :: I80 = ILm(8)-1    
 
 contains
 
@@ -167,7 +179,7 @@ contains
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp)                :: Lmat(size(nlm),size(nlm))
-        integer                      :: ii
+!        integer                      :: ii
         
         Lmat = 0.0
         do ii = 1, size(nlm)
@@ -711,14 +723,22 @@ contains
         nhat40 = nhat40_empcorr_ice__sf(nhat20)
     end
     
-    function nlm_ideal(m, colat) result(nlm)
+    function nlm_ideal(m, colat, L) result(nlm)
         use specfabpy_const
         implicit none
         real(kind=dp), intent(in) :: m(3), colat 
-        integer, parameter        :: Lmax = 8, nlmlen = int((Lmax+1)*(Lmax+2)/2)
-        complex(kind=dp)          :: nlm(nlmlen)
-        nlm(:) = nlm_ideal__sf(m, colat)
+        integer, intent(in)       :: L
+        complex(kind=dp)          :: nlm((L+1)*(L+2)/2)
+        nlm(:) = nlm_ideal__sf(m, colat, L)
     end
+    
+    function nlm_isvalid(nhat20, nhat40) result(isvalid)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nhat20(:), nhat40(:) 
+        logical                      :: isvalid(size(nhat20))
+        isvalid = nlm_isvalid__sf(nhat20, nhat40)
+    end 
     
     ! DELETE ONCE DEBUG FINISHED:
     subroutine orthstructs(nlm_1,nlm_2,nlm_3, mi,  a2v_nlm, a2v_mi, a4v_nlm, a4v_mi)

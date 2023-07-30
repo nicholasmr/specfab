@@ -68,13 +68,13 @@ This requires specifying the grain elastic parameters $\lambda'$, $\mu'$, $\hat{
 ```python
 import numpy as np
 from specfabpy import specfabpy as sf
-lm, nlm_len = sf.init(4) # L=4 truncation is sufficient in this case
+lm, nlm_len = sf.init(4)
 nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
 
 # c-axis number distribution (nlm) from fourth-order structure tensor (a4)
 p = np.array([0,0,1]) # preferred c-axis direction
 a4 = np.einsum('i,j,k,l', p,p,p,p) # a4 if ODF = deltafunc(r-p) 
-nlm[:] = sf.a4_to_nlm(a4) # l=2,4 expansion coefficients for corresponding ODF (a4 is normalized)
+nlm[:sf.L4len] = sf.a4_to_nlm(a4) # l<=4 expansion coefficients for corresponding normalized ODF
 
 # Physical parameters (SI units)
 rho = 917 # density of ice
@@ -109,7 +109,7 @@ This requires specifying the grain elastic parameters $\lambda_{11}'$, $\lambda_
 ```python
 import numpy as np
 from specfabpy import specfabpy as sf
-lm, nlm_len = sf.init(4) # L=4 truncation is sufficient in this case
+lm, nlm_len = sf.init(4)
 nlm = np.zeros((nlm_len), dtype=np.complex64) 
 blm = np.zeros((nlm_len), dtype=np.complex64) 
 
@@ -118,8 +118,8 @@ vn = np.array([0,0,1]) # preferred slip-normal direction
 vb = np.array([1,0,0]) # preferred slip direction
 a4_n = np.einsum('i,j,k,l', vn,vn,vn,vn) # a4 if n/N ODF = deltafunc(r-vn) 
 a4_b = np.einsum('i,j,k,l', vb,vb,vb,vb) # a4 if b/N ODF = deltafunc(r-vb) 
-nlm[:] = sf.a4_to_nlm(a4_n) # l=2,4 expansion coefficients
-blm[:] = sf.a4_to_nlm(a4_b) # l=2,4 expansion coefficients
+nlm[:sf.L4len] = sf.a4_to_nlm(a4_n) # l<=4 expansion coefficients for corresponding normalized ODF
+blm[:sf.L4len] = sf.a4_to_nlm(a4_b) # l<=4 expansion coefficients for corresponding normalized ODF
 
 # Physical parameters (SI units)
 rho = 3355 # density of olivine

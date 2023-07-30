@@ -66,7 +66,7 @@ L = 4
 lm, nlm_len = sf.init(L) # nlm_len is the number of fabric expansion coefficients (degrees of freedom).
 a2 = np.tensordot(m,m, axes=0)
 a4 = np.tensordot(a2,a2, axes=0)
-nlm = sf.a4_to_nlm(a4)
+nlm[:sf.L4len] = sf.a4_to_nlm(a4)
 
 #-----------------------
 # Enhancement factor maps
@@ -187,6 +187,9 @@ for ii,TYPE in enumerate(types):
         Nneg = 8; N=8
     #    lvls = np.logspace(-Nneg,N,N+Nneg+1)
         lvls = [ np.power(10.,n) for n in np.arange(-Nneg,N+1,dlvl) ]
+        if 0: # DEBUG: for comparing with orthotropic case 
+            lvls = [5e-2,1e-1,2.5e-1,5e-1,7.5e-1] 
+            fmt = '%.2f'
         CS2  = ax1.contour(X,Y,Emm_map, lvls, linestyles='--',colors='k', linewidths=1.3)
         CS2.collections[0].set_label('$E_{mm}$')
 

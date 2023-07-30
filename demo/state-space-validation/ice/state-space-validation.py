@@ -82,15 +82,16 @@ for expr in experiments:
 #--------------------
 
 m = [0,0,1]
+Il24 = [sf.I20, sf.I40] # l=2,4, m=0 coefs
 
 # delta distributed
-n20_unidir, n40_unidir = np.real(sf.nlm_ideal(m, 0))[[3,10]]/normfac
+n20_unidir, n40_unidir = np.real(sf.nlm_ideal(m, 0, L))[Il24]/normfac
 
 # x--y planar distributed
-n20_planar, n40_planar = np.real(sf.nlm_ideal(m, np.pi/2))[[3,10]]/normfac    
+n20_planar, n40_planar = np.real(sf.nlm_ideal(m, np.pi/2, L))[Il24]/normfac    
 
 # 45 deg. circle (DDRX attractor)
-n20_circ45, n40_circ45 = np.real(sf.nlm_ideal(m, np.pi/4))[[3,10]]/normfac
+n20_circ45, n40_circ45 = np.real(sf.nlm_ideal(m, np.pi/4, L))[Il24]/normfac
         
 #--------------------
 # Modeled correlations
@@ -219,39 +220,25 @@ y = np.linspace(ylims[0],ylims[1],RESY)
 
 ### Determine valid subspace (valid eigenvalues)
 
-validregion = np.zeros((RESY, RESX)) # 0 = invalid, 1 = valid 
-validregion_lowerbound = np.zeros((RESX)) # points along lower boundary, used for colouring the background (shading) of subspace with ~circle fabrics.
-print('Determining subspace of valid eigenvalues...', end='')
-for xii, x_ in enumerate(x):
-    for yii, y_ in enumerate(y): 
-        nlm_ = np.zeros((nlm_len), dtype=np.complex64) # The expansion coefficients
-#        nlm_[0], nlm_[3], nlm_[10] = normfac, x_, y_
-        nlm_[0], nlm_[3], nlm_[10] = 1, x_, y_
-        a2_ = sf.a2(nlm_) # diagional
-        a2_eigvals = np.sort(np.diag(a2_))
-        Q1,Q2,Q3,Q4,Q5,Q6, a4_eigvals = sf.a4_eigentensors(nlm_)
-        isvalid_a2_eig = (np.amin(a2_eigvals)>=0) and (np.amax(a2_eigvals)<=1)  
-        isvalid_a4_eig = (np.amin(a4_eigvals)>=0) and (np.amax(a4_eigvals)<=1)
-        validregion[yii,xii] = isvalid_a2_eig and isvalid_a4_eig
-    validregion_lowerbound[xii] = y[np.argmax(validregion[:,xii])]
+print('Determining subspace of valid eigenvalues...')
+xv, yv = np.meshgrid(x, y, indexing='xy')
+validregion = np.reshape(sf.nlm_isvalid(xv.flatten(), yv.flatten()), (RESY, RESX))
             
-print('done')
-
 ### Determine subspace shadings
 
 imdat = np.empty((RESY, RESX, 4), dtype=float) # color (0,1,2) and alpha (3)
 
 # LATROT
-xmodel_latrot = np.concatenate((nlm_ce[:, 3],nlm_cc[:, 3]))
-ymodel_latrot = np.concatenate((nlm_ce[:,10],nlm_cc[:,10]))
+xmodel_latrot = np.concatenate((nlm_ce[:,sf.I20],nlm_cc[:,sf.I20]))
+ymodel_latrot = np.concatenate((nlm_ce[:,sf.I40],nlm_cc[:,sf.I40]))
 I_latrot = np.argwhere(np.abs(xmodel_latrot)>0.1/normfac) # make white shading near isotropy
 xmodel_latrot = xmodel_latrot[I_latrot]
 ymodel_latrot = ymodel_latrot[I_latrot] 
 
 # DDRX
-I_DDRX = np.arange(int(RESY*3.3/10),int(RESX*5.8/10))
-xmodel_DDRX = x[I_DDRX]
-ymodel_DDRX = validregion_lowerbound[I_DDRX]
+Il24 = [sf.I20, sf.I40] # l=2,4, m=0 coefs
+LB = np.array([ np.real(sf.nlm_ideal([0,0,1], np.deg2rad(colat), 4))[Il24]/normfac for colat in np.linspace(38,56,20) ])
+xmodel_DDRX, ymodel_DDRX = LB[:,0], LB[:,1]
 
 # Join all model points
 xmodel = np.append(xmodel_latrot, xmodel_DDRX)
@@ -379,7 +366,7 @@ if 1:
     caxes = np.array([ [np.cos(p)*np.sin(t), np.sin(p)*np.sin(t), np.cos(t)] for t, p in zip(qcolat,qlon) ])
     a2 = np.array([ np.einsum('i,j',c,c)         for c in caxes]).mean(axis=0)
     a4 = np.array([ np.einsum('i,j,k,l',c,c,c,c) for c in caxes]).mean(axis=0)
-    nlm_L4[:16] = sf.a4_to_nlm(a4)
+    nlm_L4[:sf.L4len] = sf.a4_to_nlm(a4)
     nlm_L4 /= normfac
     # Rotated frame 
     (v1_colat, v1_lon, _) = get_v_angles(a2)
@@ -419,7 +406,7 @@ if 1:
         h = axin.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), levels=lvls, extend=('max' if lvls[0]==0.0 else 'both'), cmap='Greys', nchunk=5) # "nchunk" argument must be larger than 0 for constant-ODF (e.g. isotropy) is plotted correctly.
 
         # Arrow to ODF state
-        n20_, n40_ = np.real(nlm[3])/normfac, np.real(nlm[10])/normfac
+        n20_, n40_ = np.real(nlm[sf.I20])/normfac, np.real(nlm[sf.I40])/normfac
         ax.annotate("", xy=(n20_, n40_), xycoords='data', \
                         xytext=(n20_+ODF['darr'][0]/normfac, n40_+sc**2*ODF['darr'][1]/normfac), textcoords='data', \
                         arrowprops=dict(arrowstyle="-|>", connectionstyle="arc3", facecolor='black'),zorder=20)            
