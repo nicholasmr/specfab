@@ -142,13 +142,15 @@ $$
 + (\epsilon_{\parallel}'-\epsilon_{\perp}') \left(c_i c_j - \frac{\delta_{ij}}{3} \right),
 $$
 where <span class="arithmatex">\(\epsilon_{\parallel}'\)</span> and <span class="arithmatex">\(\epsilon_{\perp}'\)</span> are the permittivities parallel and perpendicular to the <span class="arithmatex">\(c\)</span>-axis, respectively, which depend on ice temperature and EM-wave frequency (<a href="https://eprints.lib.hokudai.ac.jp/dspace/bitstream/2115/32469/1/P185-212.pdf">Fujita et al., 2000</a>).</p>
-<p>If EM-wave lengths are much longer than the average grain size, the bulk permittivity tensor of polycrystalline ice may be approximated as the grain-average permittivity tensor, <span class="arithmatex">\(\epsilon_{ij} = \langle \epsilon_{ij}' \rangle\)</span>, constructed by averaging over all grain orientations (over the CPO), giving</p>
+<p>If EM-wave lengths are much longer than the average grain size, the bulk permittivity tensor of polycrystalline ice may be approximated as the grain-average permittivity tensor, constructed by averaging over all grain orientations (over the CPO):</p>
 <div class="arithmatex">\[
-\epsilon_{ij} = (2\epsilon_{\perp}' + \epsilon_{\parallel}') \frac{\delta_{ij}}{3}
+\epsilon_{ij} \simeq 
+\langle \epsilon_{ij}' \rangle = 
+(2\epsilon_{\perp}' + \epsilon_{\parallel}') \frac{\delta_{ij}}{3}
 + (\epsilon_{\parallel}'-\epsilon_{\perp}') \left(\langle c_i c_j \rangle - \frac{\delta_{ij}}{3} \right)
 ,
 \]</div>
-<p>where <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> is the second-order structure tensor (<code>a2</code> in specfab; a.k.a. <span class="arithmatex">\({\bf a}^{(2)}\)</span>), defined as the average outer product of grain <span class="arithmatex">\(c\)</span>-axes (assuming grain sizes are uncorrelated with orientation):</p>
+<p>where <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> is the second-order <a href="../cpo-structuretensors/">structure tensor</a> (<code>a2</code> in specfab; a.k.a. <span class="arithmatex">\({\bf a}^{(2)}\)</span>), defined as the average outer product of grain <span class="arithmatex">\(c\)</span>-axes (assuming grain sizes are uncorrelated with orientation):</p>
 <div class="arithmatex">\[ 
 \langle c_i c_j \rangle = 
 \frac{1}{N}\sum_{k=1}^N { c_i^{(k)} c_j^{(k)} }.
@@ -201,20 +203,6 @@ $$</p>
 Suppose <span class="arithmatex">\(\Delta\lambda\)</span> is measured in region where <span class="arithmatex">\(c\)</span>-axes are, to a good approximation, suspected to be distributed on the <span class="arithmatex">\({\bf m}_2\)</span>&mdash;<span class="arithmatex">\({\bf z}\)</span> plane because the smallest eigenvalue is vanishing, <span class="arithmatex">\(\lambda_1 \rightarrow 0\)</span>.
 In this case, <span class="arithmatex">\(\Delta \lambda = 0\)</span> represents a perfect single-maximum along <span class="arithmatex">\({\bf z}\)</span>, <span class="arithmatex">\(\Delta \lambda = 0.5\)</span> a perfect girdle in the <span class="arithmatex">\({\bf m}_2\)</span>&mdash;<span class="arithmatex">\({\bf z}\)</span> plane, and <span class="arithmatex">\(\Delta \lambda = 1\)</span> a perfect single-maximum along <span class="arithmatex">\({\bf m}_2\)</span>, respectively:</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/plane-CPOs.png" style="width:610px" /></p>
-<!--
-The above [plot](cpo-plot.md) was generated from the normalized spectral expansion coefficients $\hat{n}_l^m \equiv n_l^m/n_0^0$ for $l\leq 2$, [derived from](cpo-structuretensors.md)
-
-$$
-\langle c_i c_j\rangle = \frac{{\bf I}}{3} + \sqrt{\frac{2}{15}}
-\left[\begin{matrix}
-\operatorname{Re}[\hat{n}_2^2] - \dfrac{1}{2}\sqrt{\dfrac{2}{3}} \hat{n}_2^0 & -\operatorname{Im}[\hat{n}_2^2] & -\operatorname{Re}[\hat{n}_2^1] \\ 
- & -\operatorname{Re}[\hat{n}_2^2] - \dfrac{1}{2}\sqrt{\dfrac{2}{3}} \hat{n}_2^0  & \operatorname{Im}[\hat{n}_2^1] \\ 
-\mathrm{sym.} &  & \sqrt{\dfrac{2}{3}} \hat{n}_2^0
-\end{matrix}\right]
-.
-$$
--->
-
 <h2 id="cpo-rightarrow-enhancement-factors">CPO <span class="arithmatex">\(\rightarrow\)</span> Enhancement factors</h2>
 <p>If <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> can be inferred from radar sounding following the above method, so can the bulk strain-rate enhancement factors, <span class="arithmatex">\(E_{ij}\)</span>, in the same eigenframe (i.e. <a href="../enhancements-strainrate/">eigenenhancements</a>).</p>
 <p>The eigenenhancements depend, however, also on the fourth-order structure tensor, <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span>, but the bulk permittivity <span class="arithmatex">\(\epsilon_{ij}\)</span> &mdash; and therefore radar-sounding methods &mdash; is insensitive to <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span>.

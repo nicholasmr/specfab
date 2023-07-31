@@ -61,13 +61,7 @@
               <ul class="current">
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Transversely isotropic grains</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#lagrangian-material-parcel">Lagrangian material parcel</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#notation">Notation</a>
-    </li>
-        </ul>
+    <li class="toctree-l2"><a class="reference internal" href="#problem">Problem</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#lattice-rotation">Lattice rotation</a>
         <ul>
@@ -148,9 +142,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="cpo-dynamics-transversely-isotropic-grains">CPO dynamics &mdash; Transversely isotropic grains</h1>
-<h2 id="introduction">Introduction</h2>
-<p>This tutorial focuses on modelling the CPO evolution of polycrystalline glacier ice, understood as the distribution of <span class="arithmatex">\({c}\)</span>-axes; that is, the distribution of (easy) slip-plane normals of grains, <span class="arithmatex">\(n(\theta,\phi)\)</span>.</p>
+                <h1 id="cpo-dynamics-for-transversely-isotropic-grains">CPO dynamics for transversely isotropic grains</h1>
+<p>This tutorial focuses on modelling the CPO evolution of polycrystalline glacier ice, understood as the distribution of <span class="arithmatex">\({c}\)</span>-axes; that is, the distribution <span class="arithmatex">\(n(\theta,\phi)\)</span> of (easy) slip-plane normals of grains, <span class="arithmatex">\({\bf n}\)</span>.</p>
 <table>
 <thead>
 <tr>
@@ -165,15 +158,7 @@
 </tr>
 </tbody>
 </table>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><span class="arithmatex">\(n(\theta,\phi)\)</span> may also be understood as the mass density fraction of grains with a given slip-plane normal orientation.
-See <a href="../cpo-representation/">CPO representation</a> for details.</p>
-</div>
-<h3 id="lagrangian-material-parcel">Lagrangian material parcel</h3>
-<p>The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different <a href="../deformation-modes/">modes of deformation</a>:</p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center" style="width:620px" /></p>
-<h3 id="notation">Notation</h3>
+<h2 id="problem">Problem</h2>
 <p>Given the expansion</p>
 <div class="arithmatex">\[
 n({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}({\bf x},t) Y_{l}^{m}(\theta,\phi) \quad\text{(distribution of slip-plane normals)}, 
@@ -191,6 +176,16 @@ n({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}({\bf x},t) Y_{l}
 <div class="arithmatex">\[
 {\bf M} = {\bf M_{\mathrm{LROT}}} + {\bf M_{\mathrm{DDRX}}} + {\bf M_{\mathrm{CDRX}}} + \cdots \quad\text{(operator)}. 
 \]</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><span class="arithmatex">\(n(\theta,\phi)\)</span> may also be understood as the mass density fraction of grains with a given slip-plane normal orientation.
+See <a href="../cpo-representation/">CPO representation</a> for details.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Modes of deformation</p>
+<p>The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different <a href="../deformation-modes/">modes of deformation</a>:</p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center" style="width:620px" /></p>
+</div>
 <hr />
 <h2 id="lattice-rotation">Lattice rotation</h2>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-LROT.gif" style="width:650px" /></p>
