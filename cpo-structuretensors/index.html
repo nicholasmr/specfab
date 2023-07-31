@@ -50,19 +50,9 @@
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Structure tensors</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#definition">Definition</a>
+    <li class="toctree-l2"><a class="reference internal" href="#convert-to-spectral">Convert to spectral</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#converting-to-spectral-representation">Converting to spectral representation</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#example">Example</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#constructing-cpos-from-measurements">Constructing CPOs from measurements</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#example_1">Example</a>
-    </li>
-        </ul>
+    <li class="toctree-l2"><a class="reference internal" href="#construct-from-measurements">Construct from measurements</a>
     </li>
     </ul>
                   </li>
@@ -133,35 +123,26 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="structure-tensors">Structure tensors</h1>
-<h2 id="definition">Definition</h2>
-<p>The 2nd-, 4th- and 6th-order structure tensors (<code>a2</code>, <code>a4</code> and <code>a6</code> in specfab) are the average outer products of a crystallographic axis (vector moments).</p>
-<p>For example, in the case of a discrete ensemble of <span class="arithmatex">\({\bf c}\)</span> axes they are</p>
+<p>The <span class="arithmatex">\(k\)</span>-th order structure tensors are the average outer products of a crystallographic axis (vector moments).
+For example, in the case of a discrete ensemble of <span class="arithmatex">\({\bf c}\)</span> axes they are</p>
 <div class="arithmatex">\[ 
-{\bf a}^{(2)}=\frac{1}{N}\sum_i^N {\bf c}_i\otimes{\bf c}_i
-,\quad
-{\bf a}^{(4)}=\frac{1}{N}\sum_i^N ({\bf c}_i\otimes)^4
-,\quad 
-{\bf a}^{(6)}=\frac{1}{N}\sum_i^N ({\bf c}_i\otimes)^6
-,
+{\bf a}^{(k)}=\frac{1}{N}\sum_i^N ({\bf c}_i\otimes)^k,
 \]</div>
-<p>where <span class="arithmatex">\(N\)</span> is the total number of grains (equal grain weight/size/mass for assumed simplicity). </p>
-<p>Alternatively, if the distribution function of <span class="arithmatex">\({\bf c}\)</span> axes is known, <span class="arithmatex">\(n(\theta,\phi)\)</span>, the structure tensors are</p>
+<p>where <span class="arithmatex">\(N\)</span> is the total number of grains, assuming equal grain weight (i.e. mass) for simplicity.
+Alternatively, if the distribution function of <span class="arithmatex">\({\bf c}\)</span> axes is known, <span class="arithmatex">\(n(\theta,\phi)\)</span>, the structure tensors are</p>
 <div class="arithmatex">\[ 
 {\bf a}^{(k)}=\frac{1}{N} \int_{S^2} (\hat{{\bf r}}\otimes)^k n(\theta,\phi) \, \mathrm{d}\Omega
 ,
 \]</div>
-<p>where <span class="arithmatex">\(\mathrm{d}\Omega = \sin(\theta) \mathrm{d}\theta \mathrm{d}\phi\)</span> is the infinitesimal solid angle, <span class="arithmatex">\(\hat{{\bf r}}\)</span> is the radial unit vector, and <span class="arithmatex">\(N=\int_{S^2} n(\theta,\phi) \, \mathrm{d}\Omega\)</span>.</p>
-<h2 id="converting-to-spectral-representation">Converting to spectral representation</h2>
+<p>where <span class="arithmatex">\(\mathrm{d}\Omega = \sin(\theta) \mathrm{d}\theta \mathrm{d}\phi\)</span> is the infinitesimal solid angle, <span class="arithmatex">\(\hat{{\bf r}}(\theta,\phi)\)</span> is the radial unit vector, and <span class="arithmatex">\(N=\int_{S^2} n(\theta,\phi) \, \mathrm{d}\Omega\)</span>.</p>
+<h2 id="convert-to-spectral">Convert to spectral</h2>
 <p>Converting between spectral and tensorial representations is a linear problem in the sense that </p>
-<div class="arithmatex">\[ {\bf a}^{(2)} = {\bf f}(\hat{n}_2^{m})
-,\quad
-{\bf a}^{(4)} = {\bf g}(\hat{n}_2^{m}, \hat{n}_4^{m}) 
-,\quad
-{\bf a}^{(6)} = {\bf h}(\hat{n}_2^{m}, \hat{n}_4^{m}, \hat{n}_6^{m}) 
+<div class="arithmatex">\[
+{\bf a}^{(k)} = {\bf f}(\hat{n}_2^{m}, \hat{n}_4^{m}, \cdots, \hat{n}_k^{m}) 
 ,
 \qquad\text{(for all possible $m$)}
 \]</div>
-<p>where <span class="arithmatex">\({\bf f}\)</span>, <span class="arithmatex">\({\bf g}\)</span>, <span class="arithmatex">\({\bf h}\)</span> are linear in their arguments, and </p>
+<p>where <span class="arithmatex">\({\bf f}\)</span> is linear in its arguments, and </p>
 <div class="arithmatex">\[
 \hat{n}_l^m = n_l^m/n_0^0
 .
@@ -177,7 +158,6 @@
 ,
 \]</div>
 <p>but for higher-order structure tensors the expressions are long (not shown).</p>
-<h3 id="example">Example</h3>
 <p>The following code example shows how to convert between the representations:</p>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfabpy as sf
@@ -186,29 +166,28 @@ lm, nlm_len = sf.init(L)
 nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
 
 ### a2 to nlm
-a2 = np.diag([0.0,0.25,0.75]) # any second-order structure tensor (not necessarily diagonal)
-nlm[:sf.L2len] = sf.a2_to_nlm(a2) # Determine l&lt;=2 expansion coefficients of normalized ODF
+a2 = np.diag([0.0,0.25,0.75]) # arbitrary second-order structure tensor
+nlm[:sf.L2len] = sf.a2_to_nlm(a2) # determine l&lt;=2 expansion coefficients of ODF
 a2 = sf.a2(nlm) # nlm back to a2
 print('a2 is: ', a2)
 
 ### a4 to nlm
-p = np.array([0,0,1]) # unidirectional fabric where all c-axes are aligned with the z-direction
+p = np.array([0,0,1]) # unidirectional CPO
 a4 = np.einsum('i,j,k,l', p,p,p,p) # a4 for ODF = deltafunc(r-p) 
-nlm[:sf.L4len] = sf.a4_to_nlm(a4) # Determine l&lt;=4 expansion coefficients of normalized ODF
+nlm[:sf.L4len] = sf.a4_to_nlm(a4) # determine l&lt;=4 expansion coefficients of ODF
 a4 = sf.a4(nlm) # nlm back to a4 
 print('a4 is: ', a4)
 
 ### a6 to nlm
-p = np.array([0,0,1]) # unidirectional fabric where all c-axes are aligned with the z-direction
+p = np.array([0,0,1]) # unidirectional CPO
 a6 = np.einsum('i,j,k,l,m,n', p,p,p,p,p,p) # a6 for ODF = deltafunc(r-p) 
-nlm[:sf.L6len] = sf.a6_to_nlm(a6) # Determine l&lt;=6 expansion coefficients of normalized ODF
+nlm[:sf.L6len] = sf.a6_to_nlm(a6) # determine l&lt;=6 expansion coefficients of ODF
 a6 = sf.a6(nlm) # nlm back to a6
 print('a6 is: ', a6)
 </code></pre>
-<h2 id="constructing-cpos-from-measurements">Constructing CPOs from measurements</h2>
+<h2 id="construct-from-measurements">Construct from measurements</h2>
 <p>The spectral expansion coefficients of any CPO may be determined from discrete measurements of crystallographic axes.
 This requires constructing the corresponding structure tensors (for each crystallographic axis), from which the expansion coefficients may be derived.</p>
-<h3 id="example_1">Example</h3>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfabpy as sf
 lm, nlm_len = sf.init(8) 
@@ -219,18 +198,15 @@ lm, nlm_len = sf.init(8)
 ### Determine sixth-order structure tensor, a6
 a6 = np.zeros((3,3,3,3,3,3))
 for c in caxes
-    a6 += np.einsum('i,j,k,l,m,n', c,c,c,c,c,c) # sixth outer product of c with itself
+    a6 += np.einsum('i,j,k,l,m,n', c,c,c,c,c,c) # sixth outer product of c-axis with itself
 a6 /= len(caxes) # normalize by number of c-axes (grains)
 
 ### Determine spectral expansion coefficients
 nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
-nlm[:sf.L6len] = sf.a6_to_nlm(a6) # Determine l&lt;=6 expansion coefficients of normalized ODF 
+nlm[:sf.L6len] = sf.a6_to_nlm(a6) # determine l&lt;=6 expansion coefficients of ODF 
 </code></pre>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Constructing <code>a6</code> is to be preferred over <code>a4</code> and <code>a2</code> since it contains more information on the fine-scale structure of the distribution; 
+<p>Note that constructing <code>a6</code> is to be preferred over <code>a4</code> and <code>a2</code> since it contains more information on the fine-scale structure of the distribution; 
 that is, <span class="arithmatex">\(l\leq 6\)</span> expansion coefficients as opposed to <span class="arithmatex">\(l\leq 4\)</span> and <span class="arithmatex">\(l\leq 2\)</span> coefficients, respectively.</p>
-</div>
               
             </div>
           </div><footer>

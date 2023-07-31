@@ -52,9 +52,9 @@
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Idealized states</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#unidirectional-distribution">Unidirectional distribution</a>
+    <li class="toctree-l2"><a class="reference internal" href="#unidirectional">Unidirectional</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#planar-and-circle-distribution">Planar and circle distribution</a>
+    <li class="toctree-l2"><a class="reference internal" href="#planar-and-circle">Planar and circle</a>
     </li>
     </ul>
                   </li>
@@ -130,7 +130,7 @@
 <li><strong>Circle CPO</strong>: crystallographic axes are perfectly distributed on a small circle on <span class="arithmatex">\(S^2\)</span>.</li>
 </ul>
 <p>Each of these can be expanded in terms of spherical harmonics by using the sifting property of the delta function, <span class="arithmatex">\(\delta({\hat {\bf r}})\)</span>.</p>
-<h2 id="unidirectional-distribution">Unidirectional distribution</h2>
+<h2 id="unidirectional">Unidirectional</h2>
 <p>Consider the case where grains are perfectly aligned with <span class="arithmatex">\({{\bf m}}\)</span> such that <span class="arithmatex">\(n({\hat {\bf r}}) = \delta({\hat {\bf r}}-{{\bf m}})\)</span>.
 The corresponding expansion coefficients follow from the usual overlap integral:</p>
 <div class="arithmatex">\[
@@ -139,7 +139,7 @@ n_l^m
 = (Y_l^m({{\bf m}}))^*
 .
 \]</div>
-<p>In the figure below, the resulting unidirectional distribution is shown (right-most inset), where the white area represents the lowest-order CPO state space given by the normalized coefficients <span class="arithmatex">\(\hat{n}_2^0 = n_2^0/n_0^0\)</span> and <span class="arithmatex">\(\hat{n}_4^0 = n_4^0/n_0^0\)</span>:</p>
+<p>In the figure below, the resulting unidirectional distribution is shown (rightmost inset), where the white area represents the subspace of possible CPOs as given by the normalized coefficients of lowest order: <span class="arithmatex">\(\hat{n}_2^0 = n_2^0/n_0^0\)</span> and <span class="arithmatex">\(\hat{n}_4^0 = n_4^0/n_0^0\)</span>.</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/state-space-validation/ice/state-space-ideal.png#center" style="width:570px" /></p>
 <p>The code below demonstrates how to generate the distribution with specfab.</p>
 <pre><code class="language-python">import numpy as np
@@ -151,7 +151,7 @@ m = [0,0,1] # symmetry axis of distribution
 colat = 0 # 0 = unidirectional distribution, pi/2 = planar distribution, and anything in between is a small circle distribution
 nlm = sf.nlm_ideal(m, colat, L) # note: only l&lt;=12 coefs are determined even if L&gt;12
 </code></pre>
-<h2 id="planar-and-circle-distribution">Planar and circle distribution</h2>
+<h2 id="planar-and-circle">Planar and circle</h2>
 <p>Planar and circle distributions follow from averaging the delta function over a desired co-latitude <span class="arithmatex">\(\theta\)</span> &mdash; i.e. the co-latitude where <span class="arithmatex">\(n(\hat{{\bf r}})\)</span> should be sharply defined &mdash; in which case all zonal structure vanishes (<span class="arithmatex">\(m\neq 0\)</span> components vanish) and we are left with</p>
 <div class="arithmatex">\[
 n_l^m(\theta) = 
@@ -161,7 +161,7 @@ Y_l^0(\theta, \phi=0) \qquad\text{if}\quad m=0\\
 \end{cases}
 .
 \]</div>
-<p>Here, <span class="arithmatex">\({{\bf m}}\)</span> is to be understood as the rotational symmetry axis of <span class="arithmatex">\(n(\hat{{\bf r}})\)</span>, and the co-latitude is defined w.r.t. <span class="arithmatex">\({{\bf m}}\)</span> (not <span class="arithmatex">\(\hat{{\bf z}}\)</span>).</p>
+<p>Here, <span class="arithmatex">\({{\bf m}}\)</span> is to be understood as the rotational symmetry axis of <span class="arithmatex">\(n(\hat{{\bf r}})\)</span>, and the co-latitude is defined w.r.t. <span class="arithmatex">\({{\bf m}}\)</span>, not <span class="arithmatex">\(\hat{{\bf z}}\)</span>.</p>
 <p>The above figure also shows the resulting <span class="arithmatex">\(n(\hat{{\bf r}})\)</span> for different <span class="arithmatex">\(\theta\)</span>, calculated using the same code as above but for nonzero <code>colat</code>.</p>
               
             </div>

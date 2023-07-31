@@ -68,13 +68,9 @@
               <ul class="current">
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Strain-rate enhancements</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#definition">Definition</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#eigenenhancements">Eigenenhancements</a>
+    <li class="toctree-l2"><a class="reference internal" href="#eigenenhancements">Eigenenhancements</a>
     </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#enhancements-from-grain-homogenization">Enhancements from grain homogenization</a>
+    <li class="toctree-l2"><a class="reference internal" href="#grain-homogenization">Grain homogenization</a>
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#transversely-isotropic-grains">Transversely isotropic grains</a>
         <ul>
@@ -141,7 +137,6 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="strain-rate-enhancements">Strain-rate enhancements</h1>
-<h2 id="definition">Definition</h2>
 <p>Given an anisotropic rheology <span class="arithmatex">\({\bf D}({\bf S})\)</span>, where <span class="arithmatex">\({\bf D}\)</span> and <span class="arithmatex">\({\bf S}\)</span> are the 
 strain-rate and deviatoric stress tensors, respectively, 
 the <em>directional strain-rate enhancement factors</em> <span class="arithmatex">\(E_{ij}\)</span> are defined as the <span class="arithmatex">\(({\bf e}_i, {\bf e}_j)\)</span>-components of <span class="arithmatex">\({\bf D}\)</span> relative to that of the rheology in the isotropic limit (isotropic CPO):</p>
@@ -177,7 +172,7 @@ E_{ij} = \frac{
 <p class="admonition-title">Hard or soft</p>
 <p><span class="arithmatex">\(E_{ij}&gt;1\)</span> implies the material response is <em>softened</em> due to fabric (compared to an isotropic CPO), whereas <span class="arithmatex">\(E_{ij}&lt;1\)</span> implies <em>hardening</em>.</p>
 </div>
-<h3 id="eigenenhancements">Eigenenhancements</h3>
+<h2 id="eigenenhancements">Eigenenhancements</h2>
 <p><em>Eigenenhancements</em> are defined as the enhancement factors w.r.t. the CPO symmetry axes (<span class="arithmatex">\({\bf m}_i\)</span>): </p>
 <div class="arithmatex">\[{\bf e}_i = {\bf m}_i .\]</div>
 <p>These are the enhancements factors needed to specify the viscous anisotropy in <a href="../constitutive-viscoplastic/">bulk rheologies</a>:</p>
@@ -195,7 +190,7 @@ E_{ij} = \frac{
 </tr>
 </tbody>
 </table>
-<h2 id="enhancements-from-grain-homogenization">Enhancements from grain homogenization</h2>
+<h2 id="grain-homogenization">Grain homogenization</h2>
 <p>To calculate <span class="arithmatex">\(E_{ij}\)</span> for a given CPO using (1) requires an <em>effective</em> rheology that takes the microstructure into account.</p>
 <p>In the simplest case, polycrystals may be regarded as an ensemble of interactionless grains (monocrystals) subject to either a homogeneous stress field over the polycrystal scale</p>
 <div class="arithmatex">\[
