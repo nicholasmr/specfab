@@ -67,7 +67,9 @@ where $\langle {\bf m}'^2 \rangle$ is the [second-order structure tensor](cpo-st
 
 ### Example for glacier ice
 
-Implemented not finished (work in progress).
+To be documented.
+
+<!--
 
 ```python
 import numpy as np
@@ -91,6 +93,7 @@ theta, phi = np.deg2rad([90,70,]), np.deg2rad([0,10,]) # wave-vector directions 
 # Calculate phase velocities
 Vi = sf.Vi_electromagnetic_tranisotropic(nlm, eps_grain, mu, theta,phi) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:]
 ```
+-->
 
 ## Orthotropic grains
 

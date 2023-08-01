@@ -9,15 +9,17 @@ $$
 $$
 where $\epsilon_{\parallel}'$ and $\epsilon_{\perp}'$ are the permittivities parallel and perpendicular to the $c$-axis, respectively, which depend on ice temperature and EM-wave frequency ([Fujita et al., 2000](https://eprints.lib.hokudai.ac.jp/dspace/bitstream/2115/32469/1/P185-212.pdf)).
 
-If EM-wave lengths are much longer than the average grain size, the bulk permittivity tensor of polycrystalline ice may be approximated as the grain-average permittivity tensor, $\epsilon_{ij} = \langle \epsilon_{ij}' \rangle$, constructed by averaging over all grain orientations (over the CPO), giving
+If EM-wave lengths are much longer than the average grain size, the bulk permittivity tensor of polycrystalline ice may be approximated as the grain-average permittivity tensor, constructed by averaging over all grain orientations (over the CPO):
 
 $$
-\epsilon_{ij} = (2\epsilon_{\perp}' + \epsilon_{\parallel}') \frac{\delta_{ij}}{3}
+\epsilon_{ij} \simeq 
+\langle \epsilon_{ij}' \rangle = 
+(2\epsilon_{\perp}' + \epsilon_{\parallel}') \frac{\delta_{ij}}{3}
 + (\epsilon_{\parallel}'-\epsilon_{\perp}') \left(\langle c_i c_j \rangle - \frac{\delta_{ij}}{3} \right)
 ,
 $$
 
-where $\langle c_i c_j \rangle$ is the second-order structure tensor (`a2` in specfab; a.k.a. ${\bf a}^{(2)}$), defined as the average outer product of grain $c$-axes (assuming grain sizes are uncorrelated with orientation):
+where $\langle c_i c_j \rangle$ is the second-order [structure tensor](cpo-structuretensors.md) (`a2` in specfab; a.k.a. ${\bf a}^{(2)}$), defined as the average outer product of grain $c$-axes (assuming grain sizes are uncorrelated with orientation):
 
 $$ 
 \langle c_i c_j \rangle = 
@@ -86,21 +88,6 @@ Suppose $\Delta\lambda$ is measured in region where $c$-axes are, to a good appr
 In this case, $\Delta \lambda = 0$ represents a perfect single-maximum along ${\bf z}$, $\Delta \lambda = 0.5$ a perfect girdle in the ${\bf m}_2$&mdash;${\bf z}$ plane, and $\Delta \lambda = 1$ a perfect single-maximum along ${\bf m}_2$, respectively:
 
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/plane-CPOs.png){: style="width:610px"}
-
-<!--
-The above [plot](cpo-plot.md) was generated from the normalized spectral expansion coefficients $\hat{n}_l^m \equiv n_l^m/n_0^0$ for $l\leq 2$, [derived from](cpo-structuretensors.md)
-
-$$
-\langle c_i c_j\rangle = \frac{{\bf I}}{3} + \sqrt{\frac{2}{15}}
-\left[\begin{matrix}
-\operatorname{Re}[\hat{n}_2^2] - \dfrac{1}{2}\sqrt{\dfrac{2}{3}} \hat{n}_2^0 & -\operatorname{Im}[\hat{n}_2^2] & -\operatorname{Re}[\hat{n}_2^1] \\ 
- & -\operatorname{Re}[\hat{n}_2^2] - \dfrac{1}{2}\sqrt{\dfrac{2}{3}} \hat{n}_2^0  & \operatorname{Im}[\hat{n}_2^1] \\ 
-\mathrm{sym.} &  & \sqrt{\dfrac{2}{3}} \hat{n}_2^0
-\end{matrix}\right]
-.
-$$
--->
-
 
 ## CPO $\rightarrow$ Enhancement factors
 

@@ -1,25 +1,12 @@
-# CPO dynamics &mdash; Transversely isotropic grains
+# CPO dynamics for transversely isotropic grains
 
-## Introduction
-
-This tutorial focuses on modelling the CPO evolution of polycrystalline glacier ice, understood as the distribution of ${c}$-axes; that is, the distribution of (easy) slip-plane normals of grains, $n(\theta,\phi)$.
+This tutorial focuses on modelling the CPO evolution of polycrystalline glacier ice, understood as the distribution of ${c}$-axes; that is, the distribution $n(\theta,\phi)$ of (easy) slip-plane normals of grains, ${\bf n}$.
 
 | Polycrystal | Grain slip system (${\bf n}={\bf c}$) |
 | :-: | :-: |
 | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png){: style="width:200px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slipplane.png){: style="width:170px"} |
 
-
-!!! note 
-    $n(\theta,\phi)$ may also be understood as the mass density fraction of grains with a given slip-plane normal orientation.
-    See [CPO representation](cpo-representation.md) for details.
-
-### Lagrangian material parcel
-
-The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different [modes of deformation](deformation-modes.md):
-
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center){: style="width:620px"}
-
-### Notation
+## Problem
 
 Given the expansion
 
@@ -46,6 +33,17 @@ The total effect of multiple processes acting simultaneously is simply
 $$
 {\bf M} = {\bf M_{\mathrm{LROT}}} + {\bf M_{\mathrm{DDRX}}} + {\bf M_{\mathrm{CDRX}}} + \cdots \quad\text{(operator)}. 
 $$
+
+
+!!! note 
+    $n(\theta,\phi)$ may also be understood as the mass density fraction of grains with a given slip-plane normal orientation.
+    See [CPO representation](cpo-representation.md) for details.
+
+!!! tip "Modes of deformation"
+
+    The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different [modes of deformation](deformation-modes.md):
+
+    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center){: style="width:620px"}
 
 - - -
 

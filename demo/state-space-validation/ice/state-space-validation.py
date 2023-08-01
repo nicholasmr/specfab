@@ -154,7 +154,7 @@ if INTEGRATE_MODEL:
     nlm_ce, _  = integrate_model(nlm_iso, 'LROT', -np.diag([.5, .5, -1]), 0.007, name='ce') # confined extension (ce)
     _, nlmr_ss = integrate_model(nlm_iso, 'LROT', +np.array([[0,1,0], [0,0,0], [0,0,0]]), 0.030, name='ss', rotate=True) # simple vertical shear (ss)
 
-    f_nlm_init = lambda nlm, n20_ref: nlm[np.argmin(np.abs(nlm[:,3]-n20_ref)), :] 
+    f_nlm_init = lambda nlm, n20_ref: nlm[np.argmin(np.abs(nlm[:,sf.I20]-n20_ref)), :] 
     nlm_ddrx1, _ = integrate_model(f_nlm_init(nlm_ce, -0.20), 'DDRX', +np.diag([.5, .5, -1]), 5*0.05, name='ddrx1') # DDRX trajectory 1
     nlm_ddrx2, _ = integrate_model(f_nlm_init(nlm_cc, +0.00), 'DDRX', +np.diag([.5, .5, -1]), 5*0.05, name='ddrx2') # DDRX trajectory 2
     nlm_ddrx3, _ = integrate_model(f_nlm_init(nlm_cc, +0.20), 'DDRX', +np.diag([.5, .5, -1]), 5*0.05, name='ddrx3') # DDRX trajectory 3

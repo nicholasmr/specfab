@@ -1,0 +1,64 @@
+% Nicholas Rathmann, 2023
+
+\documentclass[12pt,tikz,border=0pt]{standalone}
+
+\include{../../../images/tranisotropic/parcel-animation/header-parcel.tex} 
+
+\usetikzlibrary{backgrounds}
+\usepackage{txfonts}
+\usepackage{times}
+%\usepackage{siunitx}
+
+\tikzset{
+	debugbox/.style={},
+	title/.style={font=\bf\fontsize{13.5pt}{0pt}\selectfont},
+}
+
+\gdef\drawframe#1#2#3#4{
+
+	\begin{tikzpicture}[tdplot_main_coords, 
+		background rectangle/.style={fill=bgcolor}, show background rectangle,
+		inner frame xsep=2.5ex, inner frame ysep=2.25ex] 
+
+	%%% Deformed parcel
+	\begin{scope}[scale=1.9, yshift=-1em]
+		\drawparcel{#1}{#2}{#3}
+	\end{scope}
+			
+	%%% Include statespace fig
+	\node at (24em,1em) {\includegraphics[scale=0.95]{frames/frame-#4-#1.png}};
+%	\node at (35em,-8em) {\Large \bf Frame #1}; % debug
+		
+	%%% Hidden bounding box to ensure all frames have same dimensions
+	\gdef\W{10.0em}
+	\gdef\H{12.75em}
+	\tikzset{debugbox/.style={draw=none},} % outcomment to show box
+	\draw[red, very thick, debugbox] ({-\W},{-\H*0.6}) rectangle (\W,\H); 
+
+	%%% Labels
+	\begin{scope}[shift={(-10.2em,-7.4em)}]
+		\node[anchor=west] (x) at (0,0.0em) {\bf specfab demo};
+		\node[anchor=west] (x) at (0,-1.15em) {github.com/nicholasmr/specfab};
+	\end{scope}
+	\begin{scope}[yshift=12.6em]
+		\node[title] at (0em,0) {Uniaxial deformation};
+		\node[title] at (25em,0) {CPO state space and enhancement factors};
+	\end{scope}
+	
+	\end{tikzpicture}
+}
+
+\begin{document}
+
+	\pgfmathsetmacro{\dn}{4} % plot every \dn time step
+	\gdef\Npad{8} % number of still frames for padding at beginning and end of animation
+	
+	\foreach \nn in {0,...,\Npad}   {\drawframe{0}{\straintargetUC}{\T}{uc} }
+	\foreach \nn in {0,\dn,...,\Nt} {\drawframe{\nn}{\straintargetUC}{\T}{uc} }
+	\foreach \nn in {0,...,\Npad}   {\drawframe{\Nt}{\straintargetUC}{\T}{uc} }
+	
+	\foreach \nn in {0,...,\Npad}   {\drawframe{0}{\straintargetUE}{-\T}{ue} }
+	\foreach \nn in {0,\dn,...,\Nt} {\drawframe{\nn}{\straintargetUE}{-\T}{ue} }
+	\foreach \nn in {0,...,\Npad}   {\drawframe{\Nt}{\straintargetUE}{-\T}{ue} }
+
+\end{document}

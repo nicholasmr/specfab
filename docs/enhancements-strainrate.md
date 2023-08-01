@@ -1,7 +1,5 @@
 # Strain-rate enhancements
 
-## Definition
-
 Given an anisotropic rheology ${\bf D}({\bf S})$, where ${\bf D}$ and ${\bf S}$ are the 
 strain-rate and deviatoric stress tensors, respectively, 
 the *directional strain-rate enhancement factors* $E_{ij}$ are defined as the $({\bf e}_i, {\bf e}_j)$-components of ${\bf D}$ relative to that of the rheology in the isotropic limit (isotropic CPO):
@@ -39,7 +37,7 @@ and so on.
 
     $E_{ij}>1$ implies the material response is *softened* due to fabric (compared to an isotropic CPO), whereas $E_{ij}<1$ implies *hardening*.
 
-### Eigenenhancements
+## Eigenenhancements
 
 *Eigenenhancements* are defined as the enhancement factors w.r.t. the CPO symmetry axes (${\bf m}_i$): 
 
@@ -51,7 +49,7 @@ These are the enhancements factors needed to specify the viscous anisotropy in [
 | :-: | :-: |
 | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous.png){: style="width:260px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous.png){: style="width:350px"} |
 
-## Enhancements from grain homogenization 
+## Grain homogenization 
 
 To calculate $E_{ij}$ for a given CPO using (1) requires an *effective* rheology that takes the microstructure into account.
 
@@ -166,7 +164,7 @@ Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # Eij=(E11,E2
 | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous-monocrystal.png){: style="width:250px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
 
 If grains are approximately orthotropic, the grain rheology can be modelled using the [orthotropic power-law rheology](constitutive-viscoplastic.md).
-This requires specifying the grain eigenenhancements ($E_{11}'$, $E_{22}'$, $E_{33}'$, $E_{23}'$, $E_{13}'$, $E_{12}'$), the power-law exponent $n'$, and the Taylor&mdash;Sachs weight $\alpha$.
+This requires specifying the grain eigenenhancements $E_{ij}'$, the power-law exponent $n'$, and the Taylor&mdash;Sachs weight $\alpha$.
 
 #### Example for olivine
 

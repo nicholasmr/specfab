@@ -1,0 +1,90 @@
+% Nicholas Rathmann, 2023
+
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+
+\tdplotsetmaincoords{65}{35} % 1
+
+% For printing strain value to certain precision
+\usepackage{pgffor}
+\usepackage{pgfmath}
+\usepackage{pgf}
+\usepackage{xfp}
+\pgfkeys{/pgf/number format/.cd, fixed, fixed zerofill, precision=2}
+
+\usepackage{xcolor}
+\definecolor{myred}{HTML}{a50f15}
+\definecolor{mygray}{HTML}{d9d9d9}
+\definecolor{bgcolor}{HTML}{f7f6ee}
+
+%----------
+
+\tikzset{
+	every picture/.style={line cap=round, color=black, line width=0.35mm},
+	boxtop/.style={ fill=mygray!80},
+	boxend/.style={ fill=mygray!120},
+	boxside/.style={fill=mygray!140},
+}
+
+%----------
+
+\pgfmathsetmacro{\T}{1}  % e-folding time for uniaxial deformation with constant strain rate
+\pgfmathsetmacro{\Nt}{100} % number of time steps
+\pgfmathsetmacro{\straintargetUC}{-0.9} % strainzz target
+\pgfmathsetmacro{\straintargetUE}{+2.0} % strainzz target
+
+\tikzset{declare function = { 
+	b(\t,\Te)  = exp(\t/\Te);
+	Fz(\t,\Te) = b(\t,\Te)^(-1);
+	Fh(\t,\Te) = b(\t,\Te)^(+0.5);
+	fdt(\straintarget,\Te) = -\Te*ln(\straintarget+1)/\Nt;
+}}
+
+%----------
+
+\newcommand{\parcelframe}[5]{%
+	\begin{scope}[myred]
+		\begin{scope}[dashed]
+		\begin{scope}[canvas is yz plane at x=#1]
+			\draw[] (#2,#3) -- (1+#2,#3) -- (1+#2,1+#3) -- (#2,1+#3) --cycle; % back left
+		\end{scope}		
+		\begin{scope}[canvas is yz plane at x={1+#1}]
+			\draw[] (#2,#3) -- (1+#2,#3) -- (1+#2,1+#3) -- (#2,1+#3) --cycle; % front right
+		\end{scope}
+		\begin{scope}[canvas is xy plane at z=1+#3]
+			\draw[] (#1,#2)   -- (1+#1,#2);
+			\draw[] (#1,1+#2) -- (1+#1,1+#2);
+		\end{scope}  
+		\begin{scope}[canvas is xy plane at z=#3]
+			\draw[] (#1,#2)   -- (1+#1,#2);
+			\draw[] (#1,1+#2) -- (1+#1,1+#2);
+		\end{scope}  		
+		\end{scope}  
+	\end{scope}  
+}   
+
+\newcommand{\parcel}[4]{%
+	\draw[boxtop] (-#1/2,-#2/2,#3)-- (-#1/2,#2/2,#3) -- (#1/2,#2/2,#3) -- (#1/2,-#2/2,#3) --cycle; % top
+	\draw[boxend] (#1/2,-#2/2,0)-- (#1/2,#2/2,0) -- (#1/2,#2/2,#3)  -- (#1/2,-#2/2,#3) --cycle; % right
+	\draw[boxside] (-#1/2,-#2/2,0)-- (#1/2,-#2/2,0) -- (#1/2,-#2/2,#3)  -- (-#1/2,-#2/2,#3) --cycle; % front
+	\draw[] (-#1/2,-#2/2,0)-- (-#1/2,#2/2,0) -- (#1/2,#2/2,0) -- (#1/2,-#2/2,0) --cycle; % behind bot
+	\draw[] (-#1/2,#2/2,0) -- (-#1/2,#2/2,#3); % behind back
+}   
+
+\gdef\drawparcel#1#2#3{ 
+	% ARGS: time step (n), strain_zz target, e-folding time scale (T)
+	
+	\pgfmathsetmacro{\dt}{fdt(#2,#3)}  % time step
+	\pgfmathsetmacro\t{#1*\dt} % total time
+	\pgfmathsetmacro\strainzz{Fz(\t,#3)-1} % strain_zz at time \t
+	
+	\pgfmathsetmacro\H{Fh(\t,#3)}
+	\pgfmathsetmacro\Z{Fz(\t,#3)}		
+	\parcel{\H}{\H}{\Z}{0}
+	
+	\pgfmathsetmacro\dh{-0.5}
+	\pgfmathsetmacro\dz{0}
+	\parcelframe{\dh}{\dh}{\dz}{}{}
+	
+	\node[anchor=west] at (-4.9em,+2.9em) {$\epsilon_{zz} = \pgfmathprintnumber{\fpeval{\strainzz}}$};
+}

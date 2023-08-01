@@ -2,14 +2,14 @@
 
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/logo-square.jpg){: style="width:300px"}
 
-Spectral CPO model of polycrystalline materials that:
+Spectral CPO model of polycrystalline materials that can:
 
-- Can model lattice rotation, discontinuous DRX, and rotation/continuous DRX.
-- Can calculate CPO-induced viscous anisotropies using Sachs/Taylor homogenizations.
-- Can calculate elastic P- and S-wave velocities using Voigt/Reuss homogenizations.
-- Contains expressions for forward+inverse orthotropic and transversely isotropic rheologies.
-- Can convert between structure tensors and spectral expansions coefficients.
-- Can be integrated with finite-element models such as Elmer and FEniCS.
+- Model lattice rotation, discontinuous DRX, and rotation/continuous DRX.
+- Calculate CPO-induced viscous anisotropies using Sachs/Taylor homogenizations.
+- Calculate elastic P- and S-wave velocities using Voigt/Reuss homogenizations.
+- Provide expressions for forward+inverse orthotropic and transversely isotropic rheologies.
+- Convert between structure tensors and spectral expansions coefficients.
+- Be integrated with finite-element codes such as Elmer and FEniCS.
 
 By Nicholas M. Rathmann and David A. Lilien
 
@@ -21,7 +21,7 @@ By Nicholas M. Rathmann and David A. Lilien
 
 Source code [available here](https://github.com/nicholasmr/specfab)
 
-| Enviroment | How to |
+| Environment | How to |
 | :--- | :--- |
 | Python | A pre-compiled module exists for Linux:<br>`pip3 install numpy --upgrade && pip3 install specfabpy` |
 | Compile Python module |- For a local-only install, run `make specfabpy` in `/src` (requires LAPACK and BLAS) <br>- To install for general use (in other folders), run `make python` in `/src`. Note that if you do not have write permissions for your python installation, you can instead run `make specfabpy; python setup.py install --user`|

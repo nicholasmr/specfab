@@ -1,6 +1,4 @@
-# CPO dynamics &mdash; Orthotropic grains
-
-## Introduction
+# CPO dynamics for orthotropic grains
 
 This tutorial focuses on modelling the CPO evolution of polycrystalline olivine, understood as the distribution of (easy) slip-plane normals and slip directions of grains, $n(\theta,\phi)$ and $b(\theta,\phi)$.
 
@@ -10,17 +8,8 @@ This tutorial focuses on modelling the CPO evolution of polycrystalline olivine,
 
 The distributions $n(\theta,\phi)$ and $b(\theta,\phi)$ refer to certain crystallographic axes (${\bf m}'_i$) depending on the fabric type; i.e. thermodynamic conditions, water content, and stress magnitude that control which of the crystallographic slip systems is activated.
 
-!!! note 
-    The distributions may also be understood as the mass density fraction of grains with a given slip-plane-normal and slip-direction orientation.
-    See [CPO representation](cpo-representation.md) for details.
+## Problem
 
-### Lagrangian material parcel
-
-The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different [modes of deformation](deformation-modes.md):
-
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center){: style="width:620px"}
-
-### Notation
 
 Given the expansions
 
@@ -52,8 +41,15 @@ $$
 
 where the operator (matrix) ${\bf M}$ represents the effect of a given CPO process, which may depend on stress, strain-rate, temperature, etc.
 
-!!! note
-    Only lattice rotation is so far supported: ${\bf M} = {\bf M}_{\mathrm{LROT}}$.
+!!! note 
+    The distributions may also be understood as the mass density fraction of grains with a given slip-plane-normal and slip-direction orientation.
+    See [CPO representation](cpo-representation.md) for details.
+
+!!! tip "Modes of deformation"
+
+    The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different [modes of deformation](deformation-modes.md):
+
+    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center){: style="width:620px"}
 
 - - -
 

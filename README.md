@@ -2,14 +2,14 @@
 
 <img src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/logo-square.jpg" alt="specfab logo" width="330px"> 
 
-Spectral CPO model of polycrystalline materials that:
+Spectral CPO model of polycrystalline materials that can:
 
-- Can model lattice rotation, discontinuous DRX, and rotation/continuous DRX.
-- Can calculate CPO-induced viscous anisotropies using Sachs/Taylor homogenizations.
-- Can calculate elastic P- and S-wave velocities using Voigt/Reuss homogenizations.
-- Contains expressions for forward+inverse orthotropic and transversely isotropic rheologies.
-- Can convert between structure tensors and spectral expansions coefficients.
-- Can be integrated with finite-element models such as Elmer and FEniCS.
+- Model lattice rotation, discontinuous DRX, and rotation/continuous DRX.
+- Calculate CPO-induced viscous anisotropies using Sachs/Taylor homogenizations.
+- Calculate elastic P- and S-wave velocities using Voigt/Reuss homogenizations.
+- Provide expressions for forward+inverse orthotropic and transversely isotropic rheologies.
+- Convert between structure tensors and spectral expansions coefficients.
+- Be integrated with finite-element codes such as Elmer and FEniCS.
 
 ## Documentation
 

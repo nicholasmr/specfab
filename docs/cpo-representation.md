@@ -1,28 +1,39 @@
 # CPO representation
 
-## Definition
+CPOs are represented by their distributions of crystallographic axes in orientation space ($S^2$), neglecting grain sizes/mass and other topological information.
 
-CPOs are represented by their distributions of crystallographic axes in orientation space, $S^2$.
-Supported grain symmetry groups for modelling CPO evolution and wave propagation in polycrystals are:
+Supported grain symmetry groups are:
 
 | Grain symmetry | CPO components | Interpretation |
 | --- | --- | --- | 
-| Transversely isotropic | $n(\theta,\phi)$                | Distribution of slip-plane normals |
-| Orthotropic            | $n(\theta,\phi),b(\theta,\phi)$ | Distribution of slip-plane normals and slip directions |
+| Transversely isotropic | $n(\theta,\phi)$                  | Distribution of slip-plane normals |
+| Orthotropic            | $n(\theta,\phi),\,b(\theta,\phi)$ | Distribution of slip-plane normals and slip directions |
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slipplane.png){: style="width:180px"} 
+Thus, depending on which crystallographic slip system is preferentially activated, $n(\theta,\phi)$ and $b(\theta,\phi)$ may refer to the distributions of different crystallographic axes.
+For example: 
 
-!!! note
-    Grain sizes or shapes are not modelled by specfab.
+| <center> Monocrystal slip system</center> | <center>Polycrystalline ice</center> | <center>Polycrystalline olivine</center> |
+| :- | :- | :- |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slipplane.png){: style="width:160px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png){: style="width:210px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:210px"} |
+| Slip-plane normal (${\bf n}$) <br>and slip direction (${\bf b}$) | $n(\theta,\phi)$ is the ${\bf c}$-axis distribution | $n(\theta,\phi)$ and $b(\theta,\phi)$ are the <br> distributions of particular <br> crystallographic axes (${\bf m}'_i$) <br> depending on fabric type <br> (A&mdash;E type). |
 
-### Example
+## ODF
 
-| <center>Polycrystalline ice</center> | <center>Polycrystalline olivine</center> |
-| :- | :- |
-| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png){: style="width:220px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
-| $n(\theta,\phi)$ is the ${\bf c}$-axis distribution | $n(\theta,\phi)$ and $b(\theta,\phi)$ are the distributions <br>of particular crystallographic axes (${\bf m}'_i$) <br> depending on fabric type (A&mdash;E type). |
+The orientation distribution function (ODF) is defined as the normalized distribution 
 
-## Series expansion
+$$ 
+\mathrm{ODF} = \frac{n(\theta,\phi)}{N} \quad\text{where}\quad N=\int_{S^2}{n} \,\mathrm{d}\Omega=\sqrt{4\pi}n_0^0 .
+$$
+
+## Normalization
+
+$n(\theta,\phi)$ may be understood either as the number density of grains with a given slip-plane normal orientation, or as the mass density fraction ([Faria, 2006](https://royalsocietypublishing.org/doi/abs/10.1098/rspa.2005.1610); [Richards et al., 2021](https://www.sciencedirect.com/science/article/abs/pii/S0012821X20306622)) of grains with a given slip-plane normal orientation.
+
+From specfab's point-of-view, the difference is a matter of normalization: since the models of [CPO evolution](cpo-dynamics-tranisotropic.md) (lattice rotation, DDRX, CDRX) conserve the normalization, the two views are effectively the same, not least because CPO-derived quantities depend on the normalized distributions (which are identical).
+The mass-density-fraction interpretation rests, however, on stronger physical grounds as mass is conserved but grain numbers are not.
+
+
+## Harmonic expansion
 
 The distributions of crystallographic axes are represented as spherical harmonic expansion series.
 <br>
@@ -38,25 +49,7 @@ $$
 {\bf s} = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}] \quad\text{(state vector)}.
 $$
 
-$$ $$ <!-- half space -->
-
-!!! note "ODF definition"
-
-    The orientation distribution function (ODF) is defined as the normalized distribution 
-
-    $$ 
-    \mathrm{ODF} = \frac{n(\theta,\phi)}{N} \quad\text{where}\quad N=\int_{S^2}{n} \,\mathrm{d}\Omega=\sqrt{4\pi}n_0^0 .
-    $$
-
-!!! warning "Normalization"
-
-    $n(\theta,\phi)$ may be understood either as the number density of grains with a given slip-plane normal orientation, or as the mass density fraction ([Faria, 2006](https://royalsocietypublishing.org/doi/abs/10.1098/rspa.2005.1610); [Richards et al., 2021](https://www.sciencedirect.com/science/article/abs/pii/S0012821X20306622)) of grains with a given slip-plane normal orientation.
-
-    From specfab's point-of-view, the difference is a matter of normalization: since the models of [CPO evolution](cpo-dynamics-tranisotropic.md) (lattice rotation, DDRX, CDRX) conserve the normalization, the two views are effectively the same, not least because CPO-derived quantities depend on the normalized distributions (which are identical).
-    The mass-density-fraction interpretation rests, however, on stronger physical grounds as mass is conserved but grain numbers are not.
-
-
-## Reduced form
+### Reduced form
 
 Not all expansion coefficients are independent for real-valued expansion series, but must fulfill
 
@@ -69,9 +62,7 @@ The array of reduced expansion coefficients is defined as
 
 $\qquad$ `rnlm` $= [n_0^0,n_2^{0},n_2^{1},n_2^{2},n_4^{0},\cdots,n_4^{4},\cdots,n_L^{0},\cdots,n_L^{L}] \quad\text{(reduced state vector)}.$
 
-### Example 
-
-Converting between full and reduced forms:
+Converting between full and reduced forms is done as follows:
 
 ```python
 import numpy as np
@@ -79,9 +70,9 @@ from specfabpy import specfabpy as sf
 lm, nlm_len = sf.init(2) # L=2 truncation is sufficient in this case
 
 # Construct an arbitrary fabric
-a2 = np.diag([0.1,0.2,0.7]) # any second-order structure tensor (not necessarily diagonal)
+a2 = np.diag([0.1,0.2,0.7]) # arbitrary second-order structure tensor
 nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
-nlm[0:6] = sf.a2_to_nlm(a2) # l=2 expansion coefficients for corresponding ODF (a2 is normalized)
+nlm[:sf.L2len] = sf.a2_to_nlm(a2) # determine l<=2 expansion coefficients of ODF
 print('original:', nlm)
 
 # Get reduced form of coefficient array, rnlm

@@ -7,14 +7,10 @@ import numpy as np
 from scipy import interpolate
 import scipy.special as sp
 
-sys.path.insert(0, '..')
+sys.path.insert(0, '../..')
 from header import *
 from specfabpy import specfabpy as sf 
 from sfconstants import *
-
-s2yr   = 3.16887646e-8
-yr2s   = 31556926    
-yr2kyr = 1e-3 
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -61,10 +57,10 @@ class SyntheticFabric():
 
         ### Determine dt from Nc and parcel height target
         
-        epsii_target = -0.90 # Target: 5% of initial parcel height
+        epsii_target = -0.90 # Target: 10% of initial parcel height
         r = 0 # uniaxial compression
-        t_e = 1 # e-folding time scale
-        t_epsii = sf.pureshear_strainii_to_t(epsii_target, t_e)
+        T = 1 # e-folding time scale
+        t_epsii = sf.pureshear_strainii_to_t(epsii_target, T)
         dt = t_epsii/Nc # time step size for thresshold strain epsii_target in "Nc" time steps 
 
         ### Construct strain-rate and spin tensor histories
@@ -82,16 +78,16 @@ class SyntheticFabric():
         for ii in np.arange(Nt0+1):
             t = ii*(dt*1)
             ii_ = ii # Nt0-ii
-            D[ii_,:,:], W[ii_,:,:] = sf.ugrad_to_D_and_W(sf.pureshear_ugrad(stressax,r,+t_e))
-            Ft = sf.pureshear_F(stressax, r, +t_e, t)
+            D[ii_,:,:], W[ii_,:,:] = sf.ugrad_to_D_and_W(sf.pureshear_ugrad(stressax,r,+T))
+            Ft = sf.pureshear_F(stressax, r, +T, t)
             strainvec[ii_] = sf.F_to_strain(Ft)[stressax,stressax] # cumulative strain
             xyz0[ii_,:] = np.matmul(Ft, xyz0_init) # parcel side lengths
 
         for ii in np.arange(Nt1+1):
             t = ii*(dt*0.58)
             ii_ = ii+Nt0
-            D[ii_,:,:], W[ii_,:,:] = sf.ugrad_to_D_and_W(sf.pureshear_ugrad(stressax,r,-t_e))
-            Ft = sf.pureshear_F(stressax, r, -t_e, t)
+            D[ii_,:,:], W[ii_,:,:] = sf.ugrad_to_D_and_W(sf.pureshear_ugrad(stressax,r,-T))
+            Ft = sf.pureshear_F(stressax, r, -T, t)
             strainvec[ii_] = sf.F_to_strain(Ft)[stressax,stressax] # cumulative strain
             xyz0[ii_,:] = np.matmul(Ft, xyz0_init) # parcel side lengths
 

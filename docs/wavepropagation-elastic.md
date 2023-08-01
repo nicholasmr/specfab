@@ -68,13 +68,13 @@ This requires specifying the grain elastic parameters $\lambda'$, $\mu'$, $\hat{
 ```python
 import numpy as np
 from specfabpy import specfabpy as sf
-lm, nlm_len = sf.init(4)
+lm, nlm_len = sf.init(4) # L=4 is sufficient here
 nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
 
 # c-axis number distribution (nlm) from fourth-order structure tensor (a4)
 p = np.array([0,0,1]) # preferred c-axis direction
 a4 = np.einsum('i,j,k,l', p,p,p,p) # a4 if ODF = deltafunc(r-p) 
-nlm[:sf.L4len] = sf.a4_to_nlm(a4) # l<=4 expansion coefficients for corresponding normalized ODF
+nlm[:sf.L4len] = sf.a4_to_nlm(a4) # determine l<=4 expansion coefficients of ODF
 
 # Physical parameters (SI units)
 rho = 917 # density of ice
@@ -102,14 +102,14 @@ Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, Lame_grain, rho, theta,phi) # phase
 | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-elastic-monocrystal.png){: style="width:250px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
 
 If grains are approximately orthotropic, the grain elastic behaviour can be modelled using the [orthotropic elastic constitutive equation](constitutive-elastic.md).
-This requires specifying the grain elastic parameters $\lambda_{11}'$, $\lambda_{22}'$, $\lambda_{33}'$, $\lambda_{23}'$, $\lambda_{13}'$, $\lambda_{12}'$, $\mu_{1}'$, $\mu_{2}'$, $\mu_{3}'$, and the Voigt&mdash;Reuss weight $\alpha$.
+This requires specifying the grain elastic parameters $\lambda_{ij}'$, $\mu_{i}'$, and the Voigt&mdash;Reuss weight $\alpha$.
 
 ### Example for olivine
 
 ```python
 import numpy as np
 from specfabpy import specfabpy as sf
-lm, nlm_len = sf.init(4)
+lm, nlm_len = sf.init(4) # L=4 is sufficient here
 nlm = np.zeros((nlm_len), dtype=np.complex64) 
 blm = np.zeros((nlm_len), dtype=np.complex64) 
 
@@ -118,8 +118,8 @@ vn = np.array([0,0,1]) # preferred slip-normal direction
 vb = np.array([1,0,0]) # preferred slip direction
 a4_n = np.einsum('i,j,k,l', vn,vn,vn,vn) # a4 if n/N ODF = deltafunc(r-vn) 
 a4_b = np.einsum('i,j,k,l', vb,vb,vb,vb) # a4 if b/N ODF = deltafunc(r-vb) 
-nlm[:sf.L4len] = sf.a4_to_nlm(a4_n) # l<=4 expansion coefficients for corresponding normalized ODF
-blm[:sf.L4len] = sf.a4_to_nlm(a4_b) # l<=4 expansion coefficients for corresponding normalized ODF
+nlm[:sf.L4len] = sf.a4_to_nlm(a4_n) # determine l<=4 expansion coefficients of ODF
+blm[:sf.L4len] = sf.a4_to_nlm(a4_b) # determine l<=4 expansion coefficients of ODF
 
 # Physical parameters (SI units)
 rho = 3355 # density of olivine
