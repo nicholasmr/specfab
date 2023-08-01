@@ -6,14 +6,14 @@ Make animation from scratch
 
 import os, PyPDF2
 
-MAKE_PDF = 1
+MAKE_PDF = 0
 MAKE_ANI = 1
 
 #-----------------------
 
 density = 150 
 framerate = 15
-scale = 550
+scale = 650
 numfmt = '%03d'
 
 fallframes = 'allframes.pdf'

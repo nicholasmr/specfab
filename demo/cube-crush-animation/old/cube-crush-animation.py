@@ -60,8 +60,7 @@ class SyntheticFabric():
         epsii_target = -0.90 # Target: 10% of initial parcel height
         r = 0 # uniaxial compression
         T = 1 # e-folding time scale
-        t_epsii = sf.pureshear_strainii_to_t(epsii_target, T)
-        dt = t_epsii/Nc # time step size for thresshold strain epsii_target in "Nc" time steps 
+        dt = sf.pureshear_strainii_to_t(epsii_target, T)/Nc # time step size for thresshold strain epsii_target in "Nc" time steps 
 
         ### Construct strain-rate and spin tensor histories
         
@@ -165,8 +164,8 @@ class SyntheticFabric():
 
             xlims = [-1,2]
             ylims = [0,2.5]            
-            rect1 = plt.Rectangle((xlims[0],1), np.diff(xlims), ylims[1]-1, color='#deebf7')
-            rect2 = plt.Rectangle((xlims[0],0), np.diff(xlims), 1, color='#fee0d2')
+            rect1 = plt.Rectangle((xlims[0],1), np.diff(xlims)[0], ylims[1]-1, color='#deebf7')
+            rect2 = plt.Rectangle((xlims[0],0), np.diff(xlims)[0], 1, color='#fee0d2')
             axE.add_patch(rect1)
             axE.add_patch(rect2)
  

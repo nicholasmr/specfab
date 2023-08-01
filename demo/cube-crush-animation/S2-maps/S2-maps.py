@@ -4,7 +4,7 @@
 import copy, os, sys, code # code.interact(local=locals())
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-sys.path.insert(0, '..')
+sys.path.insert(0, '../..')
 os.system('mkdir -p ./frames')
 
 from specfabpy import specfabpy as sf
@@ -18,7 +18,7 @@ import scipy.special as sp
 from matplotlib.ticker import LogFormatter 
 
 MAKE_FRAME_Eij = 1
-MAKE_FRAME_vi  = 0
+MAKE_FRAME_vi  = 1
 
 MAKE_GIFS = 1
 
@@ -26,18 +26,20 @@ transparent = True
 
 ### CPO dynamics
 
-f = 2
-Nt = f*40 # Number of time steps
-dt = 1/f*0.0782404601085629 # Time-step size (gives a vertical strain of -0.98 for experiment "uc_zz")
-ugrad = np.diag([0.5, 0.5, -1.0]) # Uniaxial compression along z
+T, r = 1, 0 # e-folding time for uniaxial compression, horizontal strain asymmetry
+stressax = 2 # z
+strainzz_target = -0.98
+Nt = 100
+dt = sf.pureshear_strainii_to_t(strainzz_target, T)/Nt # time step size for thresshold strain epsii_target in "Nc" time steps 
+ugrad = sf.pureshear_ugrad(stressax, r, T)
+
 if 0: # debug, off-angle compression
     rotmat = R.from_rotvec(np.pi/4 * np.array([1, 0, 0])).as_matrix()
     ugrad = np.matmul(rotmat,np.matmul(ugrad,rotmat.T))
-eps = (ugrad+np.transpose(ugrad))/2 # Symmetric part (strain-rate)
-omg = (ugrad-np.transpose(ugrad))/2 # Anti-symmetric part (spin)
-te = 1/eps[-1,-1]
-strainzz = lambda t: np.exp(t/te)-1
-print(r'Integrating until strain_zz = %.3f'%(strainzz(Nt*dt)))
+
+D, W = sf.ugrad_to_D_and_W(ugrad)
+strainzz = [sf.F_to_strain( sf.pureshear_F(stressax, r, T, nn*dt) )[stressax,stressax] for nn in np.arange(Nt+1)] # cumulative strain with time
+
 
 #L = 12 # Spectral truncation
 L = 18
@@ -76,16 +78,10 @@ vP, vS1, vS2  = np.zeros(dims), np.zeros(dims), np.zeros(dims)
 def vi_rel(vi, vi_iso):
     return 100*(np.divide(vi,vi_iso) -1)
 
-### debug 
+### Debug 
 
-m = np.array([0,0,1])
-a2_sm = np.einsum('i,j',m,m)
-a4_sm = np.einsum('i,j,k,l',m,m,m,m)
-n2m = sf.a2_to_nlm(a2_sm)
-n4m = sf.a4_to_nlm(a4_sm)
 nlm_sm = np.zeros((nlm_len), dtype=np.complex128)
-#nlm[:sf.L2len] = n2m[:]
-nlm_sm[:sf.L4len] = n4m[:]
+nlm_sm[:sf.L4len] = sf.nlm_ideal([0,0,1], 0, 4) 
 
 vi_sm_vert = sf.Vi_elastic_tranisotropic(nlm_sm, alpha, lame_grain, rho, 0,0) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
 vi_sm_hori = sf.Vi_elastic_tranisotropic(nlm_sm, alpha, lame_grain, rho, 90,0) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
@@ -159,7 +155,7 @@ def mkframe_Eij(nlm, Err,Ert,Erp, nn):
     set_axis_labels(axlist)
     
     # Title
-    ttl = ax2.set_title(r'Uniaxial compression, $\epsilon_{zz} = %+.2f$'%(strainzz(nn*dt)), fontsize=FS+2, pad=13)
+    ttl = ax2.set_title(r'Uniaxial compression, $\epsilon_{zz} = %+.2f$'%(strainzz[nn]), fontsize=FS+2, pad=13)
     ttl.set_position([1.15, 1.07])
 
     # Save fig
@@ -194,7 +190,7 @@ def mkframe_vi(nlm, vP, vS1, vS2, nn):
     set_axis_labels(axlist)
 
     # Title
-    ttl = ax2.set_title(r'Uniaxial compression, $\epsilon_{zz} = %+.2f$'%(strainzz(nn*dt)), fontsize=FS+2, pad=13)
+    ttl = ax2.set_title(r'Uniaxial compression, $\epsilon_{zz} = %+.2f$'%(strainzz[nn]), fontsize=FS+2, pad=13)
     ttl.set_position([1.15, 1.07])
 
     # Save fig
@@ -231,12 +227,12 @@ if MAKE_FRAME_Eij or MAKE_FRAME_vi:
         ### Update fabric
 
         nlm_prev = nlm[nn-1,:]
-        M_LROT = sf.M_LROT(nlm_prev, eps, omg, 1, 0) # Here we consider constant large-scale velocity gradients, **but if for any practical time-varying scenario M_ij should be calculated inside the loop below!**
+        M_LROT = sf.M_LROT(nlm_prev, D, W, 1, 0) # Here we consider constant large-scale velocity gradients, **but if for any practical time-varying scenario M_ij should be calculated inside the loop below!**
         if L > 12:
             nu0, expo = 10, 2
-            M_REG = M_REG_custom(nu0, expo, eps, sf) # from header.py
+            M_REG = M_REG_custom(nu0, expo, D, sf) # from header.py
         else:
-            M_REG  = sf.M_REG(nlm_prev, eps)
+            M_REG  = sf.M_REG(nlm_prev, D)
         M = M_LROT + M_REG
         nlm[nn,:] = nlm_prev + dt*np.matmul(M, nlm_prev)
 
@@ -293,12 +289,4 @@ if MAKE_GIFS:
     os.system('ffmpeg -i S2-Eij.avi -vf "fps=20,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 S2-Eij.gif')
     os.system('ffmpeg -i S2-vi.avi  -vf "fps=20,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 S2-vi.gif')
 
-
-#    os.system('convert -fuzz 4% -dispose previous -delay 1x22 frames/S2-Eij-*.png -coalesce -layers OptimizeTransparency S2-Eij.gif')
-#    os.system('gifsicle -O3 --colors 256 --lossy=150 --resize 650x -o S2-Eij-lowres.gif S2-Eij.gif')
-
-#    os.system('convert -fuzz 4% -dispose previous -delay 1x22 frames/S2-vi-*.png -coalesce -layers OptimizeTransparency S2-vi.gif')
-#    os.system('gifsicle -O3 --colors 256 --lossy=150 --resize 650x -o S2-vi-lowres.gif S2-vi.gif')
-
-       
        
