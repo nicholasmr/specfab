@@ -209,9 +209,9 @@ from specfabpy import specfabpy as sf
 lm, nlm_len = sf.init(2) # L=2 truncation is sufficient in this case
 
 # Construct an arbitrary fabric
-a2 = np.diag([0.1,0.2,0.7]) # any second-order structure tensor (not necessarily diagonal)
+a2 = np.diag([0.1,0.2,0.7]) # arbitrary second-order structure tensor
 nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
-nlm[:sf.L2len] = sf.a2_to_nlm(a2) # l&lt;=2 expansion coefficients of the corresponding normalized ODF
+nlm[:sf.L2len] = sf.a2_to_nlm(a2) # determine l&lt;=2 expansion coefficients of ODF
 print('original:', nlm)
 
 # Get reduced form of coefficient array, rnlm
