@@ -1,26 +1,18 @@
 #! /usr/bin/env python
-# -*- coding: utf-8 -*-
-# vim:fenc=utf-8
-#
-# Copyright © 2022 dlilien <dlilien@hozideh>
-#
-# Distributed under terms of the MIT license.
+# N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2023
 
-"""
-Install the pre-compiled so for python
-"""
 import glob
-from distutils.core import setup
+from  distutils.core import setup
 
-if len(glob.glob('specfabpy.cpython*.so')) == 0:
-    print('No compiled specfabpy found. Run `make python`')
+if len(glob.glob('specfabpy/*.so')) == 0:
+    print('No compiled specfabpy found. Run `make specfabpy`')
 else:
     setup(name='specfabpy',
+          version='2023.07.30',
           author="Nicholas M. Rathmann and David A. Lilien",
           author_email="rathmann@nbi.ku.dk",
           description="specfab Python module",
           url="https://github.com/nicholasmr/specfab",
-          version='2023.07.30',
           packages=['.'],
-          package_data={'': ['specfabpy.cpython*.so']},
-          )
+          package_data={'': ['specfabpy/specfabpy.cpython*.so', 'specfabpy/*.py']},
+    )

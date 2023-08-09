@@ -3,9 +3,9 @@
 import sys, os, copy, code # code.interact(local=locals())
 import numpy as np
 
-sys.path.insert(0, '../../demo')
-from header import *
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
+from specfabpy import plotting as sfplt
+FS = sfplt.setfont_tex()
 
 ### Rotate ODF for L<=12
 
@@ -45,13 +45,6 @@ print('Im(nlm[2,:I]) = ', np.imag(nlm[2,:I]))
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import cartopy.crs as ccrs
-
-def plot_axes(ax, geo):
-    cax = 'tab:red'
-    ax.plot([0],[0],  marker=r'$x$', ms=7, c=cax, transform=geo) # x axis
-    ax.plot([90],[0], marker=r'$y$', ms=7, c=cax, transform=geo) # y axis
-    ax.plot([0],[90], marker=r'$z$', ms=7, c=cax, transform=geo) # z axis
 
 dpi, scale = 125, 2.0
 fig = plt.figure(figsize=(4*scale,1.4*scale))
@@ -59,10 +52,7 @@ gs = gridspec.GridSpec(1,4)
 a = 0.03
 gs.update(left=a, right=1-a, bottom=0.175, wspace=0.1)
 
-geo = ccrs.Geodetic()
-rot = 45 # view angle
-inclination = 45 # view angle
-prj = ccrs.Orthographic(rot, 90-inclination)
+geo, prj = sfplt.getprojection(rotation=45, inclination=45)
 ax1 = plt.subplot(gs[0, 0], projection=prj)
 ax2 = plt.subplot(gs[0, 1], projection=prj)
 ax3 = plt.subplot(gs[0, 2], projection=prj)
@@ -72,21 +62,21 @@ ax1.set_global(); ax2.set_global(); ax3.set_global(); ax4.set_global()
 
 ### Plot
 
-plot_ODF(nlm[0,:], lm, ax=ax1, cmap='Greys', cblabel=r'$n/N$')
-plot_axes(ax1, geo)
-ax1.set_title('nlm')
+sfplt.plotODF(nlm[0,:], lm, ax1)
+sfplt.plotcoordaxes(ax1, geo, axislabels='vuxi')
+ax1.set_title(r'\texttt{nlm}', fontsize=FS)
 
-plot_ODF(nlm[1,:], lm, ax=ax2, cmap='Greys', cblabel=r'$n/N$')
-plot_axes(ax2, geo)
-ax2.set_title('nlm_rot1')
+sfplt.plotODF(nlm[1,:], lm, ax2)
+sfplt.plotcoordaxes(ax2, geo, axislabels='vuxi')
+ax2.set_title(r'\texttt{nlm\_rot1}', fontsize=FS)
 
-plot_ODF(nlm[2,:], lm, ax=ax3, cmap='Greys', cblabel=r'$n/N$')
-plot_axes(ax3, geo)
-ax3.set_title('nlm_rot2')
+sfplt.plotODF(nlm[2,:], lm, ax3)
+sfplt.plotcoordaxes(ax3, geo, axislabels='vuxi')
+ax3.set_title(r'\texttt{nlm\_rot2}', fontsize=FS)
 
-plot_ODF(nlm[3,:], lm, ax=ax4, cmap='Greys', cblabel=r'$n/N$')
-plot_axes(ax4, geo)
-ax4.set_title('nlm_rot3 (back)')
+sfplt.plotODF(nlm[3,:], lm, ax4)
+sfplt.plotcoordaxes(ax4, geo, axislabels='vuxi')
+ax4.set_title(r'\texttt{nlm\_rot3}', fontsize=FS)
 
 # Save figure
 fout = 'wigner-d-rotation-test.png'

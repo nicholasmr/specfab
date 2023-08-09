@@ -1,15 +1,15 @@
 # N. M. Rathmann <rathmann@nbi.ku.dk>, 2021-2022
 
 """
-Tests conversion from structure-tensor (a2,a4) to spectral expansion coefficients (L=2,L¤4)
+Tests conversion from structure-tensor (a2,a4) to spectral expansion coefficients (L=2,4)
 """
 
 import sys, os, copy, code # code.interact(local=locals())
 import numpy as np
 
-sys.path.insert(0, '../../demo')
-from header import *
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
+from specfabpy import plotting as sfplt
+FS = sfplt.setfont_tex()
             
 #----------------------
 # Initial, unrotated state
@@ -116,26 +116,18 @@ a = 0.03
 gs.update(left=a, right=1-a/3, top=0.99, wspace=0.015*18, hspace=0.35)
 gs.update(wspace=0.015*18, hspace=0.35)
 
-geo = ccrs.Geodetic()
-rot0 = 45
-rot = 1.0*rot0 # view angle
-inclination = 45 # view angle
-prj = ccrs.Orthographic(rot, 90-inclination)
+geo, prj = sfplt.getprojection(rotation=45, inclination=45)
 ax1 = plt.subplot(gs[0, 0], projection=prj)
 ax2 = plt.subplot(gs[1, 0], projection=prj)
 ax1.set_global() 
 ax2.set_global() 
 
-def plot_axes(ax, geo, cax='tab:red'):
-    ax.plot([0],[0],  marker=r'$x$', ms=7, c=cax, transform=geo) # x axis
-    ax.plot([90],[0], marker=r'$y$', ms=7, c=cax, transform=geo) # y axis
-    ax.plot([0],[90], marker=r'$z$', ms=7, c=cax, transform=geo) # z axis
+sfplt.plotODF(nlm, lm, ax1, geo, cblabel=r'$n/N$ --- Wigner-D rotated nlm; reference case')
+sfplt.plotcoordaxes(ax1, geo, axislabels='vuxi')
 
-plot_ODF(nlm, lm, ax=ax1, cmap='Greys', cblabel=r'$\psi/N$ --- Wigner-D rotated nlm; reference case')
-plot_axes(ax1, geo)
-
-plot_ODF(nlm_a6, lm, ax=ax2, cmap='Greys', cblabel=r'$\psi/N$ --- a6_to_nlm(R-mat rotated a6)')
-plot_axes(ax2, geo)
+#nlm_a6[1:] = 0
+sfplt.plotODF(nlm_a6, lm, ax2, geo, cblabel=r'$n/N$ --- a6\_to\_nlm(R-mat rotated a6)')
+sfplt.plotcoordaxes(ax2, geo, axislabels='vuxi')
 
 fout = 'ai-to-nlm.png'
 print('\nSaving %s'%(fout))

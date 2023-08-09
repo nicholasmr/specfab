@@ -2,20 +2,28 @@
 # N. M. Rathmann <rathmann@nbi.ku.dk>, 2023
 
 import copy, os, sys, code # code.interact(local=locals())
+
 import numpy as np
+import scipy.special as sp
 from scipy.spatial.transform import Rotation as R
 sys.path.insert(0, '../..')
 os.system('mkdir -p ./frames')
 
-from specfabpy import specfabpy as sf
-from header import *
-from sfconstants import *
+from specfabpy import specfab as sf
+from specfabpy import integrator as sfint
+from specfabpy import discrete as sfdsc
+from specfabpy import constants as sfconst
+from specfabpy import plotting as sfplt
+FS = sfplt.setfont_tex(fontsize=12)
 
 import matplotlib.pyplot as plt
 from matplotlib import rcParams, rc, colors
 import matplotlib.gridspec as gridspec
-import scipy.special as sp
+import cartopy.crs as ccrs
+import matplotlib.ticker as mticker
 from matplotlib.ticker import LogFormatter 
+
+### Run options
 
 MAKE_FRAME_Eij = 1
 MAKE_FRAME_vi  = 1
@@ -24,44 +32,23 @@ MAKE_GIFS = 1
 
 transparent = True
 
+### Mode of deformation
+
+mod = dict(type='ps', axis=2, T=1, r=0) # uniaxial compression along z
+strain_target = -0.98
+Nt = 100
+
 ### CPO dynamics
 
-T, r = 1, 0 # e-folding time for uniaxial compression, horizontal strain asymmetry
-stressax = 2 # z
-strainzz_target = -0.98
-Nt = 100
-dt = sf.pureshear_strainii_to_t(strainzz_target, T)/Nt # time step size for thresshold strain epsii_target in "Nc" time steps 
-ugrad = sf.pureshear_ugrad(stressax, r, T)
+L = 18 # Spectral truncation
+lm, nlm_len = sf.init(L)
 
-if 0: # debug, off-angle compression
-    rotmat = R.from_rotvec(np.pi/4 * np.array([1, 0, 0])).as_matrix()
-    ugrad = np.matmul(rotmat,np.matmul(ugrad,rotmat.T))
-
-D, W = sf.ugrad_to_D_and_W(ugrad)
-strainzz = [sf.F_to_strain( sf.pureshear_F(stressax, r, T, nn*dt) )[stressax,stressax] for nn in np.arange(Nt+1)] # cumulative strain with time
-
-
-#L = 12 # Spectral truncation
-L = 18
-lm, nlm_len = sf.init(L) # nlm_len is the number of fabric expansion coefficients (degrees of freedom).
-nlm = np.zeros((Nt,nlm_len), dtype=np.complex128)
-nlm[:,0] = 1/np.sqrt(4*np.pi) # Normalized such that N(t=0) = 1
+nlm_iso = np.zeros((nlm_len), dtype=np.complex128)
+nlm_iso[0] = np.sqrt(4*np.pi)
 
 ### Enhancement factors
 
 (Eij_grain, alpha, n_grain) = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
-
-latres = 40
-#latres = 25
-lat = np.deg2rad(np.linspace(-90,90,latres))
-lon = np.deg2rad(np.linspace(0,360,2*latres))
-colat = np.deg2rad(90) - lat
-
-# r = radial vector, t = theta vector, p = phi vector
-dims = (Nt, len(lat),len(lon))
-Err = np.ones(dims) # r-r longitidinal
-Ert = np.ones(dims) # r-t shear
-Erp = np.ones(dims) # r-p shear
 
 ### Phase velocities
 
@@ -71,9 +58,8 @@ Cij = sfconst.ice['elastic']['Bennett1968'] # Bennett (1968) parameters
 lame_grain = sf.Cij_to_Lame_tranisotropic(Cij) 
 alpha = 0.5 # Voigt--Reuss weight, where 0.5 = Hill average
 
-vi_iso = sf.Vi_elastic_tranisotropic(nlm[0,:], alpha, lame_grain, rho, 0,0) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
+vi_iso = sf.Vi_elastic_tranisotropic(nlm_iso, alpha, lame_grain, rho, 0,0) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
 vP_iso, vS1_iso, vS2_iso = vi_iso[2,0], vi_iso[0,0], vi_iso[1,0]
-vP, vS1, vS2  = np.zeros(dims), np.zeros(dims), np.zeros(dims) 
 
 def vi_rel(vi, vi_iso):
     return 100*(np.divide(vi,vi_iso) -1)
@@ -91,12 +77,7 @@ print('vi_sm_hori/vi_iso = ', vi_rel(vi_sm_hori,vi_iso))
 
 ### Plot
 
-inclination = 45 # view angle
-rot0 = 1 * -90 
-rot = rot0 - 45 # view angle
-
-prj = ccrs.Orthographic(rot, 90-inclination)
-geo = ccrs.Geodetic()
+geo, prj = sfplt.getprojection(rotation=50, inclination=50)
 
 def setup_fig():
 
@@ -118,13 +99,6 @@ def setup_fig():
 
     return axlist, fig, fraction, aspect
 
-def set_axis_labels(axlist):
-    FSAX = FS+1
-    for ax in axlist:
-        ax.text(rot0-40, 85, r'$\vu{z}$', horizontalalignment='left', transform=geo, fontsize=FSAX)
-        ax.text(rot0-96, -8, r'$\vu{x}$', horizontalalignment='left', transform=geo, fontsize=FSAX)
-        ax.text(rot0-3, -5, r'$\vu{y}$', horizontalalignment='left', transform=geo, fontsize=FSAX)
-
 def mkframe_Eij(nlm, Err,Ert,Erp, nn):
     
     axlist, fig, fraction, aspect = setup_fig()    
@@ -132,8 +106,7 @@ def mkframe_Eij(nlm, Err,Ert,Erp, nn):
 
     # Plot ODF
     lvls = np.linspace(0.0,0.8,9)
-    tickintvl = 4
-    plot_ODF(nlm,lm, ax=ax1, cmap='Greys', cblabel='$n/N$ (ODF)', lvls=lvls, tickintvl=tickintvl, aspect=aspect, fraction=fraction)
+    sfplt.plotODF(nlm, lm, ax1, lvlset=[lvls, lambda x,p:'%.1f'%x], cbaspect=aspect, cbfraction=fraction)
 
     # Plot Err
     cmap = 'RdBu'
@@ -144,18 +117,16 @@ def mkframe_Eij(nlm, Err,Ert,Erp, nn):
     plot_field(Err, ax2, lvls, cmap=cmap, cblbl=r'$E_{rr}$', tickintvl=tickintvl, norm=norm, aspect=aspect, fraction=fraction, tick_labels=tick_labels) # , norm=colors.LogNorm()
 
     # Plot Ert
-#    lvls = np.linspace(1, 9, 5)
-#    tickintvl = 2
     plot_field(Ert, ax3, lvls, cmap=cmap, cblbl=r'$E_{r\theta}$', tickintvl=tickintvl, norm=norm, aspect=aspect, fraction=fraction, tick_labels=tick_labels)
 
     # Plot Erp
     plot_field(Erp, ax4, lvls, cmap=cmap, cblbl=r'$E_{r\phi}$', tickintvl=tickintvl, norm=norm, aspect=aspect, fraction=fraction, tick_labels=tick_labels)
 
     # Axis labels
-    set_axis_labels(axlist)
+    for axi in axlist: sfplt.plotcoordaxes(axi, geo, axislabels='vuxi', color='k')
     
     # Title
-    ttl = ax2.set_title(r'Uniaxial compression, $\epsilon_{zz} = %+.2f$'%(strainzz[nn]), fontsize=FS+2, pad=13)
+    ttl = ax2.set_title(r'Uniaxial compression, $\epsilon_{zz} = %+.2f$'%(strain[nn]), fontsize=FS+2, pad=13)
     ttl.set_position([1.15, 1.07])
 
     # Save fig
@@ -172,8 +143,7 @@ def mkframe_vi(nlm, vP, vS1, vS2, nn):
 
     # Plot ODF
     lvls = np.linspace(0.0,0.8,9)
-    tickintvl = 4
-    plot_ODF(nlm,lm, ax=ax1, cmap='Greys', cblabel='$n/N$ (ODF)', lvls=lvls, tickintvl=tickintvl, aspect=aspect, fraction=fraction)
+    sfplt.plotODF(nlm, lm, ax1, lvlset=[lvls, lambda x,p:'%.1f'%x], cbaspect=aspect, cbfraction=fraction)
 
     # Plot vP
     lvls = np.linspace(-6,6,9)
@@ -187,10 +157,10 @@ def mkframe_vi(nlm, vP, vS1, vS2, nn):
     plot_field(vS2, ax4, lvls, cmap='RdBu', cblbl=r'$V_{\mathrm{S}2}/V^{\mathrm{iso}}_{\mathrm{S}2}-1$  (\%)', tickintvl=tickintvl, aspect=aspect, fraction=fraction)
 
     # Axis labels
-    set_axis_labels(axlist)
+    for axi in axlist: sfplt.plotcoordaxes(axi, geo, axislabels='vuxi', color='k')
 
     # Title
-    ttl = ax2.set_title(r'Uniaxial compression, $\epsilon_{zz} = %+.2f$'%(strainzz[nn]), fontsize=FS+2, pad=13)
+    ttl = ax2.set_title(r'Uniaxial compression, $\epsilon_{zz} = %+.2f$'%(strain[nn]), fontsize=FS+2, pad=13)
     ttl.set_position([1.15, 1.07])
 
     # Save fig
@@ -215,55 +185,61 @@ def plot_field(F, ax, lvls, cmap='Greys', cblbl=r'$E_{??}$', titlestr='', tickin
     if tick_labels is not None: cb1.set_ticklabels(tick_labels[::tickintvl])
     ax.set_title(titlestr, fontsize=FS, pad=10)
 
+#----- MAIN -----
 
 if MAKE_FRAME_Eij or MAKE_FRAME_vi:
 
-    nn = 0
-    if MAKE_FRAME_Eij: mkframe_Eij(nlm[nn,:], Err[nn,:,:], Ert[nn,:,:], Erp[nn,:,:], nn)
-    if MAKE_FRAME_vi:  mkframe_vi(nlm[nn,:], vP[nn,:,:], vS1[nn,:,:], vS2[nn,:,:], nn)
+    ### Determine fabric evolution
+    nlm, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, \
+            iota=+1, Gamma0=0, Lambda=0, numul=10, regexpo=2) # # latrot only with custom high-L regularization
+    strain = np.array([sf.F_to_strain(F[tt,:,:])[2,2] for tt in range(Nt+1)])
 
-    for nn in np.arange(1,Nt):
+    ### S2 resolution
+    latres = 40
+    #latres = 25
+    lat = np.deg2rad(np.linspace(-90, 90, latres))
+    lon = np.deg2rad(np.linspace(0, 360, 2*latres))
+    colat = np.deg2rad(90) - lat
 
-        ### Update fabric
+    ### Init vars
+    
+    # r = radial vector, t = theta vector, p = phi vector
+    dims = (Nt+1, len(lat),len(lon))
+    Err = np.ones(dims) # r-r longitidinal
+    Ert = np.ones(dims) # r-t shear
+    Erp = np.ones(dims) # r-p shear
+    vP, vS1, vS2  = np.zeros(dims), np.zeros(dims), np.zeros(dims) 
 
-        nlm_prev = nlm[nn-1,:]
-        M_LROT = sf.M_LROT(nlm_prev, D, W, 1, 0) # Here we consider constant large-scale velocity gradients, **but if for any practical time-varying scenario M_ij should be calculated inside the loop below!**
-        if L > 12:
-            nu0, expo = 10, 2
-            M_REG = M_REG_custom(nu0, expo, D, sf) # from header.py
-        else:
-            M_REG  = sf.M_REG(nlm_prev, D)
-        M = M_LROT + M_REG
-        nlm[nn,:] = nlm_prev + dt*np.matmul(M, nlm_prev)
+    ### Determine spherical basis vectors
+    lon2, colat2 = np.meshgrid(lon, colat)
+    vr, vt, vp = sfdsc.sphericalbasisvectors(colat2, lon2)
 
-        ### Save S2 maps of Eij 
-        
+    rr = np.einsum('ikl,jkl->ijkl', vr, vr)
+    rt = np.einsum('ikl,jkl->ijkl', vr, vt)
+    rp = np.einsum('ikl,jkl->ijkl', vr, vp)
+
+    id4 = np.zeros((3,3,latres,2*latres)) # repeated identity matrix
+    id4[0,0,:,:] = id4[1,1,:,:] = id4[2,2,:,:] = 1
+    tau_rr = id4-3*rr
+    tau_rt = rt + np.einsum('ijkl->jikl',rt)
+    tau_rp = rp + np.einsum('ijkl->jikl',rp)
+
+    for nn in np.arange(0,Nt+1):
+
+        ### Determine Eij and Vi for a given deformation (given time)
+
         for ii, theta in enumerate(colat):
             for jj, phi in enumerate(lon):
 
-                ct, st = np.cos(theta), np.sin(theta)
-                cp, sp = np.cos(phi), np.sin(phi)
-            
-                vr = np.array([ cp*st, sp*st, ct ])
-                vt = np.array([ cp*ct, sp*ct, -st ])
-                vp = np.array([ -sp, cp, 0 ])
-        #        print(np.dot(r,t), np.dot(r,p), np.linalg.norm(r), np.linalg.norm(t), np.linalg.norm(p))
-            
-                rr = np.tensordot(vr,vr, axes=0)
-                rt = np.tensordot(vr,vt, axes=0)
-                rp = np.tensordot(vr,vp, axes=0)
+                r,t,p = vr[:,ii,jj], vt[:,ii,jj], vp[:,ii,jj]
 
-                tau_rr = 1*(np.identity(3)-3*rr) 
-                tau_rt = 1*(rt + np.transpose(rt)) 
-                tau_rp = 1*(rp + np.transpose(rp)) 
-                
-                Err[nn,ii,jj] = sf.Evw_tranisotropic(nlm[nn,:], vr,vr,tau_rr, Eij_grain,alpha,n_grain)
-                Ert[nn,ii,jj] = sf.Evw_tranisotropic(nlm[nn,:], vr,vt,tau_rt, Eij_grain,alpha,n_grain)
-                Erp[nn,ii,jj] = sf.Evw_tranisotropic(nlm[nn,:], vr,vp,tau_rp, Eij_grain,alpha,n_grain)
-        
+                args = (Eij_grain,alpha,n_grain)
+                Err[nn,ii,jj] = sf.Evw_tranisotropic(nlm[nn,:], r,r,tau_rr[:,:,ii,jj], *args)
+                Ert[nn,ii,jj] = sf.Evw_tranisotropic(nlm[nn,:], r,t,tau_rt[:,:,ii,jj], *args)
+                Erp[nn,ii,jj] = sf.Evw_tranisotropic(nlm[nn,:], r,p,tau_rp[:,:,ii,jj], *args)
+
                 vi = sf.Vi_elastic_tranisotropic(nlm[nn,:], alpha, lame_grain, rho, theta,phi) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
                 vP[nn,ii,jj], vS1[nn,ii,jj], vS2[nn,ii,jj] = vi[2,0], vi[0,0], vi[1,0]
-
                 
         ### Plot
         

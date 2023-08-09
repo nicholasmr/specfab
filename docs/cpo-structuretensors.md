@@ -24,7 +24,7 @@ Converting between spectral and tensorial representations is a linear problem in
 $$
 {\bf a}^{(k)} = {\bf f}(\hat{n}_2^{m}, \hat{n}_4^{m}, \cdots, \hat{n}_k^{m}) 
 ,
-\qquad\text{(for all possible $m$)}
+\qquad\text{(for all $m$)}
 $$
 
 where ${\bf f}$ is linear in its arguments, and 
@@ -52,7 +52,7 @@ The following code example shows how to convert between the representations:
 
 ```python
 import numpy as np
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
 L = 8
 lm, nlm_len = sf.init(L)
 nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
@@ -85,7 +85,7 @@ This requires constructing the corresponding structure tensors (for each crystal
 
 ```python
 import numpy as np
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
 lm, nlm_len = sf.init(8) 
 
 ### Replace with your own array/list of measured c-axes

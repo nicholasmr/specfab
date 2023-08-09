@@ -28,7 +28,7 @@ The code below demonstrates how to generate the distribution with specfab.
 
 ```python
 import numpy as np
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
 L = 8
 lm, nlm_len = sf.init(L) 
 

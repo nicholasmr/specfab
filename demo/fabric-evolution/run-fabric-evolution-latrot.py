@@ -1,155 +1,103 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien <dlilien90@gmail.com>, 2020-2021
+# N. M. Rathmann <rathmann@nbi.ku.dk>, 2020-2023
 
-import sys, os, copy, code # code.interact(local=locals())
+import sys, os, code # code.interact(local=locals())
+
 import numpy as np
 import scipy.special as sp
 from netCDF4 import Dataset
 
-sys.path.insert(0, '..')
-from specfabpy import specfabpy as sf # To use specfabpy compile the specfab Python module by running "make specfabpy"
-from sfconstants import *
+from specfabpy import specfab as sf
+from specfabpy import integrator as sfint
+from specfabpy import constants as sfconst
 
 #----------------------
-# Input arguments
+# Experiment selection
 #----------------------
 
 if len(sys.argv) != 2:
     print('usage: python3 %s ugrad'%(sys.argv[0]))
     sys.exit(0)
     
-arg_exp = sys.argv[1] # Velocity gradient experiment
+exp     = sys.argv[1]
+exptype = exp[0:2]
+ijstr   = exp[-2:]
+
+ii_to_axis  = lambda ij: 0 if (ij=='xx') else (1 if (ij=='yy') else 2)
+ij_to_plane = lambda ij: 0 if (ij=='yz') else (1 if (ij=='xz') else 2)
+
+if exptype == 'ue': # Uniaxial extension
+    mod = dict(type='ps', T=-1, r=0,  axis=ii_to_axis(ijstr))
+    strain_target = 3
+
+if exptype == 'uc': # Uniaxial compression
+    mod = dict(type='ps', T=1, r=0,  axis=ii_to_axis(ijstr))
+    strain_target = -0.98
+
+if exptype == 'cc': # Confined compression
+    mod = dict(type='ps', T=1, r=+1, axis=ii_to_axis(ijstr))
+    strain_target = -0.98
+
+if exptype == 'ss': # Simple shear
+    mod = dict(type='ss', T=1, plane=ij_to_plane(ijstr))
+    strain_target = np.deg2rad(70)
+    
+if exptype == 'rr': # Ridgid rotation
+    mod = dict(type='rr', T=1, plane=ij_to_plane(ijstr))
+    strain_target = np.deg2rad(90)
 
 #----------------------
-# Numerics
+# Model integration
 #----------------------
 
 Nt = 50 # Number of time steps
-dt = 0.0782404601085629 # Time-step size (gives a vertical strain of -0.98 for experiment "uc_zz")
-L = 8 # Spectral truncation (4<=L<=8)
+L  = 8 # Spectral truncation
+
+lm, nlm_len = sf.init(L)
+nlm, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt)
 
 #----------------------
+# Determine eigenvalues, principal directions, and enhancement factors
+#----------------------
+
+# Empty structure to fill
+vecdim = (Nt+1,3)
+eigvals  = np.zeros(vecdim)
+m1,m2,m3 = np.zeros(vecdim),np.zeros(vecdim),np.zeros(vecdim)
+p1,p2,p3 = np.zeros(vecdim),np.zeros(vecdim),np.zeros(vecdim)
+vecdim = (Nt+1,6)
+Eij_lin, Eij_nlin   = np.zeros(vecdim), np.zeros(vecdim)
+Epij_lin, Epij_nlin = np.zeros(vecdim), np.zeros(vecdim)
+
 # Grain parameters
-#----------------------
+(Eij_grain_lin,  alpha_lin,  n_grain_lin)  = sfconst.ice['viscoplastic']['linear']
+(Eij_grain_nlin, alpha_nlin, n_grain_nlin) = sfconst.ice['viscoplastic']['nonlinear']
 
-(Eij_grain_lin,  alpha_lin,  n_grain_lin)  = sfconst.ice['viscoplastic']['linear']    # (Eij_grain, alpha, n_grain)
-(Eij_grain_nlin, alpha_nlin, n_grain_nlin) = sfconst.ice['viscoplastic']['nonlinear'] # (Eij_grain, alpha, n_grain)
+viscparams = (Eij_grain_lin, alpha_lin, n_grain_lin)
 
-#----------------------
-# Velocity gradient
-#----------------------
-
-# "ugrad" is the specified (constant) velocity gradient.
-
-ugrad = np.diag([0.5, 0.5, -1.0]) 
-
-if arg_exp == 'uc_xx': ugrad = np.diag([-1, .5, .5])
-if arg_exp == 'uc_yy': ugrad = np.diag([.5, -1, .5])
-if arg_exp == 'uc_zz': ugrad = np.diag([.5, .5, -1])
-
-if arg_exp == 'ue_xx': ugrad = -1*np.diag([-1, .5, .5])
-if arg_exp == 'ue_yy': ugrad = -1*np.diag([.5, -1, .5])
-if arg_exp == 'ue_zz': ugrad = -1*np.diag([.5, .5, -1])
-
-if arg_exp == 'cc_zx': ugrad = np.diag([1, 0, -1])
-if arg_exp == 'cc_zy': ugrad = np.diag([0, 1, -1])
-if arg_exp == 'cc_yx': ugrad = np.diag([1, -1, 0])
-if arg_exp == 'cc_xy': ugrad = np.diag([-1, 1, 0])
-
-if arg_exp == 'ss_xz': ugrad = np.array([[0,0,1], [0,0,0], [0,0,0]])
-if arg_exp == 'ss_xy': ugrad = np.array([[0,1,0], [0,0,0], [0,0,0]])
-if arg_exp == 'ss_yz': ugrad = np.array([[0,0,0], [0,0,1], [0,0,0]])
-
-if arg_exp == 'rr_xz': ugrad = np.array([[0,0,+1], [0,0,0], [-1,0,0]])
-if arg_exp == 'rr_xy': ugrad = np.array([[0,+1,0], [-1,0,0], [0,0,0]])
-if arg_exp == 'rr_yz': ugrad = np.array([[0,0,0], [0,0,+1], [0,-1,0]])
-
-eps = (ugrad+np.transpose(ugrad))/2 # Symmetric part (strain-rate)
-omg = (ugrad-np.transpose(ugrad))/2 # Anti-symmetric part (spin)
-
-#----------------------
-# Initialize model
-#----------------------
-
-# The (l,m) values corresponding to the coefficients in "nlm".
-# nlm_len is the number of fabric expansion coefficients (degrees of freedom).
-lm, nlm_len = sf.init(L) 
-nlm = np.zeros((Nt,nlm_len), dtype=np.complex64) # The expansion coefficients
-
-# Initial fabric state
-if arg_exp[0:2] == 'rr':
-    # Init with some anisotropy
-    nlm[0,0] = np.sqrt(1/2 + 0j)
-    nlm[0,2] = np.sqrt(1/2 + 0j)
-else:
-    # Init with isotropy
-    nlm[:,0] = 1/np.sqrt(4*np.pi) # Normalized such that N(t=0) = 1
-
-#----------------------
-# Integrate
-#----------------------
-
-if arg_exp == 'uc_zz' or arg_exp == 'cc_zx' or arg_exp == 'ue_zz': 
-    te = 1/eps[-1,-1]
-    print(r'Integrating until strain_zz = %.3f'%(np.exp(Nt*dt/te)-1))
-
-print('Numerics: Nt=%i, dt=%f, L=%i (nlm_len=%i)'%(Nt,dt,L,nlm_len))
-
-# Euler integration scheme
-for tt in np.arange(1,Nt):
-
-    nlm_prev = nlm[tt-1,:]
-
-    M_LROT = sf.M_LROT(nlm_prev, eps, omg, 1, 0) # Here we consider constant large-scale velocity gradients, **but if for any practical time-varying scenario M_ij should be calculated inside the loop below!**
-    M_REG  = sf.M_REG(nlm_prev, eps)
-    M      = M_LROT + M_REG
-
-    nlm[tt,:] = nlm_prev + dt*np.matmul(M, nlm_prev)
-
-#----------------------
-# Aux state vars
-#----------------------
-
-# Calculate eigenvalues, principal directions, and enhancement-factors
-
-vecdim = (Nt,3)
-eigvals = np.zeros(vecdim, dtype=np.float64)
-
-Eeiej_lin,Eeiej_nlin = np.zeros((Nt,3,3), dtype=np.float64), np.zeros((Nt,3,3), dtype=np.float64)
-Epipj_lin,Epipj_nlin = np.zeros((Nt,3,3), dtype=np.float64), np.zeros((Nt,3,3), dtype=np.float64)
-
-e1,e2,e3 = np.zeros(vecdim, dtype=np.float64),np.zeros(vecdim, dtype=np.float64),np.zeros(vecdim, dtype=np.float64)
-p1,p2,p3 = np.zeros(vecdim, dtype=np.float64),np.zeros(vecdim, dtype=np.float64),np.zeros(vecdim, dtype=np.float64)
-
-for tt in np.arange(0,Nt):
+for tt in np.arange(0,Nt+1):
 
     c = nlm[tt,:]
     
-    e1[tt,:],e2[tt,:],e3[tt,:], eigvals[tt,:] = sf.frame(c, 'e')
+    m1[tt,:],m2[tt,:],m3[tt,:], eigvals[tt,:] = sf.frame(c, 'e')
     p1[tt,:],p2[tt,:],p3[tt,:], _             = sf.frame(c, 'p')
 
     # Linear (n'=1) mixed Taylor--Sachs enhancements            
-    Eeiej_lin[tt,:,:] = np.transpose(sf.vec_to_mat_voigt(sf.Eij_tranisotropic(c, e1[tt,:],e2[tt,:],e3[tt,:], Eij_grain_lin, alpha_lin, n_grain_lin)))
-    Epipj_lin[tt,:,:] = np.transpose(sf.vec_to_mat_voigt(sf.Eij_tranisotropic(c, p1[tt,:],p2[tt,:],p3[tt,:], Eij_grain_lin, alpha_lin, n_grain_lin)))
+    Eij_lin[tt,:]  = sf.Eij_tranisotropic(c, m1[tt,:],m2[tt,:],m3[tt,:], Eij_grain_lin, alpha_lin, n_grain_lin)
+    Epij_lin[tt,:] = sf.Eij_tranisotropic(c, p1[tt,:],p2[tt,:],p3[tt,:], Eij_grain_lin, alpha_lin, n_grain_lin)
     
     # Nonlinear (n'=3) Sachs enhancements
-    Eeiej_nlin[tt,:,:] = np.transpose(sf.vec_to_mat_voigt(sf.Eij_tranisotropic(c, e1[tt,:],e2[tt,:],e3[tt,:], Eij_grain_nlin, alpha_nlin, n_grain_nlin)))
-    Epipj_nlin[tt,:,:] = np.transpose(sf.vec_to_mat_voigt(sf.Eij_tranisotropic(c, p1[tt,:],p2[tt,:],p3[tt,:], Eij_grain_nlin, alpha_nlin, n_grain_nlin)))
+    Eij_nlin[tt,:]  = sf.Eij_tranisotropic(c, m1[tt,:],m2[tt,:],m3[tt,:], Eij_grain_nlin, alpha_nlin, n_grain_nlin)
+    Epij_nlin[tt,:] = sf.Eij_tranisotropic(c, p1[tt,:],p2[tt,:],p3[tt,:], Eij_grain_nlin, alpha_nlin, n_grain_nlin)
     
-#print('l=0 coefs:', nlm[:,0])
-#print(r'last - first l=0 coef (%) = ', 100*(nlm[-1,0]-nlm[0,0])/nlm[0,0])
-#print(r'max(ii - first) l=0 coef (%) = ', np.amax(np.abs(100*(nlm[:,0]-nlm[0,0])/nlm[0,0])))
-
 #----------------------
 # Save
 #----------------------
 
-# Save the solution to a netCDF file.
-# You can plot the results stored in the netCDF file using "plot.py".
-
-fname = 'solutions/LATROT_%s.nc'%(arg_exp)
+fname = 'solutions/LROT_%s.nc'%(exp)
 ncfile = Dataset(fname,mode='w',format='NETCDF3_CLASSIC') 
 
 # Config
+dt = time[1]-time[0]
 ncfile.tsteps, ncfile.dt, ncfile.L = Nt, dt, L
 ncfile.Ecc_lin,  ncfile.Eca_lin,  ncfile.alpha_lin  = Eij_grain_lin[0],  Eij_grain_lin[1],  alpha_lin
 ncfile.Ecc_nlin, ncfile.Eca_nlin, ncfile.alpha_nlin = Eij_grain_nlin[0], Eij_grain_nlin[1], alpha_nlin
@@ -158,9 +106,10 @@ ncfile.ugrad = ugrad.flatten()
 
 # Dimensions
 c_did       = ncfile.createDimension('DOF',     nlm_len)
-time_did    = ncfile.createDimension('tstep',   Nt)
+time_did    = ncfile.createDimension('tstep',   Nt+1)
 eig_did     = ncfile.createDimension('eigval',  3)
 dim_did     = ncfile.createDimension('dim',     3)
+dim6_did    = ncfile.createDimension('dim6',    6)
 pair_did    = ncfile.createDimension('pair',    2)
 
 # Variables
@@ -171,28 +120,25 @@ dimarr_vec = ('lm','lm','lmdyn')
 f_lm   = ncfile.createVariable('lm', myint, ('DOF','pair')) 
 f_c_re = ncfile.createVariable('c_re', myflt, ('tstep','DOF')) 
 f_c_im = ncfile.createVariable('c_im', myflt, ('tstep','DOF')) 
-mkvec = lambda field: ncfile.createVariable(field, myflt, ('tstep','dim'))
 f_eigvals = ncfile.createVariable('eigvals', myflt, ('tstep','eigval'))
 
-f_Eeiej_lin  = ncfile.createVariable('Eeiej_lin',  myflt, ('tstep','dim','dim'))
-f_Epipj_lin  = ncfile.createVariable('Epipj_lin',  myflt, ('tstep','dim','dim'))
-f_Eeiej_nlin = ncfile.createVariable('Eeiej_nlin', myflt, ('tstep','dim','dim'))
-f_Epipj_nlin = ncfile.createVariable('Epipj_nlin', myflt, ('tstep','dim','dim'))
+f_Eij_lin   = ncfile.createVariable('Eij_lin',   myflt, ('tstep','dim6'))
+f_Epij_lin  = ncfile.createVariable('Epij_lin',  myflt, ('tstep','dim6'))
+f_Eij_nlin  = ncfile.createVariable('Eij_nlin',  myflt, ('tstep','dim6'))
+f_Epij_nlin = ncfile.createVariable('Epij_nlin', myflt, ('tstep','dim6'))
 
-f_e1, f_e2, f_e3 = mkvec('e1'),  mkvec('e2'),  mkvec('e3')
+mkvec = lambda field: ncfile.createVariable(field, myflt, ('tstep','dim'))
+f_m1, f_m2, f_m3 = mkvec('m1'),  mkvec('m2'),  mkvec('m3')
 f_p1, f_p2, f_p3 = mkvec('p1'),  mkvec('p2'),  mkvec('p3')
 
-f_lm[:,:] = lm.T
-f_c_re[:,:], f_c_im[:,:] = np.real(nlm), np.imag(nlm)
-f_eigvals[:,:] = eigvals
-f_Eeiej_lin[:,:,:]  = Eeiej_lin
-f_Epipj_lin[:,:,:]  = Epipj_lin
-f_Eeiej_nlin[:,:,:] = Eeiej_nlin
-f_Epipj_nlin[:,:,:] = Epipj_nlin
-f_e1[:,:], f_e2[:,:], f_e3[:,:] = e1, e2, e3
+f_lm[:,:], f_c_re[:,:], f_c_im[:,:] = lm.T, np.real(nlm), np.imag(nlm)
+f_Eij_lin[:,:],  f_Eij_nlin[:,:]  = Eij_lin,  Eij_nlin
+f_Epij_lin[:,:], f_Epij_nlin[:,:] = Epij_lin, Epij_nlin
+f_m1[:,:], f_m2[:,:], f_m3[:,:] = m1, m2, m3
 f_p1[:,:], f_p2[:,:], f_p3[:,:] = p1, p2, p3
+f_eigvals[:,:] = eigvals
 
 ncfile.close(); 
 print('Solution dumped in %s'%fname)
-print('Plot result:\npython3 plot-fabric-evolution-latrot.py %s'%(arg_exp))
+print('Plot result: python3 plot-fabric-evolution-latrot.py %s'%(exp))
 

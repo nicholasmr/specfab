@@ -201,7 +201,7 @@ contains
         
         if (lami(1)<0.0d0 .or. lami(2)<0.0d0 .or. lami(3)<0.0d0) then
             print *, 'E_ii^(2/(n+1)) for i=1,2,3: ', Bij(1:3)
-            stop 'rheo_params_orthotropic() error: E_ii^(2/(n+1)) for i=1,2,3 does not fulfill the triangle inequality, needed to guarantee positive-valued energy dissipation.'
+            print *, 'rheo_params_orthotropic() error: E_ii^(2/(n+1)) for i=1,2,3 does not fulfill the triangle inequality, needed to guarantee positive-valued energy dissipation.'
         end if
     end
 

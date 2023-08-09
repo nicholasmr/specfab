@@ -1,19 +1,25 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk>, 2021-2022
+# N. M. Rathmann <rathmann@nbi.ku.dk>, 2021-2023
 
 import sys, os, copy, code # code.interact(local=locals())
+
 import numpy as np
 import scipy.special as sp
 
-sys.path.insert(0, '..')
-from header import *
-from specfabpy import specfabpy as sf
-from sfconstants import *
+from specfabpy import specfab as sf
+from specfabpy import integrator as sfint
+from specfabpy import discrete as sfdsc
+from specfabpy import constants as sfconst
+from specfabpy import plotting as sfplt
+FS = sfplt.setfont_tex(fontsize=12)
+FSSMALL = FS-1
 
-import warnings
-warnings.filterwarnings("ignore")
-from progress.bar import Bar
+#----------------------
+# Parameters
+#----------------------
 
-year2sec = 31556926;
+# Bulk flow law
+nglen = 3
+Aglen = 3.5e-26 # A(T=-25 deg.)
 
 #----------------------
 # Experiment
@@ -22,357 +28,213 @@ year2sec = 31556926;
 T_EXP_CC = 1 # confined vertical compression 
 T_EXP_SS = 2 # vertical shear
 
-T_EXP_STR = {T_EXP_CC:'cc', T_EXP_SS:'ss'}
-
-### Select experiment
-
+# Select experiment
 T_EXP = T_EXP_CC
-T_EXP = T_EXP_SS
-
-DEBUG = 0
+#T_EXP = T_EXP_SS
 
 #----------------------
-# Parameters
+# Experiment definitions
 #----------------------
 
-nglen = 3
-Aglen = 3.5e-26 # A(T=-25 deg.)
-Gamma0 = 1*6e-6
-
-if T_EXP==T_EXP_SS: DDRX_strainthres = 5.5
-if T_EXP==T_EXP_CC: DDRX_strainthres = -0.7 
-
-#----------------------
-# Numerics
-#----------------------
-
-L = 18 
+Nt = 200
+L  = 18
 
 if T_EXP==T_EXP_SS:
-    tau0mag = 1.087e6
-    tau0 = tau0mag * np.matrix([[0,0,1],[0,0,0],[1,0,0]]) # Pa
-    ugrad0 = 2*sf.rheo_fwd_isotropic(tau0, Aglen,nglen)[0,2]
-    Nt = 2 * 200
+    i,j = 0,2 # components of interest
+    mod = dict(type='ss', plane=1)
+    strain_target = np.deg2rad(80.5) # simulate  parcel deformation until this target strain
+    strain_thres = 2.5 # assume DDRX dominates when reached this strain threshold
+    ODF_strains = [0, 1, 2, 3] # show ODFs at these strains
+    xlims = [0, 3.0]
+    ylims = [0.7, 2.7]
                 
 if T_EXP==T_EXP_CC:
-    tau0mag = 10e5
-    r = 1
-    tau0 = tau0mag * np.diag([-(1+r)/2., -(1-r)/2., 1]) # Pa
-    ugrad0 = 2*sf.rheo_fwd_isotropic(tau0, Aglen,nglen)[2,2]
-    Nt = 3 * 200
+    i = j = 2 # components of interest
+    mod = dict(type='ps', r=+1, axis=i)
+    strain_target = -0.97 # simulate  parcel deformation until this target strain
+    strain_thres = -0.7 # assume DDRX dominates when reached this strain threshold
+    ODF_strains = [0, -0.3, -0.5, -0.9] # show ODFs at these strains
+    xlims = [0, -1]
+    ylims = [0.3, 3]
         
-t_c = 1/ugrad0 # infer characteric time scale
-T = 1.3 * year2sec
-dt = T/Nt
-time = dt*np.arange(0,Nt)
-            
 #----------------------
-# Grain parameters for enhancement-factor model
-#----------------------
-
-(Eij_grain, alpha, n_grain) = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
-
-#----------------------
-# Velocity gradient
-#----------------------
-    
-if T_EXP==T_EXP_SS:
-        
-    pl = 1 # x--z plane
-    ugrad = sf.simpleshear_ugrad(pl, t_c)
-    eps, omg = sf.ugrad_to_D_and_W(ugrad) 
-    print("*** eps_xz (for parcel deformation): ",eps[0,2])
-    Ft = np.array([sf.simpleshear_F(pl, t_c, tt) for tt in time])
-    strain = Ft[:,0,2]
-    ODF_strains = [0,2,5,7]
-    
-if T_EXP==T_EXP_CC:
-        
-    t_c /= np.log(2)
-    ax = 2 # z axis
-    ugrad = sf.pureshear_ugrad(ax, r, t_c)
-    eps, omg = sf.ugrad_to_D_and_W(ugrad) 
-    print("*** eps_zz (for parcel deformation): ",eps[ax,ax])
-    Ft = np.array([sf.pureshear_F(ax, r, t_c, tt) for tt in time])
-    strain = np.array([sf.F_to_strain(Ft[ii,:,:])[ax,ax] for ii,tt in enumerate(time)])
-    ODF_strains = [0, -0.3, -0.6, -0.9] # maybe use DDRX_strainthres as one of the steps
-
-ODF_tsteps = [np.argmin(np.abs(strain-thres)) for thres in ODF_strains]
-
-print("*** strain max: ", strain[-1])
-print("*** Plotting ODFs at strains:")
-print(strain[ODF_tsteps])
-
-#----------------------
-# Initialize model
+# CPO evolution
 #----------------------
 
 lm, nlm_len = sf.init(L)
-nlm = np.zeros((Nt,nlm_len), dtype=np.complex64) # The expansion coefficients
-nlm[0,0] = 1/np.sqrt(4*np.pi) # Init with isotropy (Normalized such that N(t=0) = 1)
+nlm = np.zeros((Nt+1,nlm_len), dtype=np.complex64) # The expansion coefficients
+
+kwargs_LROT = dict(iota=1, Gamma0=0, numul=10, regexpo=2) #      
+nlm[:,:], F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, **kwargs_LROT)
+
+# Strain history
+strain = np.array([sf.F_to_strain(F[tt,:,:])[i,j] for tt in range(Nt+1)])
+D, W = sf.ugrad_to_D_and_W(ugrad)
+S = D/np.linalg.norm(D) # stress coaxial with strain-rate
+
+# Model DDRX from strain = strain_thres until strain_target
+# (this is done by splicing DDRX simulation results into array containing LROT simulation results)
+I = np.argmin(np.abs(strain-strain_thres)) # starting state
+kwargs_DDRX = dict(iota=None, Gamma0=50, numul=10, regexpo=2)
+nlm_, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, nlm0=nlm[I,:], **kwargs_DDRX)
+nlm[I:,:] = nlm_[:(Nt-I+1),:]
 
 #----------------------
-# Integrate
+# Determine eigenenhancements etc.
 #----------------------
 
-vecdim = (Nt,3)
-e1,e2,e3 = np.zeros(vecdim, dtype=np.float64),np.zeros(vecdim, dtype=np.float64),np.zeros(vecdim, dtype=np.float64)
-eig = np.zeros(vecdim, dtype=np.float64)
-Eij = np.zeros((Nt,6), dtype=np.float64)
+dims = (Nt+1,3)
+e1,e2,e3,eig = np.zeros(dims),np.zeros(dims),np.zeros(dims),np.zeros(dims)
+Eij = np.zeros((Nt+1,6))
 
 # G=Glen, R=Rathmann & Lilien, P=Pettit, M=Martin
-Y_G = sf.rheo_fwd_isotropic(tau0, Aglen,nglen)
-Y_R, Y_P, Y_M = np.zeros((Nt,3,3), dtype=np.float64), np.zeros((Nt,3,3), dtype=np.float64), np.zeros((Nt,3,3), dtype=np.float64)
+Y_G = sf.rheo_fwd_isotropic(S, Aglen,nglen)[i,j]
+dims = (Nt+1)
+Y_R, Y_P, Y_M = np.zeros(dims), np.zeros(dims), np.zeros(dims)
+
+(Eij_grain, alpha, n_grain) = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
 
 # Euler integration 
-with Bar('dt=%.3fyr, Nt=%i :: L=%i (nlm_len=%i) ::'%(dt/year2sec,Nt,L,nlm_len), max=Nt-1, fill='#', suffix='%(percent).1f%% - %(eta)ds') as bar:
-    for tt in np.arange(1,Nt+1):
+for tt in np.arange(0,Nt+1):
 
-        ttp = tt-1 # tt prev
-
-        ### Prev state
-        c  = nlm[ttp,:]
-
-        ### Eigen frames (e_i)
-        e1[ttp,:], e2[ttp,:], e3[ttp,:], eig[ttp,:] = sf.frame(c, 'e')
-
-        ### Enhancement factors
-        Eij[ttp,:] = np.transpose(sf.Eij_tranisotropic(c, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij_grain, alpha, n_grain))
-        
-        ### Y for fabric at constant strain rate
-        Y_R[ttp,:,:] = sf.rheo_fwd_orthotropic(       tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:])
-        Y_P[ttp,:,:] = sf.rheo_fwd_orthotropic_Pettit(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:])
-        Y_M[ttp,:,:] = sf.rheo_fwd_orthotropic_Martin(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:])
- 
-        # Verify enhancement factors are correctly reproduced *if* deformation was coaxial with eigenframe
-        if False:
-            ei = np.zeros((3,3))
-            ei[0,:] = e1[ttp,:]; ei[1,:] = e2[ttp,:]; ei[2,:] = e3[ttp,:];
-            print("\n")
-            print('e1,e2,e3 = ', ei[0,:],ei[1,:],ei[2,:])
-            print("Eij = \n", Eij[ttp,:])
-            #for ii,jj in ((0,0),(1,1),(2,2), (1,2),(2,0),(0,1)):
-            for ii in (0,1,2, 3,4,5):
-                eij = np.tensordot(ei[ii,:],ei[jj,:],axes=0)
-                tau0 = eij+eij.T if ii >= 3 else np.eye(3)/3-eij
-                Eij_ = Eij[ttp,ii]
-                Y_G_ = np.tensordot(sf.rheo_fwd_isotropic(tau0, Aglen,nglen), eij, axes=2)
-                Eij_R = np.tensordot(sf.rheo_fwd_orthotropic(       tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:]), eij, axes=2) / Y_G_
-                Eij_P = np.tensordot(sf.rheo_fwd_orthotropic_Pettit(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:]), eij, axes=2) / Y_G_
-                Eij_M = np.tensordot(sf.rheo_fwd_orthotropic_Martin(tau0, Aglen,nglen, e1[ttp,:],e2[ttp,:],e3[ttp,:], Eij[ttp,:]), eij, axes=2) / Y_G_
-                print("(i,j)=(%i,%i) :: Eij_R/Eij = %.3e --- Eij_P/Eij = %.3e --- Eij_M/Eij = %.3e :: Eij = %.3e"%(ii,jj, Eij_R/Eij_, Eij_P/Eij_, Eij_M/Eij_, Eij_))
-            print("\n")
- 
-        if tt == Nt: break # We're done after calculating Y for the last step!
-        
-        ### Fabric evolution
-        
-        if np.abs(strain[tt]) <= np.abs(DDRX_strainthres):
-            M = sf.M_LROT(c, eps, omg, 1, 0) 
-        else:
-            M = Gamma0 * sf.M_DDRX(c, tau0) 
-            
-        nu0, expo = 10, 2
-        M += M_REG_custom(nu0, expo, eps, sf) # from header.py
-        
-        nlm[tt,:] = c + dt*np.matmul(M, c)
-        
-        bar.next()
+    s = nlm[tt,:] # state vector for time step tt
+    e1[tt,:], e2[tt,:], e3[tt,:], eig[tt,:] = sf.frame(s, 'e') # eigenframe
+    Eij[tt,:] = sf.Eij_tranisotropic(s, e1[tt,:],e2[tt,:],e3[tt,:], Eij_grain, alpha, n_grain) # eigenenhancements
+    
+    ### Y for fabric at constant strain rate
+    args = (S,Aglen,nglen, e1[tt,:],e2[tt,:],e3[tt,:], Eij[tt,:])
+    Y_R[tt] = sf.rheo_fwd_orthotropic(*args)[i,j]
+    Y_P[tt] = sf.rheo_fwd_orthotropic_Pettit(*args)[i,j]
+    Y_M[tt] = sf.rheo_fwd_orthotropic_Martin(*args)[i,j]
 
 #----------------------
 # Plot
 #----------------------
 
-legkwargs = {'frameon':True, 'fancybox':False, 'edgecolor':'k', 'framealpha':1, 'ncol':1, 'handlelength':1.34, 'labelspacing':0.25, 'fontsize':FSSMALL}
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
+import matplotlib.gridspec as gridspec
 
-color_darkred = '#a50f15'
-color_blue = '#08519c'
-
-color_R = 'k' 
-color_P = 'k' 
-color_M = 'k' 
+geo, prj = sfplt.getprojection(rotation=50+180, inclination=50)
+ODF_tsteps = np.array([np.argmin(np.abs(strain-thres)) for thres in ODF_strains])
 
 ### Setup figure
 
 scale = 0.87
-
 fig = plt.figure(figsize=(7.0*scale,5*scale), constrained_layout=False)
 gs = gridspec.GridSpec(2, 2, height_ratios=[1,0.55])
 gs.update(hspace=0.53, wspace=0.26, left=0.10, right=0.97, top=0.98, bottom=0.12)
-
 ax_Y = fig.add_subplot(gs[0, :])
-
 gs_parcels = gridspec.GridSpecFromSubplotSpec(1, len(ODF_tsteps), subplot_spec=gs[1,:], width_ratios=[1,1,1,1], hspace=0.6, wspace=+0.2)
-inclination = 50 # view angle
-rot0 = -90
-rot = -40 + rot0 
-prj = ccrs.Orthographic(rot, 90-inclination)
-geo = ccrs.Geodetic()     
-ii0, jj0 = 0, 0
-ax_ODF = [fig.add_subplot(gs_parcels[ii0, jj0+ii], projection=prj) for ii,nn in enumerate(ODF_tsteps)]
+ax_ODF = [fig.add_subplot(gs_parcels[0, ii], projection=prj) for ii,nn in enumerate(ODF_tsteps)]
 
 ### Plot relative strain-rates
 
-rect1 = plt.Rectangle((strain[0],0), DDRX_strainthres,  10, color='#deebf7')
-rect2 = plt.Rectangle((DDRX_strainthres,0), strain[-1], 10, color='#fee0d2')
-ax_Y.add_patch(rect1)
-ax_Y.add_patch(rect2)
+# Background patches
 
-X = strain
-if T_EXP==T_EXP_SS: xlims = X[[0,-1]] 
-if T_EXP==T_EXP_CC: xlims = [0,-1]
-if T_EXP==T_EXP_SS: strainMinorTicks = np.arange(0,20,0.5) 
-if T_EXP==T_EXP_CC: strainMinorTicks = np.arange(-1,0,0.1)
+ax_Y.add_patch(plt.Rectangle((strain[0],0), strain_thres,  10, color=sfplt.c_vlblue))
+ax_Y.add_patch(plt.Rectangle((strain_thres,0), strain[-1], 10, color=sfplt.c_vlred))
 
-if T_EXP==T_EXP_SS: 
-    ii,jj = 0,2 # x,z
-    ylbl = r'$\dot{\epsilon}_{xz}/\dot{\epsilon}^{\mathrm{Glen}}_{xz}$'
-    xglen,yglen = 4.5,1.05
-    
-if T_EXP==T_EXP_CC: 
-    ii,jj = 2,2 # z,z
-    ylbl = r'$\dot{\epsilon}_{zz}/\dot{\epsilon}^{\mathrm{Glen}}_{zz}$'
-    xglen,yglen = -0.625,1.08
+# Glen's line
 
-cglen = '0.4'
-ax_Y.plot(X, X*0+1, '-', lw=1.2,  color=cglen)
-ax_Y.text(xglen, yglen, "Glen's law", color=cglen, horizontalalignment='center', fontsize=FSSMALL)
+cglen = '0.35'
+if T_EXP==T_EXP_SS: xglen,yglen = 1.95, 1.05
+if T_EXP==T_EXP_CC: xglen,yglen = -0.625, 1.08
+ax_Y.plot(strain, strain*0+1, '-', lw=1.2,  color=cglen)
+ax_Y.text(xglen, yglen, "Glen's law", color=cglen, ha='center', fontsize=FSSMALL)
 
-Yn_R = Y_R[:,ii,jj]/Y_G[ii,jj]
-Yn_P = Y_P[:,ii,jj]/Y_G[ii,jj]
-Yn_M = Y_M[:,ii,jj]/Y_G[ii,jj]
-delta_Martin = 100*np.divide(np.abs(Yn_M-Yn_R),Yn_R)
-delta_Pettit = 100*np.divide(np.abs(Yn_P-Yn_R),Yn_R)
-print('max(Martin-True)=%.2f'%(np.amax(delta_Martin)))
-print('max(Pettit-True)=%.2f'%(np.amax(delta_Pettit)))
-print('(Martin-True)_{-1}=%.2f'%(delta_Martin[-1]))
-print('(Pettit-True)_{-1}=%.2f'%(delta_Pettit[-1]))
-Yall = np.vstack((Yn_R,Yn_P,Yn_M))
-ax_Y.plot(X, Yn_R, '-',  color=color_R, label=r"Unapprox.")
-ax_Y.plot(X, Yn_M, '--', color=color_M, label=r"M09")
-ax_Y.plot(X, Yn_P, ':',  color=color_P, label=r"P07")
+# Model relative lines
+
+Yn_R, Yn_P, Yn_M = Y_R/Y_G, Y_P/Y_G, Y_M/Y_G
+ax_Y.plot(strain, Yn_R, '-',  c='k', label=r"Unapprox.")
+ax_Y.plot(strain, Yn_M, '--', c='k', label=r"M09")
+ax_Y.plot(strain, Yn_P, ':',  c='k', label=r"P07")
+
+if 0:
+    delta_Martin = 100*np.divide(np.abs(Yn_M-Yn_R),Yn_R)
+    delta_Pettit = 100*np.divide(np.abs(Yn_P-Yn_R),Yn_R)
+    print('max(Martin-True)=%.2f'%(np.amax(delta_Martin)))
+    print('max(Pettit-True)=%.2f'%(np.amax(delta_Pettit)))
+    print('(Martin-True)_{-1}=%.2f'%(delta_Martin[-1]))
+    print('(Pettit-True)_{-1}=%.2f'%(delta_Pettit[-1]))
+
+# Axis labels
+
 ax_Y.set_xlabel(r'$\epsilon$')
-ax_Y.set_xticks(strainMinorTicks, minor=True)  
-ax_Y.set_xlim(xlims)
-ax_Y.set_ylabel(ylbl)
+ijstr = '%s%s'%('x' if i==0 else 'z', 'x' if j==0 else 'z')
+ax_Y.set_ylabel(r'$\dot{\epsilon}_{%s}/\dot{\epsilon}^{\mathrm{Glen}}_{%s}$'%(ijstr,ijstr))
 
+# Legend
+
+legkwargs = {'frameon':True, 'fancybox':False, 'edgecolor':'k', 'framealpha':1, 'ncol':1, 'handlelength':1.34, 'labelspacing':0.25, 'fontsize':FSSMALL}
 leg = ax_Y.legend(loc=4, **legkwargs) # bbox_to_anchor=(1,0.88)
 leg.get_frame().set_linewidth(0.8);
-writeSubplotLabel(ax_Y,2,r'{\bf a}')
+sfplt.panellabel(ax_Y, 2, r'{\bf a}')
 
-dylim = 0.07*(np.amax(Yall)-np.amin(Yall)) # % of data range
-ylims = [np.amin(Yall)-dylim, np.amax(Yall)+dylim]
+# Axis ticks and limits
 
-if T_EXP==T_EXP_SS:
-    ax_Y.set_yticks(np.arange(0,10+1e-3,0.5))
-    ax_Y.set_yticks(np.arange(0,10+1e-3,0.1), minor=True)
-    
-if T_EXP==T_EXP_CC:
-    ax_Y.set_yticks(np.arange(0,10+1e-3,0.5))
-    ax_Y.set_yticks(np.arange(0,10+1e-3,0.1), minor=True)
+if T_EXP==T_EXP_SS: xticks = np.arange(0,20,0.25) 
+if T_EXP==T_EXP_CC: xticks = np.arange(-1,0,0.1)
+ax_Y.set_xticks(xticks, minor=True)  
+ax_Y.set_xlim(xlims)
 
+ax_Y.set_yticks(np.arange(0,10+1e-3,0.5))
+ax_Y.set_yticks(np.arange(0,10+1e-3,0.1), minor=True)
 ax_Y.set_ylim(ylims)
-dx, y0 = 0.016, ylims[-1]-1.1*dylim
-ax_Y.text(DDRX_strainthres*(1-dx), y0, r'{\bf Lattice rotation}', color=color_blue,    horizontalalignment='right', verticalalignment='center', fontsize=FSSMALL)
-ax_Y.text(DDRX_strainthres*(1+dx), y0, r'{\bf DDRX}',             color=color_darkred, horizontalalignment='left', verticalalignment='center', fontsize=FSSMALL)
+
+# Set bg patches identifies
+
+dx = 0.016
+y0 = ylims[-1]-0.075*abs(np.diff(ylims)[0])
+ax_Y.text(strain_thres*(1-dx), y0, r'{\bf Lattice rotation}', c=sfplt.c_dblue, ha='right', va='center', fontsize=FSSMALL)
+ax_Y.text(strain_thres*(1+dx), y0, r'{\bf DDRX}',             c=sfplt.c_dred,  ha='left',  va='center', fontsize=FSSMALL)
 
 ### Plot ODFs
-
-colax = 'k'
 
 for ii,nn in enumerate(ODF_tsteps):
 
     ax = ax_ODF[ii]
     ax.set_global()
-    N = np.sqrt(4*np.pi)*nlm[nn,0]
-    ODF = np.divide(nlm[nn,:],N) # normalize distribution (=ODF)
-    plot_ODF(ODF, lm, ax=ax, cmap='Greys', cblabel=r'ODF')
+    sfplt.plotODF(nlm[nn,:], lm, ax, cblabel=r'ODF', lvlset=[np.linspace(0,0.41,9), lambda x,p:'%.1f'%x])
     ax.set_title(r'$\epsilon=%.1f$'%(strain[nn]), fontsize=FS)
-    writeSubplotLabel(ax,2,r'{\bf %s}'%(chr(ord('b')+ii)), bbox=(-0.25,1.35))
+    sfplt.panellabel(ax,2,r'{\bf %s}'%(chr(ord('b')+ii)), bbox=(-0.25,1.35))
 
-    if ii==0:
-        mrk='X'
-        ms=4.5
-#        ax.plot([0],[90],mrk, ms=ms, c=colax, transform=geo)
-#        ax.plot([rot0-90],[0],mrk, ms=ms,  c=colax, transform=geo)
-#        ax.plot([rot0],[0],mrk, ms=ms,  c=colax, transform=geo)
-#        ax.text(rot0-80, 65, r'$\vu{z}$', c=colax, horizontalalignment='left', transform=geo)
-#        ax.text(rot0-90+12, -5, r'$\vu{x}$', c=colax, horizontalalignment='left', transform=geo)
-#        ax.text(rot0-23, -5, r'$\vu{y}$', c=colax, horizontalalignment='left', transform=geo)
-        ax.text(rot0-40, 90-8, r'$\vu{z}$', c=colax, horizontalalignment='center', transform=geo)
-        ax.text(rot0-90, -3, r'$\vu{x}$', c=colax, horizontalalignment='center', transform=geo)
-        ax.text(rot0-0, -3, r'$\vu{y}$', c=colax, horizontalalignment='center', transform=geo)
-    
-    if ii>0:    
-        color, ms = color_darkred, 7
+    if ii==0: 
+        sfplt.plotcoordaxes(ax, geo, axislabels='vuxi', color='k')        
+    elif ii>0:    
+        kwargs = dict(marker='.', ms=7, markerfacecolor=sfplt.c_dred, markeredgecolor=sfplt.c_dred, markeredgewidth=1.0, transform=geo)
 #        w,v = np.linalg.eig(tau_RL[nn,:,:]) # debug: principal stress directions
 #        for ei in (v[:,0],v[:,1],v[:,2]): # debug: principal stress directions
         for ei in (e1[nn,:],e2[nn,:],e3[nn,:]):
-            theta,phi = getPolarAngles(ei)
-            ax.plot([phi],[theta], marker='.', ms=ms, markerfacecolor=color, markeredgecolor=color, markeredgewidth=1.0, transform=geo)
-            theta,phi = getPolarAngles(-ei)
-            ax.plot([phi],[theta], marker='.', ms=ms, markerfacecolor=color, markeredgecolor=color, markeredgewidth=1.0, transform=geo)
+            sfplt.plotS2point(ax, +ei, **kwargs)
+            sfplt.plotS2point(ax, -ei, **kwargs)
 
-    if False and ii==0:    
-        color, ms = color_blue, 8
-        w,v = np.linalg.eig(tau0) # debug: principal stress directions
-        #print(w,v)
-        for ei in (v[:,0],v[:,1],v[:,2]): # debug: principal stress directions
-            ei = np.array(ei)
-            theta,phi = getPolarAngles(ei)
-            ax.plot([phi],[theta], marker='o', ms=ms, markerfacecolor='none', markeredgecolor=color, markeredgewidth=1.0, transform=geo)
-            theta,phi = getPolarAngles(-ei)
-            ax.plot([phi],[theta], marker='o', ms=ms, markerfacecolor='none', markeredgecolor=color, markeredgewidth=1.0, transform=geo)
+### Plot parcel deformation as inset
 
+if T_EXP==T_EXP_SS: parcel_tsteps = ODF_tsteps[[0,1]]
+if T_EXP==T_EXP_CC: parcel_tsteps = ODF_tsteps[[0,2]]
+
+for ii,nn in enumerate(parcel_tsteps):
+
+    # Parcel locations (normalized figure coords, so must be set manually like this)
+    if T_EXP==T_EXP_SS: 
+        y0 = 0.7
+        pc = np.array([[0.106,y0],[0.28,y0]])
         
-### Plot parcel deformations on seperated inset axes
+    if T_EXP==T_EXP_CC: 
+        y0 = 0.7
+        pc = np.array([[0.106,y0],[0.45,y0]])
 
-# Parcel geometry
-xyz0_init = (1,1,1)
-ex,ey,ez = np.array([xyz0_init[0],0,0]),np.array([0,xyz0_init[1],0]),np.array([0,0,xyz0_init[2]])
-
-axsize = 0.14
-scale = 1
-
-if T_EXP==T_EXP_SS: axy0 = 0.70
-if T_EXP==T_EXP_CC: axy0 = 0.70
-
-if T_EXP==T_EXP_SS: steps_to_plot_ODF = ODF_tsteps[0:2]
-if T_EXP==T_EXP_CC: steps_to_plot_ODF = [ODF_tsteps[0], ODF_tsteps[2]] 
-
-for ii,nn in enumerate(steps_to_plot_ODF):
-
-    if T_EXP==T_EXP_SS:
-        xyz0 = xyz0_init
-        dyx = np.dot(np.matmul(Ft[nn]-np.eye(3), ey), ex)
-        dzx = np.dot(np.matmul(Ft[nn]-np.eye(3), ez), ex)
-        dzy = 0
-        pcoords = np.array([[0.106,axy0],[0.28,axy0]])
-        
-    if T_EXP==T_EXP_CC:
-        xyz0 = np.matmul(Ft[nn], np.array(xyz0_init))
-        dzx, dzy, dyx = 0,0,0
-        pcoords = np.array([[0.106,axy0],[0.55,axy0]])
-
-    ax_sub = fig.add_axes([pcoords[ii,0],pcoords[ii,1], axsize,axsize], projection='3d')
-    ax_sub.patch.set_alpha(0.01)
-    plot_parcel(ax_sub, xyz0, dzx,dzy,dyx, color='0.5', plotaxlbls=True, scale=scale)
+    axs = 0.14
+    ax_sub = fig.add_axes([pc[ii,0], pc[ii,1], axs, axs], projection='3d')
+    ax_sub.patch.set_alpha(0.0)
+    lw = 0.7
+    sfplt.plotparcel(ax_sub, F[nn,:,:], lw=lw, lwinitbox=lw, fonttex=True)
     ax_sub.set_title(r'$\epsilon=%.1f$'%(strain[nn]), fontsize=FSSMALL,  x=0.5, y=0.92)
-    
-    if T_EXP==T_EXP_SS:
         
-        lw0 = 1.25
-        lwdotted = 0.65* lw0
-        coldotted = '0.4'
-        x0, *_ = xyz0_init
-        zero, one, doubleone = np.array([0,0]), np.array([0,1*scale]), np.array([1*scale,1*scale])
-        zspan = one
-        ax_sub.plot(np.array([0,dzx])*scale,zero,doubleone, ':', lw=lwdotted, color=coldotted, zorder=10, clip_on=False)
-        ax_sub.plot(np.array([x0+dzx]*2)*scale,zero,zspan,  ':', lw=lwdotted, color=coldotted, zorder=10, clip_on=False)
-        ax_sub.plot(np.array([x0,x0+dzx])*scale,zero,zero,  ':', lw=lwdotted, color=coldotted, zorder=10, clip_on=False)
-
 ### Save figure
 
+T_EXP_STR = {T_EXP_CC:'cc', T_EXP_SS:'ss'}
 fname = 'rheology-compare-%s.png'%(T_EXP_STR[T_EXP])
 print('Saving output to %s'%(fname))
 plt.savefig(fname, dpi=175)

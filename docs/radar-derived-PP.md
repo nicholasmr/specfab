@@ -87,7 +87,7 @@ Since $\lambda_1$ is unknown, the problem can be closed by making different assu
 Suppose $\Delta\lambda$ is measured in region where $c$-axes are, to a good approximation, suspected to be distributed on the ${\bf m}_2$&mdash;${\bf z}$ plane because the smallest eigenvalue is vanishing, $\lambda_1 \rightarrow 0$.
 In this case, $\Delta \lambda = 0$ represents a perfect single-maximum along ${\bf z}$, $\Delta \lambda = 0.5$ a perfect girdle in the ${\bf m}_2$&mdash;${\bf z}$ plane, and $\Delta \lambda = 1$ a perfect single-maximum along ${\bf m}_2$, respectively:
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/plane-CPOs.png){: style="width:610px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/plane-CPOs.png){: style="width:650px"}
 
 ## CPO $\rightarrow$ Enhancement factors
 
@@ -125,7 +125,7 @@ The following code demonstrates how to take each step with specfab:
 ```python
 import numpy as np
 from scipy.spatial.transform import Rotation
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
 lm, nlm_len = sf.init(4) # L=4 is sufficient here
 
 ### Determine <c_i c_j> from radar-derived Delta lambda
@@ -143,7 +143,7 @@ if dl > 0.6:         a2_vs = np.matmul(Rm1,np.matmul(a2,Rm1.T)) # Rotate horizon
 
 ### Determine \hat{n}_4^0 (= n_4^0/n_0^0) from \hat{n}_2^0 (= n_2^0/n_0^0) in rotationally-symmetric frame about z
 nhat20 = (a2_vs[2,2]- 1/3)/(2/15*np.sqrt(5)) # azz -> nhat20
-nhat40 = sf.nhat40_empcorr_ice(nhat20) 
+nhat40 = sf.nhat40_empcorr_ice(nhat20)[0]
 
 ### Construct nlm (spectral CPO state vector) in rotationally-symmetric frame about z
 nlm_vs = np.zeros(nlm_len, dtype=np.complex128) 
@@ -152,7 +152,7 @@ nlm_vs[0]  = n00
 nlm_vs[3]  = nhat20*n00
 nlm_vs[10] = nhat40*n00
 
-### Rotate spectral CPO state back to original (m1,m2,z) eigenframe 
+### Rotate spectral CPO state back to origional (m1,m2,z) eigenframe 
 if dl < 0.4:         nlm = nlm_vs # Already in vertical symmetric frame
 if 0.4 <= dl <= 0.6: nlm = sf.rotate_nlm(nlm_vs, -np.pi/2, 0) # Rotate horizontal (m1--m2) girdle back into vertical (m2--z) girdle
 if dl > 0.6:         nlm = sf.rotate_nlm(sf.rotate_nlm(nlm_vs, -np.pi/2, 0), 0 ,-np.pi/2) # Rotate vertical (z) single-maximum back into horizontal (m2) single-maximum
@@ -164,8 +164,7 @@ Eij_grain = (1, 1e3) # Grain eigenenhancements (Ecc,Eca) for compression along c
 alpha     = 0.0125   # Taylor--Sachs weight
 # Tuple of eigenenhancements (bulk enhancement factors w.r.t. m1, m2, z)
 e1, e2, e3 = m1, m2, z
-Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) 
-print(Eij) # (E_{m1,m1},E_{m2,m2},E_{zz},E_{m2,z),E_{m1,z},E_{m1,m2})
+Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # (E_{m1,m1},E_{m2,m2},E_{zz},E_{m2,z),E_{m1,z},E_{m1,m2})
 # To calculate bulk enhancement factors w.r.t. other axes of deformation/stress, change (e1,e2,e3) accordingly.
 ```
 

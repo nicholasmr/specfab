@@ -1,15 +1,18 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk>, 2022
+# N. M. Rathmann <rathmann@nbi.ku.dk>, 2022-2023
 
 import sys, os, copy, code # code.interact(local=locals())
 import numpy as np
+import scipy.special as sp
 #from numpy import linalg as LA
 #from scipy.optimize import minimize
 
-sys.path.insert(0, '../../demo')
-from header import *
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
+from specfabpy import plotting as sfplt
+FS = sfplt.setfont_tex()
+FS += 0
 
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 from matplotlib import rcParams, rc
 
 import warnings
@@ -81,7 +84,7 @@ if 1:
 
         scale=0.9
         fig = plt.figure(figsize=(7*scale,3*scale))
-        gs = gridspec.GridSpec(1, 3, width_ratios=[1.5,1,1], wspace=0.25, bottom=0.17, top=0.95, left=0.1, right=0.99)
+        gs = gridspec.GridSpec(1, 3, width_ratios=[1.5,1,1], wspace=0.25, bottom=0.17, top=0.95, left=0.11, right=0.99)
         
         ### Plot power spectra
 
@@ -108,21 +111,16 @@ if 1:
         
         ### Plot ODFs
         
-        inclination = 50 # view angle
-        rot0 = -90
-        rot = -40 + rot0 
-        prj = ccrs.Orthographic(rot, 90-inclination)
-        geo = ccrs.Geodetic()     
+        geo, prj = sfplt.getprojection(rotation=45, inclination=50)
         ax_ODF = [fig.add_subplot(gs[0, 1+ii], projection=prj) for ii in [0,1]]
 
-        lvls = np.linspace(0,1,9)
-        tickintvl = 4
+        lvlset = [np.linspace(0,1,9), lambda x,p:'%.1f'%x]
 
-        plot_ODF(nlm[0,:,tt], lm, ax=ax_ODF[0], cmap='Greys', cblabel=r'$n/N$ (ODF)', latres=40, lvls=lvls, tickintvl=tickintvl)
+        sfplt.plotODF(nlm[0,:,tt], lm, ax_ODF[0], lvlset=lvlset)
         ax_ODF[0].set_global()
         ax_ODF[0].set_title(r'$\bf{M}=\bf{M}_\mathrm{LROT} + \bf{M}_\mathrm{REG}$', fontsize=FS+1, pad=10)
         
-        plot_ODF(nlm[1,:,tt], lm, ax=ax_ODF[1], cmap='Greys', cblabel=r'$n/N$ (ODF)', latres=40, lvls=lvls, tickintvl=tickintvl)
+        sfplt.plotODF(nlm[1,:,tt], lm, ax=ax_ODF[1], lvlset=lvlset)
         ax_ODF[1].set_global()
         ax_ODF[1].set_title(r'$\bf{M}=\bf{M}_\mathrm{LROT}$', fontsize=FS+1, pad=10)
 

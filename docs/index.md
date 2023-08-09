@@ -15,7 +15,9 @@ By Nicholas M. Rathmann and David A. Lilien
 
 ## Glacier ice demo
 
-![](https://github.com/nicholasmr/specfab/raw/main/demo/cube-crush-animation/cube-crush.gif){: style="width:550px"}
+![](https://github.com/nicholasmr/specfab/raw/main/demo/cube-crush-animation/Eij-trajectory/Eij-trajectory.gif){: style="width:700px"}
+
+<!-- ![](https://github.com/nicholasmr/specfab/raw/main/images/tranisotropic/parcel-animation/tranisotropic-parcel-animation.gif){: style="width:550px"} -->
 
 ## Install
 

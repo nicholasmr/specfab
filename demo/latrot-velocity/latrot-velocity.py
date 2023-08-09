@@ -1,72 +1,80 @@
 #!/usr/bin/python3
-# N. M. Rathmann <rathmann@nbi.ku.dk>, 2022
+# N. M. Rathmann <rathmann@nbi.ku.dk>, 2022-2023
 
 import copy, sys, code # code.interact(local=locals())
 import numpy as np
-sys.path.insert(0, '..')
-from header import *
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import matplotlib.ticker as mticker
+import cartopy.crs as ccrs
 
-### High res
+from specfabpy import specfab as sf
+from specfabpy import discrete as sfdsc
+from specfabpy import plotting as sfplt
+FS = sfplt.setfont_tex(fontsize=12)
+FSSMALL = FS-1
+
+### High-res grid
 
 mul = 10
-theta = np.linspace(0, np.pi, 20*mul)   
-phi   = np.linspace(0, 2*np.pi, 10*mul)
-p2, t2 = np.meshgrid(phi, theta)
+colat = np.linspace(0, np.pi, 20*mul)   
+lon   = np.linspace(0, 2*np.pi, 10*mul)
+lon2, colat2 = np.meshgrid(lon, colat)
+rv, tv, pv = sfdsc.sphericalbasisvectors(colat2, lon2)
 
-cv = np.array([np.cos(p2)*np.sin(t2), np.sin(p2)*np.sin(t2), +np.cos(t2)]) 
-tv = np.array([np.cos(p2)*np.cos(t2), np.sin(p2)*np.cos(t2), -np.sin(t2)]) 
-pv = np.array([-np.sin(p2), np.cos(p2), 0*p2]) 
-
-### Low res
+### Low-res grid
 
 mul = 1.0
-theta_ = np.linspace(0, np.pi, int(10*mul))   
-phi_   = np.linspace(0, 2*np.pi, int(20*mul))
-p2_, t2_ = np.meshgrid(phi_, theta_)
-
-cv_ = np.array([np.cos(p2_)*np.sin(t2_), np.sin(p2_)*np.sin(t2_), +np.cos(t2_)]) 
-tv_ = np.array([np.cos(p2_)*np.cos(t2_), np.sin(p2_)*np.cos(t2_), -np.sin(t2_)]) 
-pv_ = np.array([-np.sin(p2_), np.cos(p2_), 0*p2_]) 
+colat_ = np.linspace(0, np.pi, int(10*mul))   
+lon_   = np.linspace(0, 2*np.pi, int(20*mul))
+lon2_, colat2_ = np.meshgrid(lon_, colat_)
+rv_, tv_, pv_ = sfdsc.sphericalbasisvectors(colat2_, lon2_)
 
 ### Functions
 
+def get_velmap(ugrad, rv, tv, pv, speedthres=0):
+    D, W = (ugrad + ugrad.T)/2, (ugrad - ugrad.T)/2
+    Wp = np.einsum('ijk,ljk,lm,mjk->ijk', rv,rv,D,rv) - np.einsum('ij,jkl->ikl', D, rv)
+    cdot = np.einsum('ij,jkl->ikl', W, rv) + Wp
+    cdot *= -1 # @TODO there is a sign error somewhere, but fixed here (to be found)
+    ut = np.einsum('ijk,ijk->jk', cdot, tv)
+    up = np.einsum('ijk,ijk->jk', cdot, pv)
+    speed = np.linalg.norm(cdot, axis=0)
+    ut[speed<speedthres] = np.nan
+    return (ut, up, speed)
+    
+
 def plot(ugrad, ax, titlestr='', speedthres=0):
 
-    ### Contour high res
+    transform = ccrs.PlateCarree()
 
-    D, W = (ugrad + ugrad.T)/2, (ugrad - ugrad.T)/2
+    ### Contour, high-res
 
-    cdot = np.einsum('ij,jkl->ikl', W, cv) - (np.einsum('ij,jkl->ikl', D, cv) - np.einsum('ijk,ljk,lm,mjk->ijk', cv,cv,D,cv))
-         
-    u = np.einsum('ijk,ijk->jk', cdot, pv)
-    v = np.einsum('ijk,ijk->jk', cdot, tv)
-    speed = np.linalg.norm(cdot, axis=0)
-    u[speed<speedthres] = np.nan
-
+    ut, up, speed = get_velmap(ugrad, rv, tv, pv, speedthres=speedthres)
     lvls = np.linspace(0,0.8,5)
-    x, y = np.rad2deg(p2), np.rad2deg(t2 - np.pi/2) 
     F = speed/np.linalg.norm(ugrad)
-    hdistr = ax.contourf(x,y, F, transform=ccrs.PlateCarree(), extend='max', cmap='YlOrBr', levels=lvls)
-#    ax.streamplot(x,y,u,v, color='0', linewidth=0.9, density=[0.45,0.65], arrowsize=1,  transform=geo)
+    x, y = np.rad2deg(lon), np.rad2deg(sfdsc.colat2lat(colat))
+    hdistr = ax.contourf(x, y, F, transform=transform, extend='max', cmap='YlOrBr', levels=lvls)
 
-    ### Quiver, low res
+    ### Quiver, low-res
 
-    cdot_ = np.einsum('ij,jkl->ikl', W, cv_) - (np.einsum('ij,jkl->ikl', D, cv_) - np.einsum('ijk,ljk,lm,mjk->ijk', cv_,cv_,D,cv_))
-         
-    u_ = np.einsum('ijk,ijk->jk', cdot_, pv_)
-    v_ = np.einsum('ijk,ijk->jk', cdot_, tv_)
-    speed_ = np.linalg.norm(cdot_, axis=0)
-    u_[speed_<speedthres] = np.nan
-
-    cquiv = 'k' # #b2182b       
-#    cquiv = '#a50f15' # #b2182b
+    ut_, up_, speed_ = get_velmap(ugrad, rv_, tv_, pv_, speedthres=speedthres)
     lvls = np.linspace(0,0.8,5)
-    x_, y_ = np.rad2deg(p2_), np.rad2deg(t2_ - np.pi/2) 
-    QV1 = ax.quiver(x_,y_,u_,v_, scale=7.5, width=0.012, color=cquiv, transform=geo)
+    x_, y_ = np.rad2deg(lon_), np.rad2deg(sfdsc.colat2lat(colat_)) # np.rad2deg(colat_)
+    if 0: # debug/verify quiver 
+        x_, y_ = np.array([180]*3), sfdsc.colat2lat(np.array([0, 45, 90]), deg=True)
+        up_, ut_ = np.array([1]*3), np.array([0]*3)
+    QV1 = ax.quiver(x_,y_, up_,ut_, scale=7.5, width=0.012, color='k', transform=transform)
     plt.quiverkey(QV1, 0.95, 0.00, 1, r'$\dot{\vb{c}}$', labelpos='E', coordinates='axes', labelsep=0.05)
+
+    if 0: # debug cordinate transform
+        ax.plot(180, 90- 0, 'Xr', transform=transform)
+        ax.plot(180, 90- 45, 'or', transform=transform)
+        ax.plot(180, 90- 90, 'sr', transform=transform)
+        ax.plot(180*0, 90- 0, 'Xb', transform=transform)
+        ax.plot(180*0, 90- 45, 'ob', transform=transform)
+        ax.plot(180*0, 90- 90, 'sb', transform=transform)
 
     kwargs_gridlines = {'ylocs':np.arange(-90,90+30,30), 'xlocs':np.arange(0,360+45,45), 'linewidth':0.5, 'color':'black', 'alpha':0.25, 'linestyle':'-'}
     gl = ax.gridlines(crs=ccrs.PlateCarree(), **kwargs_gridlines)
@@ -78,47 +86,31 @@ def plot(ugrad, ax, titlestr='', speedthres=0):
 
 ### Plot
 
-inclination = 45 # view angle
-rot0 = -90
-rot = -45 + rot0 # view angle
-
-prj = ccrs.Orthographic(rot, 90-inclination)
-geo = ccrs.RotatedPole()
+geo, prj = sfplt.getprojection(rotation=50+180, inclination=50)
 
 scale = 2.6
 fig = plt.figure(figsize=(3/2*1.45*scale,1.00*scale))
 gs = fig.add_gridspec(1,3)
-al = 0.04
-ar = 0.02
-gs.update(left=al, right=1-ar, top=0.98, bottom=0.20, wspace=0.4, hspace=0.4)
+gs.update(left=0.04, right=1-0.02, top=0.98, bottom=0.20, wspace=0.4, hspace=0.4)
 
 ax1 = fig.add_subplot(gs[0,0], projection=prj); ax1.set_global(); 
 ax2 = fig.add_subplot(gs[0,1], projection=prj); ax2.set_global(); 
 ax3 = fig.add_subplot(gs[0,2], projection=prj); ax3.set_global(); 
-axlist = [ax1,ax2,ax3]
-
-#---------
 
 ### Plot 1
-ugrad = np.diag([0.5,0.5,-1]) # Unconfined UC in z
+ugrad = np.diag([0.5,0.5,-1]) # uniaxial compression along z
 plot(ugrad, ax1, titlestr=r'%s Unconfined pure shear'%(r'{\Large \textit{(a)}}\,\,'), speedthres=10e-2)
+sfplt.plotcoordaxes(ax1, geo, axislabels='vuxi', color='k')
 
 #### Plot 2
-ugrad = np.diag([+1,0,-1]) 
+ugrad = np.diag([+1,0,-1]) # confined uniaxial compression along z
 plot(ugrad, ax2, titlestr=r'%s Confined pure shear'%(r'{\Large \textit{(b)}}\,\,'))
+sfplt.plotcoordaxes(ax2, geo, axislabels='vuxi', color='k')
 
 #### Plot 3
-ugrad = np.array([[0,0,1], [0,0,0], [0,0,0]])
+ugrad = np.einsum('i,j',[1,0,0],[0,0,1]) # x-z shear
 plot(ugrad, ax3, titlestr=r'%s Simple shear'%(r'{\Large \textit{(c)}}\,\,'))
-
-#---------
-
-for ax in axlist:
-    ax.plot([0],[90], c='0.0', marker=r'$z$', ms=8, transform=geo)
-    ax.plot([0],[0], c='0.0', marker=r'$x$', ms=8, transform=geo)
-    ax.plot([90],[0], c='0.0', marker=r'$y$', ms=8, transform=geo)
-
-#---------
+sfplt.plotcoordaxes(ax3, geo, axislabels='vuxi', color='k')
 
 fout = 'latrot-velocity.png'
 print('Saving %s'%(fout))

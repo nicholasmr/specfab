@@ -7,7 +7,6 @@ nav:
         - Structure tensors: cpo-structuretensors.md
         - Idealized states: cpo-idealized.md
         - Rotation: cpo-rotation.md
-        - Plotting: cpo-plot.md
     - 'CPO dynamics':
         - Transversely isotropic grains: cpo-dynamics-tranisotropic.md
         - Orthotropic grains: cpo-dynamics-orthotropic.md
@@ -21,8 +20,10 @@ nav:
         - Wave propagation: wavepropagation-electromagnetic.md
     - 'Further applications': 
         - Radar-derived physical properties: radar-derived-PP.md
-        - FEniCS FEM integration: FEM-integration-fenics.md
-        - Elmer FEM integration: FEM-integration-elmer.md
+        - FEM integration: FEM-integration.md
+    - 'Miscellaneous': 
+        - Plotting: cpo-plot.md
+        - Deformation modes: deformation-modes.md
 
 theme: 
     name: 'readthedocs'

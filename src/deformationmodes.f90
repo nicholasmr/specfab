@@ -2,6 +2,12 @@
 
 ! Idealized modes of deformation
 
+!----------
+! Notation:
+!----------
+! ugrad_ij := d(u_i)/d(x_j) 
+!----------
+
 module deformationmodes 
 
     use header
@@ -67,7 +73,6 @@ contains
         if (ax == 2) ugrad = 1/T*diag([(1+r)/2, (1-r)/2, -1.0d0]) ! compression along z
     end
 
-
     ! Simple shear
 
     function simpleshear_gamma(T, time) result (gam)
@@ -92,9 +97,9 @@ contains
         real(kind=dp)             :: gam, F(3,3)
         gam = simpleshear_gamma(T, time)
         F = identity
-        if (plane == 0) F(2,3) = tan(gam) ! y--z shear
-        if (plane == 1) F(1,3) = tan(gam) ! x--z shear
-        if (plane == 2) F(1,2) = tan(gam) ! x--y shear
+        if (plane == 0) F(2,3) = tan(gam) ! y--z shear (du_y/dz)
+        if (plane == 1) F(1,3) = tan(gam) ! x--z shear (du_x/dz)
+        if (plane == 2) F(1,2) = tan(gam) ! x--y shear (du_x/dy)
     end
        
     function simpleshear_ugrad(plane,T) result(ugrad)

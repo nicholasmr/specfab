@@ -2,16 +2,47 @@
 # Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2023
 
 """
-Discrete Directors Method (DDM) for initially isotropic vector bundle of crystallographic axes
+Discrete methods
 """
  
 import numpy as np
 import copy, sys, time, code # code.interact(local=locals())
 
+
+def cart2sph(v, deg=False):
+    # Spherical coordinates from Cartesian vector(s)
+#    x,y,z = v[0,:],v[1,:],v[2,:]
+    x,y,z = v
+    lon = np.arctan2(y,x)
+    lat = np.arctan2(np.sqrt(np.power(x,2) + np.power(y,2)), z)
+    colat = np.pi/2 - lat
+    return (np.rad2deg(lat), np.rad2deg(colat), np.rad2deg(lon)) if deg else (lat, colat, lon)
+    
+
+def sphericalbasisvectors(colat, lon, deg=False):
+
+    if deg:
+        colat = np.deg2rad(colat)
+        lon   = np.deg2rad(lon)
+
+    rhat = np.array([np.cos(lon)*np.sin(colat), np.sin(lon)*np.sin(colat), +np.cos(colat)]) 
+    that = np.array([np.cos(lon)*np.cos(colat), np.sin(lon)*np.cos(colat), -np.sin(colat)]) 
+    phat = np.array([-np.sin(lon), np.cos(lon), 0*lon]) 
+    
+    return (rhat,that,phat) # unit vectors (r, theta, phi)
+
+
+def lat2colat(lat, deg=False):
+    return 90 - lat if deg else np.pi/2 - lat
+
+def colat2lat(colat, deg=False):
+    return 90 - colat if deg else np.pi/2 - colat
+
+
 class DDM():
 
     """
-    Discrete Directors Method (DDM) solver
+    Discrete Directors Method (DDM) for initially isotropic vector bundle of crystallographic axes
     """
 
     def __init__(self, iota=+1, N=1000, v0=None):

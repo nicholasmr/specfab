@@ -14,6 +14,7 @@ VERBOSE_F2PY=--quiet
 # Core modules
 #-------------------
 
+PATHSPECFABPY=specfabpy
 PATHDEMO=../demo
 PATHTEST=../tests
 PATHFABEVO=$(PATHDEMO)/fabric-evolution
@@ -39,7 +40,7 @@ LAMBDASOLVER=lambdasolver
 
 DEPLESS=$(HEADER).o $(TENPROD).o $(MANDEL).o $(REDUCED).o $(GAUNT).o
 WITHDEPS=$(RHEOLOGIES).o $(ELASTICITIES).o $(MOMENTS).o $(LAMBDASOLVER).o $(DYNAMICS).o $(HOMOGEN).o $(ENHFAC).o $(ROTATION).o $(WAVEPROP).o $(DEFORMMODES).o $(IDEALSTATE).o
-# 
+
 OBJCORE=$(DEPLESS) $(WITHDEPS)
 SRCCORE=$(OBJCORE:.o=.f90)
 
@@ -82,13 +83,6 @@ fabric-evolution-demo: $(SPECFAB).o
 	$(COMPILER) $(PATHFABEVO)/run-fabric-evolution-latrot.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHFABEVO)/run-fabric-evolution-latrot 
 	$(COMPILER) $(PATHFABEVO)/run-fabric-evolution-ddrx.f90   $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHFABEVO)/run-fabric-evolution-ddrx
 	@mkdir -p $(PATHFABEVO)/solutions
-	@echo "\n*** To get going, try the demos:"
-	@echo "\n--- Lattice rotation ---"
-	@echo "cd $(PATHFABEVO); ./run-fabric-evolution-latrot  uc_zz :: uniaxial compression (uc) in the vertical (z)"
-	@echo "cd $(PATHFABEVO); ./run-fabric-evolution-latrot  ss_xz :: simple shear (ss) along the x-z plane"
-	@echo "\n--- Dynamic recrystallization ---"
-	@echo "cd $(PATHFABEVO); ./run-fabric-evolution-ddrx uc_zz :: uniaxial compression (uc) in the vertical (z)"
-	@echo "cd $(PATHFABEVO); ./run-fabric-evolution-ddrx ss_xz :: simple shear (ss) along the x-z plane"
 
 specfabpy: $(SPECFAB).o
 	for pyver in $(PYVERS); do \
@@ -97,24 +91,22 @@ specfabpy: $(SPECFAB).o
 		python$$pyver -m numpy.f2py --no-lower -m specfabpy -h specfabpy.pyf specfabpy.f90 $(VERBOSE_F2PY); \
 		python$$pyver -m numpy.f2py -lm -llapack -lblas -I. $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" $(VERBOSE_F2PY); \
 	done
-	@cp specfabpy.cpython* $(PATHDEMO)/
-	@echo "\n*** Python module (specfabpy) installed in /demo"
-	@mkdir -p $(PATHFABEVO)/solutions
-	@echo "\n*** To get going, try the demo:"
-	@echo "cd $(PATHFABEVO); python3 run-fabric-evolution-latrot.py uc_zz ::: for uniaxial compression (uc) in the vertical (z)"
-	@echo "cd $(PATHFABEVO); python3 run-fabric-evolution-latrot.py ss_xz ::: for simple shear (ss) along the x-z plane"
+	@echo "\n*** Moving python *.so modules to src/$(PATHSPECFABPY)"
+	@mv -f specfabpy.cpython* $(PATHSPECFABPY)/
 
 python: specfabpy
 	python setup.py install
+
+#-------------------
 
 constitutive-tests: $(SPECFAB).o
 	$(COMPILER) $(PATHRHEOTEST)/rheology-test-orthotropic.f90             $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-orthotropic
 	$(COMPILER) $(PATHRHEOTEST)/rheology-test-transverselyisotropic.f90   $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-transverselyisotropic
 	$(COMPILER) $(PATHRHEOTEST)/elasticity-test-transverselyisotropic.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/elasticity-test-transverselyisotropic
-	$(COMPILER) $(PATHRHEOTEST)/rheology-test-isotropic-porous.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-isotropic-porous
+	$(COMPILER) $(PATHRHEOTEST)/rheology-test-isotropic-porous.f90        $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-isotropic-porous
 
 aux-tests: $(SPECFAB).o
-	$(COMPILER) $(PATHTEST)/reduced-coef-test/reduced-coef-test.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHTEST)/reduced-coef-test/reduced-coef-test
+	$(COMPILER) $(PATHTEST)/reduced-coef-test/reduced-coef-test.f90           $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHTEST)/reduced-coef-test/reduced-coef-test
 	$(COMPILER) $(PATHTEST)/wigner-d-rotation-test/discrete-rotation-test.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHTEST)/wigner-d-rotation-test/discrete-rotation-test
 
 #-------------------
@@ -127,6 +119,8 @@ $(SPECFAB).o: $(SPECFAB).f90 $(OBJCORE) elmer/specfab_elmer.f90 josef/specfab_jo
 
 $(DEPLESS): %.o: %.f90
 	$(COMPILER) $(OPTS) -c $<
+	
+#-------------------
 
 $(RHEOLOGIES).o: $(RHEOLOGIES).f90 $(HEADER).o $(TENPROD).o $(LAMBDASOLVER).o
 	$(COMPILER) $(OPTS) -c $<
@@ -169,7 +163,7 @@ $(LAMBDASOLVER).o:
 clear:
 	rm -f $(PATHRHEOTEST)/rheology-test-orthotropic $(PATHRHEOTEST)/rheology-test-transverselyisotropic
 	rm -f $(PATHFABEVO)/run-fabric-evolution-latrot $(PATHFABEVO)/run-fabric-evolution-ddrx 
-	rm -f $(SPECFAB).o $(SPECFAB).mod *.so
+	rm -f $(SPECFAB).o $(SPECFAB).mod *.so $(PATHSPECFABPY)/*.so
 	rm -f $(LAMBDASOLVER).o $(LAMBDASOLVER).mod $(OBJM77) $(PATHM77)/test
 
 clean: clear
@@ -185,6 +179,4 @@ all: $(SPECFAB).o lib$(SPECFAB).so
 
 #$(DEMO)/elmer%: $(DEMO)/elmer%.f90 | lib$(SPECFAB).so $(MODCORE)
 #	$(COMPILER) $< $(ALLOBJS) $(OPTS) $(OPTSNETCDF) -o $@
-
-
 

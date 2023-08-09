@@ -112,7 +112,7 @@ contains
         implicit none
         real(kind=dp), intent(in) :: theta ! latitude
         real(kind=dp)             :: Y
-        Y = 1/2048.0d0 * sqrt(25/Pi) * (676039*cos(theta)**12 - 1939938*cos(theta)**10 + 2078505*cos(theta)**8 - 1021020*cos(theta)**6 + 225225*cos(theta)**4 - 18010*cos(theta)**2 - 231)
+        Y = 1/2048.0d0 * sqrt(25/Pi) * (676039*cos(theta)**12 - 1939938*cos(theta)**10 + 2078505*cos(theta)**8 - 1021020*cos(theta)**6 + 225225*cos(theta)**4 - 18018*cos(theta)**2 + 231)
     end
 
 !    function Y140(theta) result (Y)

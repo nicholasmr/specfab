@@ -123,7 +123,7 @@ The below example for glacier ice shows how bulk $E_{ij}$ may be calculated give
 
 ```python
 import numpy as np
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
 lm, nlm_len = sf.init(8) 
 
 ### Make synthetic ODF
@@ -155,7 +155,7 @@ Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # Eij=(E11,E2
     The below animation shows the directional enhancement factors for a CPO evolving under [uniaxial compression](deformation-modes.md) along ${\hat {\bf z}}$ when subject to [lattice rotation](cpo-dynamics-tranisotropic.md).
     Enhancement factors are calculated w.r.t. the spherical coordinate basis vectors $({\bf e}_1, {\bf e}_2, {\bf e}_3) = ({\hat{\bf r}},{\hat{\boldsymbol \theta}},{\hat{\boldsymbol \phi}})$.
 
-    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/S2-maps-of-Eij-and-Vi/S2-Eij.gif){: style="width:660px"}
+    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/S2-maps/S2-Eij.gif){: style="width:660px"}
 
 ### Orthotropic grains
 

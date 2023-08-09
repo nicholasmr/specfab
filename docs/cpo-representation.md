@@ -4,13 +4,12 @@ CPOs are represented by their distributions of crystallographic axes in orientat
 
 Supported grain symmetry groups are:
 
-| Grain symmetry | CPO components | Interpretation |
+| Grain symmetry | CPO components | Definition |
 | --- | --- | --- | 
 | Transversely isotropic | $n(\theta,\phi)$                  | Distribution of slip-plane normals |
 | Orthotropic            | $n(\theta,\phi),\,b(\theta,\phi)$ | Distribution of slip-plane normals and slip directions |
 
-Thus, depending on which crystallographic slip system is preferentially activated, $n(\theta,\phi)$ and $b(\theta,\phi)$ may refer to the distributions of different crystallographic axes.
-For example: 
+Thus, depending on which crystallographic slip system is preferentially activated, $n(\theta,\phi)$ and $b(\theta,\phi)$ may refer to the distributions of different crystallographic axes:
 
 | <center> Monocrystal slip system</center> | <center>Polycrystalline ice</center> | <center>Polycrystalline olivine</center> |
 | :- | :- | :- |
@@ -19,10 +18,10 @@ For example:
 
 ## ODF
 
-The orientation distribution function (ODF) is defined as the normalized distribution 
+The orientation distribution function (ODF) is defined as the normalized distribution (likewise for $b$)
 
 $$ 
-\mathrm{ODF} = \frac{n(\theta,\phi)}{N} \quad\text{where}\quad N=\int_{S^2}{n} \,\mathrm{d}\Omega=\sqrt{4\pi}n_0^0 .
+\mathrm{ODF} = \frac{n(\theta,\phi)}{N} \quad\text{where}\quad N=\int_{S^2} n(\theta,\phi) \,\mathrm{d}\Omega .
 $$
 
 ## Normalization
@@ -43,7 +42,7 @@ n(\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}Y_{l}^{m}(\theta,\phi) \qua
 $$
 
 
-Thus, the CPO state is defined as the array of complex-valued expansion coefficients:
+Thus, the CPO state is described by the vector of complex-valued expansion coefficients
 
 $$
 {\bf s} = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}] \quad\text{(state vector)}.
@@ -58,7 +57,7 @@ n_l^{-m}=(-1)^m(n_l^m)^* .
 $$
 
 This can be taken advantage of for large problems where many (e.g. gridded) CPOs must be stored in memory, thereby effectively reducing the size of the problem. 
-The array of reduced expansion coefficients is defined as
+The vector of reduced expansion coefficients is defined as
 
 $\qquad$ `rnlm` $= [n_0^0,n_2^{0},n_2^{1},n_2^{2},n_4^{0},\cdots,n_4^{4},\cdots,n_L^{0},\cdots,n_L^{L}] \quad\text{(reduced state vector)}.$
 

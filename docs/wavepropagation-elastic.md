@@ -67,7 +67,7 @@ This requires specifying the grain elastic parameters $\lambda'$, $\mu'$, $\hat{
 
 ```python
 import numpy as np
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
 lm, nlm_len = sf.init(4) # L=4 is sufficient here
 nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
 
@@ -93,7 +93,7 @@ Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, Lame_grain, rho, theta,phi) # phase
 
     The below animation shows directional P- and S-wave velocities for a CPO evolving under [uniaxial compression](deformation-modes.md) along ${\hat {\bf z}}$, relative to an isotropic CPO, when subject to [lattice rotation](cpo-dynamics-tranisotropic.md).
 
-    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/S2-maps-of-Eij-and-Vi/S2-vi.gif){: style="width:660px"}
+    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/S2-maps/S2-vi.gif){: style="width:660px"}
 
 ## Orthotropic grains
 
@@ -108,7 +108,7 @@ This requires specifying the grain elastic parameters $\lambda_{ij}'$, $\mu_{i}'
 
 ```python
 import numpy as np
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
 lm, nlm_len = sf.init(4) # L=4 is sufficient here
 nlm = np.zeros((nlm_len), dtype=np.complex64) 
 blm = np.zeros((nlm_len), dtype=np.complex64) 

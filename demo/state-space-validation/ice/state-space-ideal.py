@@ -5,12 +5,12 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import cartopy.crs as ccrs
+import cmasher as cmr
 
 from localheader import *
-sys.path.insert(0, '../../../demo') # for importing local specfabpy build (if available) and common python header
-from header import * # contains matplotlib setup etc.
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
+from specfabpy import plotting as sfplt
+FS = sfplt.setfont_tex(fontsize=12)
 
 #--------------------
 # Flags
@@ -139,14 +139,9 @@ plt.ylim(ylims)
 
 if 1:
 
-    inclination = 50 # view angle
-    rot0 = -90
-    rot = -20 + rot0 
-    prj = ccrs.Orthographic(rot, 90-inclination)
-    geo = ccrs.Geodetic()     
+    geo, prj = sfplt.getprojection(rotation=55+180, inclination=50)
 
     W = 0.155 # ax width
-    tickintvl=1
     
     ### Modeled data
     
@@ -171,24 +166,16 @@ if 1:
         axin.set_global()
         
         nlm = ODF['nlm']
-        lvls = np.linspace(ODF['lvlmin'], ODF['lvlmax'], 8)
         cmap = cmr.get_sub_cmap('Greys', 0.25, 1) # don't include pure white.
         cmap.set_under('w')
-    
-        F, lon,lat = discretize_ODF(nlm, lm)
-        F[F<0] = 0 # fix numerical/truncation errors
-        h = axin.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), levels=lvls, extend=('max' if lvls[0]==0.0 else 'both'), cmap=cmap, nchunk=5) 
+        lvlset = [np.linspace(ODF['lvlmin'], ODF['lvlmax'], 8), lambda x,p:'%.1f'%x]
+        sfplt.plotODF(nlm, lm, axin, lvlset=lvlset, cmap=cmap, showcb=False)
 
         # Arrow to ODF state
         n20_, n40_ = np.real(nlm[3])/normfac, np.real(nlm[10])/normfac
         ax.annotate("", xy=(n20_, n40_), xycoords='data', \
                         xytext=(n20_+ODF['darr'][0]/normfac, n40_+sc**2*ODF['darr'][1]/normfac), textcoords='data', \
                         arrowprops=dict(arrowstyle="-|>", connectionstyle="arc3", linewidth=1.5, edgecolor='0.2', facecolor='0.2'),zorder=20)            
-
-        # Add grid lines
-        kwargs_gridlines = {'ylocs':np.arange(-90,90+30,30), 'xlocs':np.arange(0,360+45,45), 'linewidth':0.5, 'color':'black', 'alpha':0.25, 'linestyle':'-'}
-        gl = axin.gridlines(crs=ccrs.PlateCarree(), **kwargs_gridlines)
-        gl.xlocator = mticker.FixedLocator(np.array([-135, -90, -45, 0, 90, 45, 135, 180]))
 
         axin.set_title(ODF['title'], fontsize=FS)
 

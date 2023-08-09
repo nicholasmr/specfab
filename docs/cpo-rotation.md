@@ -4,11 +4,11 @@ Rotating an expansion series by `theta` about the $y$-axis (in the $x$&mdash;$z$
 
 ```python
 import numpy as np
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
 lm, nlm_len = sf.init(8) 
 
 ### Construct an arbitrary fabric to rotate
-a2 = np.diag([0.0,0.0,1.0]) # any second-order structure tensor (not necessarily diagonal)
+a2 = np.diag([0, 0, 1]) # any second-order structure tensor (not necessarily diagonal)
 nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
 nlm[:sf.L2len] = sf.a2_to_nlm(a2) # l<=2 expansion coefficients of corresponding normalized ODF
 

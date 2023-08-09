@@ -1,4 +1,4 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2022
+# N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2022-2023
 
 # Calibrate DDRX activation function energy (Q) and prefactor (A) by reproducing Dome C (EDC) fabric profile.
 
@@ -8,9 +8,9 @@ from scipy.interpolate import interp1d
 import pickle
 from progress.bar import Bar
 
-sys.path.insert(0, '../../demo')
-from header import *
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
+from specfabpy import plotting as sfplt
+FS = sfplt.setfont_tex()
 
 yr2s = 31556926
 s2yr = 3.16887646e-8
@@ -218,8 +218,8 @@ for L in L_list:
     import cmasher as cmr
     import cartopy.crs as ccrs
 
-    inclination, rot = 45, +45 # view angle
-    prj, geo = ccrs.Orthographic(rot, 90-inclination), ccrs.Geodetic()
+    geo, prj = sfplt.getprojection(rotation=45, inclination=45)
+    
     axODF1 = fig.add_subplot(gs[0, 1], projection=prj)
     axODF2 = fig.add_subplot(gs[1, 1], projection=prj)
     axODF3 = fig.add_subplot(gs[2, 1], projection=prj)
@@ -235,10 +235,8 @@ for L in L_list:
     for ii, nn in enumerate(nn_list):
 
         ax1.plot([0,1],[z_sf[nn],]*2, ':', c='k', lw=2)
-        plot_ODF(nlm[nn,:], lm, ax=ax_list[ii], cblabel='$\psi/N$ at z=%im'%(z_sf[nn]))
-        ax_list[ii].plot([0],[90], marker=r'$z$', ms=7, c=cax, transform=geo) # z axis
-        ax_list[ii].plot([90],[0], marker=r'$y$', ms=7, c=cax, transform=geo) # y axis
-        ax_list[ii].plot([0],[0],  marker=r'$x$', ms=7, c=cax, transform=geo) # x axis
+        sfplt.plotODF(nlm[nn,:], lm, ax_list[ii], lvlset='zero-up', cblabel='$n/N$ at z=%im'%(z_sf[nn]))
+        sfplt.plotcoordaxes(ax_list[ii], geo, axislabels='vuxi')
         
     #####
 

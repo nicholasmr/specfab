@@ -1,7 +1,7 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk>, 2022
+# N. M. Rathmann <rathmann@nbi.ku.dk> and D. Lilien, 2022-2023
 
 """
-Fabric state-space diagram quantifying the effect of truncation (L) and (hyper)regularization (Lilien et al., 2022)
+Fabric state-space diagram quantifying the effect of truncation (L) and (hyper)regularization (Lilien et al., 2023)
 """
 
 import sys, os, copy, code # code.interact(local=locals())
@@ -13,12 +13,13 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 from localheader import *
-sys.path.insert(0, '../../../demo') # for importing local specfabpy build (if available) and common python header
-from header import * # contains matplotlib setup etc.
-from specfabpy import specfabpy as sf
-from sfconstants import *
 
-# This is the presumed psi_0^0 coefficient when deriving nlm from a^(2) or a^(4), a central normalization factor used below. 
+from specfabpy import specfab as sf
+from specfabpy import constants as sfconst
+from specfabpy import plotting as sfplt
+FS = sfplt.setfont_tex(fontsize=12)
+
+# This is the presumed psi_0^0 coefficient when deriving nlm from a^(2) or a^(4), a common normalization factor used below
 normfac = 1/np.sqrt(4*np.pi) 
 
 SELFNAME = sys.argv[0][:-3] # used as prefix for pickled files
@@ -238,7 +239,7 @@ ax.text(n20_unidir-0.4*dytext, n40_unidir+dytext, '{\\bf Unidirectional}', color
 ax.plot(n20_planar, n40_planar, marker='o', ms=mse, ls='none', c=c_girdle, label=None)
 ax.text(n20_planar, n40_planar+dytext, '{\\bf Planar}', color=c_girdle, ha='center', va='bottom', ma='center', fontsize=FSANNO)
 
-### Power-spectrum cap
+### Power spectrum cap
 if 1:
     badspec = np.ones((RESY, RESX)) 
     I = np.argmin(np.abs(X-n20_unidir))

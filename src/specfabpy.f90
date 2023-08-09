@@ -121,6 +121,12 @@ contains
         lm = lm__sf(:,1:nlm_len)
     end
 
+    function nlm_len()
+        implicit none
+        integer :: nlm_len
+        nlm_len = nlm_len__sf
+    end
+    
     !---------------------------------
     ! FABRIC DYNAMICS
     !---------------------------------

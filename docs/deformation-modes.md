@@ -84,7 +84,7 @@ The above expressions are accessible in specfab as follows
 
 ```python
 import numpy as np
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
 lm, nlm_len = sf.init(4) 
 
 axis  = 2 # axis of shortening (T>0) or lengthening (T<0): 0=x, 1=y, 2=z
@@ -149,7 +149,7 @@ The above expressions are accessible in specfab as follows
 
 ```python
 import numpy as np
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
 lm, nlm_len = sf.init(4) 
 
 plane = 1 # plane of shear: 0=yz, 1=xz, 2=xy
@@ -162,5 +162,36 @@ t = 1 # some specific time of interest
 gamma = sf.simpleshear_gamma(T, t)    # shear angle at time t
 F     = sf.simpleshear_F(plane, T, t) # deformation gradient tensor at time t
 eps   = sf.F_to_strain(F)             # strain tensor at time t
+```
+
+## Plotting 
+
+For arbitrary ${\bf F}$, the effect on an (initially) undeformed parcel can be plotting following:
+
+```python
+import matplotlib.pyplot as plt
+from specfabpy import specfab as sf
+from specfabpy import plotting as sfplt
+
+### Determine deformation gradient F
+
+# Pure shear 
+axis = 2 # axis of compression/extension (0,1,2=x,y,z)
+r    = 0 # deformation assymmetry
+T    = 1 # e-folding time scale
+t    = 1 # time at which deformed parcel is sought
+F    = sf.pureshear_F(axis, r, T, t) # deformation gradient tensor 
+
+# Simple shear
+plane = 1 # shear plane (0=yz, 1=xz, 2=xy)
+T     = 1 # characteristic time taken to reach shear strain of 1 (45 deg. shear)
+t     = 1 # time at which deformed parcel is sought
+#F     = sf.simpleshear_F(plane, T, t) # deformation gradient tensor
+
+### Plot
+
+ax = plt.figure(figsize=(4,2)).add_axes([0,0,1,1], projection='3d')
+sfplt.plotparcel(ax, F, azim=35)
+plt.savefig('deformed-parcel.png', dpi=175)
 ```
 

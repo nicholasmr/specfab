@@ -1,12 +1,12 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk>, 2022
+# N. M. Rathmann <rathmann@nbi.ku.dk> and D. Lilien, 2022-2023
 
 """
-Fabric state-space diagram comparing model trajectories to data (Lilien et al., 2022)
+Fabric state-space diagram comparing model trajectories to data (Lilien et al., 2023)
 """
 
 import sys, os, copy, code # code.interact(local=locals())
+
 import numpy as np
-import quaternion as qt # pip3 install numpy-quatern
 import pandas as pd
 import pickle, glob
 from progress.bar import Bar
@@ -17,10 +17,12 @@ import cartopy.crs as ccrs
 
 from localheader import *
 from experiments import * # experiment definitions (data structures for experiment files, etc.)
-sys.path.insert(0, '../../../demo') # for importing local specfabpy build (if available) and common python header
-from header import * # contains matplotlib setup etc.
-from specfabpy import specfabpy as sf
-from sfconstants import *
+
+from specfabpy import specfab as sf
+from specfabpy import constants as sfconst
+from specfabpy import integrator as sfint
+from specfabpy import plotting as sfplt
+FS = sfplt.setfont_tex(fontsize=12)
 
 SELFNAME = sys.argv[0][:-3] # used as prefix for pickled files
 os.system('mkdir -p specfab-state-trajectories')
@@ -97,51 +99,37 @@ n20_circ45, n40_circ45 = np.real(sf.nlm_ideal(m, np.pi/4, L))[Il24]/normfac
 # Modeled correlations
 #--------------------
 
-def integrate_model(nlm0, Mtype, ugrad, dt, Nt=Nt, rotate=False, name=None):
+def integrate_model(nlm0, Mtype, modtype, Nt=Nt, rotate=False, name=None):
 
-    eps = (ugrad+np.transpose(ugrad))/2 # Symmetric part (strain-rate)
-    omg = (ugrad-np.transpose(ugrad))/2 # Anti-symmetric part (spin)
+    iota = zeta = Gamma0 = Lambda = None
 
-    nlm = np.zeros((Nt,nlm_len), dtype=np.complex64)
-    nlm[0,:] = nlm0 # Initial state 
-    nlmr = nlm.copy() # nlm array for rotated c-axis distribution
-             
-    # Euler integration 
-    with Bar('dt=%.3e, Nt=%i :: L=%i (nlm_len=%i) ::'%(dt,Nt,L,nlm_len), max=Nt-1, fill='#', suffix='%(percent).1f%% - %(eta)ds') as bar:
-        for tt in np.arange(1,Nt):
+    if Mtype == 'LROT': iota, zeta = 1, 0
+    if Mtype == 'DDRX': Gamma0 = 18e-0
+    if Mtype == 'CDRX': Lambda = 2e-1
+        
+    if modtype == 'uc': mod, target = dict(type='ps', axis=2, T=+1, r=0), -0.99
+    if modtype == 'ue': mod, target = dict(type='ps', axis=2, T=-1, r=0), 6
+    if modtype == 'ss': mod, target = dict(type='ss', plane=1, T=+1), np.deg2rad(83)
+    
+    nlm, F, *_ = sfint.lagrangianparcel(sf, mod, target, Nt=Nt, nlm0=nlm0, \
+                                    iota=iota, zeta=zeta, Gamma0=Gamma0, Lambda=Lambda,
+                                    numul=0 if (Mtype=='DDRX' or Mtype=='CDRX') else 1) 
 
-            nlm_prev = nlm[tt-1,:]
-                
-            if Mtype == 'LROT':
-                iota, zeta = 1, 0
-                M_LROT = sf.M_LROT(nlm_prev, eps, omg, iota, zeta)
-                M_REG  = sf.M_REG(nlm_prev, eps)
-                M      = M_LROT + M_REG
-                
-            if Mtype == 'DDRX':
-                M = 1e-0*sf.M_DDRX(nlm_prev,eps)
+    nlmr = nlm.copy()
+    for tt in np.arange(1,Nt+1):
+        if rotate:
+            a2 = sf.a2(nlm[tt,:])
+            (v1_colat, v1_lon, _) = get_v_angles(a2)
+            nlmr[tt,:] = sf.rotate_nlm( nlm[tt,:], 0, -v1_lon)
+            nlmr[tt,:] = sf.rotate_nlm(nlmr[tt,:], -v1_colat, 0)
+            print(nlmr)
+        else:
+            nlmr[tt,:] = nlm[tt,:] # no rotation requested, just copy the unrotated solution
 
-            if Mtype == 'CDRX':
-                M = 1e-2*sf.M_CDRX(nlm_prev)
+    if name is not None: pickle.dump([nlm, nlmr, lm, nlm_len], open(pfile(name), "wb"))
 
-            nlm[tt,:] = nlm_prev + dt*np.matmul(M, nlm_prev)
-
-            if rotate:
-                a2 = sf.a2(nlm[tt,:])
-                (v1_colat, v1_lon, _) = get_v_angles(a2)
-                nlmr[tt,:] = sf.rotate_nlm( nlm[tt,:], 0, -v1_lon)
-                nlmr[tt,:] = sf.rotate_nlm(nlmr[tt,:], -v1_colat, 0)
-            else:
-                nlmr[tt,:] = nlm[tt,:] # no rotation requested, just copy the unrotated solution
-            
-            bar.next()
-
-    if name is not None:
-        pickle.dump([nlm, nlmr, lm, nlm_len], open(pfile(name), "wb"))
-
-    return nlm, nlmr
-
-
+    return nlm, nlmr    
+    
 if INTEGRATE_MODEL:
 
     print('*** Generating model trajectories from scratch. You can re-use the saves trajectories to avoid re-calculating them by setting INTEGRATE_MODEL=1')
@@ -150,22 +138,23 @@ if INTEGRATE_MODEL:
     
     nlm_iso = np.zeros((nlm_len), dtype=np.complex64)
     nlm_iso[0] = normfac
-    nlm_cc, _  = integrate_model(nlm_iso, 'LROT', +np.diag([.5, .5, -1]), 0.014, name='cc') # confined compression (cc)
-    nlm_ce, _  = integrate_model(nlm_iso, 'LROT', -np.diag([.5, .5, -1]), 0.007, name='ce') # confined extension (ce)
-    _, nlmr_ss = integrate_model(nlm_iso, 'LROT', +np.array([[0,1,0], [0,0,0], [0,0,0]]), 0.030, name='ss', rotate=True) # simple vertical shear (ss)
+    
+    nlm_uc, _  = integrate_model(nlm_iso, 'LROT', 'uc', name='uc') 
+    nlm_ue, _  = integrate_model(nlm_iso, 'LROT', 'ue', name='ue') 
+    _, nlmr_ss = integrate_model(nlm_iso, 'LROT', 'ss', name='ss', rotate=True) 
 
     f_nlm_init = lambda nlm, n20_ref: nlm[np.argmin(np.abs(nlm[:,sf.I20]-n20_ref)), :] 
-    nlm_ddrx1, _ = integrate_model(f_nlm_init(nlm_ce, -0.20), 'DDRX', +np.diag([.5, .5, -1]), 5*0.05, name='ddrx1') # DDRX trajectory 1
-    nlm_ddrx2, _ = integrate_model(f_nlm_init(nlm_cc, +0.00), 'DDRX', +np.diag([.5, .5, -1]), 5*0.05, name='ddrx2') # DDRX trajectory 2
-    nlm_ddrx3, _ = integrate_model(f_nlm_init(nlm_cc, +0.20), 'DDRX', +np.diag([.5, .5, -1]), 5*0.05, name='ddrx3') # DDRX trajectory 3
-    nlm_ddrx4, _ = integrate_model(f_nlm_init(nlm_cc, +0.40), 'DDRX', +np.diag([.5, .5, -1]), 5*0.05, name='ddrx4') # DDRX trajectory 4
+    nlm_ddrx1, _ = integrate_model(f_nlm_init(nlm_ue, -0.20), 'DDRX', 'uc', name='ddrx1') # DDRX trajectory 1
+    nlm_ddrx2, _ = integrate_model(f_nlm_init(nlm_uc, +0.00), 'DDRX', 'uc', name='ddrx2') # DDRX trajectory 2
+    nlm_ddrx3, _ = integrate_model(f_nlm_init(nlm_uc, +0.20), 'DDRX', 'uc', name='ddrx3') # DDRX trajectory 3
+    nlm_ddrx4, _ = integrate_model(f_nlm_init(nlm_uc, +0.40), 'DDRX', 'uc', name='ddrx4') # DDRX trajectory 4
     
-    nlm_cdrx1, _ = integrate_model(f_nlm_init(nlm_ce, -0.27), 'CDRX', +np.diag([.5, .5, -1]), 5*0.05, name='cdrx1') # DDRX trajectory 1
-    nlm_cdrx2, _ = integrate_model(f_nlm_init(nlm_cc, +0.32), 'CDRX', +np.diag([.5, .5, -1]), 5*0.05, name='cdrx2') # DDRX trajectory 1
+    nlm_cdrx1, _ = integrate_model(f_nlm_init(nlm_ue, -0.27), 'CDRX', 'uc', name='cdrx1') # DDRX trajectory 1
+    nlm_cdrx2, _ = integrate_model(f_nlm_init(nlm_uc, +0.32), 'CDRX', 'uc', name='cdrx2') # DDRX trajectory 1
     
 ### Load solutions
-nlm_cc, _,  lm, nlm_len = pickle.load(open(pfile('cc'), "rb"))
-nlm_ce, _,  lm, nlm_len = pickle.load(open(pfile('ce'), "rb"))
+nlm_uc, _,  lm, nlm_len = pickle.load(open(pfile('uc'), "rb"))
+nlm_ue, _,  lm, nlm_len = pickle.load(open(pfile('ue'), "rb"))
 _, nlmr_ss, lm, nlm_len = pickle.load(open(pfile('ss'), "rb"))
 
 nlm_ddrx1, _, lm, nlm_len = pickle.load(open(pfile('ddrx1'), "rb"))
@@ -177,15 +166,16 @@ nlm_cdrx1, _, lm, nlm_len = pickle.load(open(pfile('cdrx1'), "rb"))
 nlm_cdrx2, _, lm, nlm_len = pickle.load(open(pfile('cdrx2'), "rb"))
                 
 ### Normalize
-nlm_cc    = np.array([ nlm_cc[tt,:]/nlm_cc[tt,0]   for tt in np.arange(Nt) ])
-nlm_ce    = np.array([ nlm_ce[tt,:]/nlm_ce[tt,0]   for tt in np.arange(Nt) ])
-nlmr_ss   = np.array([ nlmr_ss[tt,:]/nlmr_ss[tt,0] for tt in np.arange(Nt) ])
-nlm_ddrx1 = np.array([ nlm_ddrx1[tt,:]/nlm_ddrx1[tt,0] for tt in np.arange(Nt) ])
-nlm_ddrx2 = np.array([ nlm_ddrx2[tt,:]/nlm_ddrx2[tt,0] for tt in np.arange(Nt) ])
-nlm_ddrx3 = np.array([ nlm_ddrx3[tt,:]/nlm_ddrx3[tt,0] for tt in np.arange(Nt) ])
-nlm_ddrx4 = np.array([ nlm_ddrx4[tt,:]/nlm_ddrx4[tt,0] for tt in np.arange(Nt) ])
-nlm_cdrx1 = np.array([ nlm_cdrx1[tt,:]/nlm_cdrx1[tt,0] for tt in np.arange(Nt) ])
-nlm_cdrx2 = np.array([ nlm_cdrx2[tt,:]/nlm_cdrx2[tt,0] for tt in np.arange(Nt) ])
+rng = np.arange(Nt+1)
+nlm_uc    = np.array([ nlm_uc[tt,:]/nlm_uc[tt,0]   for tt in rng ])
+nlm_ue    = np.array([ nlm_ue[tt,:]/nlm_ue[tt,0]   for tt in rng ])
+nlmr_ss   = np.array([ nlmr_ss[tt,:]/nlmr_ss[tt,0] for tt in rng ])
+nlm_ddrx1 = np.array([ nlm_ddrx1[tt,:]/nlm_ddrx1[tt,0] for tt in rng ])
+nlm_ddrx2 = np.array([ nlm_ddrx2[tt,:]/nlm_ddrx2[tt,0] for tt in rng ])
+nlm_ddrx3 = np.array([ nlm_ddrx3[tt,:]/nlm_ddrx3[tt,0] for tt in rng ])
+nlm_ddrx4 = np.array([ nlm_ddrx4[tt,:]/nlm_ddrx4[tt,0] for tt in rng ])
+nlm_cdrx1 = np.array([ nlm_cdrx1[tt,:]/nlm_cdrx1[tt,0] for tt in rng ])
+nlm_cdrx2 = np.array([ nlm_cdrx2[tt,:]/nlm_cdrx2[tt,0] for tt in rng ])
 
 #--------------------
 # Construct plot
@@ -229,8 +219,8 @@ validregion = np.reshape(sf.nlm_isvalid(xv.flatten(), yv.flatten()), (RESY, RESX
 imdat = np.empty((RESY, RESX, 4), dtype=float) # color (0,1,2) and alpha (3)
 
 # LATROT
-xmodel_latrot = np.concatenate((nlm_ce[:,sf.I20],nlm_cc[:,sf.I20]))
-ymodel_latrot = np.concatenate((nlm_ce[:,sf.I40],nlm_cc[:,sf.I40]))
+xmodel_latrot = np.concatenate((nlm_ue[:,sf.I20],nlm_uc[:,sf.I20]))
+ymodel_latrot = np.concatenate((nlm_ue[:,sf.I40],nlm_uc[:,sf.I40]))
 I_latrot = np.argwhere(np.abs(xmodel_latrot)>0.1/normfac) # make white shading near isotropy
 xmodel_latrot = xmodel_latrot[I_latrot]
 ymodel_latrot = ymodel_latrot[I_latrot] 
@@ -302,10 +292,10 @@ h_ddrx3 = plot_trajectory(ax, nlm_ddrx3, arrpos=28, c=c_ddrx, hwmul=hwmul)
 h_ddrx4 = plot_trajectory(ax, nlm_ddrx4, arrpos=46, c=c_ddrx, hwmul=hwmul)
 
 h_ss = plot_trajectory(ax, nlmr_ss, arrpos=None, c=c_smax, ls='--')
-h_cc = plot_trajectory(ax, nlm_cc, arrpos=9,  c=c_smax)
-h_ce = plot_trajectory(ax, nlm_ce, arrpos=17, c=c_girdle)
+h_uc = plot_trajectory(ax, nlm_uc, arrpos=9,  c=c_smax)
+h_ue = plot_trajectory(ax, nlm_ue, arrpos=17, c=c_girdle)
 
-h_modellines = [h_ce, h_cc, h_ss, h_ddrx1, h_cdrx1]
+h_modellines = [h_ue, h_uc, h_ss, h_ddrx1, h_cdrx1]
 legend_strings = ['Lattice rotation, uniaxial extension', 'Lattice rotation, uniaxial compression', 'Lattice rotation, simple shear', 'DDRX', 'CDRX']
 legend_modellines = plt.legend(h_modellines, legend_strings, title=r'{\bf Modelled fabric state trajectories}', title_fontsize=FSLEG, loc=2, ncol=1, fontsize=FSLEG, frameon=False, **legkwargs)
 
@@ -328,7 +318,7 @@ plt.text(n20_planar, n40_planar+dytext, '{\\bf Planar}', color=c_girdle, ha='cen
 #x_, y_ = np.real(nlm_ddrx2[-1,3]),np.real(nlm_ddrx2[-1,10])
 x_, y_ = n20_circ45, n40_circ45 
 ax.plot(x_, y_, marker='o', ms=mse, fillstyle='full', ls='none', c=c_ddrx, label=None)
-plt.text(x_+0.01, y_-dytext, '{\\bf DDRX}\n\\bf{steady state}', color=c_ddrx, ha='center', va='top', ma='center', fontsize=FSANNO)
+plt.text(x_+0.01, y_-dytext, '{\\bf Circle}', color=c_ddrx, ha='center', va='top', ma='center', fontsize=FSANNO)
 
 # Shading labels
 plt.text(0.3/normfac, 0.18/normfac, '{\\bf Single maximum}', color=c_smax, ha='center', rotation=37, fontsize=FSANNO)
@@ -341,17 +331,13 @@ plt.text(-0.25/normfac, -0.35/normfac, '{\\bf Unphysical}\n\\bf{eigenvalues}', c
 
 if 1:
 
-    inclination = 50 # view angle
-    rot0 = -90
-    rot = -20 + rot0 
-    prj = ccrs.Orthographic(rot, 90-inclination)
-    geo = ccrs.Geodetic()     
+    geo, prj = sfplt.getprojection(rotation=55+180, inclination=50)   
 
     W = 0.12 # ax width
-    tickintvl=1
 
     ### Load measured data
     
+    import quaternion as qt # pip3 install numpy-quatern
     df = pd.read_csv('observed-states/Priestley-007.ctf.csv')
     sphcoords = qt.as_spherical_coords(qt.as_quat_array(df.to_numpy()[:,:-1]))
 #    sphcoords = qt.as_spherical_coords(qt.as_quat_array(df.to_numpy()[::30,:]))
@@ -386,8 +372,8 @@ if 1:
     arrmag = 0.1
     arr = lambda ang: arrmag*np.array([np.cos(np.deg2rad(ang)),np.sin(np.deg2rad(ang))])
     ODF_plots = (\
-        {'nlm':nlm_cc[int(Nt*5/10),:],    'title':'Model',    'cax':None, 'axloc':(0.455, 0.67), 'darr':arr(180), 'lvlmax':0.8}, \
-        {'nlm':nlm_ce[int(Nt*6/10),:],    'title':'Model',    'cax':None, 'axloc':(0.19, 0.51), 'darr':arr(30),  'lvlmax':0.5}, \
+        {'nlm':nlm_uc[int(Nt*5/10),:],    'title':'Model',    'cax':None, 'axloc':(0.465, 0.675), 'darr':arr(180), 'lvlmax':0.8}, \
+        {'nlm':nlm_ue[int(Nt*6/10),:],    'title':'Model',    'cax':None, 'axloc':(0.185, 0.51), 'darr':arr(30),  'lvlmax':0.5}, \
         {'nlm':nlm_ddrx4[int(Nt*4/10),:], 'title':'Model',    'cax':None, 'axloc':(0.45, 0.16), 'darr':arr(0),   'lvlmax':0.45}, \
         {'nlm':nlmr_L4,                   'title':'Priestley','cax':(qlatr,qlonr,expr_Priestley['color']), 'darr':arr(-50), 'axloc':(0.60, 0.43), 'lvlmax':0.8}, \
     )
@@ -399,22 +385,14 @@ if 1:
         axin.set_global()
         
         nlm = ODF['nlm']*normfac
-        lvls = np.linspace(0.0,ODF['lvlmax'],6)
-    
-        F, lon,lat = discretize_ODF(nlm, lm)
-        F[F<0] = 0 # fix numerical/truncation errors
-        h = axin.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), levels=lvls, extend=('max' if lvls[0]==0.0 else 'both'), cmap='Greys', nchunk=5) # "nchunk" argument must be larger than 0 for constant-ODF (e.g. isotropy) is plotted correctly.
+        lvlset = [np.linspace(0.0,ODF['lvlmax'],6), lambda x,p:'%.1f'%x]
+        sfplt.plotODF(nlm, lm, axin, lvlset=lvlset, showcb=False)
 
         # Arrow to ODF state
         n20_, n40_ = np.real(nlm[sf.I20])/normfac, np.real(nlm[sf.I40])/normfac
         ax.annotate("", xy=(n20_, n40_), xycoords='data', \
                         xytext=(n20_+ODF['darr'][0]/normfac, n40_+sc**2*ODF['darr'][1]/normfac), textcoords='data', \
                         arrowprops=dict(arrowstyle="-|>", connectionstyle="arc3", facecolor='black'),zorder=20)            
-
-        # Add grid lines
-        kwargs_gridlines = {'ylocs':np.arange(-90,90+30,30), 'xlocs':np.arange(0,360+45,45), 'linewidth':0.5, 'color':'black', 'alpha':0.25, 'linestyle':'-'}
-        gl = axin.gridlines(crs=ccrs.PlateCarree(), **kwargs_gridlines)
-        gl.xlocator = mticker.FixedLocator(np.array([-135, -90, -45, 0, 90, 45, 135, 180]))
 
         if ODF['cax'] is not None:
             qlatd, qlond = get_deg(ODF['cax'][0], ODF['cax'][1])
@@ -436,8 +414,6 @@ for ii,expr in enumerate(experiments):
 ### Aux
 
 plt.sca(ax)
-#plt.xlabel(r'$\hat{\psi}_2^0$')
-#plt.ylabel(r'$\hat{\psi}_4^0$')
 plt.xlabel(r'$\hat{n}_2^0$')
 plt.ylabel(r'$\hat{n}_4^0$')
 

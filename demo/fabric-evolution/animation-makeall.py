@@ -1,75 +1,71 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk>, 2022
+# N. M. Rathmann <rathmann@nbi.ku.dk>, 2022-2023
+
+import sys, os, copy, code # code.interact(local=locals())
 
 import numpy as np
 import scipy.special as sp
-import sys, os, copy, code # code.interact(local=locals())
 
-sys.path.insert(0, '..')
-from header import *
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
+from specfabpy import integrator as sfint
+from specfabpy import plotting as sfplt
+FS = sfplt.setfont_tex(fontsize=13)
 
 import warnings
 warnings.filterwarnings("ignore")
 
-### Options
+### Run options
 
-latres = 40 # latitude resolution on S^2
-#latres = 20 # latitude resolution on S^2
-inclination = 50 # view angle
-rot0 = -90
-rot = 1.4*rot0 # view angle
-
-### Numerics
-
-Nt = 100 # Number of time steps
-dt = 0.02 # Time-step size (gives a vertical strain of -0.98 for experiment "uc_zz")
-L  = 8
-
-### Process parameters
-
-Gamma0 = 2e1 
-Lam = 2e-1
-
-### Integrate
-
-lm, nlm_len = sf.init(L) 
-nlm = np.zeros((3,3,Nt,nlm_len), dtype=np.complex64) # Array of expansion coefficients
-nlm[:,:,0,0] = 1/np.sqrt(4*np.pi) # Normalized ODF at t=0
+MAKE_FRAMES = True
+MAKE_ANI    = 0
 
 Mtypes = ['LROT','DDRX','CDRX']
 #Mtypes = ['DDRX',]
 
+### Numerics
+
+Nt = 100 # Number of time steps
+L  = 8
+
+### Integrate
+
+lm, nlm_len = sf.init(L) 
+nlm = {\
+    'LROT': np.zeros((3,Nt+1,nlm_len), dtype=np.complex64), \
+    'DDRX': np.zeros((3,Nt+1,nlm_len), dtype=np.complex64), \
+    'CDRX': np.zeros((3,Nt+1,nlm_len), dtype=np.complex64), \
+}
+
 for ii, Mtype in enumerate(Mtypes):
+    for jj, exptype in enumerate(['uc_zz', 'cc_zx', 'ss_xz']):
 
-    if Mtype == 'CDRX':
-        nlm[ii,:,0,:] = nlm[0,:,-1,:] # use LROT end state as starting point for CDRX
+        # Process rate magnitude
+        if Mtype == 'LROT': kwargs = dict(iota=1,    Lambda=0,    Gamma0=0)
+        if Mtype == 'DDRX': kwargs = dict(iota=None, Lambda=0,    Gamma0=2e1, numul=1)
+        if Mtype == 'CDRX': kwargs = dict(iota=None, Lambda=2e-1, Gamma0=0,   numul=1)
 
-    for jj, expr in enumerate(['uc_zz', 'cc_zx', 'ss_xz']):
+        # Initial state
+        if Mtype == 'CDRX': nlm0 = nlm['LROT'][jj,-1,:]
+        else:               nlm0 = None
         
-        ## Velocity gradient
-        if expr == 'uc_zz': ugrad = np.diag([.5, .5, -1])
-        if expr == 'cc_zx': ugrad = np.diag([1, 0, -1])
-        if expr == 'ss_xz': ugrad = 2*np.array([[0,0,1], [0,0,0], [0,0,0]])
+        # Mode of deformation
+        if exptype == 'uc_zz': # Uniaxial compression
+            mod = dict(type='ps', r=0,  axis=2)
+            strain_target = -0.90
 
-        D = (ugrad+np.transpose(ugrad))/2 # Symmetric part (strain-rate)
-        W = (ugrad-np.transpose(ugrad))/2 # Anti-symmetric part (spin)
-        S = D.copy() # stress tensor for DDRX
+        if exptype == 'cc_zx': # Confined compression
+            mod = dict(type='ps', r=+1, axis=2)
+            strain_target = -0.90
+
+        if exptype == 'ss_xz': # Simple shear
+            mod = dict(type='ss', plane=1)
+            strain_target = np.deg2rad(75) if Mtype == 'LROT' else np.deg2rad(66.5) # => dt as uc/cc if not LROT
         
-        ### Euler integration
-        for tt in np.arange(1,Nt):
-            nlm_prev = nlm[ii,jj,tt-1,:]
-            if Mtype == 'LROT': M = sf.M_LROT(nlm_prev, D, W, 1, 0) + sf.M_REG(nlm_prev, D)
-            if Mtype == 'DDRX': M = Gamma0 * sf.M_DDRX(nlm_prev, S)
-            if Mtype == 'CDRX': M = Lam*sf.M_CDRX(nlm_prev)
-            nlm[ii,jj,tt,:] = nlm_prev + dt*np.matmul(M, nlm_prev)
+        # Integrate 
+        nlm[Mtype][jj,:,:], *_ = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, nlm0=nlm0, **kwargs)
+
+print('Model integrations finished...')
         
 ### Plot
-
-theta = np.linspace(0,   np.pi,   latres) # CO-LAT 
-phi   = np.linspace(0, 2*np.pi, 2*latres) # LON
-phi, theta = np.meshgrid(phi, theta) # gridded 
-lon, colat = phi, theta
-lat = np.pi/2-colat
 
 import matplotlib.pyplot as plt
 from matplotlib import rcParams, rc
@@ -77,56 +73,44 @@ import matplotlib.ticker as mticker
 import matplotlib.gridspec as gridspec
 import cartopy.crs as ccrs
 
-FS = 13
-rc('font',**{'family':'serif','sans-serif':['Times'],'size':FS})
-rc('text', usetex=True)
-rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb} \usepackage{physics} \usepackage{txfonts}'
-
-def plot_vec(ax, v, lbl, color, ls='-', lw=2):
-    ax.plot([0, +v[0]],[0, +v[1]],[0,+v[2]], color=color, ls=ls, lw=lw, label=lbl)
-    ax.plot([0, -v[0]],[0, -v[1]],[0,-v[2]], color=color, ls=ls, lw=lw)
-
-prj = ccrs.Orthographic(rot, 90-inclination)
-geo = ccrs.Geodetic()
+geo, prj = sfplt.getprojection(rotation=55+180, inclination=50)
 
 for ii, Mtype in enumerate(Mtypes):
 
-    # Plot frames
-    if 1: 
+    if MAKE_FRAMES: 
+    
         for tt in np.arange(0,Nt):
-        #for tt in np.arange(Nt-1,Nt):
+        #for tt in np.arange(Nt-1,Nt): # debug
         
             ### Figure setup
+            
             scale = 2.6
             fig = plt.figure(figsize=(3/2*1.6*scale,1.00*scale))
             gs = fig.add_gridspec(1,3)
-            al = 0.04
-            ar = 0.02
-            gs.update(left=al, right=1-ar, top=0.85, bottom=0.20, wspace=0.3, hspace=0.4)
+            gs.update(left=0.04, right=1-0.02, top=0.85, bottom=0.20, wspace=0.3, hspace=0.4)
 
-            ax1 = fig.add_subplot(gs[0,0], projection=prj); ax1.set_global(); 
-            ax2 = fig.add_subplot(gs[0,1], projection=prj); ax2.set_global(); 
-            ax3 = fig.add_subplot(gs[0,2], projection=prj); ax3.set_global(); 
-            axlist = [ax1,ax2,ax3]
+            axi = [fig.add_subplot(gs[0,jj], projection=prj) for jj in range(3)]
+            for jj in range(3): axi[jj].set_global(); 
 
             ### Plot
-            lvls = np.linspace(0,1,9)
-            tickintvl = 4
-            plot_ODF(nlm[ii,0,tt,:], lm, ax=ax1, cmap='Greys', cblabel=r'$n/N$ (ODF)', lvls=lvls, tickintvl=tickintvl)
-            plot_ODF(nlm[ii,1,tt,:], lm, ax=ax2, cmap='Greys', cblabel=r'$n/N$ (ODF)', lvls=lvls, tickintvl=tickintvl)
-            plot_ODF(nlm[ii,2,tt,:], lm, ax=ax3, cmap='Greys', cblabel=r'$n/N$ (ODF)', lvls=lvls, tickintvl=tickintvl)
-            ax1.set_title(r'%s Unconfined pure shear'%(r'{\Large \textit{(a)}}\,\,'), fontsize=FS, pad=10)
-            ax2.set_title(r'%s Confined pure shear'%(r'{\Large \textit{(b)}}\,\,'), fontsize=FS, pad=10)
-            ax3.set_title(r'%s Simple shear'%(r'{\Large \textit{(c)}}\,\,'), fontsize=FS, pad=10)
+            
+            lvlset = [np.linspace(0,1,9), lambda x,p:'%.1f'%x]
+            for jj in range(3): sfplt.plotODF(nlm[Mtype][jj,tt,:], lm, axi[jj], lvlset=lvlset)
+            #for jj in range(3): sfplt.plotcoordaxes(axi[jj], geo, axislabels='vuxi')
+            
+            axi[0].set_title(r'%s Unconfined pure shear'%(r'{\Large \textit{(a)}}\,\,'), fontsize=FS, pad=10)
+            axi[1].set_title(r'%s Confined pure shear'%(r'{\Large \textit{(b)}}\,\,'), fontsize=FS, pad=10)
+            axi[2].set_title(r'%s Simple shear'%(r'{\Large \textit{(c)}}\,\,'), fontsize=FS, pad=10)
                 
             ### Save
+            
             fout = 'frames/fabric-evolution-%s-animation-%03i.png'%(Mtype,tt)
             print('Saving %s'%(fout))
             plt.savefig(fout, dpi=200)
             plt.close()
 
-    # Make GIF
-    if 1:
+    if MAKE_ANI:
+    
         os.system('rm animation-%s.gif'%(Mtype))  
         os.system('ffmpeg -y -f image2 -framerate 50 -stream_loop 0 -i frames/fabric-evolution-%s-animation-%s.png -vcodec libx264 -crf 20  -pix_fmt yuv420p animation-%s.avi'%(Mtype,'%03d',Mtype))
         os.system('ffmpeg -i animation-%s.avi -vf "fps=20,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 animation-%s.gif'%(Mtype,Mtype))

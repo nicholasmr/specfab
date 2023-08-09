@@ -9,12 +9,12 @@ program demo
 
     integer, parameter :: dp = 8
 
-    ! Numerics (match the LATROT demo)
+    ! Numerics
     real, parameter    :: dt = 0.0782404601085629 
     integer, parameter :: Nt = 50 ! Number of time steps
 
     ! Constants and argv strings    
-    integer          :: ii,tt ! loop vars
+    integer          :: ii, tt ! loop vars
     character(len=5) :: arg_exp 
 
     ! Fabric state and evolution
@@ -46,7 +46,7 @@ program demo
     call get_command_argument(1, arg_exp)
     select case (arg_exp)
 
-        ! RECALL COLUMN FIRST IN FORTRAN
+        ! REMEMBER: COLUMN FIRST IN FORTRAN
         
         ! Uniaxial compression (uc) and uniaxial extension (ue)
         case ('uc_xx', 'ue_xx')
@@ -79,24 +79,23 @@ program demo
 
     select case (arg_exp)
         case ('ue_xx','ue_yy','ue_zz')
-            ugrad = -1*ugrad
+            ugrad = -1*ugrad ! simply the time-reversed behaviour
     end select
 
-    ! Of course tau != eps, but we use eps to define the stress tensors *as if* stress and strain-rate were coaxial (Glen's law)
-    tau = (ugrad+transpose(ugrad))/2 
+    tau = (ugrad+transpose(ugrad))/2 ! of course tau != eps, but we use eps to define the stress tensors *as if* stress and strain-rate were coaxial (Glen's law)
             
     !-------------------------------------------------------------------
     ! Initialize
     !-------------------------------------------------------------------
 
-    call initspecfab(Lcap) ! nlm_len is now defined (number of expansion coeffcients, i.e. #DOFs)
+    call initspecfab(Lcap) ! nlm_len is now defined 
 
     allocate(nlm_save(nlm_len,Nt))
     allocate(M(nlm_len,nlm_len))
     
     allocate(nlm(nlm_len))
     allocate(nlmiso(nlm_len))
-    nlm    = [(0,ii=1,nlm_len)] ! Expansion coefs "n_l^m" are saved in the 1D array "nlm". Corresponding (l,m) values for the i'th coef (i.e. nlm(i)) are (l,m) = (lm(1,i),lm(2,i))
+    nlm    = [(0,ii=1,nlm_len)] 
     nlmiso = [(0,ii=1,nlm_len)] 
     
     ! Normalize such that integral over ODF is 1
@@ -117,7 +116,7 @@ program demo
     ! Integrate
     !-------------------------------------------------------------------
     
-    ! Model fabric evolution by representing fabric both spectrally and tensorially 
+    ! Model fabric evolution for both spectral and tensorial representations
 
     write(*,"(A13,I4,A4,I2,A10,I3,A1)") 'Numerics: Nt=', Nt, ', L=', Lcap, ' (nlm_len=',nlm_len,')'
 

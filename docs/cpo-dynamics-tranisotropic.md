@@ -92,7 +92,7 @@ where ${\bf M_{\mathrm{LROT}}}$ is given analytically in [Rathmann et al. (2021)
 
 ```python
 import numpy as np
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
 # L=6 truncation is sufficient in this case, but larger L allows a very strong fabric to develop 
 #  and minimizes the effect that regularization has on low wavenumber modes (l=2,4)
 lm, nlm_len = sf.init(8) 
@@ -168,7 +168,7 @@ ${\bf M_{\mathrm{DDRX}}}$ is given analytically in [Rathmann and Lilien (2021)](
 
 ```python
 import numpy as np
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
 # L=6 truncation is sufficient in this case, but larger L allows a very strong fabric to develop 
 #  and minimizes the effect that regularization has on low wavenumber modes (l=2,4)
 lm, nlm_len = sf.init(8) 
