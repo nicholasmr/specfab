@@ -54,8 +54,6 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotation</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plotting</a>
-                  </li>
               </ul>
               <p class="caption"><span class="caption-text">CPO dynamics</span></p>
               <ul>
@@ -103,9 +101,14 @@
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration-fenics/">FEniCS FEM integration</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">FEM integration</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration-elmer/">Elmer FEM integration</a>
+              </ul>
+              <p class="caption"><span class="caption-text">Miscellaneous</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plotting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../deformation-modes/">Deformation modes</a>
                   </li>
               </ul>
       </div>
@@ -189,7 +192,7 @@ V^2 = \frac{\omega^2}{k^2}
 This requires specifying the grain elastic parameters <span class="arithmatex">\(\lambda'\)</span>, <span class="arithmatex">\(\mu'\)</span>, <span class="arithmatex">\(\hat{\lambda}'\)</span>, <span class="arithmatex">\(\hat{\mu}'\)</span>, <span class="arithmatex">\(\hat{\gamma}'\)</span>, and the Voigt&mdash;Reuss weight <span class="arithmatex">\(\alpha\)</span>.</p>
 <h3 id="example-for-glacier-ice">Example for glacier ice</h3>
 <pre><code class="language-python">import numpy as np
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
 lm, nlm_len = sf.init(4) # L=4 is sufficient here
 nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
 
@@ -234,7 +237,7 @@ Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, Lame_grain, rho, theta,phi) # phase
 This requires specifying the grain elastic parameters <span class="arithmatex">\(\lambda_{ij}'\)</span>, <span class="arithmatex">\(\mu_{i}'\)</span>, and the Voigt&mdash;Reuss weight <span class="arithmatex">\(\alpha\)</span>.</p>
 <h3 id="example-for-olivine">Example for olivine</h3>
 <pre><code class="language-python">import numpy as np
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
 lm, nlm_len = sf.init(4) # L=4 is sufficient here
 nlm = np.zeros((nlm_len), dtype=np.complex64) 
 blm = np.zeros((nlm_len), dtype=np.complex64) 

@@ -3,11 +3,11 @@
 
 import copy, os, sys, code # code.interact(local=locals())
 import numpy as np
-sys.path.insert(0, '../../demo')
 os.system('mkdir -p ./frames')
 
-from specfabpy import specfabpy as sf
-from header import *
+from specfabpy import specfab as sf
+from specfabpy import plotting as sfplt
+FS = sfplt.setfont_tex()
 
 import matplotlib.pyplot as plt
 from matplotlib import rcParams, rc, colors
@@ -16,12 +16,7 @@ import scipy.special as sp
 
 ### Plot
 
-inclination = 45 # view angle
-rot0 = 1 * -90 
-rot = rot0 - 35 # view angle
-
-prj = ccrs.Orthographic(rot, 90-inclination)
-geo = ccrs.Geodetic()
+geo, prj = sfplt.getprojection(rotation=55, inclination=45)
 
 def setup_fig():
 
@@ -44,27 +39,18 @@ def setup_fig():
 
     return axlist, fig, fraction, aspect
 
-def set_axis_labels(axlist, c='#99000d'):
-    FSAX = FS+1
-    for ax in axlist:
-        ax.text(rot0-40, 88, r'$\vb{z}$', color=c, horizontalalignment='left', transform=geo, fontsize=FSAX)
-        ax.text(rot0-96, -12, r'$\vb{m}_1$', color=c, horizontalalignment='left', transform=geo, fontsize=FSAX)
-        ax.text(rot0-6, -5, r'$\vb{m}_2$', color=c, horizontalalignment='left', transform=geo, fontsize=FSAX)
-
 def a2planar(lam1, dlam): 
     return np.diag([lam1, lam1+dlam, 1-dlam-2*lam1])
 
 axlist, fig, fraction, aspect = setup_fig()
 
-lvls = np.linspace(0.0,0.4,9)
-tickintvl = 4
-
 lm, nlm_len = sf.init(2)
+lvlset='iso-up'
+lvlset = [np.linspace(0.0,0.4,9), lambda x,p:'%.1f'%x]
 
 for ii, dlam in enumerate([0, 0.25, 0.50, 0.75, 1]):
-    plot_ODF(sf.a2_to_nlm(a2planar(0,dlam)),lm, ax=axlist[ii], cmap='Greys', cblabel='$n/N$ (ODF)', lvls=lvls, tickintvl=tickintvl, aspect=aspect, fraction=fraction)
+    sfplt.plotODF(sf.a2_to_nlm(a2planar(0,dlam)), lm, axlist[ii], lvlset=lvlset, cbaspect=aspect, cbfraction=fraction)
+    sfplt.plotcoordaxes(axlist[ii], geo, axislabels=[r'$\vb{m}_1$',r'$\vb{m}_2$',r'$\vb{z}$'])
     axlist[ii].set_title(r'$\Delta\lambdaup=%.2f$'%(dlam), fontsize=FS)
-
-set_axis_labels(axlist)
 
 plt.savefig('plane-CPOs.png', transparent=True, dpi=150)

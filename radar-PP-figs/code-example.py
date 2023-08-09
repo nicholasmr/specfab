@@ -1,13 +1,6 @@
-import copy, sys, code # code.interact(local=locals())
-sys.path.insert(0, '../../demo')
-from header import *
-
-#-------------------------------
-#-------------------------------
-
 import numpy as np
 from scipy.spatial.transform import Rotation
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
 lm, nlm_len = sf.init(4) # L=4 is sufficient here
 
 ### Determine <c_i c_j> from radar-derived Delta lambda
@@ -25,7 +18,7 @@ if dl > 0.6:         a2_vs = np.matmul(Rm1,np.matmul(a2,Rm1.T)) # Rotate horizon
 
 ### Determine \hat{n}_4^0 (= n_4^0/n_0^0) from \hat{n}_2^0 (= n_2^0/n_0^0) in rotationally-symmetric frame about z
 nhat20 = (a2_vs[2,2]- 1/3)/(2/15*np.sqrt(5)) # azz -> nhat20
-nhat40 = sf.nhat40_empcorr_ice(nhat20) 
+nhat40 = sf.nhat40_empcorr_ice(nhat20)[0]
 
 ### Construct nlm (spectral CPO state vector) in rotationally-symmetric frame about z
 nlm_vs = np.zeros(nlm_len, dtype=np.complex128) 
@@ -53,21 +46,14 @@ Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # (E_{m1,m1},
 #-------------------------------
 #-------------------------------
 
+import copy, sys, code # code.interact(local=locals())
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-inclination = 45 # view angle
-rot0 = 1 * -90 
-rot = rot0 - 35 # view angle
-prj = ccrs.Orthographic(rot, 90-inclination)
-geo = ccrs.Geodetic()
+from specfabpy import plotting as sfplt
+FS = sfplt.setfont_tex()
 
-def set_axis_labels(axlist, c='#99000d'):
-    FSAX = FS+1
-    for ax in axlist:
-        ax.text(rot0-40, 88, r'$\vb{z}$', color=c, horizontalalignment='left', transform=geo, fontsize=FSAX)
-        ax.text(rot0-96, -12, r'$\vb{m}_1$', color=c, horizontalalignment='left', transform=geo, fontsize=FSAX)
-        ax.text(rot0-6, -5, r'$\vb{m}_2$', color=c, horizontalalignment='left', transform=geo, fontsize=FSAX)
+geo, prj = sfplt.getprojection(rotation=55, inclination=45)
 
 scale = 2.5
 fig = plt.figure(figsize=(3.4/2*1.45*scale,0.86*scale))
@@ -80,19 +66,21 @@ ax2 = fig.add_subplot(gs[0,1], projection=prj); ax2.set_global();
 ax3 = fig.add_subplot(gs[0,2], projection=prj); ax3.set_global(); 
 ax4 = fig.add_subplot(gs[0,3], projection=prj); ax4.set_global(); 
 
-lm2 = lm[:,:6]
 isgirdle = 0.4 <= dl <= 0.6
-kwargs = {'lvls':np.linspace(0.0,0.4,7) if isgirdle else np.linspace(0.0,0.6,7), 'tickintvl':3 if isgirdle else  3, 'fraction':0.065, 'aspect':9, 'cblabel':'$n/N$ (ODF)'}
-plot_ODF(sf.a2_to_nlm(a2),lm2, ax=ax1, **kwargs)
-plot_ODF(sf.a2_to_nlm(a2_vs),lm2, ax=ax2, **kwargs)
-plot_ODF(nlm_vs,lm, ax=ax3, **kwargs)
-plot_ODF(nlm,lm, ax=ax4, **kwargs)
-fs = FS-0.3
-ax1.set_title(r'\texttt{sf.a2\_to\_nlm(a2)}', fontsize=fs)
-ax2.set_title(r'\texttt{sf.a2\_to\_nlm(a2\_vs)}', fontsize=fs)
-ax3.set_title(r'\texttt{nlm\_vs}', fontsize=fs)
-ax4.set_title(r'\texttt{nlm}', fontsize=fs)
-set_axis_labels([ax1,ax2,ax3,ax4])
+#lvlset = 'iso-up'
+lvlset = [np.linspace(0.15,0.25,7) if isgirdle else np.linspace(0.15,0.65,7), lambda x,p:'%.2f'%x]
+cbtickintvl = 3 if isgirdle else 3
+sfplt.plotODF(sf.a2_to_nlm(a2),lm, ax1, lvlset=lvlset, cbtickintvl=cbtickintvl)
+sfplt.plotODF(sf.a2_to_nlm(a2_vs),lm, ax2, lvlset=lvlset, cbtickintvl=cbtickintvl)
+sfplt.plotODF(nlm_vs,lm, ax3, lvlset=lvlset, cbtickintvl=cbtickintvl)
+sfplt.plotODF(nlm,lm, ax4, lvlset=lvlset, cbtickintvl=cbtickintvl)
+for axi in [ax1,ax2,ax3,ax4]: sfplt.plotcoordaxes(axi, geo, axislabels=[r'$\vb{m}_1$',r'$\vb{m}_2$',r'$\vb{z}$'])
+
+ax1.set_title(r'\texttt{sf.a2\_to\_nlm(a2)}', fontsize=FS)
+ax2.set_title(r'\texttt{sf.a2\_to\_nlm(a2\_vs)}', fontsize=FS)
+ax3.set_title(r'\texttt{nlm\_vs}', fontsize=FS)
+ax4.set_title(r'\texttt{nlm}', fontsize=FS)
+
 print('Eij = ',Eij)
 plt.savefig('code-example-output-dl%.1f.png'%(dl), transparent=True, dpi=120)
 

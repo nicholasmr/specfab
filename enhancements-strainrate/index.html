@@ -54,8 +54,6 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotation</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plotting</a>
-                  </li>
               </ul>
               <p class="caption"><span class="caption-text">CPO dynamics</span></p>
               <ul>
@@ -107,9 +105,14 @@
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration-fenics/">FEniCS FEM integration</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">FEM integration</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration-elmer/">Elmer FEM integration</a>
+              </ul>
+              <p class="caption"><span class="caption-text">Miscellaneous</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plotting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../deformation-modes/">Deformation modes</a>
                   </li>
               </ul>
       </div>
@@ -253,7 +256,7 @@ This requires specifying the grain eigenenhancements <span class="arithmatex">\(
 <h4 id="example-for-glacier-ice">Example for glacier ice</h4>
 <p>The below example for glacier ice shows how bulk <span class="arithmatex">\(E_{ij}\)</span> may be calculated given <code>a2</code>, <code>a4</code>, or <code>nlm</code>. </p>
 <pre><code class="language-python">import numpy as np
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
 lm, nlm_len = sf.init(8) 
 
 ### Make synthetic ODF
