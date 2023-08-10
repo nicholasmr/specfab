@@ -27,19 +27,19 @@ exp = str(sys.argv[1])
 L = 18 # Spectral truncation
 lm, nlm_len = sf.init(L)
 
-# Model LROT only with custom high-L regularization
-kwargs_fabricevo = dict(iota=+1, Gamma0=0, Lambda=0, numul=10, regexpo=2)
+# Model LROT only
+kwargs_CPOevo = dict(iota=+1, Gamma0=None, Lambda=None, nu=1)
 
 # uniaxial compression
 strain_target = -0.92
 Nt_uc = 100
-nlm_uc, F_uc, time, ugrad = sfint.lagrangianparcel(sf, dict(type='ps', axis=0, T=+1, r=0), strain_target, Nt=Nt_uc, **kwargs_fabricevo) 
+nlm_uc, F_uc, time, ugrad = sfint.lagrangianparcel(sf, dict(type='ps', axis=0, T=+1, r=0), strain_target, Nt=Nt_uc, **kwargs_CPOevo) 
 strain_uc = np.array([sf.F_to_strain(F_uc[tt,:,:])[0,0] for tt in range(Nt_uc+1)])
 
 # uniaxial extension
 strain_target = +2
 Nt_ue = 100
-nlm_ue, F_ue, time, ugrad = sfint.lagrangianparcel(sf, dict(type='ps', axis=0, T=-1, r=0), strain_target, Nt=Nt_ue, **kwargs_fabricevo) 
+nlm_ue, F_ue, time, ugrad = sfint.lagrangianparcel(sf, dict(type='ps', axis=0, T=-1, r=0), strain_target, Nt=Nt_ue, **kwargs_CPOevo) 
 strain_ue = np.array([sf.F_to_strain(F_ue[tt,:,:])[0,0] for tt in range(Nt_uc+1)])
 
 ### Determine enhancement factors and eigenvalues
@@ -135,9 +135,9 @@ for tt in range(Nt+1):
     ### Plot annotations
     
     x0, y0, dy = -0.125, -0.38, 0.09
-    axE.text(x0, y0, r'{\bf specfab}', transform=axE.transAxes, fontsize=FS, horizontalalignment='left')
-    axE.text(x0, y0-1*dy, r'github.com/nicholasmr/specfab', transform=axE.transAxes, fontsize=FS-1.5, horizontalalignment='left')
-    axE.text(x0, y0-2.0*dy, r'Lattice rotation demo', transform=axE.transAxes, fontsize=FS-1.5, horizontalalignment='left')
+    axE.text(x0, y0, r'{\bf specfab}', transform=axE.transAxes, fontsize=FS, ha='left')
+    axE.text(x0, y0-1*dy, r'github.com/nicholasmr/specfab', transform=axE.transAxes, fontsize=FS-1.5, ha='left')
+    axE.text(x0, y0-2.0*dy, r'Lattice rotation demo', transform=axE.transAxes, fontsize=FS-1.5, ha='left')
     
     x0, y0, dy = +1.875, -0.15, 0.08
     axE.text(x0,y0+2*dy, r'$\lambda_1 = %.2f$'%(eigvals[tt,0]), transform=axE.transAxes, fontsize=FS-1, ha='left')

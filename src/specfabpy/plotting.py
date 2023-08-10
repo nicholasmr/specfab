@@ -18,7 +18,6 @@ import cmasher as cmr
 import cartopy.crs as ccrs
 
 import warnings
-warnings.filterwarnings("ignore", message="posx")
 
 ### Discrete colors (colorbrewer)
 
@@ -156,11 +155,13 @@ def discretize(nlm, lm, latres, lonres):
     lon, colat = np.meshgrid(lon, colat) # gridded 
     lat = np.pi/2-colat
 
-    nlmlen = len(nlm)
-    nlmlenlm = lm.shape[1]
-    if nlmlen != nlmlenlm: 
-        print('sfplt.discretize() warning: dimensions of nlm (%i) and lm (%i) do not match'%(nlmlen, nlmlenlm))
-        nlmlen = np.amin([nlmlen,nlmlenlm]) # pick smallest common range and continue (this is probably what the user wants)
+    nlmlen_from_nlm = len(nlm)
+    nlmlen_from_lm = lm.shape[1]
+    if nlmlen_from_nlm != nlmlen_from_lm: 
+        nlmlen = np.amin([nlmlen_from_nlm,nlmlen_from_lm]) # pick smallest common range and continue (this is probably what the user wants)
+        warnings.warn('sfplt.discretize(): dimensions of nlm (%i) and lm (%i) do not match, setting nlm_len=%i'%(nlmlen_from_nlm, nlmlen_from_lm, nlmlen))
+    else:
+        nlmlen = nlmlen_from_nlm
         
     F = np.real(np.sum([ nlm[ii]*sp.sph_harm(lm[1][ii], lm[0][ii], lon, colat) for ii in np.arange(nlmlen) ], axis=0))
 
@@ -215,8 +216,8 @@ def panellabel(ax, loc, txt, frameon=True, alpha=1.0, fontsize=fontsize_default,
 
 def plotparcel(ax, F, scale=1, axscale=1, elev=20, azim=35, \
                 lw=1, facecolor='k', edgecolor='0.10',  \
-                drawaxes=True, colorax='k', fonttex=False, fontsize=fontsize_default, \
-                drawinitbox=True, colorinitbox=c_dred, lwinitbox=1, \
+                axislabels=True, colorax='k', fonttex=False, fontsize=fontsize_default, \
+                drawinit=True, colorinit=c_dred, lwinit=1, \
                 ):
 
     """
@@ -247,8 +248,8 @@ def plotparcel(ax, F, scale=1, axscale=1, elev=20, azim=35, \
 
     ### Plot initial geometry
 
-    if drawinitbox:
-        kwargs = dict(ls='--', lw=lwinitbox, c=colorinitbox, zorder=10)
+    if drawinit:
+        kwargs = dict(ls='--', lw=lwinit, c=colorinit, zorder=10)
         points = ([0,0], [0,1*scale], [1*scale,1*scale], [1*scale,0])
         for p in points: ax.plot([p[0]]*2, [p[1]]*2, [0,scale*1], **kwargs)
         for p in points: ax.plot([0,scale*1], [p[0]]*2, [p[1]]*2, **kwargs)
@@ -263,7 +264,7 @@ def plotparcel(ax, F, scale=1, axscale=1, elev=20, azim=35, \
    
     ### x,y,z axes
 
-    if drawaxes:
+    if axislabels:
         one = 0.5*scale*onespan
         kwargs = dict(color=colorax, fontsize=fontsize, va='center', ha='center', zorder=10)
         if fonttex: xilbl = [r"$\vu{x}$", r"$\vu{y}$", r"$\vu{z}$"]

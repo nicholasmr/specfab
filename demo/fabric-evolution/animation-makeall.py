@@ -19,7 +19,7 @@ MAKE_FRAMES = True
 MAKE_ANI    = 0
 
 Mtypes = ['LROT','DDRX','CDRX']
-#Mtypes = ['DDRX',]
+Mtypes = ['DDRX',]
 
 ### Numerics
 
@@ -39,9 +39,9 @@ for ii, Mtype in enumerate(Mtypes):
     for jj, exptype in enumerate(['uc_zz', 'cc_zx', 'ss_xz']):
 
         # Process rate magnitude
-        if Mtype == 'LROT': kwargs = dict(iota=1,    Lambda=0,    Gamma0=0)
-        if Mtype == 'DDRX': kwargs = dict(iota=None, Lambda=0,    Gamma0=2e1, numul=1)
-        if Mtype == 'CDRX': kwargs = dict(iota=None, Lambda=2e-1, Gamma0=0,   numul=1)
+        if Mtype == 'LROT': kwargs = dict(iota=1,    Lambda=None, Gamma0=None, nu=1)
+        if Mtype == 'CDRX': kwargs = dict(iota=None, Lambda=2e-1, Gamma0=None, nu=1)
+        if Mtype == 'DDRX': kwargs = dict(iota=None, Lambda=None, Gamma0=2e1,  nu=1)
 
         # Initial state
         if Mtype == 'CDRX': nlm0 = nlm['LROT'][jj,-1,:]

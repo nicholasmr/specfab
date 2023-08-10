@@ -3,9 +3,9 @@
 import numpy as np
 from progress.bar import Bar
 
-def lagrangianparcel(sf, mod, strain_target, Nt=100, dt=None, nlm0=None, \
-                    iota=1, zeta=0, Lambda=None, Gamma0=None, numul=1, # fabric process params \
-                    regexpo=None, # override reg. expo. (requires numul be set to reg. mag.) \
+def lagrangianparcel(sf, mod, strain_target, Nt=100, dt=None, nlm0=None, verbose=True, \
+                    iota=None, zeta=0, Lambda=None, Gamma0=None, # fabric process params \
+                    nu=None, regexpo=None, apply_bounds=False # regularization \
     ):
 
     """
@@ -30,10 +30,10 @@ def lagrangianparcel(sf, mod, strain_target, Nt=100, dt=None, nlm0=None, \
         
     elif mod['type'] == 'rigidrotation' or mod['type'] == 'rr':
         # strain_target is rotation angle
-        raise Exception('type = rigidrotation not yet supported')
+        raise Exception('type="rigidrotation" not yet supported')
         
     else:
-        raise ValueError('mode-of-deformation type "%s" not supported'%(mod['type']))
+        raise ValueError('Mode of deformation type="%s" not supported'%(mod['type']))
     
     D, W = sf.ugrad_to_D_and_W(ugrad) 
     S = D.copy() # assume coaxial stress strain-rate
@@ -52,8 +52,8 @@ def lagrangianparcel(sf, mod, strain_target, Nt=100, dt=None, nlm0=None, \
     M_zero = np.zeros((nlm_len,nlm_len), dtype=np.complex64)
 
     # Regularization
-    if regexpo is None: M_REG = numul*sf.M_REG(nlm_dummy, D) if numul is not None else M_zero
-    else:               M_REG = M_REG_custom(numul, regexpo, D, sf)
+    if regexpo is None: M_REG = nu*sf.M_REG(nlm_dummy, D) if nu is not None else M_zero
+    else:               M_REG = M_REG_custom(nu, regexpo, D, sf)
     
     # CDRX
     M_CDRX = Lambda*sf.M_CDRX(nlm_dummy) if Lambda is not None else M_zero
@@ -63,13 +63,15 @@ def lagrangianparcel(sf, mod, strain_target, Nt=100, dt=None, nlm0=None, \
            
     ### Euler integration
 
-    with Bar('MOD=%s :: Nt=%i :: dt=%.2e :: nlm_len=%i ::'%(mod['type'],Nt,dt,nlm_len), max=Nt-1, fill='#', suffix='%(percent).1f%% - %(eta)ds') as bar:
-        for nt in np.arange(1,Nt+1):
-            nlm_prev = nlm[nt-1,:]
-            M = M_LROT + M_CDRX + M_REG
-            M += Gamma0*sf.M_DDRX(nlm_prev, S) if Gamma0 is not None else M_zero
-            nlm[nt,:] = nlm_prev + dt*np.matmul(M, nlm_prev)
-            bar.next()
+    if verbose: bar = Bar('MOD=%s :: Nt=%i :: dt=%.2e :: nlm_len=%i ::'%(mod['type'],Nt,dt,nlm_len), max=Nt-1, fill='#', suffix='%(percent).1f%% - %(eta)ds')
+    
+    for nt in np.arange(1,Nt+1):
+        nlm_prev = nlm[nt-1,:]
+        M = M_LROT + M_CDRX + M_REG
+        M += Gamma0*sf.M_DDRX(nlm_prev, S) if Gamma0 is not None else M_zero
+        nlm[nt,:] = nlm_prev + dt*np.matmul(M, nlm_prev)
+        
+        if verbose: bar.next()
             
     return nlm, F, time, ugrad
                 
@@ -77,10 +79,15 @@ def lagrangianparcel(sf, mod, strain_target, Nt=100, dt=None, nlm0=None, \
 def M_REG_custom(nu, expo, D, sf):
 
     """
-    Custom regularization operator, M_REG
+    Custom regularization operator
     """
 
-    nlm_len = int( (sf.Lcap+1)*(sf.Lcap+2)/2 )
+    L = sf.Lcap
+    nlm_len = int((L+1)*(L+2)/2)
     nlm_dummy = np.zeros((nlm_len), dtype=np.complex64)
-    return -nu * np.linalg.norm(D) * np.power(np.abs(sf.M_REG(nlm_dummy, D)), expo)
+    L = sf.Lmat(nlm_dummy)/(L*(L+1)) # normalized laplacian matrix
+    ratemag = nu*np.linalg.norm(D)
+    M_REG = -ratemag*np.power(np.abs(L), expo)
     
+    return M_REG
+

@@ -53,7 +53,7 @@ Nt = 50 # Number of time steps
 L  = 8 # Spectral truncation
 
 lm, nlm_len = sf.init(L)
-nlm, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt)
+nlm, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, iota=1, nu=1)
 
 #----------------------
 # Determine eigenvalues, principal directions, and enhancement factors

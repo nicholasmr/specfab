@@ -101,9 +101,9 @@ n20_circ45, n40_circ45 = np.real(sf.nlm_ideal(m, np.pi/4, L))[Il24]/normfac
 
 def integrate_model(nlm0, Mtype, modtype, Nt=Nt, rotate=False, name=None):
 
-    iota = zeta = Gamma0 = Lambda = None
+    iota = zeta = Gamma0 = Lambda = nu = None
 
-    if Mtype == 'LROT': iota, zeta = 1, 0
+    if Mtype == 'LROT': iota, zeta, nu = 1, 0, 1
     if Mtype == 'DDRX': Gamma0 = 18e-0
     if Mtype == 'CDRX': Lambda = 2e-1
         
@@ -111,9 +111,7 @@ def integrate_model(nlm0, Mtype, modtype, Nt=Nt, rotate=False, name=None):
     if modtype == 'ue': mod, target = dict(type='ps', axis=2, T=-1, r=0), 6
     if modtype == 'ss': mod, target = dict(type='ss', plane=1, T=+1), np.deg2rad(83)
     
-    nlm, F, *_ = sfint.lagrangianparcel(sf, mod, target, Nt=Nt, nlm0=nlm0, \
-                                    iota=iota, zeta=zeta, Gamma0=Gamma0, Lambda=Lambda,
-                                    numul=0 if (Mtype=='DDRX' or Mtype=='CDRX') else 1) 
+    nlm, F, *_ = sfint.lagrangianparcel(sf, mod, target, Nt=Nt, nlm0=nlm0, iota=iota, zeta=zeta, Gamma0=Gamma0, Lambda=Lambda, nu=nu) 
 
     nlmr = nlm.copy()
     for tt in np.arange(1,Nt+1):

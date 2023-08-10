@@ -64,7 +64,7 @@ if T_EXP==T_EXP_CC:
 lm, nlm_len = sf.init(L)
 nlm = np.zeros((Nt+1,nlm_len), dtype=np.complex64) # The expansion coefficients
 
-kwargs_LROT = dict(iota=1, Gamma0=0, numul=10, regexpo=2) #      
+kwargs_LROT = dict(iota=1, Gamma0=None, nu=1) #      
 nlm[:,:], F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, **kwargs_LROT)
 
 # Strain history
@@ -75,7 +75,7 @@ S = D/np.linalg.norm(D) # stress coaxial with strain-rate
 # Model DDRX from strain = strain_thres until strain_target
 # (this is done by splicing DDRX simulation results into array containing LROT simulation results)
 I = np.argmin(np.abs(strain-strain_thres)) # starting state
-kwargs_DDRX = dict(iota=None, Gamma0=50, numul=10, regexpo=2)
+kwargs_DDRX = dict(iota=None, Gamma0=50, nu=1)
 nlm_, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, nlm0=nlm[I,:], **kwargs_DDRX)
 nlm[I:,:] = nlm_[:(Nt-I+1),:]
 
@@ -229,7 +229,7 @@ for ii,nn in enumerate(parcel_tsteps):
     ax_sub = fig.add_axes([pc[ii,0], pc[ii,1], axs, axs], projection='3d')
     ax_sub.patch.set_alpha(0.0)
     lw = 0.7
-    sfplt.plotparcel(ax_sub, F[nn,:,:], lw=lw, lwinitbox=lw, fonttex=True)
+    sfplt.plotparcel(ax_sub, F[nn,:,:], lw=lw, lwinit=lw, fonttex=True)
     ax_sub.set_title(r'$\epsilon=%.1f$'%(strain[nn]), fontsize=FSSMALL,  x=0.5, y=0.92)
         
 ### Save figure

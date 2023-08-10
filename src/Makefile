@@ -95,7 +95,7 @@ specfabpy: $(SPECFAB).o
 	@mv -f specfabpy.cpython* $(PATHSPECFABPY)/
 
 python: specfabpy
-	python setup.py install
+	python3 setup.py install --user
 
 #-------------------
 

@@ -176,7 +176,7 @@ contains
         real(kind=dp), parameter  :: gasconst = 8.31446261815324
         
         epssq = matmul(eps,eps)
-        I2 = sqrt(0.5d0*(epssq(1,1)+epssq(2,2)+epssq(3,3))) ! = sqrt(0.5* eps:eps)
+        I2 = sqrt(0.5d0*(epssq(1,1)+epssq(2,2)+epssq(3,3))) ! = sqrt(0.5* tr(eps.eps))
         Gamma0 = A * I2 * exp(-Q/(gasconst*T))
     end
 
@@ -199,65 +199,30 @@ contains
         end do  
     end
 
-    function M_REG(eps) 
+    function M_REG(D) 
 
         !----------------
         ! Regularization 
         !----------------
         
         ! Returns matrix M such that d/dt (nlm)_i = M_ij (nlm)_j
-        ! NOTICE: Calibrated for 4 <= L <= 8 and L=20. For different L, the caller must specify an appropriate scaling.
-        ! Calibration is provided by the script in tests/calibrate-regularization.
+        ! Calibration constants (nu,expo) are calculated in tests/calibrate-regularization
         
         implicit none
-        real(kind=dp), intent(in) :: eps(3,3)
-        real(kind=dp)             :: M_REG(nlm_len,nlm_len)
-        real(kind=dp)             :: nu, expo, scalefac
+        real(kind=dp), intent(in) :: D(3,3)
+        real(kind=dp)             :: M_REG(nlm_len,nlm_len), M0_REG(nlm_len,nlm_len)
+        real(kind=dp)             :: nu, expo, ratemag
         
-        if (Lcap == 4) then
-            expo = 1.55d0
-            nu   = 2.9d0
-        end if 
+        include "include/regcalib.f90"
 
-        if (Lcap == 6) then
-!            expo = 2.000
-!            nu   = 3.923652e+00
-            expo = 1.25d0
-            nu   = 3.6d0
-        end if 
-        
-        if (Lcap == 8) then
-            expo = 3.000
-            nu   = 3.755041e+00
-        end if 
-
-!        if (Lcap == 8) then
-!            expo = 1.500
-!            nu   = 6.500000e+00
-!        end if 
-
-        if (Lcap == 10) then
-            expo = 1.700
-            nu   = 9e+0
-        end if 
-        
-        if (Lcap == 20) then
-            expo = 3.000
-            nu   = 1.495197e+01
-        end if 
-
-        if ((Lcap .gt. 12) .and. (Lcap .lt. 20)) then
-    !        print *, 'specfab error: returning the unscaled (but normalized) Laplacian matrix for you to scale yourself.'
-            expo = 1
-            scalefac = -1
-        else
-            scalefac = -nu * norm2(reshape(eps,[size(eps)])) 
-        end if
-        
-        M_REG = 0.0
+        ! M0_REG is the matrix diag(~0, less small value, ..., 1) 
+        M0_REG = 0.0
         do ii = 1, nlm_len 
-            M_REG(ii,ii) = scalefac * abs( Ldiag(ii)/(Lcap*(Lcap+1)) )**expo 
+            M0_REG(ii,ii) = abs( Ldiag(ii)/(Lcap*(Lcap+1)) )**expo ! Normalize by L*(L+1) to ensure =1 at modes l=L (note: this simply implies absorbing a constant into nu)
         end do
+        
+        ratemag = nu*norm2(reshape(D,[size(D)])) ! nu * ||D||_2
+        M_REG = -ratemag*M0_REG
     end
 
     !---------------------------------

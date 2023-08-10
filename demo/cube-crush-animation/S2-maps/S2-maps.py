@@ -190,8 +190,7 @@ def plot_field(F, ax, lvls, cmap='Greys', cblbl=r'$E_{??}$', titlestr='', tickin
 if MAKE_FRAME_Eij or MAKE_FRAME_vi:
 
     ### Determine fabric evolution
-    nlm, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, \
-            iota=+1, Gamma0=0, Lambda=0, numul=10, regexpo=2) # # latrot only with custom high-L regularization
+    nlm, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, iota=+1, nu=1) # latrot only
     strain = np.array([sf.F_to_strain(F[tt,:,:])[2,2] for tt in range(Nt+1)])
 
     ### S2 resolution

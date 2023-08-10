@@ -21,25 +21,29 @@ By Nicholas M. Rathmann and David A. Lilien
 
 ## Install
 
-Source code [available here](https://github.com/nicholasmr/specfab)
+Source code is [available here](https://github.com/nicholasmr/specfab).
 
-| Environment | How to |
+| Environment | How to install |
 | :--- | :--- |
-| Python | A pre-compiled module exists for Linux:<br>`pip3 install numpy --upgrade && pip3 install specfabpy` |
-| Compile Python module |- For a local-only install, run `make specfabpy` in `/src` (requires LAPACK and BLAS) <br>- To install for general use (in other folders), run `make python` in `/src`. Note that if you do not have write permissions for your python installation, you can instead run `make specfabpy; python setup.py install --user`|
-| Fortran | The Fortran module is built by running `make specfab.o` |
-| Elmer/Ice Interface | To interface with Elmer/Ice, you need a shared version of the libraries (built with the same Fortran compiler as Elmer). If needed, change the compiler in `src/Makefile`, then run `make libspecfab.so` |
+| Python in Linux | - PyPI package: `pip3 install numpy --upgrade && pip3 install specfabpy`<br> - Compile yourself: `cd src && make python` |
+| Python in Windows/Mac | You will have to compile specfab yourself. |
+| Fortran | Run `cd src && make specfab.o` |
+| Elmer/Ice Interface | Compile shared library by running `cd src && make libspecfab.so` |
+
+Libraries required: BLAS, LAPACK
 
 ## Initialize 
 
-Initialize `specfabpy` by running
+Initialize `specfab` by running
 
 ```python
 import numpy as np
-from specfabpy import specfabpy as sf
+from specfabpy import specfab as sf
+
 lm, nlm_len = sf.init(10) # L=10 truncation is sufficient for many cases
-nlm = np.zeros(nlm_len, dtype=np.complex64)
-nlm[0] = 1/np.sqrt(4*np.pi) # Normalized, isotropic distribution
+
+nlm = np.zeros(nlm_len, dtype=np.complex64) # vector of harmonic expansion coefficients
+nlm[0] = 1/np.sqrt(4*np.pi) # normalized isotropic distribution
 ```
 
 where

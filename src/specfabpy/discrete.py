@@ -4,10 +4,11 @@
 """
 Discrete methods
 """
+
+#import copy, sys, time, code # code.interact(local=locals())
  
 import numpy as np
-import copy, sys, time, code # code.interact(local=locals())
-
+import scipy.special as sp
 
 def cart2sph(v, deg=False):
     # Spherical coordinates from Cartesian vector(s)
@@ -38,6 +39,21 @@ def lat2colat(lat, deg=False):
 def colat2lat(colat, deg=False):
     return 90 - colat if deg else np.pi/2 - colat
 
+def Sl_delta(lm, sf):
+
+    L = lm[0,-1]
+    nlm_len = int((L+1)*(L+2)/2)
+    nlm = np.zeros((nlm_len), dtype=np.complex128)
+    Lrange = np.arange(0,L+1,2) # 0, 2, 4, ...
+        
+    for ii, (l,m) in enumerate(lm.T): 
+        nlm[ii] = sp.sph_harm(m,l, 0,0) # delta function values
+        
+    Sl = np.array([sf.Sl(nlm, l) for l in Lrange])
+    Sl /= Sl[0] # normalize
+    
+    return Sl, Lrange, nlm
+    
 
 class DDM():
 

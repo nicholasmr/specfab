@@ -108,7 +108,7 @@ y_corr = sf.nhat40_empcorr_ice(x_corr)
 #--------------------
 
 mod = dict(type='pureshear', axis=2, T=1 if strain_target<0 else -1, r=0)
-nlm, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, iota=+1, Gamma0=0, Lambda=0) # lrot only
+nlm, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, iota=+1, nu=1) # latrot only
 nlm /= normfac # nlm is now normalized (nhat coefs)
 strainzz = np.array([sf.F_to_strain(F[tt,:,:])[2,2] for tt in range(Nt+1)])
 

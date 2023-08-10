@@ -1,84 +1,51 @@
 # N. M. Rathmann <rathmann@nbi.ku.dk>, 2022-2023
 
 import sys, os, copy, code # code.interact(local=locals())
+
 import numpy as np
-import scipy.special as sp
-#from numpy import linalg as LA
-#from scipy.optimize import minimize
 
 from specfabpy import specfab as sf
+from specfabpy import integrator as sfint
+from specfabpy import discrete as sfdsc
 from specfabpy import plotting as sfplt
 FS = sfplt.setfont_tex()
-FS += 0
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib import rcParams, rc
 
-import warnings
-warnings.filterwarnings("ignore")
+PLOT_FRAMES = 1
+MAKE_GIF = 1
 
 #---------------------
 # Setup
 #---------------------
 
-L = 20
-Nt = 100 # Number of "integration time steps" (we consider the analytical solution here).
+L = 20 
+Nt = 100 
+strain_target = -0.97
 
-### Mode of deformation: unconfined vertical compression
-epszz = -0.97 # target strain_zz
-D = np.diag([0.5,0.5,-1]);
-Dzz = D[2,2]; # size of compressive strain-rate
-W = 0*D # Assume strain-rate tensor is in eigen frame
-
-### Numerics
-te = 1/Dzz # characteristic time, t_e
-t_epszz = te*np.log(epszz + 1)
-dt = t_epszz/Nt # time step size for thresshold strain epszz in "Nt" time steps 
-tsteps = np.arange(Nt) # list of steps
-epszz_t = np.exp(tsteps*dt/te)-1 # list of strains
-print('Nt=%i, dt=%.4e s'%(Nt,dt))
+mod = dict(type='ps', axis=2, T=1, r=0) # mode of deformation
 
 #---------------------
 # Fabric evolution
 #---------------------
 
 lm, nlm_len = sf.init(L)
-nlm = np.zeros((2, nlm_len, Nt), dtype=np.complex128)
-nlm[:,0,:] = 1/np.sqrt(4*np.pi) # Init with isotropy
-nlm0 = nlm[0,:,0].copy()
 
-M_LROT = sf.M_LROT(nlm0, D, W, 1, 0) # strain-rate assumed constant for calibration experiments
-M_REG  = sf.M_REG(nlm0, D)
+# latrot only with calibrated high-L regularization
+nlm_reg, *_ = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, iota=+1, nu=1) 
 
-for ii in [0,1]:
-
-    if ii == 0: M = M_LROT + M_REG 
-    else:       M = M_LROT
-
-    for tt in np.arange(1,Nt):
-
-        nlm_prev = nlm[ii,:,tt-1].copy()
-        nlm[ii,:,tt] = nlm_prev + dt*np.matmul(M, nlm_prev)
-
-#---------------------
-# Power spectrum, S(l)
-#---------------------
-
-nlm_dirac = nlm0.copy()
-for ii, (l,m) in enumerate(lm.T): nlm_dirac[ii] = sp.sph_harm(m,l, 0,0)
-Lrange = np.arange(0,L+1,2) # 0, 2, 4, 6, ...
-Sl_dirac = np.array([sf.Sl(nlm_dirac, l) for l in Lrange])
-Sl_dirac /= Sl_dirac[0] # normalize
-print('S_dirac(l) (for l=0,2,...,L) = ', Sl_dirac)
+# latrot only without regularization
+nlm_noreg, *_ = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, iota=+1, nu=None) 
 
 #---------------------
 # Plot results
 #---------------------
 
 # Plot frames
-if 1:
-    for tt in np.arange(Nt):
+if PLOT_FRAMES:
+    for tt in np.arange(Nt+1):
         
         ### Setup figure
 
@@ -88,9 +55,11 @@ if 1:
         
         ### Plot power spectra
 
+        Sl_dirac, Lrange, nlm_dirac = sfdsc.Sl_delta(lm, sf)
+
         ax = fig.add_subplot(gs[0,0])
-        Sl_model_reg   = np.array([sf.Sl(nlm[0,:,tt], l) for l in Lrange]) 
-        Sl_model_noreg = np.array([sf.Sl(nlm[1,:,tt], l) for l in Lrange]) 
+        Sl_model_reg   = np.array([sf.Sl(nlm_reg[tt,:], l)   for l in Lrange]) 
+        Sl_model_noreg = np.array([sf.Sl(nlm_noreg[tt,:], l) for l in Lrange]) 
         Sl_model_reg   /= Sl_model_reg[0] # normalize
         Sl_model_noreg /= Sl_model_noreg[0] # normalize
         h = ax.semilogy(Lrange, Sl_model_noreg, ls='-', c='#a50f15', label=r'$\bf{M}=\bf{M}_\mathrm{LROT}$')
@@ -116,11 +85,13 @@ if 1:
 
         lvlset = [np.linspace(0,1,9), lambda x,p:'%.1f'%x]
 
-        sfplt.plotODF(nlm[0,:,tt], lm, ax_ODF[0], lvlset=lvlset)
+        sfplt.plotODF(nlm_reg[tt,:], lm, ax_ODF[0], lvlset=lvlset)
+        sfplt.plotcoordaxes(ax_ODF[0], geo, axislabels='vuxi')
         ax_ODF[0].set_global()
         ax_ODF[0].set_title(r'$\bf{M}=\bf{M}_\mathrm{LROT} + \bf{M}_\mathrm{REG}$', fontsize=FS+1, pad=10)
         
-        sfplt.plotODF(nlm[1,:,tt], lm, ax=ax_ODF[1], lvlset=lvlset)
+        sfplt.plotODF(nlm_noreg[tt,:], lm, ax=ax_ODF[1], lvlset=lvlset)
+        sfplt.plotcoordaxes(ax_ODF[1], geo, axislabels='vuxi')
         ax_ODF[1].set_global()
         ax_ODF[1].set_title(r'$\bf{M}=\bf{M}_\mathrm{LROT}$', fontsize=FS+1, pad=10)
 
@@ -129,9 +100,10 @@ if 1:
         fout = 'frames/calibrate-regularization-%03i.png'%(tt)
         print('Saving %s'%(fout))
         plt.savefig(fout, dpi=200)
+        plt.close()
     
-# Make GIF
-if 1:
+
+if MAKE_GIF:
     os.system(r'rm animation.gif')  
     os.system(r'ffmpeg -y -f image2 -framerate 40 -stream_loop 0 -i frames/calibrate-regularization-%03d.png -vcodec libx264 -crf 20  -pix_fmt yuv420p animation.avi')
     os.system(r'ffmpeg -i animation.avi -vf "fps=15,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 animation.gif')

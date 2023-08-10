@@ -57,17 +57,17 @@ The model is a kinematic model in the sense that $c$-axes rotate in response to 
 The modelled $c$-axes are taken to rotate with the bulk continuum spin (${\bf W}$), plus some plastic spin correction (${\bf W}_{\mathrm{p}}$), so that the $c$-axis velocity field on the unit sphere is
 
 $$
-{\bf \dot{c}} = ({\bf W} + {\bf W}_{\mathrm{p}}) \cdot {\bf c} \quad\text{($c$-axis velocity field on $S^2$)}
+{\bf \dot{c}} = ({\bf W} + {\bf W}_{\mathrm{p}}) \cdot {\hat {\bf r}} \quad\text{($c$-axis velocity field on $S^2$)}
 ,
 $$
 
-where ${\bf c}(\theta,\phi)$ is the radial unit vector, and the plastic spin depends on ${\bf D}$ to lowest and second lowest order following Wang (1969) and [Aravas (1994)](https://www.doi.org/10.1088/0965-0393/2/3A/005): 
+where ${\hat {\bf r}}$ is the radial unit vector, and the plastic spin depends on ${\bf D}$ to lowest and second lowest order following Wang (1969) and [Aravas (1994)](https://www.doi.org/10.1088/0965-0393/2/3A/005): 
 
 $$
 {\bf W}_{\mathrm{p}} = 
-\iota({\bf c}\otimes{\bf c}\cdot{\bf D} - {\bf D}\cdot{\bf c}\otimes{\bf c})
+\iota({\hat {\bf r}}\otimes{\hat {\bf r}}\cdot{\bf D} - {\bf D}\cdot{\hat {\bf r}}\otimes{\hat {\bf r}})
 +
-\zeta({\bf c}\otimes{\bf c}\cdot{\bf D}^2 - {\bf D}^2\cdot{\bf c}\otimes{\bf c})
+\zeta({\hat {\bf r}}\otimes{\hat {\bf r}}\cdot{\bf D}^2 - {\bf D}^2\cdot{\hat {\bf r}}\otimes{\hat {\bf r}})
 .
 $$
 
@@ -120,7 +120,7 @@ for tt in np.arange(1,Nt):
     nlm[tt,:] = nlm_prev + dt*np.matmul(M, nlm_prev) # Euler step
     nlm[tt,:] = sf.apply_bounds(nlm[tt,:]) # Apply spectral bounds if needed
 
-# To plot the resulting ODF or calculate structure tensors, see CPO representation pages.
+# See "plotting" pages for how to plot resulting ODFs
 ```
 
 See also [demo code in repository](https://github.com/nicholasmr/specfab/tree/main/demo/fabric-evolution).
@@ -146,7 +146,7 @@ $$\Gamma = \Gamma_0\left(D- {\langle} D {\rangle}\right) \quad\text{(decay/produ
 depends on the rate magnitude $\Gamma_0$, and the deformability $D$ as a function of the stress tensor ${\bf S}$:
 
 $$
-D = \frac{({\bf S}\cdot{\bf S}):({\bf c}\otimes{\bf c}) - {\bf S}:({\bf c}\otimes{\bf c}\otimes{\bf c}\otimes{\bf c}):{\bf S}}{{\bf S}:{\bf S}}\quad\text{(deformability)}
+D = \frac{({\bf S}\cdot{\bf S}):({\hat {\bf r}}\otimes{\hat {\bf r}}) - {\bf S}:({\hat {\bf r}}\otimes{\hat {\bf r}}\otimes{\hat {\bf r}}\otimes{\hat {\bf r}}):{\bf S}}{{\bf S}:{\bf S}}\quad\text{(deformability)}
 .
 $$
 
@@ -193,7 +193,7 @@ for tt in np.arange(1,Nt):
     nlm[tt,:] = nlm_prev + dt*np.matmul(M, nlm_prev) # Complete Euler step
     nlm[tt,:] = sf.apply_bounds(nlm[tt,:]) # Apply spectral bounds if needed    
 
-# To plot the resulting ODF or calculate structure tensors, see CPO representation pages.
+# See "plotting" pages for how to plot resulting ODFs
 ```
 
 - - -
