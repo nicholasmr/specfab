@@ -146,7 +146,7 @@ for tt in range(Nt+1):
     
     ### Plot parcel geometry
     
-    sfplt.plotparcel(axParcel, F[tt,:,:], azim=25, scale=1, axlimscale=1.8) 
+    sfplt.plotparcel(axParcel, F[tt,:,:], azim=25, scale=1, axscale=1.8) 
     
     ### Plot ODF
 

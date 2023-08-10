@@ -86,7 +86,7 @@ def plotODF(nlm, lm, ax, \
             lvlfmt = lambda x,pos:'0' if x<1e-10 else '$%i/(4\pi)$'%(x/isodist)
         else: 
             raise ValueError('sfplt.plotODF(): Note sure what to do with passed lvlset; should be "iso-up", "zero-up" or list [lvls0, lvlmul, lvlfmt]')
-    elif isinstance(lvlset, list) and len(lvlset) == 2:
+    elif isinstance(lvlset, (list, tuple)) and len(lvlset) == 2:
         (lvls, lvlfmt) = lvlset # unpack and assume these are parse correctly
     else:
         print('lvlset=',lvlset)
@@ -213,7 +213,7 @@ def panellabel(ax, loc, txt, frameon=True, alpha=1.0, fontsize=fontsize_default,
     ax.add_artist(at)
 
 
-def plotparcel(ax, F, scale=1, axlimscale=1, elev=20, azim=35, \
+def plotparcel(ax, F, scale=1, axscale=1, elev=20, azim=35, \
                 lw=1, facecolor='k', edgecolor='0.10',  \
                 drawaxes=True, colorax='k', fonttex=False, fontsize=fontsize_default, \
                 drawinitbox=True, colorinitbox=c_dred, lwinitbox=1, \
@@ -257,9 +257,9 @@ def plotparcel(ax, F, scale=1, axlimscale=1, elev=20, azim=35, \
     ### Axes 
 
     onespan = np.array([0,1])    
-    ax.set_xlim(axlimscale*onespan) 
-    ax.set_ylim(axlimscale*onespan)
-    ax.set_zlim(axlimscale*onespan)
+    ax.set_xlim(axscale*onespan) 
+    ax.set_ylim(axscale*onespan)
+    ax.set_zlim(axscale*onespan)
    
     ### x,y,z axes
 

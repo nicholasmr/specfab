@@ -22,7 +22,7 @@ nav:
         - Radar-derived physical properties: radar-derived-PP.md
         - FEM integration: FEM-integration.md
     - 'Miscellaneous': 
-        - Plotting: cpo-plot.md
+        - Plotting: plotting.md
         - Deformation modes: deformation-modes.md
 
 theme: 
