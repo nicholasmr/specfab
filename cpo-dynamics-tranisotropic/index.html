@@ -116,7 +116,7 @@
               </ul>
               <p class="caption"><span class="caption-text">Miscellaneous</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plotting</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../plotting/">Plotting</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../deformation-modes/">Deformation modes</a>
                   </li>
@@ -196,15 +196,15 @@ See <a href="../cpo-representation/">CPO representation</a> for details.</p>
 The model is a kinematic model in the sense that <span class="arithmatex">\(c\)</span>-axes rotate in response to the bulk rate of stretching, <span class="arithmatex">\({\bf D}\)</span>, and spin, <span class="arithmatex">\({\bf W}\)</span>, thereby allowing the detailed microscopic stress and strain rate fields to be neglected and hence interactions between neighboring grains to be disregarded.</p>
 <p>The modelled <span class="arithmatex">\(c\)</span>-axes are taken to rotate with the bulk continuum spin (<span class="arithmatex">\({\bf W}\)</span>), plus some plastic spin correction (<span class="arithmatex">\({\bf W}_{\mathrm{p}}\)</span>), so that the <span class="arithmatex">\(c\)</span>-axis velocity field on the unit sphere is</p>
 <div class="arithmatex">\[
-{\bf \dot{c}} = ({\bf W} + {\bf W}_{\mathrm{p}}) \cdot {\bf c} \quad\text{($c$-axis velocity field on $S^2$)}
+{\bf \dot{c}} = ({\bf W} + {\bf W}_{\mathrm{p}}) \cdot {\hat {\bf r}} \quad\text{($c$-axis velocity field on $S^2$)}
 ,
 \]</div>
-<p>where <span class="arithmatex">\({\bf c}(\theta,\phi)\)</span> is the radial unit vector, and the plastic spin depends on <span class="arithmatex">\({\bf D}\)</span> to lowest and second lowest order following Wang (1969) and <a href="https://www.doi.org/10.1088/0965-0393/2/3A/005">Aravas (1994)</a>: </p>
+<p>where <span class="arithmatex">\({\hat {\bf r}}\)</span> is the radial unit vector, and the plastic spin depends on <span class="arithmatex">\({\bf D}\)</span> to lowest and second lowest order following Wang (1969) and <a href="https://www.doi.org/10.1088/0965-0393/2/3A/005">Aravas (1994)</a>: </p>
 <div class="arithmatex">\[
 {\bf W}_{\mathrm{p}} = 
-\iota({\bf c}\otimes{\bf c}\cdot{\bf D} - {\bf D}\cdot{\bf c}\otimes{\bf c})
+\iota({\hat {\bf r}}\otimes{\hat {\bf r}}\cdot{\bf D} - {\bf D}\cdot{\hat {\bf r}}\otimes{\hat {\bf r}})
 +
-\zeta({\bf c}\otimes{\bf c}\cdot{\bf D}^2 - {\bf D}^2\cdot{\bf c}\otimes{\bf c})
+\zeta({\hat {\bf r}}\otimes{\hat {\bf r}}\cdot{\bf D}^2 - {\bf D}^2\cdot{\hat {\bf r}}\otimes{\hat {\bf r}})
 .
 \]</div>
 <p>By requiring that basal planes preserve their orientation when subject to simple shear (like a deck of cards), it can be shown that <span class="arithmatex">\(\iota=1\)</span> and <span class="arithmatex">\(\zeta=0\)</span>.</p>
@@ -250,7 +250,7 @@ for tt in np.arange(1,Nt):
     nlm[tt,:] = nlm_prev + dt*np.matmul(M, nlm_prev) # Euler step
     nlm[tt,:] = sf.apply_bounds(nlm[tt,:]) # Apply spectral bounds if needed
 
-# To plot the resulting ODF or calculate structure tensors, see CPO representation pages.
+# See &quot;plotting&quot; pages for how to plot resulting ODFs
 </code></pre>
 <p>See also <a href="https://github.com/nicholasmr/specfab/tree/main/demo/fabric-evolution">demo code in repository</a>.</p>
 <hr />
@@ -266,7 +266,7 @@ for tt in np.arange(1,Nt):
 <div class="arithmatex">\[\Gamma = \Gamma_0\left(D- {\langle} D {\rangle}\right) \quad\text{(decay/production rate)}\]</div>
 <p>depends on the rate magnitude <span class="arithmatex">\(\Gamma_0\)</span>, and the deformability <span class="arithmatex">\(D\)</span> as a function of the stress tensor <span class="arithmatex">\({\bf S}\)</span>:</p>
 <div class="arithmatex">\[
-D = \frac{({\bf S}\cdot{\bf S}):({\bf c}\otimes{\bf c}) - {\bf S}:({\bf c}\otimes{\bf c}\otimes{\bf c}\otimes{\bf c}):{\bf S}}{{\bf S}:{\bf S}}\quad\text{(deformability)}
+D = \frac{({\bf S}\cdot{\bf S}):({\hat {\bf r}}\otimes{\hat {\bf r}}) - {\bf S}:({\hat {\bf r}}\otimes{\hat {\bf r}}\otimes{\hat {\bf r}}\otimes{\hat {\bf r}}):{\bf S}}{{\bf S}:{\bf S}}\quad\text{(deformability)}
 .
 \]</div>
 <p><span class="arithmatex">\({\bf M_{\mathrm{DDRX}}}\)</span> is given analytically in <a href="https://doi.org/10.1017/jog.2021.88">Rathmann and Lilien (2021)</a>.</p>
@@ -308,7 +308,7 @@ for tt in np.arange(1,Nt):
     nlm[tt,:] = nlm_prev + dt*np.matmul(M, nlm_prev) # Complete Euler step
     nlm[tt,:] = sf.apply_bounds(nlm[tt,:]) # Apply spectral bounds if needed    
 
-# To plot the resulting ODF or calculate structure tensors, see CPO representation pages.
+# See &quot;plotting&quot; pages for how to plot resulting ODFs
 </code></pre>
 <hr />
 <h2 id="continous-dynamic-recrystallization-cdrx">Continous dynamic recrystallization (CDRX)</h2>
