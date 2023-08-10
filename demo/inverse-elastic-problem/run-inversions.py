@@ -15,9 +15,12 @@ from experiments import *    # Routines for handling Lutz et al. (2022) experime
 from inverseproblem import * # Routines for solving inverse problems
 from Cij import *            # Monocrystal/grain elastic parameters
 
+from specfabpy import specfab as sf
+from specfabpy import plotting as sfplt
+FS = sfplt.setfont_tex(fontsize=12)
+
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from plottools import * # For plotting ODFs etc.
 
 #--------------------       
 # Flags
@@ -161,10 +164,7 @@ for ii, exprnum in enumerate(EXPERIMENTS):
 
     ### S_2 projection
 
-    inclination = 50 # view angle
-    rot = -40
-    prj = ccrs.Orthographic(rot, 90-inclination)
-    geo = ccrs.Geodetic()
+    geo, prj = sfplt.getprojection(rotation=50-90, inclination=50)
 
     ### Setup figure, panels, etc.
     
@@ -194,25 +194,23 @@ for ii, exprnum in enumerate(EXPERIMENTS):
     axODF_B68 = fig.add_subplot(gs[0, ii0+1], projection=prj)
     axODF_R22 = fig.add_subplot(gs[0, ii0+2], projection=prj)
     
-    axODF_obs.set_global(); axODF_B68.set_global(); axODF_R22.set_global()
+    axODF_obs.set_global()
+    axODF_B68.set_global()
+    axODF_R22.set_global()
 
     ### ODFs
         
-    tickintvl, lvls = 3, np.linspace(0.0,0.6,7)
-    kwargs_ODF = {'cmap':'Greys', 'cbaspect':8.5, 'cbfrac':0.065,  'cborientation':'horizontal', 'lvls':lvls, 'tickintvl':tickintvl}
-#    kwargs_ODF = {}
-    plot_ODF(nlm_obs, lm_L4, ax=axODF_obs, cblabel='$\psi_{\mathrm{}}/N$', **kwargs_ODF)
-    qlatd, qlond = get_deg(qlat, qlon)
-    axODF_obs.plot(qlond, qlatd, ls='none', marker='x', markersize=0.6, c=c_caxes, transform=geo) 
-    
-    plot_ODF(nlm_B68, lm_L4, ax=axODF_B68, cblabel='$\psi_{\mathrm{}}/N$', **kwargs_ODF)
-    plot_ODF(nlm_R22, lm_L4, ax=axODF_R22, cblabel='$\psi_{\mathrm{}}/N$', **kwargs_ODF)
+    kwargs = dict(lvlset=(np.linspace(0.0,0.6,7), lambda x,p:'%.1f'%x), cbtickintvl=3, cbaspect=8.5, cbfraction=0.065)
+    sfplt.plotODF(nlm_obs, lm_L4, axODF_obs, cblabel='$\psi_{\mathrm{}}/N$', **kwargs)
+    sfplt.plotODF(nlm_B68, lm_L4, axODF_B68, cblabel='$\psi_{\mathrm{}}/N$', **kwargs)
+    sfplt.plotODF(nlm_R22, lm_L4, axODF_R22, cblabel='$\psi_{\mathrm{}}/N$', **kwargs)   
+
+    axODF_obs.plot(np.rad2deg(qlon), np.rad2deg(qlat), ls='none', marker='x', markersize=0.6, c=c_caxes, transform=geo) 
 
     # Set ODF axes for reference
-    plot_unitaxes(axODF_obs, geo)
-    plot_unitaxes(axODF_B68, geo)
-    plot_unitaxes(axODF_R22, geo)
-
+    for axi in (axODF_obs, axODF_B68, axODF_R22): 
+        sfplt.plotcoordaxes(axi, geo, axislabels='vuxi', color=sfplt.c_dred)  
+        
     # Titles
     pad = 10
     axODF_obs.set_title(r'observed, $\hat{\vb*{\psi}}_{\mathrm{obs}}$', pad=pad, fontsize=FS)
@@ -223,9 +221,9 @@ for ii, exprnum in enumerate(EXPERIMENTS):
     kwargs_ODFpanelno = {'frameon':False, 'alpha':1.0, 'fontsize':FS}
     dx = +0.14 
     yloc=1.125 + 2*0.26
-    writeSubplotLabel(axODF_obs, 2, r'(\textit{d})', bbox=(-0.35+dx,yloc), **kwargs_ODFpanelno)
-    writeSubplotLabel(axODF_B68, 2, r'(\textit{e})', bbox=(-0.35+dx,yloc), **kwargs_ODFpanelno)
-    writeSubplotLabel(axODF_R22, 2, r'(\textit{f})', bbox=(-0.35+dx,yloc), **kwargs_ODFpanelno)
+    sfplt.panellabel(axODF_obs, 2, r'(\textit{d})', bbox=(-0.35+dx,yloc), **kwargs_ODFpanelno)
+    sfplt.panellabel(axODF_B68, 2, r'(\textit{e})', bbox=(-0.35+dx,yloc), **kwargs_ODFpanelno)
+    sfplt.panellabel(axODF_R22, 2, r'(\textit{f})', bbox=(-0.35+dx,yloc), **kwargs_ODFpanelno)
 
     ### Velocity anomalies
 
@@ -268,9 +266,9 @@ for ii, exprnum in enumerate(EXPERIMENTS):
 
     # Panel no.
     bbox=(-0.14,1.23)
-    writeSubplotLabel(axP,  2, r'(\textit{a})', frameon=False, alpha=1.0, fontsize=FS, bbox=bbox)
-    writeSubplotLabel(axS1, 2, r'(\textit{b})', frameon=False, alpha=1.0, fontsize=FS, bbox=bbox)
-    writeSubplotLabel(axS2, 2, r'(\textit{c})', frameon=False, alpha=1.0, fontsize=FS, bbox=bbox)
+    sfplt.panellabel(axP,  2, r'(\textit{a})', frameon=False, alpha=1.0, fontsize=FS, bbox=bbox)
+    sfplt.panellabel(axS1, 2, r'(\textit{b})', frameon=False, alpha=1.0, fontsize=FS, bbox=bbox)
+    sfplt.panellabel(axS2, 2, r'(\textit{c})', frameon=False, alpha=1.0, fontsize=FS, bbox=bbox)
 
     # Axis labels
     axP.set_ylabel( r'$V_{\mathrm{qP}}$ ($\SI{}{\metre\per\second}$)')

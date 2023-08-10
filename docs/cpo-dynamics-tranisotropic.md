@@ -225,7 +225,7 @@ where `Lambda` is the CDRX rate-factor magnitude, $\Lambda$, that possibly depen
 
 ## Regularization
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/tests/calibrate-regularization/animation.gif){: style="width:700px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/regularization/animation.gif){: style="width:700px"}
 
 As $n(\theta,\phi)$ becomes anisotropic due to CPO processes, the coefficients $n_l^m$ associated with high wavenumber modes (large $l$ and $m$, and thus small-scale structure) must increase in magnitude relative to the low wavenumber coefficients (small $l$ and $m$). 
 

@@ -6,23 +6,26 @@ These are the "additional experiments" in Rathmann et al. (2022).
 """
 
 import copy, sys, code # code.interact(local=locals())
+
 import numpy as np 
 np.set_printoptions(edgeitems=30, linewidth=1000, formatter=dict(float=lambda x: "%+.6g" % x))
 import numpy.linalg as linalg
 
 from scipy.spatial.transform import Rotation as R
-import math
 
 from inverseproblem import * # Routines for solving inverse problems
 from Cij import *            # Monocrystal elastic parameters
 
-sys.path.insert(0, '..')
-from specfabpy import specfabpy as sf 
-lm, nlm_len = sf.init(4) # L=4 suffices here
+from specfabpy import specfab as sf 
+from specfabpy import discrete as sfdsc 
+from specfabpy import plotting as sfplt
+FS = sfplt.setfont_tex(fontsize=12)
+
+L = 4
+lm, nlm_len = sf.init(L) # L=4 suffices here
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from plottools import * # For plotting ODFs etc.
 
 #--------------------       
 # Flags
@@ -35,31 +38,9 @@ VERBOSE_INVERSION = 0 # Verbose inversion
 # Synthetic experiments
 #--------------------
 
-x = np.array([1,0,0])
-y = np.array([0,1,0])
-z = np.array([0,0,1])
-
-# Horizontal single maximum
-a2_sm = np.tensordot(x,x, axes=0)
-a4_sm = np.tensordot(a2_sm,a2_sm, axes=0) # <c^4> (aka. a^(4))
-nlm_sm = sf.a4_to_nlm(a4_sm) 
-
-# Horizontal double maximum
-q = y 
-q = 0.3*x + y; q /= np.linalg.norm(q) 
-a2_smq = np.tensordot(q,q, axes=0)
-a4_smq = np.tensordot(a2_smq,a2_smq, axes=0)
-a4_dm = a4_sm/2 + a4_smq/2
-nlm_dm = sf.a4_to_nlm(a4_dm)
-
-# Vertical girdle
-x2 = np.tensordot(x,x, axes=0); x4 = np.tensordot(x2,x2,axes=0)
-z2 = np.tensordot(z,z, axes=0); z4 = np.tensordot(z2,z2,axes=0)
-x2z2_2 = np.tensordot(x2+z2,x2+z2,axes=0)
-xz, zx = np.tensordot(x,z, axes=0), np.tensordot(z,x, axes=0)
-xz_zx_2 = np.tensordot(xz+zx,xz+zx,axes=0)
-a4_gd = x4/4 + z4/4 + (x2z2_2)/8 + xz_zx_2/8
-nlm_gd = sf.a4_to_nlm(a4_gd)
+nlm_sm = sf.nlm_ideal([1,0,0], 0, L) # Horizontal single maximum
+nlm_dm = (nlm_sm + sf.nlm_ideal([0,1,0], 0, L))/2 # Horizontal double maximum
+nlm_gd = sf.rotate_nlm(sf.rotate_nlm(sf.nlm_ideal([0,0,1], np.pi/2, L), np.pi/2, 0), 0, np.pi/2) # Vertical girdle
 
 EXPERIMENTS = {
     'singlemax': {'nlm':nlm_sm, 'name':'Horizontal single maximum'}, \
@@ -100,16 +81,18 @@ eta = [0, 0] # no eigenvalue regularization
 #--------------------
 
 N = 20 # number of equi-spaced sampling directions
-theta_xy, phi_xy = np.zeros(N),np.zeros(N)
-theta_xz, phi_xz = np.zeros(N),np.zeros(N)
+v_xy, colat_xy, lon_xy = np.zeros((N,3)), np.zeros(N), np.zeros(N)
+v_xz, colat_xz, lon_xz = np.zeros((N,3)), np.zeros(N), np.zeros(N)
+
+x,y,z = np.eye(3)
 
 for nn, ang in enumerate(np.linspace(0,360,N)):
     Rz = R.from_euler('z', ang, degrees=True).as_matrix()
     Ry = R.from_euler('y', ang, degrees=True).as_matrix()
-    v_xy = np.matmul(Rz,x)
-    v_xz = np.matmul(Ry,x)
-    theta_xy[nn], phi_xy[nn] = cart2sph(v_xy)
-    theta_xz[nn], phi_xz[nn] = cart2sph(v_xz)
+    v_xy[nn,:] = np.matmul(Rz,x)
+    v_xz[nn,:] = np.matmul(Ry,x)
+    _, colat_xy[nn], lon_xy[nn] = cart2sph_wrap(v_xy[nn,:]) # colat, lon
+    _, colat_xz[nn], lon_xz[nn] = cart2sph_wrap(v_xz[nn,:]) # colat, lon
 
 
 for ii, exprkey in enumerate(EXPERIMENTS):
@@ -125,12 +108,12 @@ for ii, exprkey in enumerate(EXPERIMENTS):
     #--------------------
     
     nlm = expr['nlm']
-    vi_xy = get_vi_map(nlm, alpha,g_B68,rho, theta_xy,phi_xy) # forward modelled velocities
-    vi_xz = get_vi_map(nlm, alpha,g_B68,rho, theta_xz,phi_xz) # forward modelled velocities
+    vi_xy = get_vi_map(nlm, alpha,g_B68,rho, colat_xy,lon_xy) # forward modelled velocities
+    vi_xz = get_vi_map(nlm, alpha,g_B68,rho, colat_xz,lon_xz) # forward modelled velocities
 
     print('*** Inferring ODF given V and g...')
-    observations_xy = (vi_xy,theta_xy,phi_xy)
-    observations_xz = (vi_xz,theta_xz,phi_xz)
+    observations_xy = (vi_xy,colat_xy,lon_xy)
+    observations_xz = (vi_xz,colat_xz,lon_xz)
     (nlm_xy_est, vi_xy_est, dvi_xy_est) = ip.infer_nlm(observations_xy, alpha, g_B68, beta, eta, use_angular_anomalies=False)
     (nlm_xz_est, vi_xz_est, dvi_xz_est) = ip.infer_nlm(observations_xz, alpha, g_B68, beta, eta, use_angular_anomalies=False)
 
@@ -140,18 +123,13 @@ for ii, exprkey in enumerate(EXPERIMENTS):
 
     ### S_2 projection
 
-    inclination = 50 # view angle
-    rot = -40 # view angle
-    prj = ccrs.Orthographic(rot, 90-inclination)
-    geo = ccrs.Geodetic()
+    geo, prj = sfplt.getprojection(rotation=50, inclination=50)
 
     ### Setup figure, panels, etc.
     
     # Colors, lw, etc.
-    c_xy  = '#1f78b4'
-    cl_xy = c_xy # '#a6cee3'
-    c_xz  = '#e31a1c'
-    cl_xz = c_xz #'#fb9a99'
+    cl_xy = c_xy = sfplt.c_blue
+    cl_xz = c_xz = sfplt.c_red
 
     scale = 0.5
     fig = plt.figure(figsize=(14*scale,14.5*scale))
@@ -171,32 +149,26 @@ for ii, exprkey in enumerate(EXPERIMENTS):
     axODF_xy = fig.add_subplot(gs[0, ii0+1], projection=prj)
     axODF_xz = fig.add_subplot(gs[0, ii0+2], projection=prj)
     
-    axODF.set_global(); axODF_xy.set_global(); axODF_xz.set_global()
+    axODF.set_global()
+    axODF_xy.set_global()
+    axODF_xz.set_global()
 
     ### ODFs
         
-    tickintvl, lvls = 3, np.linspace(0.0,0.6,7)
-    kwargs_ODF = {'cmap':'Greys', 'cbaspect':8.5, 'cbfrac':0.065,  'cborientation':'horizontal', 'lvls':lvls, 'tickintvl':tickintvl}
-    plot_ODF(nlm, lm_L4, ax=axODF, cblabel='$\psi_{\mathrm{}}/N$', **kwargs_ODF)
-#    qlatd, qlond = get_deg(qlat, qlon)
-#    axODF_obs.plot(qlond, qlatd, ls='none', marker='x', markersize=0.6, c=c_caxes, transform=geo) 
-    
-    plot_ODF(nlm_xy_est, lm_L4, ax=axODF_xy, cblabel='$\psi_{\mathrm{}}/N$', **kwargs_ODF)
-    plot_ODF(nlm_xz_est, lm_L4, ax=axODF_xz, cblabel='$\psi_{\mathrm{}}/N$', **kwargs_ODF)
+    kwargs = dict(lvlset=(np.linspace(0.0,0.6,7), lambda x,p:'%.1f'%x), cbtickintvl=3, cbaspect=8.5, cbfraction=0.065)
+    sfplt.plotODF(nlm, lm_L4, axODF, cblabel='$\psi_{\mathrm{}}/N$', **kwargs)
+    sfplt.plotODF(nlm_xy_est, lm_L4, axODF_xy, cblabel='$\psi_{\mathrm{}}/N$', **kwargs)
+    sfplt.plotODF(nlm_xz_est, lm_L4, axODF_xz, cblabel='$\psi_{\mathrm{}}/N$', **kwargs)
 
     # Set ODF axes for reference
-    plot_unitaxes(axODF,    geo)
-    plot_unitaxes(axODF_xy, geo)
-    plot_unitaxes(axODF_xz, geo)
+    for axi in (axODF, axODF_xy, axODF_xz): 
+        sfplt.plotcoordaxes(axi, geo, axislabels='vuxi', color=sfplt.c_dred)  
 
     # Plot sampling directions
     kwargs = {'marker':'o', 'ms':2, 'transform':geo}
-    for lat,lon in zip(theta_xy,phi_xy): 
-        t,p = get_deg(lat, lon)
-        axODF_xy.plot(p-180, t-90, color=c_xy, **kwargs)
-    for lat,lon in zip(theta_xz,phi_xz): 
-        t,p = get_deg(lat, lon)
-        axODF_xz.plot(p-180, t-90, color=c_xz, **kwargs)
+    for nn in range(N): 
+        sfplt.plotS2point(axODF_xy, v_xy[nn,:], color=c_xy, **kwargs)
+        sfplt.plotS2point(axODF_xz, v_xz[nn,:], color=c_xz, **kwargs)
 
     # Titles
     pad = 10
@@ -208,15 +180,15 @@ for ii, exprkey in enumerate(EXPERIMENTS):
     kwargs_ODFpanelno = {'frameon':True, 'alpha':1.0, 'fontsize':FS}
     dx = +0.14 
     yloc=1.125 + 1*0.26
-    writeSubplotLabel(axODF,    2, r'{\bf d}', bbox=(-0.46+dx,yloc), **kwargs_ODFpanelno)
-    writeSubplotLabel(axODF_xy, 2, r'{\bf e}', bbox=(-0.31+dx,yloc), **kwargs_ODFpanelno)
-    writeSubplotLabel(axODF_xz, 2, r'{\bf f}', bbox=(-0.28+dx,yloc), **kwargs_ODFpanelno)
+    sfplt.panellabel(axODF,    2, r'{\bf d}', bbox=(-0.46+dx,yloc), **kwargs_ODFpanelno)
+    sfplt.panellabel(axODF_xy, 2, r'{\bf e}', bbox=(-0.31+dx,yloc), **kwargs_ODFpanelno)
+    sfplt.panellabel(axODF_xz, 2, r'{\bf f}', bbox=(-0.28+dx,yloc), **kwargs_ODFpanelno)
 
     ### Velocity anomalies
 
-    phideg = np.rad2deg(phi_xy)
+    phideg = np.rad2deg(lon_xy)
 
-    # Measured
+    # True values
     (vP_xy, vS1_xy, vS2_xy) = vi_xy
     (vP_xz, vS1_xz, vS2_xz) = vi_xz
     kwargs = {'marker':'o', 'ls':'none', 'ms':5.5}
@@ -228,8 +200,8 @@ for ii, exprkey in enumerate(EXPERIMENTS):
     axS2.plot(phideg, vS2_xz, c=cl_xz, **kwargs)
 
     # Predicted velocities using observed ODF and g_B68
-    vi_xy_est = get_vi_map(nlm_xy_est, alpha, g_B68, rho, theta_xy, phi_xy) 
-    vi_xz_est = get_vi_map(nlm_xz_est, alpha, g_B68, rho, theta_xz, phi_xz) 
+    vi_xy_est = get_vi_map(nlm_xy_est, alpha, g_B68, rho, colat_xy, lon_xy) 
+    vi_xz_est = get_vi_map(nlm_xz_est, alpha, g_B68, rho, colat_xz, lon_xz) 
     axP.plot( phideg, vi_xy_est[0], '--', c=c_xy, label=r'Inferred ODF, $x$--$y$ plane')
     axP.plot( phideg, vi_xz_est[0], '--', c=c_xz, label=r'Inferred ODF, $x$--$z$ plane')
     axS1.plot(phideg, vi_xy_est[1], '--', c=c_xy)
@@ -243,15 +215,15 @@ for ii, exprkey in enumerate(EXPERIMENTS):
     hleg.get_frame().set_linewidth(0.8);
 
     # Panel no.
-    writeSubplotLabel(axP,  2, r'{\bf a}', frameon=True, alpha=1.0, fontsize=FS)
-    writeSubplotLabel(axS1, 2, r'{\bf b}', frameon=True, alpha=1.0, fontsize=FS)
-    writeSubplotLabel(axS2, 2, r'{\bf c}', frameon=True, alpha=1.0, fontsize=FS)
+    sfplt.panellabel(axP,  2, r'{\bf a}', frameon=True, alpha=1.0, fontsize=FS)
+    sfplt.panellabel(axS1, 2, r'{\bf b}', frameon=True, alpha=1.0, fontsize=FS)
+    sfplt.panellabel(axS2, 2, r'{\bf c}', frameon=True, alpha=1.0, fontsize=FS)
 
     # Axis labels
     axP.set_ylabel( r'$V_{\mathrm{qP}}$ ($\SI{}{\metre\per\second}$)')
     axS1.set_ylabel(r'$V_{\mathrm{qS1}}$ ($\SI{}{\metre\per\second}$)')
     axS2.set_ylabel(r'$V_{\mathrm{qS2}}$ ($\SI{}{\metre\per\second}$)')
-    axS2.set_xlabel(r'$\phi$ or $\theta+\ang{90}$ ($\SI{}{\degree}$)')
+    axS2.set_xlabel(r'$\phi$, $\theta$ ($\SI{}{\degree}$)')
 
     # y-axis limits
     yticks = np.arange(-200,200+1e-5,50)

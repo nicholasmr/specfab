@@ -21,7 +21,7 @@ mul = 10
 colat = np.linspace(0, np.pi, 20*mul)   
 lon   = np.linspace(0, 2*np.pi, 10*mul)
 lon2, colat2 = np.meshgrid(lon, colat)
-rv, tv, pv = sfdsc.sphericalbasisvectors(colat2, lon2)
+vr, vt, vp = sfdsc.sphericalbasisvectors(colat2, lon2)
 
 ### Low-res grid
 
@@ -29,17 +29,23 @@ mul = 1.0
 colat_ = np.linspace(0, np.pi, int(10*mul))   
 lon_   = np.linspace(0, 2*np.pi, int(20*mul))
 lon2_, colat2_ = np.meshgrid(lon_, colat_)
-rv_, tv_, pv_ = sfdsc.sphericalbasisvectors(colat2_, lon2_)
+vr_, vt_, vp_ = sfdsc.sphericalbasisvectors(colat2_, lon2_)
+
+print(sfdsc.sphericalbasisvectors(np.pi/2,0))
 
 ### Functions
 
-def get_velmap(ugrad, rv, tv, pv, speedthres=0):
-    D, W = (ugrad + ugrad.T)/2, (ugrad - ugrad.T)/2
-    Wp = np.einsum('ijk,ljk,lm,mjk->ijk', rv,rv,D,rv) - np.einsum('ij,jkl->ikl', D, rv)
-    cdot = np.einsum('ij,jkl->ikl', W, rv) + Wp
-    cdot *= -1 # @TODO there is a sign error somewhere, but fixed here (to be found)
-    ut = np.einsum('ijk,ijk->jk', cdot, tv)
-    up = np.einsum('ijk,ijk->jk', cdot, pv)
+def get_velmap(ugrad, vr, vt, vp, speedthres=0):
+
+    vr_flat = vr.reshape(*vr.shape[:-2], -1) # (xyz, i,j) -> (comp, i+j flattened entry)
+    cdot_flat = sfdsc.DDM.velocityfield(vr_flat.T, ugrad) # (xyz, i+j flattened entry)
+    shp = vr.shape
+    cdot = np.zeros(vr.shape)
+    for ii in range(3): cdot[ii,:,:] = cdot_flat[:,ii].reshape(shp[1:])
+#    cdot *= -1 # @TODO there is a sign error somewhere, but fixed here (to be found)
+    
+    ut = np.einsum('ijk,ijk->jk', cdot, -vt) # @TODO there is a sign error somewhere, but fixed here (to be found)
+    up = np.einsum('ijk,ijk->jk', cdot, vp)
     speed = np.linalg.norm(cdot, axis=0)
     ut[speed<speedthres] = np.nan
     return (ut, up, speed)
@@ -51,7 +57,7 @@ def plot(ugrad, ax, titlestr='', speedthres=0):
 
     ### Contour, high-res
 
-    ut, up, speed = get_velmap(ugrad, rv, tv, pv, speedthres=speedthres)
+    ut, up, speed = get_velmap(ugrad, vr, vt, vp, speedthres=speedthres)
     lvls = np.linspace(0,0.8,5)
     F = speed/np.linalg.norm(ugrad)
     x, y = np.rad2deg(lon), np.rad2deg(sfdsc.colat2lat(colat))
@@ -59,12 +65,18 @@ def plot(ugrad, ax, titlestr='', speedthres=0):
 
     ### Quiver, low-res
 
-    ut_, up_, speed_ = get_velmap(ugrad, rv_, tv_, pv_, speedthres=speedthres)
+    ut_, up_, speed_ = get_velmap(ugrad, vr_, vt_, vp_, speedthres=speedthres)
     lvls = np.linspace(0,0.8,5)
     x_, y_ = np.rad2deg(lon_), np.rad2deg(sfdsc.colat2lat(colat_)) # np.rad2deg(colat_)
+
     if 0: # debug/verify quiver 
         x_, y_ = np.array([180]*3), sfdsc.colat2lat(np.array([0, 45, 90]), deg=True)
-        up_, ut_ = np.array([1]*3), np.array([0]*3)
+        up_, ut_ = np.array([0]*3), np.array([1]*3)
+        
+    if 0: # debug plot theta hat
+        ut_ = np.einsum('ijk,ijk->jk', vt_, vt_)
+        up_ = np.einsum('ijk,ijk->jk', vt_, vp_)
+
     QV1 = ax.quiver(x_,y_, up_,ut_, scale=7.5, width=0.012, color='k', transform=transform)
     plt.quiverkey(QV1, 0.95, 0.00, 1, r'$\dot{\vb{c}}$', labelpos='E', coordinates='axes', labelsep=0.05)
 

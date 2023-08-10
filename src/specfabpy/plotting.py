@@ -175,7 +175,7 @@ def plotS2point(ax, v, *args, **kwargs):
     """
 
     lat, colat, lon = cart2sph(v, deg=True); 
-    return ax.plot([lon],[colat], *args, **kwargs)
+    return ax.plot([lon],[lat], *args, **kwargs)
 
 
 def getprojection(rotation=45, inclination=45):

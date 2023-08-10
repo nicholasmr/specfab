@@ -12,11 +12,10 @@ import quaternion as qt
 from scipy.optimize import minimize
 
 from Cij import * # elastic constants
-from inverseproblem import get_vi_map, f_J
-sys.path.insert(0, '..')
-from specfabpy import specfabpy as sf 
+from inverseproblem import get_vi_map, f_J, cart2sph_wrap
 
-from plottools import cart2sph
+from specfabpy import specfab as sf 
+from specfabpy import discrete as sfdsc 
 
 class Lutz_etal_2022:
 
@@ -61,7 +60,7 @@ class Lutz_etal_2022:
         phi = np.deg2rad(phi) 
         I = np.argsort(phi) # re-sort data points for monotonically increasing phi 
         phi = phi[I]
-        theta = np.pi/2 + 0*phi # measurements were made in the horizontal x--y plane
+        theta = np.pi/2 + 0*phi # measurements were made in the horizontal x--y plane (colat=90deg)
 
         vi_obs    = (vP_obs[I], vS1_obs[I], vS2_obs[I])
         visig_obs = (vP_obs_sig[I], vS1_obs_sig[I], vS2_obs_sig[I])
@@ -104,9 +103,7 @@ class Lutz_etal_2022:
         R = qt.as_rotation_matrix(qs)
         v = np.array([np.matmul(R[ii,:,:], [0,0,1]) for ii in np.arange(len(R))])
         v = np.vstack((v, -v)) # add reflected vectors
-        sphcoords = np.array([cart2sph(v[ii,:]) for ii in np.arange(len(v))])
-        qcolat, qlon = sphcoords[:,0], sphcoords[:,1]
-        qlat = np.pi/2 - qcolat     
+        qlat, qcolat, qlon = cart2sph_wrap(v) 
         qlon += deltaphi        
         
         if weighted:
@@ -119,7 +116,7 @@ class Lutz_etal_2022:
 
         # Construct a^4 and derive nlm using specfab        
         nlm = np.zeros((self.nlm_len), dtype=np.complex128) # psi expansion coefficients, n_l^m (psi_l^m in paper)
-        caxes = np.array([ [np.cos(p)*np.sin(t), np.sin(p)*np.sin(t), np.cos(t)] for t, p in zip(qcolat,qlon) ])
+        caxes = sfdsc.sph2cart(qcolat,qlon)
         if weighted: a4 = np.array([ area[ii]*np.einsum('i,j,k,l',c,c,c,c) for ii,c in enumerate(caxes)]).sum(axis=0)
         else:        a4 = np.array([          np.einsum('i,j,k,l',c,c,c,c) for ii,c in enumerate(caxes)]).mean(axis=0)
         nlm[:sf.L4len] = sf.a4_to_nlm(a4)

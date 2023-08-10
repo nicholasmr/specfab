@@ -11,8 +11,9 @@ import math
 import numpy as np 
 import numpy.linalg as linalg
 from scipy.optimize import minimize
-sys.path.insert(0, '..')
-from specfabpy import specfabpy as sf 
+
+from specfabpy import specfab as sf 
+from specfabpy import discrete as sfdsc 
 
 """
 Inverse problem class
@@ -132,12 +133,12 @@ def get_dvi(vi):
     dvS2 = vS2 - np.mean(vS2)
     return np.array([dvP, dvS1, dvS2])
     
-def cart2sph(v, deg=False, colat=False):
-    x,y,z = v[0],v[1],v[2]
-    theta = math.atan2(math.sqrt(x**2 + y**2), z)
-    phi = math.atan2(y, x) #if x >= 0 else math.atan2(y, x) + math.pi
-    if phi < 0: phi = 2*np.pi + phi
-    if colat: theta = np.pi/2 - theta # 
-    if deg: theta, phi = np.rad2deg(theta), np.rad2deg(phi)
-    return theta, phi
-    
+def cart2sph_wrap(v, deg=False, **kwargs):
+    v = np.array(v)
+    lat, colat, phi = sfdsc.cart2sph(v, **kwargs)
+    if len(v.shape) > 1:
+        phi[phi<0] += 360 if deg else 2*np.pi
+    else:
+        if phi < 0: phi += 360 if deg else 2*np.pi
+    return lat, colat, phi
+       

@@ -5,26 +5,49 @@
 Discrete methods
 """
 
-#import copy, sys, time, code # code.interact(local=locals())
+import copy, sys, time, code # code.interact(local=locals())
  
 import numpy as np
 import scipy.special as sp
 
+
+def lat2colat(lat, deg=False):   return 90 - lat   if deg else np.pi/2 - lat
+def colat2lat(colat, deg=False): return 90 - colat if deg else np.pi/2 - colat
+
+
 def cart2sph(v, deg=False):
-    # Spherical coordinates from Cartesian vector(s)
-#    x,y,z = v[0,:],v[1,:],v[2,:]
-    x,y,z = v
+
+    """
+    Cartesian vector(s) <-- spherical coordinates
+    """
+
+    v = np.array(v)
+    if len(v.shape) == 1: x,y,z = v
+    else:                 x,y,z = v[:,0],v[:,1],v[:,2]
+
     lon = np.arctan2(y,x)
-    lat = np.arctan2(np.sqrt(np.power(x,2) + np.power(y,2)), z)
-    colat = np.pi/2 - lat
+    colat = np.arctan2(np.sqrt(np.power(x,2) + np.power(y,2)), z)
+    lat = np.pi/2 - colat
     return (np.rad2deg(lat), np.rad2deg(colat), np.rad2deg(lon)) if deg else (lat, colat, lon)
     
 
+def sph2cart(colat, lon, deg=False):
+
+    """
+    Spherical coordinates --> Cartesian vector(s)
+    """
+    
+    r = np.array([ [np.cos(lon[ii])*np.sin(colat[ii]), np.sin(lon[ii])*np.sin(colat[ii]), +np.cos(colat[ii])] for ii in range(len(colat)) ]) 
+    return r
+
+
 def sphericalbasisvectors(colat, lon, deg=False):
 
-    if deg:
-        colat = np.deg2rad(colat)
-        lon   = np.deg2rad(lon)
+    """
+    Spherical coordinates --> spherical basis vectors
+    """
+
+    if deg: colat, lon = np.deg2rad(colat), np.deg2rad(lon)
 
     rhat = np.array([np.cos(lon)*np.sin(colat), np.sin(lon)*np.sin(colat), +np.cos(colat)]) 
     that = np.array([np.cos(lon)*np.cos(colat), np.sin(lon)*np.cos(colat), -np.sin(colat)]) 
@@ -32,12 +55,6 @@ def sphericalbasisvectors(colat, lon, deg=False):
     
     return (rhat,that,phat) # unit vectors (r, theta, phi)
 
-
-def lat2colat(lat, deg=False):
-    return 90 - lat if deg else np.pi/2 - lat
-
-def colat2lat(colat, deg=False):
-    return 90 - colat if deg else np.pi/2 - colat
 
 def Sl_delta(lm, sf):
 
@@ -82,19 +99,22 @@ class DDM():
         else:
             for ii in np.arange(self.N): self.v[ii,:] = v0
 
+    @staticmethod 
+    def velocityfield(v0, L, iota=1):
+    
+        D = (L + L.T)/2 # L is velocity gradient
+        W = (L - L.T)/2
+        
+        v0sq = np.einsum('ni,nj->nij', v0,v0) 
+        dvdt = np.einsum('ij,nj->ni', W, v0) # W.v
+        asymprod = np.einsum('nij,jk->nik', v0sq, D) - np.einsum('ij,njk->nik', D, v0sq)
+        dvdt += iota*np.einsum('nij,nj->ni', asymprod, v0) # iota*(v^2.D - D.v^2).v
+
+        return dvdt
 
     def evolve(self, L, dt):
         
-        D = (L + L.T)/2 # L is velocity gradient
-        W = (L - L.T)/2
-
-        v0 = self.v.copy()
-        v0sq = np.einsum('ni,nj->nij', v0,v0) 
-        
-        dvdt = np.einsum('ij,nj->ni', W, v0) # W.v
-        asymprod = np.einsum('nij,jk->nik', v0sq, D) - np.einsum('ij,njk->nik', D, v0sq)
-        dvdt += self.iota*np.einsum('nij,nj->ni', asymprod, v0) # iota*(v^2.D - D.v^2).v
-        
+        dvdt = self(self.v0, L)
         self.v = v0 + dt*dvdt
         
         # re-normalize
