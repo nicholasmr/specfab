@@ -56,11 +56,11 @@ fig = plt.figure(figsize=(6,6))
 ax1 = plt.subplot(121, projection='3d')
 ax2 = plt.subplot(122, projection='3d')
 
-sfplt.plotparcel(ax1, F_ps, azim=35, axscale=1.7, drawaxes=True, drawinitbox=True)
-sfplt.plotparcel(ax2, F_ss, azim=35, axscale=1.7, drawaxes=True, drawinitbox=True)
+sfplt.plotparcel(ax1, F_ps, azim=35, axscale=1.7, axeslabels=True, drawinit=True)
+sfplt.plotparcel(ax2, F_ss, azim=35, axscale=1.7, axeslabels=True, drawinit=True)
 
-ax1.set_title(r'$\epsilon_{zz}=%.1f$'%(sf.F_to_strain(F_ps)[2,2]))
-ax2.set_title(r'$\gamma=%.0f$'%(np.rad2deg(sf.simpleshear_gamma(T_ss, t_ss))))
+ax1.set_title(r'$\epsilon_{zz}=%.2f$'%(sf.F_to_strain(F_ps)[2,2]))
+ax2.set_title(r'$\gamma=%.0f$ deg.'%(np.rad2deg(sf.simpleshear_gamma(T_ss, t_ss))))
 
 plt.savefig('deformed-parcel.png', dpi=175, pad_inches=0.1, bbox_inches='tight')
 
