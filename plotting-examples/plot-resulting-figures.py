@@ -10,16 +10,16 @@ lm, nlm_len = sf.init(6)
 a2 = np.diag([0,0,1]) # CPO characterized by a^(2)
 nlm = sf.a2_to_nlm(a2) # vector of expansion coefficients
 
-### Setup axes + projection
+### Setup axes and projection
 
-geo, prj = sfplt.getprojection(rotation=45, inclination=45) # load projection
+geo, prj = sfplt.getprojection(rotation=45, inclination=45)
 fig = plt.figure(figsize=(2,2))
 ax = plt.subplot(111, projection=prj)
 ax.set_global() # ensure entire S^2 is shown
 
 ### Plot
 
-lvlset = 'iso-up' # default level set: lowest tick/level is the value for isotropic distribution
+lvlset = 'iso-up' # default level set: lowest tick/level is the value of an isotropic distribution
 lvlset = (np.linspace(0,0.8,9), lambda x,p:'%.1f'%x) # custom level set: (list of levels, how to format colorbar tick labels)
 sfplt.plotODF(nlm, lm, ax, cmap='Greys', lvlset=lvlset) # plot distribution (see src/specfabpy/plotting.py for API)
 sfplt.plotcoordaxes(ax, geo, color=sfplt.c_dred) # plot coordinate axes (see src/specfabpy/plotting.py for API)
@@ -56,8 +56,8 @@ fig = plt.figure(figsize=(6,6))
 ax1 = plt.subplot(121, projection='3d')
 ax2 = plt.subplot(122, projection='3d')
 
-sfplt.plotparcel(ax1, F_ps, azim=35, axscale=1.7, axeslabels=True, drawinit=True)
-sfplt.plotparcel(ax2, F_ss, azim=35, axscale=1.7, axeslabels=True, drawinit=True)
+sfplt.plotparcel(ax1, F_ps, azim=35, axscale=1.7, axislabels=True, drawinit=True)
+sfplt.plotparcel(ax2, F_ss, azim=35, axscale=1.7, axislabels=True, drawinit=True)
 
 ax1.set_title(r'$\epsilon_{zz}=%.2f$'%(sf.F_to_strain(F_ps)[2,2]))
 ax2.set_title(r'$\gamma=%.0f$ deg.'%(np.rad2deg(sf.simpleshear_gamma(T_ss, t_ss))))
