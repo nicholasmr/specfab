@@ -187,8 +187,8 @@ fig = plt.figure(figsize=(6,6))
 ax1 = plt.subplot(121, projection='3d')
 ax2 = plt.subplot(122, projection='3d')
 
-sfplt.plotparcel(ax1, F_ps, azim=35, axscale=1.7)
-sfplt.plotparcel(ax2, F_ss, azim=35, axscale=1.7)
+sfplt.plotparcel(ax1, F_ps, azim=35, axscale=1.7, drawaxes=True, drawinitbox=True)
+sfplt.plotparcel(ax2, F_ss, azim=35, axscale=1.7, drawaxes=True, drawinitbox=True)
 
 ax1.set_title(r'$\epsilon_{zz}=%.1f$'%(sf.F_to_strain(F_ps)[2,2]))
 ax2.set_title(r'$\gamma=%.0f$'%(np.rad2deg(sf.simpleshear_gamma(T_ss, t_ss))))
