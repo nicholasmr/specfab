@@ -18,20 +18,18 @@ FSSMALL = FS-1
 ### High-res grid
 
 mul = 10
-colat = np.linspace(0, np.pi, 20*mul)   
-lon   = np.linspace(0, 2*np.pi, 10*mul)
+colat = np.linspace(0, np.pi, 10*mul)   
+lon   = np.linspace(0, 2*np.pi, 20*mul)
 lon2, colat2 = np.meshgrid(lon, colat)
 vr, vt, vp = sfdsc.sphericalbasisvectors(colat2, lon2)
 
 ### Low-res grid
 
-mul = 1.0
-colat_ = np.linspace(0, np.pi, int(10*mul))   
-lon_   = np.linspace(0, 2*np.pi, int(20*mul))
+mul = 1
+colat_ = np.linspace(0, np.pi, 10*mul)  
+lon_   = np.linspace(0, 2*np.pi, 20*mul)
 lon2_, colat2_ = np.meshgrid(lon_, colat_)
 vr_, vt_, vp_ = sfdsc.sphericalbasisvectors(colat2_, lon2_)
-
-print(sfdsc.sphericalbasisvectors(np.pi/2,0))
 
 ### Functions
 
@@ -42,7 +40,6 @@ def get_velmap(ugrad, vr, vt, vp, speedthres=0):
     shp = vr.shape
     cdot = np.zeros(vr.shape)
     for ii in range(3): cdot[ii,:,:] = cdot_flat[:,ii].reshape(shp[1:])
-#    cdot *= -1 # @TODO there is a sign error somewhere, but fixed here (to be found)
     
     ut = np.einsum('ijk,ijk->jk', cdot, -vt) # @TODO there is a sign error somewhere, but fixed here (to be found)
     up = np.einsum('ijk,ijk->jk', cdot, vp)
@@ -52,6 +49,8 @@ def get_velmap(ugrad, vr, vt, vp, speedthres=0):
     
 
 def plot(ugrad, ax, titlestr='', speedthres=0):
+
+    global lon, colat, lon_, colat_
 
     transform = ccrs.PlateCarree()
 
@@ -94,8 +93,30 @@ def plot(ugrad, ax, titlestr='', speedthres=0):
     cb1 = plt.colorbar(hdistr, ax=ax, fraction=0.055, aspect=10,  orientation='horizontal', pad=0.1, ticks=lvls[0::2])   
     cb1.set_label(r'$\abs{\dot{\bf{c}}}/\norm{\grad \vb{u}}$')
     cb1.ax.xaxis.set_ticks(lvls, minor=True)
+    
     ax.set_title(titlestr, fontsize=FS, pad=10)
-
+    
+    ### Debug with particle swarm
+    
+    if 0:
+    
+        Np = 40 # number of particles
+        Nt = 100 # integration time steps
+        dt = 1e-2 # time step size
+        ddm = sfdsc.DDM(N=Np)
+        pij = np.zeros((Nt,Np,3))
+        
+        for ii in range(Nt):
+            ddm.evolve(ugrad, dt)
+            pij[ii,:,:] = ddm.v.copy()
+            
+        for jj in range(Np):
+            plat, pcolat, plon = sfdsc.cart2sph(pij[:,jj,:], deg=True)
+            kwargs = dict(transform=geo, c='tab:blue', lw=1.5)
+            ax.plot(plon, plat, ls=':', **kwargs)
+            ax.plot(plon[0], plat[0], ls='none', marker='s', ms=3, **kwargs)
+        
+        
 ### Plot
 
 geo, prj = sfplt.getprojection(rotation=50+180, inclination=50)

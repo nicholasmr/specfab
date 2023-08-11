@@ -2,12 +2,10 @@
 # N. M. Rathmann <rathmann@nbi.ku.dk>, 2023
 
 import copy, os, sys, code # code.interact(local=locals())
+os.system('mkdir -p ./frames')
 
 import numpy as np
 import scipy.special as sp
-from scipy.spatial.transform import Rotation as R
-sys.path.insert(0, '../..')
-os.system('mkdir -p ./frames')
 
 from specfabpy import specfab as sf
 from specfabpy import integrator as sfint
@@ -23,7 +21,9 @@ import cartopy.crs as ccrs
 import matplotlib.ticker as mticker
 from matplotlib.ticker import LogFormatter 
 
-### Run options
+#---------------
+# Run options
+#---------------
 
 MAKE_FRAME_Eij = 1
 MAKE_FRAME_vi  = 1
@@ -31,6 +31,10 @@ MAKE_FRAME_vi  = 1
 MAKE_GIFS = 1
 
 transparent = True
+
+#---------------
+# Settings
+#---------------
 
 ### Mode of deformation
 
@@ -75,7 +79,9 @@ vi_sm_hori = sf.Vi_elastic_tranisotropic(nlm_sm, alpha, lame_grain, rho, 90,0) #
 print('vi_sm_vert/vi_iso = ', vi_rel(vi_sm_vert,vi_iso))
 print('vi_sm_hori/vi_iso = ', vi_rel(vi_sm_hori,vi_iso))
 
-### Plot
+#---------------
+# Plotting routines
+#---------------
 
 geo, prj = sfplt.getprojection(rotation=50, inclination=50)
 
@@ -84,15 +90,10 @@ def setup_fig():
     scale = 2.6
     fig = plt.figure(figsize=(4/2*1.2*scale,0.90*scale))
     gs = fig.add_gridspec(1,4)
-    al = 0.025
-    ar = 0.02
-    gs.update(left=al, right=1-ar, top=0.88, bottom=0.25, wspace=0.4, hspace=0.4)
+    gs.update(left=0.025, right=1-0.02, top=0.88, bottom=0.25, wspace=0.4, hspace=0.4)
 
-    ax1 = fig.add_subplot(gs[0,0], projection=prj); ax1.set_global(); 
-    ax2 = fig.add_subplot(gs[0,1], projection=prj); ax2.set_global(); 
-    ax3 = fig.add_subplot(gs[0,2], projection=prj); ax3.set_global(); 
-    ax4 = fig.add_subplot(gs[0,3], projection=prj); ax4.set_global(); 
-    axlist = [ax1,ax2,ax3,ax4]
+    axlist = [fig.add_subplot(gs[0,ii], projection=prj) for ii in range(4)]
+    for axi in axlist: axi.set_global()
 
     fraction = 0.07
     aspect = 10
@@ -104,32 +105,21 @@ def mkframe_Eij(nlm, Err,Ert,Erp, nn):
     axlist, fig, fraction, aspect = setup_fig()    
     ax1,ax2,ax3,ax4 = axlist
 
-    # Plot ODF
-    lvls = np.linspace(0.0,0.8,9)
-    sfplt.plotODF(nlm, lm, ax1, lvlset=[lvls, lambda x,p:'%.1f'%x], cbaspect=aspect, cbfraction=fraction)
+    sfplt.plotODF(nlm, lm, ax1, lvlset=[np.linspace(0.0,0.8,9), lambda x,p:'%.1f'%x], cbaspect=aspect, cbfraction=fraction)
 
-    # Plot Err
-    cmap = 'RdBu'
     lvls = [0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 9]
-    tickintvl = 2
     tick_labels = [str(v) if v <=1 else str(int(v)) for v in lvls]
     norm = colors.TwoSlopeNorm(vmin=lvls[0], vcenter=1, vmax=lvls[-1])
-    plot_field(Err, ax2, lvls, cmap=cmap, cblbl=r'$E_{rr}$', tickintvl=tickintvl, norm=norm, aspect=aspect, fraction=fraction, tick_labels=tick_labels) # , norm=colors.LogNorm()
+    kwargs = dict(cmap='RdBu', tickintvl=2, norm=norm, aspect=aspect, fraction=fraction, tick_labels=tick_labels)
 
-    # Plot Ert
-    plot_field(Ert, ax3, lvls, cmap=cmap, cblbl=r'$E_{r\theta}$', tickintvl=tickintvl, norm=norm, aspect=aspect, fraction=fraction, tick_labels=tick_labels)
+    plot_field(Err, ax2, lvls, cblbl=r'$E_{rr}$', **kwargs)
+    plot_field(Ert, ax3, lvls, cblbl=r'$E_{r\theta}$', **kwargs)
+    plot_field(Erp, ax4, lvls, cblbl=r'$E_{r\phi}$', **kwargs)
 
-    # Plot Erp
-    plot_field(Erp, ax4, lvls, cmap=cmap, cblbl=r'$E_{r\phi}$', tickintvl=tickintvl, norm=norm, aspect=aspect, fraction=fraction, tick_labels=tick_labels)
-
-    # Axis labels
     for axi in axlist: sfplt.plotcoordaxes(axi, geo, axislabels='vuxi', color='k')
     
-    # Title
     ttl = ax2.set_title(r'Uniaxial compression, $\epsilon_{zz} = %+.2f$'%(strain[nn]), fontsize=FS+2, pad=13)
     ttl.set_position([1.15, 1.07])
-
-    # Save fig
 
     fout = 'frames/S2-Eij-%03i.png'%(nn)
     print('Saving %s'%(fout))
@@ -141,35 +131,24 @@ def mkframe_vi(nlm, vP, vS1, vS2, nn):
     axlist, fig, fraction, aspect = setup_fig()    
     ax1,ax2,ax3,ax4 = axlist
 
-    # Plot ODF
-    lvls = np.linspace(0.0,0.8,9)
-    sfplt.plotODF(nlm, lm, ax1, lvlset=[lvls, lambda x,p:'%.1f'%x], cbaspect=aspect, cbfraction=fraction)
+    sfplt.plotODF(nlm, lm, ax1, lvlset=[np.linspace(0.0,0.8,9), lambda x,p:'%.1f'%x], cbaspect=aspect, cbfraction=fraction)
 
-    # Plot vP
+    kwargs = dict(cmap='RdBu', tickintvl=2, aspect=aspect, fraction=fraction)
     lvls = np.linspace(-6,6,9)
-    tickintvl = 2
-    plot_field(vP, ax2, lvls, cmap='RdBu', cblbl=r'$V_{P}/V^{\mathrm{iso}}_{P}-1$  (\%)', tickintvl=tickintvl, aspect=aspect, fraction=fraction) 
 
-    # Plot vS1
-    plot_field(vS1, ax3, lvls, cmap='RdBu', cblbl=r'$V_{\mathrm{S}1}/V^{\mathrm{iso}}_{\mathrm{S}1}-1$  (\%)', tickintvl=tickintvl, aspect=aspect, fraction=fraction)
+    plot_field(vP,  ax2, lvls, cblbl=r'$V_{P}/V^{\mathrm{iso}}_{P}-1$  (\%)', **kwargs)
+    plot_field(vS1, ax3, lvls, cblbl=r'$V_{\mathrm{S}1}/V^{\mathrm{iso}}_{\mathrm{S}1}-1$  (\%)', **kwargs)
+    plot_field(vS2, ax4, lvls, cblbl=r'$V_{\mathrm{S}2}/V^{\mathrm{iso}}_{\mathrm{S}2}-1$  (\%)', **kwargs)
 
-    # Plot vS2
-    plot_field(vS2, ax4, lvls, cmap='RdBu', cblbl=r'$V_{\mathrm{S}2}/V^{\mathrm{iso}}_{\mathrm{S}2}-1$  (\%)', tickintvl=tickintvl, aspect=aspect, fraction=fraction)
-
-    # Axis labels
     for axi in axlist: sfplt.plotcoordaxes(axi, geo, axislabels='vuxi', color='k')
 
-    # Title
     ttl = ax2.set_title(r'Uniaxial compression, $\epsilon_{zz} = %+.2f$'%(strain[nn]), fontsize=FS+2, pad=13)
     ttl.set_position([1.15, 1.07])
-
-    # Save fig
 
     fout = 'frames/S2-vi-%03i.png'%(nn)
     print('Saving %s'%(fout))
     plt.savefig(fout, transparent=transparent, dpi=200)
     plt.close()
-
 
 def plot_field(F, ax, lvls, cmap='Greys', cblbl=r'$E_{??}$', titlestr='', tickintvl=1, norm=None, tick_labels=None, aspect=9, fraction=0.6):
 
@@ -177,15 +156,16 @@ def plot_field(F, ax, lvls, cmap='Greys', cblbl=r'$E_{??}$', titlestr='', tickin
     kwargs_gridlines = {'ylocs':np.arange(-90,90+30,30), 'xlocs':np.arange(0,360+45,45), 'linewidth':0.5, 'color':'black', 'alpha':0.25, 'linestyle':'-'}
     gl = ax.gridlines(crs=ccrs.PlateCarree(), **kwargs_gridlines)
     gl.xlocator = mticker.FixedLocator(np.array([-135, -90, -45, 0, 90, 45, 135, 180]))
-    if not np.isscalar(lvls): 
-        cb1 = plt.colorbar(hdistr, ax=ax, fraction=fraction, aspect=aspect,  orientation='horizontal', pad=0.1, ticks=lvls[::tickintvl])   
-    else:
-        cb1 = plt.colorbar(hdistr, ax=ax, fraction=fraction, aspect=aspect,  orientation='horizontal', pad=0.1)   
+    kwargs = dict(ax=ax, fraction=fraction, aspect=aspect,  orientation='horizontal', pad=0.1)
+    if not np.isscalar(lvls): cb1 = plt.colorbar(hdistr, ticks=lvls[::tickintvl], **kwargs)
+    else:                     cb1 = plt.colorbar(hdistr,                          **kwargs)
     cb1.set_label(cblbl)
     if tick_labels is not None: cb1.set_ticklabels(tick_labels[::tickintvl])
     ax.set_title(titlestr, fontsize=FS, pad=10)
 
-#----- MAIN -----
+#---------------
+# Main
+#---------------
 
 if MAKE_FRAME_Eij or MAKE_FRAME_vi:
 

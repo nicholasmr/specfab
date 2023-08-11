@@ -200,6 +200,8 @@ for tt in np.arange(0,len(strainzz),dn):
     ax.plot(x_corr, y_corr, ':', color=cdarkgray, lw=2, label='Empirical correlation', zorder=9)
 
     ### Aux
+    
+    plt.text(-1.3, 2.3, r'$(E_{cc}^\prime, E_{ca}^\prime, \alpha) = (%i, 10^{%i}, %.4f)$'%(Eij_grain[0], np.log10(Eij_grain[1]), alpha), color='k', va='center', ha='left', fontsize=FSANNO)
 
     leg = plt.legend(loc=2, fontsize=FSLEG, frameon=False, ncol=1, **legkwargs); 
     plt.sca(ax)

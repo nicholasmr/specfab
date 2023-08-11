@@ -22,17 +22,19 @@ import warnings
 ### Discrete colors (colorbrewer)
 
 c_red    = '#e31a1c'
-c_dred   = '#99000d'
 c_lred   = '#fb9a99'
 c_vlred  = '#fee0d2'
+c_dred   = '#99000d'
 
 c_blue   = '#1f78b4'
-c_dblue  = '#08519c'
 c_lblue  = '#a6cee3'
 c_vlblue = '#deebf7'
+c_dblue  = '#08519c'
 
-c_green  = '#33a02c'
-c_lgreen = '#b2df8a'
+c_green   = '#33a02c'
+c_lgreen  = '#b2df8a'
+c_vlgreen = '#e5f5e0'
+c_dgreen  = '#006d2c'
 
 c_orange = '#d94701'
 c_yellow = '#ffff99'

@@ -104,8 +104,8 @@ if PLOT_FRAMES:
     
 
 if MAKE_GIF:
-    os.system(r'rm animation.gif')  
-    os.system(r'ffmpeg -y -f image2 -framerate 40 -stream_loop 0 -i frames/calibrate-regularization-%03d.png -vcodec libx264 -crf 20  -pix_fmt yuv420p animation.avi')
-    os.system(r'ffmpeg -i animation.avi -vf "fps=15,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 animation.gif')
-    os.system(r'rm animation.avi')  
+    os.system(r'rm regularization.gif')  
+    os.system(r'ffmpeg -y -f image2 -framerate 40 -stream_loop 0 -i frames/calibrate-regularization-%03d.png -vcodec libx264 -crf 20  -pix_fmt yuv420p regularization.avi')
+    os.system(r'ffmpeg -i regularization.avi -vf "fps=15,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 regularization.gif')
+    os.system(r'rm regularization.avi')  
     

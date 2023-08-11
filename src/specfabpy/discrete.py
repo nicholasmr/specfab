@@ -5,8 +5,6 @@
 Discrete methods
 """
 
-import copy, sys, time, code # code.interact(local=locals())
- 
 import numpy as np
 import scipy.special as sp
 
@@ -14,6 +12,7 @@ import scipy.special as sp
 def lat2colat(lat, deg=False):   return 90 - lat   if deg else np.pi/2 - lat
 def colat2lat(colat, deg=False): return 90 - colat if deg else np.pi/2 - colat
 
+def L2nlmlen(L): return int((L+1)*(L+2)/2)
 
 def cart2sph(v, deg=False):
 
@@ -37,8 +36,35 @@ def sph2cart(colat, lon, deg=False):
     Spherical coordinates --> Cartesian vector(s)
     """
     
+    if deg: colat, lon = np.deg2rad(colat), np.deg2rad(lon)
+    colat, lon = np.atleast_1d(colat), np.atleast_1d(lon)
+    
     r = np.array([ [np.cos(lon[ii])*np.sin(colat[ii]), np.sin(lon[ii])*np.sin(colat[ii]), +np.cos(colat[ii])] for ii in range(len(colat)) ]) 
     return r
+
+
+def vi2nlm(vi, sf, L=6):
+
+    """
+    Discrete array of crystallographic axes --> spectral CPO representation
+    """
+
+    nlm_len = L2nlmlen(L)
+    nlm = np.zeros((nlm_len), dtype=np.complex128) 
+
+    if L==2:
+        a2 = np.array([ np.einsum('i,j',v,v) for v in vi]).mean(axis=0)
+        nlm[:sf.L2len] = sf.a2_to_nlm(a2)    
+    elif L==4:
+        a4 = np.array([ np.einsum('i,j,k,l',v,v,v,v) for v in vi]).mean(axis=0)
+        nlm[:sf.L4len] = sf.a4_to_nlm(a4)
+    elif L==6:
+        a6 = np.array([ np.einsum('i,j,k,l,m,n',v,v,v,v,v,v) for v in vi]).mean(axis=0)
+        nlm[:sf.L6len] = sf.a6_to_nlm(a6)
+    else:
+        raise ValueError('sfdsc.vi2nlm(): only L <= 6 is supported')
+
+    return nlm
 
 
 def sphericalbasisvectors(colat, lon, deg=False):
@@ -59,7 +85,7 @@ def sphericalbasisvectors(colat, lon, deg=False):
 def Sl_delta(lm, sf):
 
     L = lm[0,-1]
-    nlm_len = int((L+1)*(L+2)/2)
+    nlm_len = L2nlmlen(L)
     nlm = np.zeros((nlm_len), dtype=np.complex128)
     Lrange = np.arange(0,L+1,2) # 0, 2, 4, ...
         
