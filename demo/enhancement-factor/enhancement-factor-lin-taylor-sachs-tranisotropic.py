@@ -1,37 +1,28 @@
 #!/usr/bin/python3
-# N. M. Rathmann <rathmann@nbi.ku.dk>, 2019-2022
+# N. M. Rathmann <rathmann@nbi.ku.dk>, 2019-2023
 
-import numpy as np
 import sys, os, code # code.interact(local=locals())
 
-sys.path.insert(0, '..')
-#from header import *
-from specfabpy import specfabpy as sf 
+import numpy as np
+from specfabpy import specfab as sf 
+from specfabpy import discrete as sfdsc
+from specfabpy import plotting as sfplt
 
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 import matplotlib.gridspec as gridspec
 import matplotlib.cm as mpl_cm
-from matplotlib import colors, ticker, cm 
-from matplotlib import rcParams, rc
-from matplotlib.offsetbox import AnchoredText
+from matplotlib import colors, ticker 
 import matplotlib as mpl
+
+import warnings
+warnings.filterwarnings("ignore")
 
 lwhatch = 0.9
 mpl.rcParams['hatch.linewidth'] = lwhatch
+
 FS = 8.5 + 3.5 + 3.0
-
-rc('font',**{'family':'serif','sans-serif':['Times'],'size':FS})
-rc('text', usetex=True)
-rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb} \usepackage{physics} \usepackage{txfonts} \usepackage{siunitx} \DeclareSIUnit\year{a}'
-
+sfplt.setfont_tex(fontsize=FS)
 legkwargs = {'handlelength':1.1, 'framealpha':1.0,'frameon':True, 'fancybox':False, 'handletextpad':0.4, 'borderpad':0.37, 'edgecolor':'k'}
-
-def writeSubplotLabel(ax,loc,txt,frameon=True, alpha=1.0, fontsize=FS, pad=0.005, ma='none', bbox=None, zorder=None):
-    at = AnchoredText(txt, loc=loc, prop=dict(size=fontsize), frameon=frameon, bbox_to_anchor=bbox, bbox_transform=ax.transAxes)
-    at.patch.set_linewidth(0.7)
-    if zorder is not None: at.set_zorder(zorder)
-    ax.add_artist(at)
 
 #----------------------
 # Settings
@@ -52,7 +43,11 @@ n_grain = 1 # Linear Sachs
 n_grain__Sachs  = n_grain
 n_grain__Taylor = 1
 
-#-------------
+L = 4
+
+#----------------------
+# Init
+#----------------------
 
 m, t = np.array([0,0,1]), np.array([1,0,0])
 p, q = (m+t)/np.sqrt(2), (m-t)/np.sqrt(2)
@@ -62,14 +57,11 @@ tau_mm = 1*(np.identity(3)-3*mm)
 tau_mt = 1*(mt + np.transpose(mt)) 
 tau_pq = 1*(pq + np.transpose(pq))
 
-L = 4
 lm, nlm_len = sf.init(L) # nlm_len is the number of fabric expansion coefficients (degrees of freedom).
-a2 = np.tensordot(m,m, axes=0)
-a4 = np.tensordot(a2,a2, axes=0)
-nlm = sf.a4_to_nlm(a4)
+nlm = sf.nlm_ideal(m,0,L) # delta function
 
 #-----------------------
-# Enhancement factor maps
+# Generate maps
 #-----------------------
 
 f = 10 if PRODUCTION else 2
@@ -78,21 +70,12 @@ Eca_list = np.logspace(-0,4,f*10) # shear along basal plane
 Ecc_list = np.logspace(-2,2,f*10) # against basal plane
 size = (len(Eca_list),len(Ecc_list))
 
-if n_grain__Sachs == 3:  alpha_list = np.logspace(-3.4,0,f*10) # Sachs--Taylor weight 
+if n_grain__Sachs == 3: alpha_list = np.logspace(-3.4,0,f*10) # Sachs--Taylor weight 
 else:                   alpha_list = np.logspace(-3,0,f*10)   # Sachs--Taylor weight 
 
 Emm_Sachs,  Emt_Sachs,  Epq_Sachs  = np.zeros(size), np.zeros(size), np.zeros(size)
 Emm_Taylor, Emt_Taylor, Epq_Taylor = np.zeros(size), np.zeros(size), np.zeros(size)
 Emm_alpha,  Emt_alpha,  Epq_alpha  = np.zeros(size), np.zeros(size), np.zeros(size)
-
-#-------------
-
-#print(psi.Evw(mt,tau_mt, 3,[1],[1], moments))
-#print()
-#print('max E_mt (n=1): %f'%(psi.Evw(mt,tau_mt, 1,[0.1],[1e8], moments)[0][0]))
-#print('max E_mt (n=3): %f'%(psi.Evw(mt,tau_mt, 3,[0.1],[1e8], moments)[0][0]))
-
-#-------------
 
 for ii,Eca in enumerate(Eca_list):
 
@@ -117,7 +100,7 @@ Xa = np.array([[ alp for alp in alpha_list] for Eca in Eca_list])
 Y  = np.array([[ Eca for Ecc in Ecc_list]   for Eca in Eca_list])
 
 #-----------------------
-# Plot maps
+# Plot
 #-----------------------
 
 panelstrs = [r'\textit{(a)}\, $\alpha=0$', r'\textit{(b)}\, $\alpha=1$', r'\textit{(c)}\, $E_{cc} = 1$']
@@ -125,6 +108,8 @@ panelstrs = [r'\textit{(a)}\, $\alpha=0$', r'\textit{(b)}\, $\alpha=1$', r'\text
 for ii,TYPE in enumerate(types):
 
     print(TYPE)
+
+    ### Determine plot bounds
 
     if TYPE == 'Sachs':
         n_grain = n_grain__Sachs;
@@ -156,7 +141,7 @@ for ii,TYPE in enumerate(types):
 
     Zpq = np.ma.array(np.divide(Emt_map,Epq_map))
     
-    #-------------
+    ### Setup figure
 
     scale=1.35
     plt.figure(figsize=(2.95*scale,3.6*scale))
@@ -166,6 +151,8 @@ for ii,TYPE in enumerate(types):
     ax1 = plt.subplot(gs[0, 0])
     ax1.set_xscale('log') 
     ax1.set_yscale('log')
+
+    ### Plot
 
     if TYPE == 'Sachs':
         hmap = ax1.contourf(X,Y,Emt_map, Emt_lvls, cmap=cmap, vmin=Emt_lvls[0], vmax=Emt_lvls[-1]+0.5, extend='both')
@@ -251,7 +238,7 @@ for ii,TYPE in enumerate(types):
     leg=ax1.legend(hlist, hlbls, loc=1, bbox_to_anchor=(1,1),fontsize=FS-0.0, **legkwargs); 
     leg.get_frame().set_linewidth(0.7);
 
-    writeSubplotLabel(ax1,2, panelstrs[ii],frameon=True, alpha=0.0, fontsize=FS-0.5, pad=-0.05)
+    sfplt.panellabel(ax1,2, panelstrs[ii],frameon=True, alpha=0.0, fontsize=FS-0.5, pad=0.4)
 
     hcb=plt.colorbar(hmap, orientation='horizontal', pad=0.18)
     hcb.set_label('$E_{mt}$')
@@ -266,7 +253,7 @@ for ii,TYPE in enumerate(types):
     ax1.xaxis.set_minor_formatter(mpl.ticker.NullFormatter())
 
     plt.savefig('Evw_%s.pdf'%(TYPE), dpi=200)
-    plt.close()
+
     
 if len(types) == 3:
     flist = "Evw_Sachs.pdf Evw_Taylor.pdf Evw_Mixed.pdf"
@@ -276,5 +263,4 @@ if len(types) == 3:
     os.system('convert -density 200 -quality 100 +profile "icc" -flatten %s.pdf %s.png'%(fout,fout))
     os.system('rm %s'%(flist))
     os.system('rm %s.pdf'%(fout))
-
 

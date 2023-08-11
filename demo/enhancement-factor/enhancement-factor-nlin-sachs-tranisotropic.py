@@ -1,42 +1,28 @@
 #!/usr/bin/python3
-# N. M. Rathmann <rathmann@nbi.ku.dk>, 2019-2022
+# N. M. Rathmann <rathmann@nbi.ku.dk>, 2019-2023
+
+import sys, os, code # code.interact(local=locals())
 
 import numpy as np
-from numpy import cos, sin, rad2deg, deg2rad
-import sys, os, code # code.interact(local=locals())
-from scipy.interpolate import interp1d
-import scipy.special as sp
+from specfabpy import specfab as sf 
+from specfabpy import discrete as sfdsc
+from specfabpy import plotting as sfplt
 
-sys.path.insert(0, '..')
-from specfabpy import specfabpy as sf 
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+import matplotlib.cm as mpl_cm
+from matplotlib import ticker 
+import matplotlib as mpl
 
 import warnings
 warnings.filterwarnings("ignore")
 
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import matplotlib.gridspec as gridspec
-import matplotlib.cm as mpl_cm
-from matplotlib import colors, ticker, cm 
-from matplotlib import rcParams, rc
-from matplotlib.offsetbox import AnchoredText
-import matplotlib as mpl
-
 lwhatch = 0.9
 mpl.rcParams['hatch.linewidth'] = lwhatch
+
 FS = 8.5 + 3.5 + 3.0
-
-rc('font',**{'family':'serif','sans-serif':['Times'],'size':FS})
-rc('text', usetex=True)
-rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb} \usepackage{physics} \usepackage{txfonts} \usepackage{siunitx} \DeclareSIUnit\year{a}'
-
+sfplt.setfont_tex(fontsize=FS)
 legkwargs = {'handlelength':1.1, 'framealpha':1.0,'frameon':True, 'fancybox':False, 'handletextpad':0.4, 'borderpad':0.37, 'edgecolor':'k'}
-
-def writeSubplotLabel(ax,loc,txt,frameon=True, alpha=1.0, fontsize=FS, pad=0.005, ma='none', bbox=None, zorder=None):
-    at = AnchoredText(txt, loc=loc, prop=dict(size=fontsize), frameon=frameon, bbox_to_anchor=bbox, bbox_transform=ax.transAxes)
-    at.patch.set_linewidth(0.7)
-    if zorder is not None: at.set_zorder(zorder)
-    ax.add_artist(at)
 
 #----------------------
 # Settings
@@ -45,8 +31,11 @@ def writeSubplotLabel(ax,loc,txt,frameon=True, alpha=1.0, fontsize=FS, pad=0.005
 PRODUCTION = 1
 
 n_grain_list = [1,3]
+L = 10
 
-#----------
+#----------------------
+# Init
+#----------------------
 
 m, t = np.array([0,0,1]), np.array([1,0,0])
 p, q = (m+t)/np.sqrt(2), (m-t)/np.sqrt(2)
@@ -57,30 +46,25 @@ tau_mm = tau0*(np.identity(3)/3 - mm)
 tau_mt = tau0*(mt + mt.T) 
 tau_pq = tau0*(pq + pq.T)
 
-L = 10
-lm, nlm_len = sf.init(L) # nlm_len is the number of fabric expansion coefficients (degrees of freedom).
-nlm = np.zeros((nlm_len), dtype=np.complex128)
-Lrange = np.arange(0,L+1,2) # 0, 2, 4, 6, ...
-llrange = [int(ll*(ll+1)/2) for ll in Lrange] # indices 0, 3, 10, ....
-for ii, lli in enumerate(llrange):
-    nlm[lli] = sp.sph_harm(0, Lrange[ii], 0,0) # expansion coefficients for a delta function
+lm, nlm_len = sf.init(L)
+nlm = sf.nlm_ideal(m,0,L) # delta function
 
 #-----------------------
-# MAP
+# Generate maps
 #-----------------------
 
 f = 8 if PRODUCTION else 2
 Eca_list = np.logspace(-0,4.1,f*10) # shear along basal plane
 Ecc_list = np.logspace(-2,2,f*10) # against basal plane
+
 size = (len(n_grain_list), len(Eca_list),len(Ecc_list))
 Emm, Emt, Epq = np.zeros(size), np.zeros(size), np.zeros(size)
-
-#-------------
 
 for nn, n_grain in enumerate(n_grain_list):
 
     for ii,Eca in enumerate(Eca_list):
         for jj,Ecc in enumerate(Ecc_list):
+        
             Eij_grain = [Ecc,Eca]
             Emm[nn,ii,jj] = sf.Evw_tranisotropic(nlm, m,m,tau_mm, Eij_grain,0,n_grain) 
             Emt[nn,ii,jj] = sf.Evw_tranisotropic(nlm, m,t,tau_mt, Eij_grain,0,n_grain)
@@ -89,17 +73,19 @@ for nn, n_grain in enumerate(n_grain_list):
 X = np.array([[ Ecc for Ecc in Ecc_list]   for Eca in Eca_list])
 Y = np.array([[ Eca for Ecc in Ecc_list]   for Eca in Eca_list])
 
-#-------------------------    
+#-----------------------
+# Plot
+#-----------------------    
 
 panelstrs = [r"\textit{(a)}\, $n'=1$", r"\textit{(b)}\, $n'=3$"]
 xysim = [(1,1e4), (1,1e4)]
+cmap = mpl_cm.get_cmap('Blues')
     
 scale = 1.35
 plt.figure(figsize=(7.8*scale,2.6*scale))
 gs = gridspec.GridSpec(1,2)
 gs.update(left=0.07, right=1-0.00, top=0.95, bottom=0.17, wspace=0.2)
 ax_list = [plt.subplot(gs[0, 0]),plt.subplot(gs[0, 1])]
-cmap = mpl_cm.get_cmap('Blues')
     
 for ii,n_grain in enumerate(n_grain_list):
 
@@ -111,15 +97,11 @@ for ii,n_grain in enumerate(n_grain_list):
     dlvl = 2
     Emt_lvls = np.arange(1,5+1,1)
             
-    #--------------------
-
     ax = ax_list[ii]
     ax.set_xscale('log') 
     ax.set_yscale('log')
 
     hmap = ax.contourf(X,Y,Emt_map, Emt_lvls, cmap=cmap, vmin=Emt_lvls[0], vmax=Emt_lvls[-1]+0.5, extend='both')
-        
-    #--------------------
         
     if 1:
         ax1=ax
@@ -136,8 +118,6 @@ for ii,n_grain in enumerate(n_grain_list):
         lvls = [ np.power(10.,n) for n in np.arange(-Nneg,N+1,2) ]
         CS2  = ax1.contour(X,Y,Emm_map, lvls, linestyles='--',colors='k', linewidths=1.3)
         CS2.collections[0].set_label('$E_{mm}$')
-
-        #----
 
         def getlblpos(CS,logmid):
         
@@ -176,7 +156,7 @@ for ii,n_grain in enumerate(n_grain_list):
     leg=ax.legend(hlist, legstrs, loc=1, bbox_to_anchor=(1,1),fontsize=FS-0.0, **legkwargs); 
     leg.get_frame().set_linewidth(0.7);
 
-    writeSubplotLabel(ax,2, panelstrs[ii],frameon=True, alpha=0.0, fontsize=FS-0.5, pad=-0.05)
+    sfplt.panellabel(ax,2, panelstrs[ii], frameon=True, alpha=0.0, fontsize=FS-0.5, pad=0.4)
 
     hcb=plt.colorbar(hmap, ax=ax, orientation='vertical', pad=0.06)
     hcb.set_label('$E_{mt}$')
@@ -191,5 +171,4 @@ for ii,n_grain in enumerate(n_grain_list):
     ax.xaxis.set_minor_formatter(mpl.ticker.NullFormatter())
 
 plt.savefig('enhancement-factor-nlin-sachs-tranisotropic.png', dpi=250)
-plt.close()
 
