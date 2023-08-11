@@ -225,7 +225,7 @@ where `Lambda` is the CDRX rate-factor magnitude, $\Lambda$, that possibly depen
 
 ## Regularization
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/regularization/animation.gif){: style="width:700px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/regularization/regularization.gif){: style="width:700px"}
 
 As $n(\theta,\phi)$ becomes anisotropic due to CPO processes, the coefficients $n_l^m$ associated with high wavenumber modes (large $l$ and $m$, and thus small-scale structure) must increase in magnitude relative to the low wavenumber coefficients (small $l$ and $m$). 
 
@@ -236,7 +236,7 @@ S(l) = \frac{1}{2l + 1} \sum_{m=-l}^l \left\vert n_l^m \right\vert^2 ,
 $$
 
 which grows with time. 
-In the animation above, the left-hand panel shows how the power spectrum evolves under lattice rotation (unconfined vertical compression) compared to the end-member case of a delta-function (dashed line).
+In the animation above, the left-hand panel shows how the power spectrum evolves under lattice rotation (unconfined vertical compression) compared to the end-member case of a delta function (dashed line).
 
 If the expansion series is truncated at $l=L$, then $l{\gt}L$ modes cannot evolve, and the truncated solution will reach an unphysical quasi-steady state. To prevent this, regularization must be introduced.
 Specfab uses Laplacian hyper diffusion ($k>1$) as regularization in $S^2$
@@ -253,11 +253,10 @@ that can be added to the fabric evolution operator ${\bf M}$ as follows:
 M += sf.M_REG(nlm, D)
 ```
 This allows the growth of high wavenumber modes to be disproportionately damped (green line compared to red line in animation above).
-However, `sf.M_REG()` is currently only calibrated for $L = 4,6,8,20$ &mdash; that is, optimal values of $\nu$ and $k$ are only available for these truncations.
 
 !!! note 
     As a rule-of-thumb, regularization affects the highest and next-highest modes $l{\geq}L-2$ and can therefore not be expected to evolve freely. 
-    This, in turn, means that [structure tensors](cpo-representation.md) `a2` and `a4`, and hence [calculated enhancement factors](enhancements-strainrate.md), will be affected by regularization unless $L{\geq}8$ is chosen. 
+    This, in turn, means that [structure tensors](cpo-representation.md) `a2` and `a4`, and hence [calculated enhancement factors](enhancements-strainrate.md), might be affected by regularization unless $L{\geq}8$ is chosen. 
 
 ## Validation
 

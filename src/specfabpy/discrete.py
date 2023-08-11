@@ -110,8 +110,8 @@ class DDM():
         self.N = N
         self.v = np.zeros((N,3))        
 
+        # Initialize with randomly distributed vector bundle
         if v0 is None:
-            # Initialize with randomly distributed vector bundle
             for ii in np.arange(N):
                 phi = np.random.uniform(0, 2*np.pi)
                 theta = np.arccos(1-2*np.random.uniform(0, 1))
@@ -119,11 +119,15 @@ class DDM():
                 y = np.sin(theta) * np.sin(phi)
                 z = np.cos(theta)
                 self.v[ii,:] = [x,y,z]
-        elif len(v0.flatten()) > 3: # more than 3 vectors? set the passed list of init vectors
+                
+        # If more than 3 vectors, set the passed list of init vectors
+        elif len(v0.flatten()) > 3:
             self.N = v0.shape[0]
             self.v = v0 # (num, xyz)
+            
         else:
             for ii in np.arange(self.N): self.v[ii,:] = v0
+
 
     @staticmethod 
     def velocityfield(v0, L, iota=1):
@@ -138,11 +142,10 @@ class DDM():
 
         return dvdt
 
+
     def evolve(self, L, dt):
         
-        dvdt = self(self.v0, L)
-        self.v = v0 + dt*dvdt
-        
+        self.v += dt*self.velocityfield(self.v, L)
         # re-normalize
         norms = np.linalg.norm(self.v, axis=1)
         self.v = np.array([self.v[ii,:]/norms[ii] for ii in np.arange(self.N)])
@@ -169,3 +172,4 @@ class DDM():
             e1 /= np.linalg.norm(e1)
             return e1
         else: return None
+
