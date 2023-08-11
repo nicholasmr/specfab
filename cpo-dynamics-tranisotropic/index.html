@@ -328,14 +328,14 @@ In effect, CDRX reduces the average grain size upon grain division but does not 
 <p>where <code>Lambda</code> is the CDRX rate-factor magnitude, <span class="arithmatex">\(\Lambda\)</span>, that possibly depends on temperature, stress, strain-rate, etc. (<a href="https://doi.org/10.1016/j.epsl.2020.116718">Richards et al., 2021</a>).</p>
 <hr />
 <h2 id="regularization">Regularization</h2>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/regularization/animation.gif" style="width:700px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/regularization/regularization.gif" style="width:700px" /></p>
 <p>As <span class="arithmatex">\(n(\theta,\phi)\)</span> becomes anisotropic due to CPO processes, the coefficients <span class="arithmatex">\(n_l^m\)</span> associated with high wavenumber modes (large <span class="arithmatex">\(l\)</span> and <span class="arithmatex">\(m\)</span>, and thus small-scale structure) must increase in magnitude relative to the low wavenumber coefficients (small <span class="arithmatex">\(l\)</span> and <span class="arithmatex">\(m\)</span>). </p>
 <p>One way to visualize this is by the <a href="https://en.wikipedia.org/wiki/Spherical_harmonics#Spectrum_analysis">angular power spectrum</a></p>
 <div class="arithmatex">\[ 
 S(l) = \frac{1}{2l + 1} \sum_{m=-l}^l \left\vert n_l^m \right\vert^2 ,
 \]</div>
 <p>which grows with time. 
-In the animation above, the left-hand panel shows how the power spectrum evolves under lattice rotation (unconfined vertical compression) compared to the end-member case of a delta-function (dashed line).</p>
+In the animation above, the left-hand panel shows how the power spectrum evolves under lattice rotation (unconfined vertical compression) compared to the end-member case of a delta function (dashed line).</p>
 <p>If the expansion series is truncated at <span class="arithmatex">\(l=L\)</span>, then <span class="arithmatex">\(l{\gt}L\)</span> modes cannot evolve, and the truncated solution will reach an unphysical quasi-steady state. To prevent this, regularization must be introduced.
 Specfab uses Laplacian hyper diffusion (<span class="arithmatex">\(k&gt;1\)</span>) as regularization in <span class="arithmatex">\(S^2\)</span></p>
 <div class="arithmatex">\[ 
@@ -347,12 +347,11 @@ Specfab uses Laplacian hyper diffusion (<span class="arithmatex">\(k&gt;1\)</spa
 <p>that can be added to the fabric evolution operator <span class="arithmatex">\({\bf M}\)</span> as follows:</p>
 <pre><code class="language-python">M += sf.M_REG(nlm, D)
 </code></pre>
-<p>This allows the growth of high wavenumber modes to be disproportionately damped (green line compared to red line in animation above).
-However, <code>sf.M_REG()</code> is currently only calibrated for <span class="arithmatex">\(L = 4,6,8,20\)</span> &mdash; that is, optimal values of <span class="arithmatex">\(\nu\)</span> and <span class="arithmatex">\(k\)</span> are only available for these truncations.</p>
+<p>This allows the growth of high wavenumber modes to be disproportionately damped (green line compared to red line in animation above).</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>As a rule-of-thumb, regularization affects the highest and next-highest modes <span class="arithmatex">\(l{\geq}L-2\)</span> and can therefore not be expected to evolve freely. 
-This, in turn, means that <a href="../cpo-representation/">structure tensors</a> <code>a2</code> and <code>a4</code>, and hence <a href="../enhancements-strainrate/">calculated enhancement factors</a>, will be affected by regularization unless <span class="arithmatex">\(L{\geq}8\)</span> is chosen. </p>
+This, in turn, means that <a href="../cpo-representation/">structure tensors</a> <code>a2</code> and <code>a4</code>, and hence <a href="../enhancements-strainrate/">calculated enhancement factors</a>, might be affected by regularization unless <span class="arithmatex">\(L{\geq}8\)</span> is chosen. </p>
 </div>
 <h2 id="validation">Validation</h2>
 <p>If the CPO is rotated into an approximately rotationally-symmetric frame about the <span class="arithmatex">\(z\)</span>-axis, then only <span class="arithmatex">\(n_l^0\)</span> components are nonzero.
