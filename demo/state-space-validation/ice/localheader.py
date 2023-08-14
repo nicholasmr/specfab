@@ -1,4 +1,4 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk>, 2022
+# N. M. Rathmann <rathmann@nbi.ku.dk>, 2022-2023
 
 """
 Header file for common routines etc.
@@ -8,7 +8,7 @@ import sys, os, copy, code # code.interact(local=locals())
 
 import numpy as np
 from scipy.spatial.transform import Rotation
-import quaternion as qt # pip3 install numpy-quatern
+import quaternion as qt # pip3 install numpy-quatern (if fails try pip3 install numpy==1.23.1)
 import pandas as pd
 
 import matplotlib.pyplot as plt
@@ -62,8 +62,6 @@ def plot_trajectory(ax, nlm, arrpos=None, label=None, ls='-', lw=1.75, c='k', hw
     if endmarker: ax.plot(x[-1],y[-1], marker='o', ms=mse, ls='none', c=c, label=None, zorder=zorder) # fillstyle='none',
     
     return h
-    
-    
 
 def load_sample(fname, expr):
 
@@ -105,7 +103,7 @@ def load_sample(fname, expr):
     
     lm, nlm_len = sf.init(6)
     caxes = sfdsc.sph2cart(qcolat, qlon)
-    nlm = sfdsc.vi2nlm(caxes, sf, L=6) 
+    nlm = sfdsc.vi2nlm(caxes, L=6) 
 
     ### Rotated frame 
        

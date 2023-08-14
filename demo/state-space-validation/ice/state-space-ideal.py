@@ -5,12 +5,23 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import matplotlib.colors
 import cmasher as cmr
 
 from localheader import *
+
+sys.path.append('../../')
+import demolib as dl
+
 from specfabpy import specfab as sf
+from specfabpy import discrete as sfdsc
+from specfabpy import constants as sfconst
 from specfabpy import plotting as sfplt
 FS = sfplt.setfont_tex(fontsize=12)
+FSLEG = FS-0.5
+FSANNO = FS-1.5
+
+norm = 1/np.sqrt(4*np.pi)
 
 #--------------------
 # Flags
@@ -35,55 +46,33 @@ lm, nlm_len = sf.init(L)
 # Construct plot
 #--------------------
 
-ms = 8
-mse = ms+0.5 # end-member case points
-FSLEG = FS-0.5
-FSANNO = FS-1.5
-
-c_girdle = '#8c510a' 
-c_smax   = '#01665e'
-c_cdrx   = 'k'
-
-cl_smax   = np.array([199,234,229])/255
-cl_girdle = np.array([246,232,195])/255
-
-legkwargs = {'handlelength':1.4, 'framealpha':1.0, 'fancybox':False, 'columnspacing': 0.5, 'handletextpad':0.4, 'borderpad':0.37, 'edgecolor':'k'}
-
 ### Setup figure
 
 scale = 4.0
 fig = plt.figure(figsize=(1.3*scale,0.9*scale))
 plt.subplots_adjust(left=0.12, right=0.99, top=0.98, bottom=0.15)
 ax = plt.gca()
+
 xlims, ylims = [-1.45,2.65], [-1.4,3.5]
 sc = np.diff(ylims)/np.diff(xlims)
-x = np.linspace(xlims[0],xlims[1],RESX)
-y = np.linspace(ylims[0],ylims[1],RESY)
 
 ### Determine valid subspace (valid eigenvalues)
 
 print('Determining subspace of valid eigenvalues...')
-xv, yv = np.meshgrid(x, y, indexing='xy')
-validregion = np.reshape(sf.nlm_isvalid(xv.flatten(), yv.flatten()), (RESY, RESX))
+isvalid, x,y = dl.nlm_isvalid_grid(xlims, ylims, RESX, RESY)
 
-### Determine subspace shadings
-
-imdat = np.empty((RESY, RESX, 4), dtype=float) # color (0,1,2) and alpha (3)
-imdat[:,:,0:-1] = [1.0]*3 # OK
-            
-print('Determining shading regions for different fabric types...')
-for xii, x_ in enumerate(x):
-    for yii, y_ in enumerate(y): 
-        if not validregion[yii,xii]: 
-            imdat[yii,xii,0:-1] = [0.85]*3
-            imdat[yii,xii,-1] = 1.0
+imdat = np.ones((RESY, RESX, 4), dtype=float) # color (0,1,2) and alpha (3)
+for ii in range(RESY):
+    for jj in range(RESX):
+        imdat[ii,jj,:-1] = matplotlib.colors.to_rgb('w') if isvalid[ii,jj] else matplotlib.colors.to_rgb(sfplt.c_lgray)
 
 print('Plotting...')
 
 # Plot valid/invalid subspaces and fabric-type shadings within valid subspace
 imdat0 = np.ones((RESY, RESX, 4), dtype=float) # color (0,1,2) and alpha (3)
-im = ax.imshow(imdat0, aspect='auto', extent=[np.amin(xlims), np.amax(xlims), np.amin(ylims), np.amax(ylims)], origin='lower', zorder=1)
-im = ax.imshow(imdat, aspect='auto', extent=[np.amin(xlims), np.amax(xlims), np.amin(ylims), np.amax(ylims)], origin='lower', zorder=1)
+kwargs = dict(aspect='auto', extent=[np.amin(xlims), np.amax(xlims), np.amin(ylims), np.amax(ylims)], origin='lower', zorder=1)
+im = ax.imshow(imdat0, **kwargs)
+im = ax.imshow(imdat,  **kwargs)
 
 ### Determine ideal boundary line
 
@@ -100,34 +89,21 @@ for ii, colat in enumerate(thetavec):
 n20_unidir, n40_unidir = n20_ideal[0], n40_ideal[0]   # delta distributed
 n20_planar, n40_planar = n20_ideal[-1], n40_ideal[-1] # x--y planar distributed
 
-### End-member cases
-
-# Isotropic state
-ax.plot(0, 0, 'o', ms=mse, c='k', label=None, zorder=20)
-dytext = 0.04/normfac
-plt.text(0, 0+dytext, r'{\bf Isotropic}', color='k', ha='center', va='bottom', fontsize=FSANNO)
-
-# Unidirectional
-ax.plot(n20_unidir, n40_unidir, marker='o', ms=mse, ls='none', c=c_smax, label=None, zorder=20)
-plt.text(n20_unidir-0.1, n40_unidir+dytext, '{\\bf Unidirectional}', color=c_smax, ha='center', va='bottom', ma='center', fontsize=FSANNO)
-
-# Planar 
-ax.plot(n20_planar, n40_planar, marker='o', ms=mse, ls='none', c=c_girdle, label=None, zorder=20)
-plt.text(n20_planar, n40_planar+dytext, '{\\bf Planar}', color=c_girdle, ha='center', va='bottom', ma='center', fontsize=FSANNO)
-
-# Shading labels
-plt.text(-1, 2.0, '{\\bf Unphysical}\n\\bf{eigenvalues}', color='0.3', ha='center', rotation=0, fontsize=FSANNO)
-
 ### Plot ideal CPOs
 
 ax.plot(n20_ideal, n40_ideal, '--', c='k', zorder=10, label=r'$\hat{n}_l^0 = Y_l^0(\theta,0)/\sqrt{4\pi}$')
 
-### Aux
+### Misc
+
+dl.plot_nlm_cases(ax, FSANNO, ms=8.5, dy0=0.07, show_circle=False)
+
+plt.text(-1, 2.0, '{\\bf Unphysical}\n\\bf{eigenvalues}', color='0.3', ha='center', rotation=0, fontsize=FSANNO)
 
 plt.sca(ax)
 plt.xlabel(r'$\hat{n}_2^0$')
 plt.ylabel(r'$\hat{n}_4^0$')
 
+legkwargs = {'handlelength':1.4, 'framealpha':1.0, 'fancybox':False, 'columnspacing': 0.5, 'handletextpad':0.4, 'borderpad':0.37, 'edgecolor':'k'}
 leg = plt.legend(loc=2, fontsize=FSLEG, frameon=False, ncol=2, **legkwargs); 
 
 ### Limits
@@ -141,13 +117,10 @@ if 1:
 
     geo, prj = sfplt.getprojection(rotation=55+180, inclination=50)
 
-    W = 0.155 # ax width
-    
     ### Modeled data
     
-    arrmag = 0.125
-    arr = lambda ang: arrmag*np.array([np.cos(np.deg2rad(ang)),np.sin(np.deg2rad(ang))])
-    n00 = 1/np.sqrt(4*np.pi)
+    arr = lambda ang: 0.125*np.array([np.cos(np.deg2rad(ang)),np.sin(np.deg2rad(ang))])
+    n00 = norm
     I = [0, int(N/4*1.15), int(N/2), -1]
     lvlmax = 1.0
     lvlmin = 0.2
@@ -161,6 +134,7 @@ if 1:
 
     for ODF in ODF_plots:
 
+        W = 0.155 # ax width
         axpos = [ODF['axloc'][0],ODF['axloc'][1], W,W]
         axin = plt.axes(axpos, projection=prj) #, transform=ax.transData)
         axin.set_global()
@@ -181,7 +155,5 @@ if 1:
 
 ### Save figure
 
-#plt.tight_layout()
 plt.savefig('state-space-ideal.png', transparent=1,  dpi=175)
-plt.close()
 

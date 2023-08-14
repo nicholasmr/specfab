@@ -20,6 +20,7 @@ theta = np.deg2rad(-45)
 phi   = np.deg2rad(45)
 nlm_rot1 = sf.rotate_nlm(nlm, theta, 0)    # first rotate around y axis in x-z plane
 nlm_rot2 = sf.rotate_nlm(nlm_rot1, 0, phi) # next  rotate around z axis in x-y plane 
+nlm_rot3 = sf.rotate_nlm(nlm_rot2, -theta, -phi) # rotate back
 
 # See "plotting" pages on how to plot the resulting ODFs
 ```

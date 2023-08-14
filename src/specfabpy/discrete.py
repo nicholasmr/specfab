@@ -8,6 +8,8 @@ Discrete methods
 import numpy as np
 import scipy.special as sp
 
+from .specfabpy import specfabpy as sf__ # sf private copy 
+lm__, nlm_len__ = sf__.init(20)
 
 def lat2colat(lat, deg=False):   return 90 - lat   if deg else np.pi/2 - lat
 def colat2lat(colat, deg=False): return 90 - colat if deg else np.pi/2 - colat
@@ -43,7 +45,7 @@ def sph2cart(colat, lon, deg=False):
     return r
 
 
-def vi2nlm(vi, sf, L=6):
+def vi2nlm(vi, L=6):
 
     """
     Discrete array of crystallographic axes --> spectral CPO representation
@@ -54,13 +56,13 @@ def vi2nlm(vi, sf, L=6):
 
     if L==2:
         a2 = np.array([ np.einsum('i,j',v,v) for v in vi]).mean(axis=0)
-        nlm[:sf.L2len] = sf.a2_to_nlm(a2)    
+        nlm[:sf__.L2len] = sf__.a2_to_nlm(a2)    
     elif L==4:
         a4 = np.array([ np.einsum('i,j,k,l',v,v,v,v) for v in vi]).mean(axis=0)
-        nlm[:sf.L4len] = sf.a4_to_nlm(a4)
+        nlm[:sf__.L4len] = sf__.a4_to_nlm(a4)
     elif L==6:
         a6 = np.array([ np.einsum('i,j,k,l,m,n',v,v,v,v,v,v) for v in vi]).mean(axis=0)
-        nlm[:sf.L6len] = sf.a6_to_nlm(a6)
+        nlm[:sf__.L6len] = sf__.a6_to_nlm(a6)
     else:
         raise ValueError('sfdsc.vi2nlm(): only L <= 6 is supported')
 
@@ -82,22 +84,33 @@ def sphericalbasisvectors(colat, lon, deg=False):
     return (rhat,that,phat) # unit vectors (r, theta, phi)
 
 
-def Sl_delta(lm, sf):
+def Sl_delta(L):
 
-    L = lm[0,-1]
     nlm_len = L2nlmlen(L)
     nlm = np.zeros((nlm_len), dtype=np.complex128)
     Lrange = np.arange(0,L+1,2) # 0, 2, 4, ...
         
-    for ii, (l,m) in enumerate(lm.T): 
+    for ii, (l,m) in enumerate(lm__[:,:nlm_len].T): 
         nlm[ii] = sp.sph_harm(m,l, 0,0) # delta function values
         
-    Sl = np.array([sf.Sl(nlm, l) for l in Lrange])
+    Sl = np.array([sf__.Sl(nlm, l) for l in Lrange])
     Sl /= Sl[0] # normalize
     
     return Sl, Lrange, nlm
     
+    
+def nlm_ideal_cases(norm=1/np.sqrt(4*np.pi)):
 
+    m = [0,0,1]
+    Il24 = [sf__.I20, sf__.I40] # l=2,4, m=0 coefs
+    L = 8
+    n20_unidir, n40_unidir = np.real(sf__.nlm_ideal(m, 0, L))[Il24]/norm       # delta distributed
+    n20_planar, n40_planar = np.real(sf__.nlm_ideal(m, np.pi/2, L))[Il24]/norm # x--y planar distributed
+    n20_circle, n40_circle = np.real(sf__.nlm_ideal(m, np.pi/4, L))[Il24]/norm # 45 deg circle distributed
+
+    return ((n20_unidir,n40_unidir), (n20_planar,n40_planar), (n20_circle,n40_circle))
+    
+    
 class DDM():
 
     """

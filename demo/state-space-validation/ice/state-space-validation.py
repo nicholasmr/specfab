@@ -17,22 +17,29 @@ import matplotlib.colors
 from localheader import *
 from experiments import * # experiment definitions (data structures for experiment files, etc.)
 
+sys.path.append('../../')
+import demolib as dl
+
 from specfabpy import specfab as sf
 from specfabpy import constants as sfconst
 from specfabpy import integrator as sfint
 from specfabpy import plotting as sfplt
 FS = sfplt.setfont_tex(fontsize=12)
+FSLEG = FS-1.5
+FSANNO = FS-2.5
 
 SELFNAME = sys.argv[0][:-3] # used as prefix for pickled files
 os.system('mkdir -p specfab-state-trajectories')
 def pfile(fname): return "specfab-state-trajectories/%s--%s.p"%(SELFNAME, fname) # full path name for pickled files
 
+norm = 1/np.sqrt(4*np.pi)
+
 #--------------------
 # Run options
 #--------------------
 
-INTEGRATE_MODEL = 0  # Generate model lines? Else load saved Pickle files.
 DEBUG           = 0  # Low-resolution plotting, etc.
+INTEGRATE_MODEL = 0  # Generate model lines? Else load saved Pickle files.
             
 PLOT_ODF_INSETS = True
             
@@ -75,21 +82,11 @@ for expr in experiments:
     fcorr = "observed-states/%s.p"%(expr['path']) 
     print('=== Loading correlations: %s ==='%(fcorr))
     corr = pickle.load(open(fcorr, "rb"))
-    corr['n20'] /= normfac # Normalization
-    corr['n40'] /= normfac
-    corr['n60'] /= normfac
+    corr['n20'] /= norm # Normalization
+    corr['n40'] /= norm
+    corr['n60'] /= norm
     correlations.append(corr) 
     
-#--------------------
-# Determine ideal boundary line
-#--------------------
-
-m = [0,0,1]
-Il24 = [sf.I20, sf.I40] # l=2,4, m=0 coefs
-n20_unidir, n40_unidir = np.real(sf.nlm_ideal(m, 0, L))[Il24]/normfac       # delta distributed
-n20_planar, n40_planar = np.real(sf.nlm_ideal(m, np.pi/2, L))[Il24]/normfac # x--y planar distributed
-n20_circ45, n40_circ45 = np.real(sf.nlm_ideal(m, np.pi/4, L))[Il24]/normfac # 45 deg. circle (DDRX attractor)
-        
 #--------------------
 # Modeled correlations
 #--------------------
@@ -129,7 +126,7 @@ if INTEGRATE_MODEL:
     ### Solve for state-vector time evolution
     
     nlm_iso = np.zeros((nlm_len), dtype=np.complex64)
-    nlm_iso[0] = normfac
+    nlm_iso[0] = norm
     
     nlm_uc, _  = integrate_model(nlm_iso, 'LROT', 'uc', name='uc') 
     nlm_ue, _  = integrate_model(nlm_iso, 'LROT', 'ue', name='ue') 
@@ -147,49 +144,27 @@ if INTEGRATE_MODEL:
     
 ### Load solutions
 
-nlm_uc, _,  lm, nlm_len = pickle.load(open(pfile('uc'), "rb"))
-nlm_ue, _,  lm, nlm_len = pickle.load(open(pfile('ue'), "rb"))
-_, nlmr_ss, lm, nlm_len = pickle.load(open(pfile('ss'), "rb"))
+def load_solution(expname):
+    nlm, nlmr,  lm, nlm_len = pickle.load(open(pfile(expname), "rb"))    
+    nlm  = np.array([ nlm[tt,:]/nlm[tt,0]   for tt in np.arange(Nt+1) ]) # normalize
+    nlmr = np.array([ nlmr[tt,:]/nlmr[tt,0] for tt in np.arange(Nt+1) ]) # normalize
+    return (nlm, nlmr, lm, nlm_len)
 
-nlm_ddrx1, _, lm, nlm_len = pickle.load(open(pfile('ddrx1'), "rb"))
-nlm_ddrx2, _, lm, nlm_len = pickle.load(open(pfile('ddrx2'), "rb"))
-nlm_ddrx3, _, lm, nlm_len = pickle.load(open(pfile('ddrx3'), "rb"))    
-nlm_ddrx4, _, lm, nlm_len = pickle.load(open(pfile('ddrx4'), "rb"))
+nlm_uc, _,  lm, nlm_len = load_solution('uc')
+nlm_ue, _,  lm, nlm_len = load_solution('ue')
+_, nlmr_ss, lm, nlm_len = load_solution('ss')
 
-nlm_cdrx1, _, lm, nlm_len = pickle.load(open(pfile('cdrx1'), "rb"))
-nlm_cdrx2, _, lm, nlm_len = pickle.load(open(pfile('cdrx2'), "rb"))
+nlm_ddrx1, _, lm, nlm_len = load_solution('ddrx1')
+nlm_ddrx2, _, lm, nlm_len = load_solution('ddrx2')
+nlm_ddrx3, _, lm, nlm_len = load_solution('ddrx3')
+nlm_ddrx4, _, lm, nlm_len = load_solution('ddrx4')
+
+nlm_cdrx1, _, lm, nlm_len = load_solution('cdrx1')
+nlm_cdrx2, _, lm, nlm_len = load_solution('cdrx2')
                 
-# Normalize
-rng = np.arange(Nt+1)
-nlm_uc    = np.array([ nlm_uc[tt,:]/nlm_uc[tt,0]   for tt in rng ])
-nlm_ue    = np.array([ nlm_ue[tt,:]/nlm_ue[tt,0]   for tt in rng ])
-nlmr_ss   = np.array([ nlmr_ss[tt,:]/nlmr_ss[tt,0] for tt in rng ])
-nlm_ddrx1 = np.array([ nlm_ddrx1[tt,:]/nlm_ddrx1[tt,0] for tt in rng ])
-nlm_ddrx2 = np.array([ nlm_ddrx2[tt,:]/nlm_ddrx2[tt,0] for tt in rng ])
-nlm_ddrx3 = np.array([ nlm_ddrx3[tt,:]/nlm_ddrx3[tt,0] for tt in rng ])
-nlm_ddrx4 = np.array([ nlm_ddrx4[tt,:]/nlm_ddrx4[tt,0] for tt in rng ])
-nlm_cdrx1 = np.array([ nlm_cdrx1[tt,:]/nlm_cdrx1[tt,0] for tt in rng ])
-nlm_cdrx2 = np.array([ nlm_cdrx2[tt,:]/nlm_cdrx2[tt,0] for tt in rng ])
-
 #--------------------
 # Construct plot
 #--------------------
-
-ms = 6.0
-mse = 7 # end-member case points
-FSLEG = FS-1.5
-FSANNO = FS-2.5
-
-c_smax  = '#01665e'
-cl_smax = '#c7eae5'
-
-c_girdle  = '#8c510a' 
-cl_girdle = '#f6e8c3'
-
-c_ddrx    = '#b2182b'
-cl_circle = '#fddbc7'
-
-c_cdrx   = 'k'
 
 ### Setup figure
 
@@ -200,77 +175,64 @@ ax = plt.gca()
 
 xlims, ylims = [-1.40,2.65], [-1.8,3.75]
 sc = np.diff(ylims)/np.diff(xlims)
-x = np.linspace(xlims[0],xlims[1],RESX)
-y = np.linspace(ylims[0],ylims[1],RESY)
+
+ms = 6.0
+c_ddrx    = '#b2182b'
+cl_circle = '#fddbc7'
+c_cdrx   = 'k'
 
 legkwargs = {'handlelength':1.4, 'framealpha':1.0, 'fancybox':False, 'handletextpad':0.4, 'borderpad':0.37, 'edgecolor':'k'}
 
-### Determine valid subspace (valid eigenvalues)
+### Determine valid subspace
 
 print('Determining subspace of valid eigenvalues...')
-xv, yv = np.meshgrid(x, y, indexing='xy')
-validregion = np.reshape(sf.nlm_isvalid(xv.flatten(), yv.flatten()), (RESY, RESX))
-            
-### Determine subspace shadings
 
+grain_params = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
+(Ezz, Exz, x, y, isvalid) = dl.Eij_statemap_ice(grain_params, xlims, ylims, resx=RESX, resy=RESY)
+
+print('Determining shading regions for different fabric types...', end='')
+            
 # LROT
 x_LROT = np.concatenate((nlm_ue[:,sf.I20],nlm_uc[:,sf.I20]))
 y_LROT = np.concatenate((nlm_ue[:,sf.I40],nlm_uc[:,sf.I40]))
 # ...make shading white again near isotropy
-I_latrot = np.argwhere(np.abs(x_LROT)>0.1/normfac) 
+I_latrot = np.argwhere(np.abs(x_LROT)>0.1/norm) 
 x_LROT = x_LROT[I_latrot]
 y_LROT = y_LROT[I_latrot] 
 
 # DDRX
 Il24 = [sf.I20, sf.I40] # l=2,4, m=0 coefs
-LB = np.array([ np.real(sf.nlm_ideal([0,0,1], np.deg2rad(colat), 4))[Il24]/normfac for colat in np.linspace(38,56,20) ])
+LB = np.array([ np.real(sf.nlm_ideal([0,0,1], np.deg2rad(colat), 4))[Il24]/norm for colat in np.linspace(38,56,20) ])
 x_DDRX, y_DDRX = LB[:,0], LB[:,1]
 
 # Join all model points
 xmodel = np.append(x_LROT, x_DDRX)
 ymodel = np.append(y_LROT, y_DDRX)
 
-print('Determining shading regions for different fabric types...', end='')
-
-y_cutoff = np.interp(x, (xlims[0],0.1/normfac,xlims[-1]), np.array([-0.15,-0.15,0.125])/normfac)
+y_cutoff = np.interp(x, (xlims[0],0.1/norm,xlims[-1]), np.array([-0.15,-0.15,0.125])/norm)
 imdat = np.empty((RESY, RESX, 4), dtype=float) # color (0,1,2) and alpha (3)
 expo, var = 6, 1e-3
 
 for xii, x_ in enumerate(x):
     for yii, y_ in enumerate(y): 
-        if validregion[yii,xii]:
+        if isvalid[yii,xii]:
             distnn = np.amin( np.sqrt(np.real((x_-xmodel)**2 + (1/sc*(y_-ymodel))**2)) ) # distance from model-line points
             imdat[yii,xii,-1] = np.exp(-distnn**expo/var) # set alpha depending on distance to model lines/points
             if y_ > y_cutoff[xii]: # assume single max or girdle fabric
-                if x_<0: imdat[yii,xii,0:-1] = matplotlib.colors.to_rgb(cl_girdle)
-                else:    imdat[yii,xii,0:-1] = matplotlib.colors.to_rgb(cl_smax)
+                if x_<0: imdat[yii,xii,0:-1] = matplotlib.colors.to_rgb(dl.cvl_planar)
+                else:    imdat[yii,xii,0:-1] = matplotlib.colors.to_rgb(dl.cvl_unidir)
             else: # circle fabric
-               imdat[yii,xii,0:-1] = matplotlib.colors.to_rgb(cl_circle)
+               imdat[yii,xii,0:-1] = matplotlib.colors.to_rgb(dl.cvl_circle)
                imdat[yii,xii,-1] = np.exp(-distnn**expo/(1.75*var))
         else: 
-            imdat[yii,xii,0:-1] = [0.85]*3 # bad 
+            imdat[yii,xii,0:-1] = matplotlib.colors.to_rgb(sfplt.c_lgray) # bad 
             imdat[yii,xii,-1] = 1
 print('done')
 
-# Plot valid/invalid subspaces and fabric-type shadings within valid subspace
+# Plot valid subspace and fabric-type shadings 
 im = ax.imshow(imdat, aspect='auto', extent=[np.amin(xlims), np.amax(xlims), np.amin(ylims), np.amax(ylims)], origin='lower', zorder=1)
 
-### Determine E_zz
-
-Ezz = np.nan*np.zeros((RESY, RESX)) 
-grain_params = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
-m = [0,0,1]
-tau_mm = np.identity(3)-3*np.tensordot(m,m, axes=0)
-
-print('Determining E_zz ...', end='')
-for xii, x_ in enumerate(x):
-    for yii, y_ in enumerate(y): 
-        if validregion[yii,xii]:
-            nlm_ = np.zeros((nlm_len), dtype=np.complex128)
-            nlm_[0], nlm_[sf.I20], nlm_[sf.I40] = 1, x_, y_
-            Ezz[yii,xii] = sf.Evw_tranisotropic(nlm_, m,m,tau_mm, *grain_params)
-print('done')
-
+# Plot E_zz
 lvls = np.arange(0.2,1.6+1e-3,0.4)
 CS = plt.contour(x,y,Ezz, levels=lvls, linewidths=0.7, linestyles=':', colors='0.2')
 manual_locations = [(0.51, y_) for y_ in np.linspace(-0.5, 1.5, len(lvls))]
@@ -287,39 +249,29 @@ h_ddrx2 = plot_trajectory(ax, nlm_ddrx2, arrpos=22, c=c_ddrx, hwmul=hwmul)
 h_ddrx3 = plot_trajectory(ax, nlm_ddrx3, arrpos=28, c=c_ddrx, hwmul=hwmul)
 h_ddrx4 = plot_trajectory(ax, nlm_ddrx4, arrpos=46, c=c_ddrx, hwmul=hwmul)
 
-h_ss = plot_trajectory(ax, nlmr_ss, arrpos=None, c=c_smax, ls='--')
-h_uc = plot_trajectory(ax, nlm_uc, arrpos=9,  c=c_smax)
-h_ue = plot_trajectory(ax, nlm_ue, arrpos=17, c=c_girdle)
+h_ss = plot_trajectory(ax, nlmr_ss, arrpos=None, c=dl.c_unidir, ls='--')
+h_uc = plot_trajectory(ax, nlm_uc, arrpos=9,  c=dl.c_unidir)
+h_ue = plot_trajectory(ax, nlm_ue, arrpos=17, c=dl.c_planar)
 
 h_modellines = [h_ue, h_uc, h_ss, h_ddrx1, h_cdrx1]
 legend_strings = ['Lattice rotation, uniaxial extension', 'Lattice rotation, uniaxial compression', 'Lattice rotation, simple shear', 'DDRX', 'CDRX']
 legend_modellines = plt.legend(h_modellines, legend_strings, title=r'{\bf Modelled fabric state trajectories}', title_fontsize=FSLEG, loc=2, ncol=1, fontsize=FSLEG, frameon=False, **legkwargs)
 
-### Ideal states
+### Labels
 
-kwargs_mrk = dict(marker='o', ms=mse, ls='none', label=None, zorder=20)
-kwargs_txt = dict(ha='center', va='bottom', ma='center', fontsize=FSANNO)
-dytext = 0.04/normfac
+dy0 = 0.065
+mse = 7.5
+dl.plot_nlm_cases(ax, FSANNO, ms=mse, show_circle=False, dy0=dy0, isolbl_above=True)
 
-ax.plot(0, 0, c='k', **kwargs_mrk)
-plt.text(0, 0+dytext, r'{\bf Isotropic}', color='k', **kwargs_txt)
-
-ax.plot(n20_unidir,n40_unidir, c=c_smax, **kwargs_mrk)
-plt.text(n20_unidir, n40_unidir+dytext, r'{\bf Unidirectional}', color=c_smax, **kwargs_txt)
-
-ax.plot(n20_planar, n40_planar, c=c_girdle, **kwargs_mrk)
-plt.text(n20_planar, n40_planar+dytext, r'{\bf Planar}', color=c_girdle, **kwargs_txt)
-
-ax.plot(n20_circ45, n40_circ45 , c=c_ddrx, **kwargs_mrk)
-plt.text(n20_circ45+0.01, n40_circ45-3.5*dytext, '{\\bf DDRX}\n{\\bf steady state}', color=c_ddrx, **kwargs_txt)
-
-### Other labels
+nl0_unidir, nl0_planar, nl0_circle = sfdsc.nlm_ideal_cases(norm=norm)
+ax.plot(nl0_circle[0], nl0_circle[1] , c=c_ddrx, marker='o', ms=mse, ls='none', label=None, zorder=20)
+plt.text(nl0_circle[0], nl0_circle[1]-1.4*dy0/norm, '{\\bf DDRX}\n{\\bf steady state}', color=c_ddrx, ha='center', va='center', ma='center', fontsize=FSANNO)
 
 kwargs_lbl = dict(ha='center', fontsize=FSANNO)
-plt.text(+0.300/normfac, +0.180/normfac, '{\\bf Single maximum}', color=c_smax, rotation=37, **kwargs_lbl)
-plt.text(-0.175/normfac, +0.125/normfac, '{\\bf Girdle}', color=c_girdle, rotation=-40, **kwargs_lbl)
-plt.text(+0.025/normfac, -0.325/normfac, '{\\bf Circle}', color=c_ddrx, rotation=-25, **kwargs_lbl)
-plt.text(-0.250/normfac, -0.350/normfac, '{\\bf Unphysical}\n{\\bf eigenvalues}', color='0.3', rotation=0, **kwargs_lbl)
+plt.text(+0.300/norm, +0.180/norm, '{\\bf Single maximum}', color=dl.c_unidir, rotation=37, **kwargs_lbl)
+plt.text(-0.175/norm, +0.125/norm, '{\\bf Girdle}', color=dl.c_planar, rotation=-40, **kwargs_lbl)
+plt.text(+0.025/norm, -0.325/norm, '{\\bf Circle}', color=c_ddrx, rotation=-25, **kwargs_lbl)
+plt.text(-0.250/norm, -0.350/norm, '{\\bf Unphysical}\n{\\bf eigenvalues}', color=sfplt.c_dgray, rotation=0, **kwargs_lbl)
 
 ### Plot ODF insets?
 
@@ -329,7 +281,7 @@ if PLOT_ODF_INSETS:
     
     (q, qr, m, mnew, caxes, nlm, nlmr, lm) = load_sample('007.ctf.csv', expr_Priestley)
     (qlatr, qcolatr, qlonr) = qr
-    nlmr_L4 = nlmr[:sf.L4len]/normfac
+    nlmr_L4 = nlmr[:sf.L4len]/norm
     cax_Priestley = (qlatr,qlonr,expr_Priestley['color'])
     
     ### Define model states
@@ -355,14 +307,14 @@ if PLOT_ODF_INSETS:
         axin.set_title(ODF['title'], fontsize=FS-3)
                 
         # Plot ODF
-        nlm = ODF['nlm']*normfac
+        nlm = ODF['nlm']*norm
         sfplt.plotODF(nlm, lm, axin, lvlset=(np.linspace(0.0,ODF['lvlmax'],6), lambda x,p:'%.1f'%x), showcb=False)
 
         # Arrow to ODF state
-        n20_ = np.real(nlm[sf.I20])/normfac
-        n40_ = np.real(nlm[sf.I40])/normfac
+        n20_ = np.real(nlm[sf.I20])/norm
+        n40_ = np.real(nlm[sf.I40])/norm
         ax.annotate("", xy=(n20_, n40_), xycoords='data', \
-                        xytext=(n20_+ODF['darr'][0]/normfac, n40_+sc**2*ODF['darr'][1]/normfac), textcoords='data', \
+                        xytext=(n20_+ODF['darr'][0]/norm, n40_+sc**2*ODF['darr'][1]/norm), textcoords='data', \
                         arrowprops=dict(arrowstyle="-|>", connectionstyle="arc3", facecolor='black'),zorder=20)            
 
         # Plot c-axis data
@@ -385,6 +337,7 @@ for ii,expr in enumerate(experiments):
 ### Axes and legends
 
 plt.sca(ax)
+
 plt.xlabel(r'$\hat{n}_2^0$')
 plt.ylabel(r'$\hat{n}_4^0$')
 
@@ -406,5 +359,4 @@ secax.set_xticks(xticks[::1], minor=True)
 ### Save figure
 
 plt.savefig('%s.png'%(SELFNAME), dpi=175)
-plt.close()
 

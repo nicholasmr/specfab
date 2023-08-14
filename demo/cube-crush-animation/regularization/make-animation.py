@@ -55,7 +55,7 @@ if PLOT_FRAMES:
         
         ### Plot power spectra
 
-        Sl_dirac, Lrange, nlm_dirac = sfdsc.Sl_delta(lm, sf)
+        Sl_dirac, Lrange, nlm_dirac = sfdsc.Sl_delta(lm[0,-1])
 
         ax = fig.add_subplot(gs[0,0])
         Sl_model_reg   = np.array([sf.Sl(nlm_reg[tt,:], l)   for l in Lrange]) 

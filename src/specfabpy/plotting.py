@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib import rcParams, rc
 from matplotlib.offsetbox import AnchoredText
 import matplotlib.ticker as mticker
+import matplotlib.colors
 
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -36,11 +37,15 @@ c_lgreen  = '#b2df8a'
 c_vlgreen = '#e5f5e0'
 c_dgreen  = '#006d2c'
 
+c_lgray  = matplotlib.colors.to_hex('0.85')
+c_gray   = matplotlib.colors.to_hex('gray')
+c_dgray  = matplotlib.colors.to_hex('0.3')
+c_vdgray = matplotlib.colors.to_hex('0.125')
+
 c_orange = '#d94701'
 c_yellow = '#ffff99'
 c_purple = '#6a51a3'
 c_brown  = '#b15928'
-c_gray   = 'gray'
 
 ### Common constants
 

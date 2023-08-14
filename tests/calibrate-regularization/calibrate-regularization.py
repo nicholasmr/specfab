@@ -113,7 +113,7 @@ for Lii, L in enumerate(L_list):
 
     lm, nlm_len = sf.init(L)
     
-    Sl_dirac, Lrange, nlm_dirac = sfdsc.Sl_delta(lm, sf)
+    Sl_dirac, Lrange, nlm_dirac = sfdsc.Sl_delta(L)
     #print('*** S(l) for Delta function (l=0,2,...,L) = ', Sl_dirac)
 
     llrange = [int(ll*(ll+1)/2) for ll in Lrange] # (l,m=0) indices: 0, 3, 10, ....
