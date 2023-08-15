@@ -205,7 +205,7 @@ for gg, alpha in enumerate(alpha_sweep):
     
     if 1:
 
-        geo, prj = sfplt.getprojection(rotation=55+180, inclination=50)
+        geo, prj = sfplt.getprojection(rotation=10, inclination=50)
 
         arr = lambda ang: 0.125*np.array([np.cos(np.deg2rad(ang)),np.sin(np.deg2rad(ang))])
         n00 = norm
@@ -235,6 +235,10 @@ for gg, alpha in enumerate(alpha_sweep):
             ax.annotate("", xy=(n20_, n40_), xycoords='data', \
                             xytext=(n20_+ODF['darr'][0]/norm, n40_+sc**2*ODF['darr'][1]/norm), textcoords='data', \
                             arrowprops=dict(arrowstyle="-|>", connectionstyle="arc3", linewidth=1.5, edgecolor='0.2', facecolor='0.2'),zorder=20)            
+
+            kwargs = dict(ha='center', va='center', transform=geo, color=sfplt.c_dred, fontsize=FSANNO)
+            axin.text(0,  0, r'${\bf t}$', **kwargs)
+            axin.text(0, 90, r'${\bf m}$', **kwargs)
 
             axin.set_title(ODF['title'], fontsize=FS)
 
