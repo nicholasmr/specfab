@@ -27,8 +27,6 @@ SELFNAME = 'state-space-validation' # used as prefix for pickled files
 os.system('mkdir -p specfab-state-trajectories')
 def pfile(fname): return "specfab-state-trajectories/%s--%s.p"%(SELFNAME, fname) # full path name for pickled files
 
-norm = 1/np.sqrt(4*np.pi) # normalization constant
-
 #--------------------
 # Flags
 #--------------------

@@ -4,9 +4,12 @@
 import sys, os, code # code.interact(local=locals())
 
 import numpy as np
+
 from specfabpy import specfab as sf 
-from specfabpy import discrete as sfdsc
 from specfabpy import plotting as sfplt
+
+sys.path.append('..')
+from localheader import *
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -30,25 +33,6 @@ legkwargs = {'handlelength':1.1, 'framealpha':1.0,'frameon':True, 'fancybox':Fal
 
 PRODUCTION = 1
 
-n_grain_list = [1,3]
-L = 10
-
-#----------------------
-# Init
-#----------------------
-
-m, t = np.array([0,0,1]), np.array([1,0,0])
-p, q = (m+t)/np.sqrt(2), (m-t)/np.sqrt(2)
-mm, mt, pq = np.tensordot(m,m, axes=0), np.tensordot(m,t, axes=0), np.tensordot(p,q, axes=0)
-
-tau0 = 1 # results are independant of the stress magnitude
-tau_mm = tau0*(np.identity(3)/3 - mm) 
-tau_mt = tau0*(mt + mt.T) 
-tau_pq = tau0*(pq + pq.T)
-
-lm, nlm_len = sf.init(L)
-nlm = sf.nlm_ideal(m,0,L) # delta function
-
 #-----------------------
 # Generate maps
 #-----------------------
@@ -56,22 +40,8 @@ nlm = sf.nlm_ideal(m,0,L) # delta function
 f = 8 if PRODUCTION else 2
 Eca_list = np.logspace(-0,4.1,f*10) # shear along basal plane
 Ecc_list = np.logspace(-2,2,f*10) # against basal plane
-
-size = (len(n_grain_list), len(Eca_list),len(Ecc_list))
-Emm, Emt, Epq = np.zeros(size), np.zeros(size), np.zeros(size)
-
-for nn, n_grain in enumerate(n_grain_list):
-
-    for ii,Eca in enumerate(Eca_list):
-        for jj,Ecc in enumerate(Ecc_list):
-        
-            Eij_grain = [Ecc,Eca]
-            Emm[nn,ii,jj] = sf.Evw_tranisotropic(nlm, m,m,tau_mm, Eij_grain,0,n_grain) 
-            Emt[nn,ii,jj] = sf.Evw_tranisotropic(nlm, m,t,tau_mt, Eij_grain,0,n_grain)
-            Epq[nn,ii,jj] = sf.Evw_tranisotropic(nlm, p,q,tau_pq, Eij_grain,0,n_grain)
-        
-X = np.array([[ Ecc for Ecc in Ecc_list]   for Eca in Eca_list])
-Y = np.array([[ Eca for Ecc in Ecc_list]   for Eca in Eca_list])
+Emm_map_n1, Emt_map_n1, Epq_map_n1, X, Y = Eij_maps_tranisotropic(Ecc_list, Eca_list, 'Sachs', n_grain=1)
+Emm_map_n3, Emt_map_n3, Epq_map_n3, X, Y = Eij_maps_tranisotropic(Ecc_list, Eca_list, 'Sachs', n_grain=3)
 
 #-----------------------
 # Plot
@@ -87,11 +57,12 @@ gs = gridspec.GridSpec(1,2)
 gs.update(left=0.07, right=1-0.00, top=0.95, bottom=0.17, wspace=0.2)
 ax_list = [plt.subplot(gs[0, 0]),plt.subplot(gs[0, 1])]
     
-for ii,n_grain in enumerate(n_grain_list):
+for ii,n_grain in enumerate([1,3]):
 
     print('n_grain=%i'%(n_grain))
 
-    Emm_map, Emt_map, Epq_map = Emm[ii,:,:], Emt[ii,:,:], Epq[ii,:,:]
+    if n_grain==1: Emm_map, Emt_map, Epq_map = Emm_map_n1, Emt_map_n1, Epq_map_n1
+    if n_grain==3: Emm_map, Emt_map, Epq_map = Emm_map_n3, Emt_map_n3, Epq_map_n3
     Zpq = np.ma.array(np.divide(Emt_map,Epq_map))
     
     dlvl = 2
@@ -160,8 +131,8 @@ for ii,n_grain in enumerate(n_grain_list):
 
     hcb=plt.colorbar(hmap, ax=ax, orientation='vertical', pad=0.06)
     hcb.set_label('$E_{mt}$')
-    ax.set_xlabel('$E_{cc}\'$')
-    ax.set_ylabel('$E_{ca}\'$')
+    ax.set_xlabel(r'$E_{cc}^\prime$')
+    ax.set_ylabel(r'$E_{ca}^\prime$')
     ax.set_ylim(Eca_list[[0,-1]])
     
     locmaj = mpl.ticker.LogLocator(base=10,numticks=8) 
@@ -170,5 +141,5 @@ for ii,n_grain in enumerate(n_grain_list):
     ax.xaxis.set_minor_locator(locmin)
     ax.xaxis.set_minor_formatter(mpl.ticker.NullFormatter())
 
-plt.savefig('enhancement-factor-nlin-sachs-tranisotropic.png', dpi=250)
+plt.savefig('nlin-sachs-tranisotropic.png', dpi=250)
 

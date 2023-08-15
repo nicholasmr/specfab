@@ -21,8 +21,6 @@ FS = sfplt.setfont_tex(fontsize=12)
 FSLEG = FS-0.5
 FSANNO = FS-1.5
 
-norm = 1/np.sqrt(4*np.pi)
-
 #--------------------
 # Flags
 #--------------------
@@ -83,8 +81,8 @@ nlm_ideal = np.zeros((nlm_len, N))
 n20_ideal, n40_ideal = np.zeros(N), np.zeros(N)
 for ii, colat in enumerate(thetavec):
     nlm_ideal[:,ii] = np.real(sf.nlm_ideal(m, colat, L))
-    n20_ideal[ii] = nlm_ideal[sf.I20,ii]/normfac
-    n40_ideal[ii] = nlm_ideal[sf.I40,ii]/normfac
+    n20_ideal[ii] = nlm_ideal[sf.I20,ii]/norm
+    n40_ideal[ii] = nlm_ideal[sf.I40,ii]/norm
 
 n20_unidir, n40_unidir = n20_ideal[0], n40_ideal[0]   # delta distributed
 n20_planar, n40_planar = n20_ideal[-1], n40_ideal[-1] # x--y planar distributed
@@ -146,9 +144,9 @@ if 1:
         sfplt.plotODF(nlm, lm, axin, lvlset=lvlset, cmap=cmap, showcb=False)
 
         # Arrow to ODF state
-        n20_, n40_ = np.real(nlm[3])/normfac, np.real(nlm[10])/normfac
+        n20_, n40_ = np.real(nlm[3])/norm, np.real(nlm[10])/norm
         ax.annotate("", xy=(n20_, n40_), xycoords='data', \
-                        xytext=(n20_+ODF['darr'][0]/normfac, n40_+sc**2*ODF['darr'][1]/normfac), textcoords='data', \
+                        xytext=(n20_+ODF['darr'][0]/norm, n40_+sc**2*ODF['darr'][1]/norm), textcoords='data', \
                         arrowprops=dict(arrowstyle="-|>", connectionstyle="arc3", linewidth=1.5, edgecolor='0.2', facecolor='0.2'),zorder=20)            
 
         axin.set_title(ODF['title'], fontsize=FS)

@@ -26,7 +26,8 @@ cvl_circle = '#fddbc7'
 # For state space plots
 #-------------------------
 
-def plot_nlm_cases(ax, fs, ms=7.5, norm=1/np.sqrt(4*np.pi), dy0=0.075, show_circle=True, isolbl_above=True):
+def plot_nlm_cases(ax, fs, ms=7.5, norm=1/np.sqrt(4*np.pi), \
+                    show_circle=True, isolbl_above=True, dy0=0.075, dx0_unidir=-0.03):
 
     nl0_unidir, nl0_planar, nl0_circle = sfdsc.nlm_ideal_cases(norm=norm)
     dy = dy0/norm
@@ -38,7 +39,7 @@ def plot_nlm_cases(ax, fs, ms=7.5, norm=1/np.sqrt(4*np.pi), dy0=0.075, show_circ
     plt.text(0, +dy if isolbl_above else -dy, r'{\bf Isotropic}', color=sfplt.c_vdgray, **kwargs_lbl)
 
     ax.plot(*nl0_unidir, c=c_unidir, **kwargs_mrk)
-    plt.text(nl0_unidir[0]-0.3*dy, nl0_unidir[1]+dy, '{\\bf Unidirectional}', color=c_unidir, **kwargs_lbl)
+    plt.text(nl0_unidir[0]+dx0_unidir/norm, nl0_unidir[1]+dy, '{\\bf Unidirectional}', color=c_unidir, **kwargs_lbl)
 
     ax.plot(*nl0_planar, c=c_planar, **kwargs_mrk)
     plt.text(nl0_planar[0], nl0_planar[1]+dy, '{\\bf Planar}', color=c_planar, **kwargs_lbl)

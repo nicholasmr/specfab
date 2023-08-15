@@ -1,0 +1,29 @@
+% Nicholas Rathmann, 2023
+
+\documentclass[12pt,tikz,border=0pt]{standalone}
+
+\usetikzlibrary{backgrounds}
+\usepackage{txfonts}
+\usepackage{times}
+%\usepackage{siunitx}
+
+\gdef\drawframe#1{
+	\begin{tikzpicture}[] 
+		\node at (24em,1em) {\includegraphics[scale=0.95]{frames/Eij-state-space-#1.png}};
+	\end{tikzpicture}
+}
+
+\begin{document}
+
+	\pgfmathsetmacro{\Nt}{19} 
+	\pgfmathsetmacro{\dn}{1} % plot every \dn time step
+	\gdef\Npad{4} % number of still frames for padding at beginning and end of animation
+
+	\foreach \nn in {0,...,\Npad}  {\drawframe{0} }	
+	\foreach \nn in {0,...,\Nt}    {\drawframe{\nn} }
+	\foreach \nn in {0,...,\Npad}  {\drawframe{\Nt} }
+	\foreach \nn in {\Nt,...,0}    {\drawframe{\nn} }
+	
+	
+
+\end{document}

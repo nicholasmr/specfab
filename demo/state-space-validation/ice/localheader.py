@@ -17,8 +17,7 @@ from specfabpy import specfab as sf
 from specfabpy import discrete as sfdsc
 from specfabpy import plotting as sfplt
 
-# This is the presumed psi_0^0 coefficient when deriving nlm from a^(2) or a^(4), a central normalization factor used below. 
-normfac = 1/np.sqrt(4*np.pi) 
+norm = 1/np.sqrt(4*np.pi)
 
 # fwd/inv transform pair for n_2^0 <--> a_zz^(2)
 def n20_to_azz(x): return 1/3*(1+2/np.sqrt(5)*x)  # fwd
