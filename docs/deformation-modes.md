@@ -91,7 +91,7 @@ axis  = 2 # axis of shortening (T>0) or lengthening (T<0): 0=x, 1=y, 2=z
 Tc    = 1 # time taken in seconds for parcel to reduce to half (50%) height if T>0, or abs(time) taken for parcel to double in height (200%) if T<0.
 r     = 0 # asymmetry parameter for shortening (if T>0) or lengthening (if T<0)
 
-T = Tc/np.log(2) # e-folding time
+T = Tc/np.log(2) # corresponding e-folding time
 ugrad = sf.pureshear_ugrad(axis, r, T) # velocity gradient
 D, W = sf.ugrad_to_D_and_W(ugrad)      # strain-rate and spin tensor
 

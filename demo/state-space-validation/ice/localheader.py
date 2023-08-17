@@ -46,7 +46,7 @@ def plot_points(ax, latd, lond, **kwargs):
 
 def plot_trajectory(ax, nlm, arrpos=None, label=None, ls='-', lw=1.75, c='k', hwmul=1, zorder=14,  endmarker=False, mse=7):
 
-    x, y = np.real(nlm[:,3]), np.real(nlm[:,10])
+    x, y = np.real(nlm[:,sf.I20]), np.real(nlm[:,sf.I40])
     h, = ax.plot(x,y, ls=ls,lw=lw,c=c, label=label, zorder=zorder)
    
     if arrpos is not None:

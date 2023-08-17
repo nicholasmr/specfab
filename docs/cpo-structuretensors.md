@@ -53,8 +53,7 @@ The following code example shows how to convert between the representations:
 ```python
 import numpy as np
 from specfabpy import specfab as sf
-L = 8
-lm, nlm_len = sf.init(L)
+lm, nlm_len = sf.init(8)
 nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
 
 ### a2 to nlm

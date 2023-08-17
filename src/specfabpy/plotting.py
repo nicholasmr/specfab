@@ -45,7 +45,9 @@ c_vdgray = matplotlib.colors.to_hex('0.125')
 c_orange = '#d94701'
 c_yellow = '#ffff99'
 c_purple = '#6a51a3'
+
 c_brown  = '#b15928'
+c_dbrown = '#8c510a'
 
 ### Common constants
 

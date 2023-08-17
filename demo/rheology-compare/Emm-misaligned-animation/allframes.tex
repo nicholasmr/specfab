@@ -1,0 +1,50 @@
+% Nicholas Rathmann, 2023
+
+\documentclass[12pt,tikz,border=0pt]{standalone}
+
+\usetikzlibrary{backgrounds}
+\usepackage{txfonts}
+\usepackage{times}
+\usepackage{color}
+\definecolor{myred}{HTML}{a50f15}
+\definecolor{bgcolor}{HTML}{f7f6ee}
+\definecolor{mybrown}{HTML}{8c510a}
+
+\tikzset{
+	arr/.style={-latex, line width=0.25em, mybrown},
+	arrtxt/.style={midway, right, font=\large},
+}
+
+\gdef\drawframe#1{
+
+	\begin{tikzpicture}[
+	background rectangle/.style={fill=bgcolor}, show background rectangle,
+	inner frame xsep=1.5ex, inner frame ysep=1.5ex]
+			
+	\node at (0,0) {\includegraphics[scale=0.95]{frames/Emm-misaligned-frame-#1.png}};
+	
+	\begin{scope}[xshift=12em,yshift=0.15em]
+	\gdef\dy{5.6em}
+	\gdef\H{3.0em}
+	\begin{scope}[yshift=\dy]
+		\draw[arr] (0,\H) -- (0,0em) node[arrtxt] {$\tau_{zz}$};	
+	\end{scope}	
+	\begin{scope}[yshift=-\dy]
+		\draw[arr] (0,-\H) -- (0,0em) node[arrtxt] {$\tau_{zz}$};	
+	\end{scope}	
+	\end{scope}	
+	
+	\end{tikzpicture}
+}
+
+\begin{document}
+
+	\gdef\Nt{33}
+	\gdef\Npad{4} % number of still frames for padding at beginning and end of animation
+	
+	\foreach \nn in {0,...,\Npad} {\drawframe{0} }
+	\foreach \nn in {0,...,\Nt}   {\drawframe{\nn} }
+	\foreach \nn in {0,...,\Npad} {\drawframe{\Nt} }
+	\foreach \nn in {\Nt,...,0}   {\drawframe{\nn} }
+	
+\end{document}
