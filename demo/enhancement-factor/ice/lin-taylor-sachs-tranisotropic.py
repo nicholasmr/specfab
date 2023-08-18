@@ -143,7 +143,6 @@ for ii,TYPE in enumerate(types):
                     label_pos.append(10**logvert[min_ind,:])
             return label_pos
             
-            
         xmin,xmax,ymin,ymax = plt.axis()
 
         if TYPE == "Sachs":
@@ -158,11 +157,9 @@ for ii,TYPE in enumerate(types):
             logmid_1 = (np.log10(xmin)+np.log10(xmax))*0.85, (np.log10(ymin)+np.log10(ymax))*0.55
             logmid_2 = (np.log10(xmin)+np.log10(xmax))*0.625, (np.log10(ymin)+np.log10(ymax))*0.5
 
-        #
         label_pos_1 = getlblpos(CS1,logmid_1)
         label_pos_2 = getlblpos(CS2,logmid_2)
 
-        # draw labels
         inline_spacing=12
 #        inline_spacing=20
         ax1.clabel(CS1, CS1.levels, fmt=fmt, inline_spacing=inline_spacing, manual=label_pos_1)
@@ -198,7 +195,6 @@ for ii,TYPE in enumerate(types):
 
     plt.savefig('Evw_%s.pdf'%(TYPE), dpi=200)
 
-    
 if len(types) == 3:
     flist = "Evw_Sachs.pdf Evw_Taylor.pdf Evw_Mixed.pdf"
     fout = "lin-taylor-sachs-tranisotropic"

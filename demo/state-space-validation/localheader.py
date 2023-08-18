@@ -23,6 +23,8 @@ norm = 1/np.sqrt(4*np.pi)
 def n20_to_azz(x): return 1/3*(1+2/np.sqrt(5)*x)  # fwd
 def azz_to_n20(x): return (x - 1/3)/(2/np.sqrt(5)) # inv
 
+def get_deg(lat_or_colat, lon): return (np.rad2deg(lat_or_colat), np.rad2deg(lon))
+
 def get_m_angles(a2, Ilam1=-1):
 
     """
@@ -56,13 +58,13 @@ def plot_trajectory(ax, nlm, arrpos=None, label=None, ls='-', lw=1.75, c='k', hw
         arrlen = np.sqrt(dx**2 + dy**2)
         dx *= 0.5e-2/arrlen
         dy *= 0.5e-2/arrlen
-        ax.arrow(xa0, ya0, dx, dy, shape='full', lw=1, color=c,  head_width=.02*2.2*hwmul/normfac, head_length=0.035*0.8/normfac, zorder=zorder)
+        ax.arrow(xa0, ya0, dx, dy, shape='full', lw=1, color=c,  head_width=.02*2.2*hwmul/norm, head_length=0.035*0.8/norm, zorder=zorder)
     
     if endmarker: ax.plot(x[-1],y[-1], marker='o', ms=mse, ls='none', c=c, label=None, zorder=zorder) # fillstyle='none',
     
     return h
 
-def load_sample(fname, expr):
+def load_sample(fname, expr, Ilam1=None):
 
     fullfname = 'data/%s/%s'%(expr['path'],fname)
     print('\n*** Loading %s'%(fullfname))
@@ -93,8 +95,9 @@ def load_sample(fname, expr):
     else: 
         sphcoords = df.to_numpy()
         print('- using spherical coordinate representation :: shape(sphcoords) =',np.shape(sphcoords))
-        qlat = np.deg2rad(sphcoords[:,expr['I_lat']].astype(np.float64))
-        qlon = np.deg2rad(sphcoords[:,expr['I_azi']].astype(np.float64))
+        qlat_ = sphcoords[:,expr['I_lat']].astype(np.float64)
+        qlon_ = sphcoords[:,expr['I_azi']].astype(np.float64)
+        qlat, qlon = (np.deg2rad(qlat_), np.deg2rad(qlon_)) if expr['isdeg'] else (qlat_, qlon_)
         qcolat = sfdsc.lat2colat(qlat)
         if expr['iscolat']: qlat, qcolat = qcolat, qlat # swap
 
@@ -107,7 +110,7 @@ def load_sample(fname, expr):
     ### Rotated frame 
        
     # Preferred direction (postulated approx. symmetry axis)
-    Ilam1 = 0 if expr['type'] == 'ue' else 2 # sym. axis = largest eig dir. for single max, smallest eig dir. for girdle
+    if Ilam1 is None: Ilam1 = 0 if expr['type'] == 'ue' else 2 # sym. axis = largest eig dir. for single max, smallest eig dir. for girdle
     (m_colat, m_lon, _) = get_m_angles(sf.a2(nlm), Ilam1=Ilam1)
     #m_colat = 0 # debug: only horiz rotation
 
@@ -134,4 +137,20 @@ def load_sample(fname, expr):
     m  = (sfdsc.colat2lat(m_colat), m_colat, m_lon)
     mew = (sfdsc.colat2lat(mnew_colat), mnew_colat, mnew_lon)
     return (q, qr, m, mnew, caxes, nlm, nlmr, lm)
+    
+### For olivine only
+
+color_b = sfplt.c_dred
+color_n = sfplt.c_dblue 
+
+def f_J(nlm, Iend=sf.I60): 
+    return np.sqrt(4*np.pi)**2*np.sum(np.multiply(nlm[:Iend], np.conj(nlm[:Iend]))) # J index
+
+def get_drex_run(fname, ri):
+    with open('drex/state-trajectories/%s-%i.p'%(fname,ri), 'rb') as f: 
+        nlm, F = pickle.load(f)
+        Fxz, Fzz = F[0,2,:], F[2,2,:]
+        Nt = len(Fxz)
+        J = [ f_J(nlm[tt,:]) for tt in range(Nt)]
+        return nlm, Fxz, Fzz, J
     

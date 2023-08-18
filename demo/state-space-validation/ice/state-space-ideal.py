@@ -8,6 +8,7 @@ import matplotlib.gridspec as gridspec
 import matplotlib.colors
 import cmasher as cmr
 
+sys.path.insert(0, '..')
 from localheader import *
 
 sys.path.append('../../')

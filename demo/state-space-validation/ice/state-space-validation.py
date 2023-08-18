@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.colors
 
+sys.path.insert(0, '..')
 from localheader import *
 from experiments import * # experiment definitions (data structures for experiment files, etc.)
 
@@ -31,8 +32,6 @@ FSANNO = FS-2.5
 SELFNAME = sys.argv[0][:-3] # used as prefix for pickled files
 os.system('mkdir -p specfab-state-trajectories')
 def pfile(fname): return "specfab-state-trajectories/%s--%s.p"%(SELFNAME, fname) # full path name for pickled files
-
-norm = 1/np.sqrt(4*np.pi)
 
 #--------------------
 # Run options

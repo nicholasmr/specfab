@@ -12,6 +12,7 @@ import pickle, glob
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
+sys.path.insert(0, '..')
 from localheader import * 
 from experiments import * # experiment definitions (data structures for experiment files, etc.)
 
@@ -19,9 +20,6 @@ from specfabpy import specfab as sf
 from specfabpy import discrete as sfdsc
 from specfabpy import plotting as sfplt
 FS = sfplt.setfont_tex(fontsize=12)
-
-def get_deg(lat_or_colat, lon):
-    return (np.rad2deg(lat_or_colat), np.rad2deg(lon))
 
 PLOT_OVERVIEW_FIGURE = True
 
@@ -44,7 +42,7 @@ experiments = (expr_GRIP,)
 
 for expr in experiments:
 
-    corr = {'n20':[], 'n40':[], 'n60':[]} # container for data correlation 
+    corr = {'n20':[], 'n40':[], 'n60':[]} # container for correlation data
     
     print('\n----------------------------------')
     print('Processing experiments in %s/'%(expr['path']))
@@ -131,7 +129,6 @@ for expr in experiments:
             print('- Saving %s'%(fout))
             plt.savefig(fout, dpi=250)
             plt.close()
-
 
     ### Save all correlations from the files of this experiment
     fcorr = "observed-states/%s.p"%(expr['path']) # save this experiment's correlations in this file

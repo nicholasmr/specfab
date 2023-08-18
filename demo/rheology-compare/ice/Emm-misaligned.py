@@ -113,7 +113,7 @@ leg.get_frame().set_linewidth(0.8);
 
 ### Save figure
 
-fname = 'rheology-compare-Etheta.png'
+fname = 'Emm-misaligned.png'
 print('Saving output to %s'%(fname))
 plt.savefig(fname, dpi=175, bbox_inches = 'tight', pad_inches = 0.05)
 

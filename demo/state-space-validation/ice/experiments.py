@@ -101,7 +101,7 @@ expr_SPICE = {\
     'path': 'SPICE', \
     'plotname': 'SPICE', \
     'type':'ue', \
-    'coords':'spherical', 'I_azi':2, 'I_lat':1, 'iscolat':True, \
+    'coords':'spherical', 'I_azi':2, 'I_lat':1, 'isdeg':True, 'iscolat':True, \
     'flist': ["%i SPICE/%i SPICE.txt"%(fid,fid) for fid in files[::1]], \
     'skiprows': 22, \
     'sep': '\t', \
@@ -113,7 +113,7 @@ expr_EGRIP_S5 = {\
     'path': 'EGRIP_S5', \
     'plotname': 'NEGIS shear margin', \
     'type':'ss', \
-    'coords':'spherical', 'I_azi':0, 'I_lat':1, 'iscolat':False, \
+    'coords':'spherical', 'I_azi':0, 'I_lat':1, 'isdeg':True, 'iscolat':False, \
     'flist': ['stereo_EGRIP_S5_124_1_20.txt', 'stereo_EGRIP_S5_124_3_20.txt', 'stereo_EGRIP_S5_124_volume_vertical_2_20.txt'], \
     'skiprows': 0, \
     'sep': '\t', \
@@ -136,7 +136,7 @@ expr_GRIP = {\
     'path': 'GRIP', \
     'plotname': 'GRIP', \
     'type':'uc', \
-    'coords':'spherical', 'I_azi':0, 'I_lat':1, 'iscolat':False, \
+    'coords':'spherical', 'I_azi':0, 'I_lat':1, 'isdeg':True, 'iscolat':False, \
     'flist': ['SPLITTED/GRIP_CAXES_%02i'%(ii) for ii in np.arange(1,28)], \
     'skiprows': 3, \
     'sep': '\t', \
@@ -148,7 +148,7 @@ expr_LAWDOME = {\
     'path': 'LAWDOME', \
     'plotname': 'Law Dome', \
     'type':'uc', \
-    'coords':'spherical', 'I_azi':-1, 'I_lat':-2, 'iscolat':True, \
+    'coords':'spherical', 'I_azi':-1, 'I_lat':-2, 'isdeg':True, 'iscolat':True, \
 #    'flist': ["SPLITTED/DSS%i"%(fid) for fid in files[::1]], \
     'flist': ["SPLITTED/DSS%i"%(fid) for fid in [116, 182, 199, 214, 254, 266, 287, 326, 356, 391, 465, 473, 481, 496, 521, 542, 604, 662, 697, 732, 796, 852, 888, 902, 930, 971, 1005, 1017, 1049, 1099]], \
     'skiprows': 0, \

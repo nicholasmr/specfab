@@ -11,6 +11,7 @@ import pickle
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
+sys.path.insert(0, '..')
 from localheader import *
 
 sys.path.append('../../')
@@ -28,13 +29,11 @@ SELFNAME = sys.argv[0][:-3] # used as prefix for pickled files
 os.system('mkdir -p specfab-state-trajectories')
 def pfile(fname): return "specfab-state-trajectories/%s--%s.p"%(SELFNAME, fname) # full path name for pickled files
 
-norm = 1/np.sqrt(4*np.pi) 
-
 #--------------------
 # Run options
 #--------------------
 
-DEBUG = 1 # For faster plotting (lower resolution)
+DEBUG = 0 # For faster plotting (lower resolution)
             
 #--------------------
 # Setup

@@ -54,3 +54,43 @@ def Eij_maps_tranisotropic(X,Y, paramcombo, Ecc=None, Eca=None, alpha=None, n_gr
             
     return Emm_map, Emt_map, Epq_map, X_map, Y_map
     
+    
+def Eij_maps_orthotropic(X,Y, paramcombo, Eii_grain=None, n_grain=1):
+
+    X_map, Y_map = np.meshgrid(X, Y, indexing='xy')
+
+    size = (len(Y),len(X))
+    Emm_map, Emt_map, Epq_map = np.zeros(size), np.zeros(size), np.zeros(size)
+
+    Eij_grain = np.ones(6)
+
+    nlm_2 = sf__.nlm_ideal(m, 0, L__) # n unidir in m dir.
+    nlm_1 = sf__.nlm_ideal(t, 0, L__) # b unidir in t dir.
+    nlm_3 = 0*nlm_1 # infer from nlm_1 and nlm_2
+
+    for ii,y in enumerate(Y):
+        for jj,x in enumerate(X):
+        
+            if paramcombo == 'Taylor':
+                Eij_grain[[0,1,2]] = x
+                Eij_grain[5] = y # x-y shear
+                alpha = 1
+            elif paramcombo == 'Sachs':
+                Eij_grain[[0,1,2]] = x
+                Eij_grain[5] = y # x-y shear
+                alpha = 0
+            elif paramcombo == 'Mixed':
+                Eij_grain[[0,1,2]] = Eii_grain
+                Eij_grain[5] = y # x-y shear
+                alpha = x
+            else:
+                raise ValueError('argument "paramcombo" not understood')
+                
+            grain_params = (Eij_grain, alpha, n_grain)
+            
+            Emm_map[ii,jj] = sf__.Evw_orthotropic(nlm_1,nlm_2,nlm_3, m,m,tau_mm, *grain_params)
+            Emt_map[ii,jj] = sf__.Evw_orthotropic(nlm_1,nlm_2,nlm_3, m,t,tau_mt, *grain_params)
+            Epq_map[ii,jj] = sf__.Evw_orthotropic(nlm_1,nlm_2,nlm_3, p,q,tau_pq, *grain_params)
+            
+    return Emm_map, Emt_map, Epq_map, X_map, Y_map
+
