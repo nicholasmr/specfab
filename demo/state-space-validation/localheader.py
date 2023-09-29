@@ -10,8 +10,14 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 import quaternion as qt # pip3 install numpy-quatern (if fails try pip3 install numpy==1.23.1)
 import pandas as pd
+import pickle, glob
 
 import matplotlib.pyplot as plt
+import matplotlib.colors
+
+sys.path.append('../..')
+sys.path.append('..')
+import demolib as dl
 
 from specfabpy import specfab as sf
 from specfabpy import discrete as sfdsc
@@ -24,6 +30,14 @@ def n20_to_azz(x): return 1/3*(1+2/np.sqrt(5)*x)  # fwd
 def azz_to_n20(x): return (x - 1/3)/(2/np.sqrt(5)) # inv
 
 def get_deg(lat_or_colat, lon): return (np.rad2deg(lat_or_colat), np.rad2deg(lon))
+
+def f_Fxz(F):        return [ F[tt,0,2] for tt in range(F.shape[0]) ]
+def f_strainxz(F):   return [ sf.F_to_strain(F[tt,:,:])[0,2] for tt in range(F.shape[0]) ]
+
+def f_Fzz(F):        return [ F[tt,2,2] for tt in range(F.shape[0]) ]
+def f_strainzz(F):   return [ sf.F_to_strain(F[ii,:,:])[2,2] for ii in range(F.shape[0]) ]
+
+def f_shearang(nlm): return [ np.rad2deg(sfdsc.colat2lat(get_m_angles(sf.a2(nlm[tt,:]))[0])) for tt in range(nlm.shape[0])]
 
 def get_m_angles(a2, Ilam1=-1):
 
@@ -138,19 +152,73 @@ def load_sample(fname, expr, Ilam1=None):
     mew = (sfdsc.colat2lat(mnew_colat), mnew_colat, mnew_lon)
     return (q, qr, m, mnew, caxes, nlm, nlmr, lm)
     
+def statespace_shading(nlm_uc, nlm_ue, x, y, isvalid, shade_circle=True):
+
+    ### CPOs resulting from UC and UE under lattice rotation 
+    if len(np.shape(nlm_uc)) == 2:
+        xl = np.concatenate((nlm_ue[:,sf.I20],nlm_uc[:,sf.I20]))
+        yl = np.concatenate((nlm_ue[:,sf.I40],nlm_uc[:,sf.I40]))
+    else:
+        # assume points are directly specified 
+        xl = nlm_uc
+        yl = nlm_ue
+        
+    # ...force white shading near isotropy
+    I = np.argwhere(np.abs(xl)>0.1/norm) 
+    xl, yl = xl[I], yl[I] 
+
+    ### Circle CPOs
+    if shade_circle:
+        Il24 = [sf.I20, sf.I40] # l=2,4, m=0 coefs
+        LB = np.array([ np.real(sf.nlm_ideal([0,0,1], np.deg2rad(colat), 4))[Il24]/norm for colat in np.linspace(38,56,20) ])
+        xc, yc = LB[:,0], LB[:,1]
+    else:
+        xc, yc = [], []
+
+    ### Join all points
+    X = np.append(xl, xc)
+    Y = np.append(yl, yc)
+
+    ### Generate shadings map
+    xlims = [-1.40,2.65]
+    y_cutoff = np.interp(x, (xlims[0],0.1/norm, xlims[-1]), np.array([-0.15,-0.15,0.125])/norm)
+    sc = (y[-1]-y[0])/(x[-1]-x[0])
+
+    C = np.empty((len(y), len(x), 4), dtype=float) # color (0,1,2) and alpha (3)
+    expo, var = 6, 1e-3
+
+    for jj, x_ in enumerate(x):
+        for ii, y_ in enumerate(y): 
+
+            if isvalid[ii,jj]:
+                d = np.amin( np.sqrt(np.real((x_-X)**2 + (1/sc*(y_-Y))**2)) ) # distance from state curves
+                C[ii,jj,-1] = np.exp(-d**expo/var) # set alpha depending on distance to state curves
+                
+                if y_ > y_cutoff[jj]: # assume single max or girdle fabric
+                    if x_<0: C[ii,jj,0:-1] = matplotlib.colors.to_rgb(dl.cvl_planar)
+                    else:    C[ii,jj,0:-1] = matplotlib.colors.to_rgb(dl.cvl_unidir)
+                else: # circle fabric
+                   C[ii,jj,0:-1] = matplotlib.colors.to_rgb(dl.cvl_circle)
+                   C[ii,jj,-1] = np.exp(-d**expo/(1.75*var))
+                   
+            else: 
+                C[ii,jj,0:-1] = matplotlib.colors.to_rgb(sfplt.c_lgray) # bad 
+                C[ii,jj,-1] = 1
+
+    return C
+
+    
 ### For olivine only
 
-color_b = sfplt.c_dred
-color_n = sfplt.c_dblue 
+def f_J(nlm, Iend=sf.L6len): 
+    # J index
+    if len(nlm.shape) == 2: J_i = [ np.sqrt(4*np.pi)**2*np.sum(np.multiply(nlm[ii,:Iend], np.conj(nlm[ii,:Iend]))) for ii in range(nlm.shape[0]) ]
+    else:                   J_i =   np.sqrt(4*np.pi)**2*np.sum(np.multiply(nlm[:Iend],    np.conj(nlm[:Iend]))) 
+    return J_i
 
-def f_J(nlm, Iend=sf.I60): 
-    return np.sqrt(4*np.pi)**2*np.sum(np.multiply(nlm[:Iend], np.conj(nlm[:Iend]))) # J index
-
-def get_drex_run(fname, ri):
-    with open('drex/state-trajectories/%s-%i.p'%(fname,ri), 'rb') as f: 
-        nlm, F = pickle.load(f)
-        Fxz, Fzz = F[0,2,:], F[2,2,:]
-        Nt = len(Fxz)
-        J = [ f_J(nlm[tt,:]) for tt in range(Nt)]
-        return nlm, Fxz, Fzz, J
+def load_drex_run(fname, ri, normalize=False):
+    nlm, F = pickle.load(open('drex/state-trajectories/%s-%i.p'%(fname,ri), 'rb'))
+    if normalize: nlm = np.array([ nlm[tt,:]/nlm[tt,0] for tt in np.arange(nlm.shape[0]) ])
+    F = np.einsum('ijk->kij', F) # reorder to (time,i,j)
+    return nlm, F
     

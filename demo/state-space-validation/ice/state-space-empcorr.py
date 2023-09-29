@@ -116,31 +116,16 @@ sc = np.diff(ylims)/np.diff(xlims)
 
 ### Determine valid subspace (valid eigenvalues)
 
-print('Determining subspace of valid eigenvalues...')
-
 isvalid, x,y = dl.nlm_isvalid_grid(xlims, ylims, RESX, RESY)
 
-print('Determining shading regions for different fabric types...', end='')
-imdat = np.empty((RESY, RESX, 4), dtype=float) # color (0,1,2) and alpha (3)
 I = np.nonzero(np.abs(x_corr) > 0.4)
-for xii, x_ in enumerate(x):
-    for yii, y_ in enumerate(y): 
-        if isvalid[yii,xii]:
-            distnn = np.amin( np.sqrt(np.real((x_-x_corr[I])**2 + (1/sc*(y_-y_corr[I]))**2)) ) # distance from model-line points
-            var, expo = 1e-3, 6
-            imdat[yii,xii,-1] = np.exp(-distnn**expo/var) # set alpha depending on distance to model lines/points
-            if x_<0: imdat[yii,xii,0:-1] = matplotlib.colors.to_rgb(dl.cvl_planar)
-            else:    imdat[yii,xii,0:-1] = matplotlib.colors.to_rgb(dl.cvl_unidir)
-        else: 
-            imdat[yii,xii,:-1] = matplotlib.colors.to_rgb(sfplt.c_lgray) # bad 
-            imdat[yii,xii,-1] = 1
-print('done')
+C = statespace_shading(x_corr[I], y_corr[I], x, y, isvalid, shade_circle=False)
 
 # Plot valid/invalid subspaces and fabric-type shadings within valid subspace
-imdat0 = np.ones((RESY, RESX, 4), dtype=float) # color (0,1,2) and alpha (3)
+C0 = np.ones((RESY, RESX, 4), dtype=float) # color (0,1,2) and alpha (3)
 kwargs = dict(aspect='auto', extent=[np.amin(xlims), np.amax(xlims), np.amin(ylims), np.amax(ylims)], origin='lower', zorder=1)
-im = ax.imshow(imdat0, **kwargs)
-im = ax.imshow(imdat,  **kwargs)
+im = ax.imshow(C0, **kwargs)
+im = ax.imshow(C,  **kwargs)
 
 ### End-member cases
 

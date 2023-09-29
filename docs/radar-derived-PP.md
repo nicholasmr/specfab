@@ -60,13 +60,8 @@ $$
 \Delta \lambda = \lambda_2 - \lambda_1,
 $$
 
-where ${\bf m}_1$ and ${\bf m}_2$ are the corresponding (horizontal) eigenvectors, and the eigenvalues are sorted such that $\lambda_1 \leq \lambda_2$, or more precisely
-
-$$ 
-0 \leq \lambda_1 \leq 1/3 \leq \lambda_2 \leq 1.
-$$
-
-In this eigenframe (${\bf m}_1, {\bf m}_2, {\bf z}$), the structure tensor can therefore be written as 
+where ${\bf m}_1$ and ${\bf m}_2$ are the corresponding (horizontal) eigenvectors, and the eigenvalues are sorted such that $\lambda_1 \leq \lambda_2$.
+In this eigenframe (${\bf m}_1, {\bf m}_2, {\bf z}$) the structure tensor is therefore
 
 $$
 \langle c_i c_j \rangle 
@@ -80,6 +75,14 @@ $$
 $$
 
 where $\operatorname{tr}(\langle c_i c_j \rangle) = 1$ was used.
+
+<!--
+, or more precisely
+
+$$ 
+0 \leq \lambda_1 \leq 1/3 \leq \lambda_2 \leq 1.
+$$
+-->
 
 ### Gerber's approximation 
 
@@ -136,7 +139,7 @@ m1, m2, z = np.array([1,0,0]), np.array([0,1,0]), np.array([0,0,1]) # eigenvecto
 
 ### Rotate <c_i c_j> into a rotationally-symmetric frame about z
 Rm1 = Rotation.from_rotvec(np.pi/2 * m1).as_matrix() # Rotate 90 deg about m1 eigenvector
-Rm2 = Rotation.from_rotvec(np.pi/2 * m2).as_matrix() # Rotate 90 deg.about m2 eigenvector
+Rm2 = Rotation.from_rotvec(np.pi/2 * m2).as_matrix() # Rotate 90 deg about m2 eigenvector
 if dl < 0.4:         a2_vs = a2 # Already in rotationally-symmetric frame about z
 if 0.4 <= dl <= 0.6: a2_vs = np.matmul(Rm2,np.matmul(a2,Rm2.T)) # Rotate vertical (m2--z) girdle into horizontal (m1--m2) girdle
 if dl > 0.6:         a2_vs = np.matmul(Rm1,np.matmul(a2,Rm1.T)) # Rotate horizontal (m2) single-maximum into vertical (z) single-maximum

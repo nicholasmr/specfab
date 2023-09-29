@@ -6,8 +6,8 @@ program demo
     
     implicit none
 
-    integer, parameter :: dp = 8
-    integer            :: ii ! loop counter
+!    integer, parameter :: dp = 8
+!    integer            :: ii ! loop counter
     
     integer, parameter :: L = 2
     

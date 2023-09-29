@@ -6,8 +6,8 @@ program demo
     
     implicit none
 
-    integer, parameter :: dp = 8
-    real(kind=dp)      :: mu,lam, Elam,Emu,Egam, m(3),t(3), mm(3,3),mt(3,3)
+!    integer, parameter :: dp = 8
+    real(kind=dp)      :: mu,lam, Elam,Emu,Egam, m(3),t(3), Mmm(3,3),Mmt(3,3)
 
     ! For testing Reuss homogenization
     complex(kind=dp)   :: nlm(15)
@@ -39,11 +39,11 @@ program demo
     print *, 'Test that enhancement factors are correctly recovered'
     print *, '--------------------------------------------------------'
         
-    mm = outerprod(m,m)
-    mt = outerprod(m,t) + outerprod(t,m)
-    print *, 'sig_{tt}/sig_{tt}^{iso} (strain=mm) = ', stress_ratio(mm, lam,mu,Elam,Emu,Egam,m, t,t), ' --- should be E_lam = ', Elam
-    print *, 'sig_{mt}/sig_{mt}^{iso} (strain=mt) = ', stress_ratio(mt, lam,mu,Elam,Emu,Egam,m, m,t), ' --- should be E_mu  = ', Emu
-    print *, 'sig_{mm}/sig_{mm}^{iso} (strain=mm) = ', stress_ratio(mm, lam,mu,Elam,Emu,Egam,m, m,m), ' --- should be E_gam = ', Egam
+    Mmm = outerprod(m,m)
+    Mmt = outerprod(m,t) + outerprod(t,m)
+    print *, 'sig_{tt}/sig_{tt}^{iso} (strain=mm) = ', stress_ratio(Mmm, lam,mu,Elam,Emu,Egam,m, t,t), ' --- should be E_lam = ', Elam
+    print *, 'sig_{mt}/sig_{mt}^{iso} (strain=mt) = ', stress_ratio(Mmt, lam,mu,Elam,Emu,Egam,m, m,t), ' --- should be E_mu  = ', Emu
+    print *, 'sig_{mm}/sig_{mm}^{iso} (strain=mm) = ', stress_ratio(Mmm, lam,mu,Elam,Emu,Egam,m, m,m), ' --- should be E_gam = ', Egam
    
     print *, "... where m, t = "
     print *, m
@@ -199,8 +199,8 @@ subroutine test_Q(nlm, lam,mu,Elam,Emu,Egam)
     real(kind=dp), intent(in)    :: lam,mu,Elam,Emu,Egam
     real(kind=dp)                :: Qr(3,3), Qv(3,3)
 
-    Qr = Qnorm_Reuss(nlm, lam,mu, Elam,Emu,Egam)
-    Qv = Qnorm_Voigt(nlm, lam,mu, Elam,Emu,Egam)
+    Qr = Qnorm_tranisotropic_Reuss(nlm, lam,mu, Elam,Emu,Egam)
+    Qv = Qnorm_tranisotropic_Voigt(nlm, lam,mu, Elam,Emu,Egam)
     
     print *, 'alpha = 1 (Voigt): Q=', Qv
     print *, 'alpha = 0 (Reuss): Q=', Qr

@@ -211,11 +211,12 @@ def setfont_tex(fontfamily='serif', sansserif=['Times'], fontsize=fontsize_defau
     rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb} \usepackage{physics} \usepackage{txfonts} \usepackage{siunitx} \DeclareSIUnit\year{a}'
 
     return fontsize
+    
  
 def panellabel(ax, loc, txt, frameon=True, alpha=1.0, fontsize=fontsize_default, pad=0.3, ma='none', bbox=None, zorder=None):
 
     """
-    Set a panel label
+    Set panel label
     """
 
     at = AnchoredText(txt, loc=loc, prop=dict(size=fontsize), frameon=frameon, pad=pad, bbox_to_anchor=bbox, bbox_transform=ax.transAxes)
@@ -223,6 +224,21 @@ def panellabel(ax, loc, txt, frameon=True, alpha=1.0, fontsize=fontsize_default,
     ax.add_artist(at)
 
 
+def plotFSE(ax, center, eigenvectors, eigenvalues, N=50, lw=0.5, ls='-', c='tab:green', scale=0.05):
+
+    """
+    Plot finite strain ellipse (FSE)
+    """
+
+    theta = np.linspace(0, 2*np.pi, N)
+    eigenvectors = eigenvectors.T
+    a = scale*np.sqrt(1/eigenvalues[0])
+    b = scale*np.sqrt(1/eigenvalues[1])
+    ellipse_points = a * np.cos(theta)[:, np.newaxis] * eigenvectors[:, 0] + b * np.sin(theta)[:, np.newaxis] * eigenvectors[:, 1]
+    rotated_points = ellipse_points # Shift by center
+    ax.plot(center[0] + rotated_points[:, 0], center[1] + rotated_points[:, 1],  lw=lw, ls=ls, c=c)
+    
+    
 def plotparcel(ax, F, scale=1, axscale=1, elev=20, azim=35, \
                 lw=1, facecolor='k', edgecolor='0.10',  \
                 axislabels=True, colorax='k', fonttex=False, fontsize=fontsize_default, \

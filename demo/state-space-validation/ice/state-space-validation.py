@@ -184,52 +184,13 @@ legkwargs = {'handlelength':1.4, 'framealpha':1.0, 'fancybox':False, 'handletext
 
 ### Determine valid subspace
 
-print('Determining subspace of valid eigenvalues...')
-
 grain_params = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
 (Ezz, Exz, x, y, isvalid) = dl.Eij_statemap_ice(grain_params, xlims, ylims, resx=RESX, resy=RESY)
 
-print('Determining shading regions for different fabric types...', end='')
-            
-# LROT
-x_LROT = np.concatenate((nlm_ue[:,sf.I20],nlm_uc[:,sf.I20]))
-y_LROT = np.concatenate((nlm_ue[:,sf.I40],nlm_uc[:,sf.I40]))
-# ...make shading white again near isotropy
-I_latrot = np.argwhere(np.abs(x_LROT)>0.1/norm) 
-x_LROT = x_LROT[I_latrot]
-y_LROT = y_LROT[I_latrot] 
-
-# DDRX
-Il24 = [sf.I20, sf.I40] # l=2,4, m=0 coefs
-LB = np.array([ np.real(sf.nlm_ideal([0,0,1], np.deg2rad(colat), 4))[Il24]/norm for colat in np.linspace(38,56,20) ])
-x_DDRX, y_DDRX = LB[:,0], LB[:,1]
-
-# Join all model points
-xmodel = np.append(x_LROT, x_DDRX)
-ymodel = np.append(y_LROT, y_DDRX)
-
-y_cutoff = np.interp(x, (xlims[0],0.1/norm,xlims[-1]), np.array([-0.15,-0.15,0.125])/norm)
-imdat = np.empty((RESY, RESX, 4), dtype=float) # color (0,1,2) and alpha (3)
-expo, var = 6, 1e-3
-
-for xii, x_ in enumerate(x):
-    for yii, y_ in enumerate(y): 
-        if isvalid[yii,xii]:
-            distnn = np.amin( np.sqrt(np.real((x_-xmodel)**2 + (1/sc*(y_-ymodel))**2)) ) # distance from model-line points
-            imdat[yii,xii,-1] = np.exp(-distnn**expo/var) # set alpha depending on distance to model lines/points
-            if y_ > y_cutoff[xii]: # assume single max or girdle fabric
-                if x_<0: imdat[yii,xii,0:-1] = matplotlib.colors.to_rgb(dl.cvl_planar)
-                else:    imdat[yii,xii,0:-1] = matplotlib.colors.to_rgb(dl.cvl_unidir)
-            else: # circle fabric
-               imdat[yii,xii,0:-1] = matplotlib.colors.to_rgb(dl.cvl_circle)
-               imdat[yii,xii,-1] = np.exp(-distnn**expo/(1.75*var))
-        else: 
-            imdat[yii,xii,0:-1] = matplotlib.colors.to_rgb(sfplt.c_lgray) # bad 
-            imdat[yii,xii,-1] = 1
-print('done')
+C = statespace_shading(nlm_uc, nlm_ue, x, y, isvalid, shade_circle=True)
 
 # Plot valid subspace and fabric-type shadings 
-im = ax.imshow(imdat, aspect='auto', extent=[np.amin(xlims), np.amax(xlims), np.amin(ylims), np.amax(ylims)], origin='lower', zorder=1)
+im = ax.imshow(C, aspect='auto', extent=[np.amin(xlims), np.amax(xlims), np.amin(ylims), np.amax(ylims)], origin='lower', zorder=1)
 
 # Plot E_zz
 lvls = np.arange(0.2,1.6+1e-3,0.4)

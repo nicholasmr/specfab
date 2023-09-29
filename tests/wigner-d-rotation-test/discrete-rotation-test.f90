@@ -6,10 +6,10 @@ program demo
     
     implicit none
 
-    integer, parameter :: dp = 8
+!    integer, parameter :: dp = 8
     
     real(kind=dp), dimension(3), parameter :: x1 = [1,0,0], x2 = [0,1,0], x3 = [0,0,1] ! x,y,z dir.
-    real(kind=dp) :: theta = 0.0d0, phi = 0.0d0, pi = 3.14159265d0 
+    real(kind=dp) :: theta = 0.0d0, phi = 0.0d0
     
     call initspecfab(4) 
    

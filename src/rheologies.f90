@@ -73,7 +73,7 @@ contains
         I1 = sig(1,1)+sig(2,2)+sig(3,3)
         I2 = doubleinner22(sig,sig)
         
-        fluidity = A * (fa*(I2-(I1**2)/3) + 2.0d0/3*fb*(I1/3)**2)**powlawexp_fwd(n)
+        fluidity = A * (fa/2*(I2-(I1**2)/3) + fb/3*(I1/3)**2)**powlawexp_fwd(n)
         eps = fluidity * ( fa*(sig - (I1/3)*identity) + 2.0d0/3*fb*(I1/3)*(identity/3) )
     end
 
@@ -86,8 +86,8 @@ contains
         J1 = eps(1,1)+eps(2,2)+eps(3,3)
         J2 = doubleinner22(eps,eps)
         
-        viscosity = A**(-1/n) * ( 1/fa*(J2 - (J1**2)/3) + 3.0d0**3/2*1/fb*(J1/3)**2)**powlawexp_rev(n)
-        sig = viscosity * ( 1/fa*(eps - (J1/3)*identity) + 3.0d0**3/2*1/fb*(J1/3)*(identity/3) )
+        viscosity = A**(-1/n) * (1/(2*fa)*(J2 - (J1**2)/3) + 3.0d0/(4*fb)*J1**2)**powlawexp_rev(n)
+        sig = viscosity * ( 1/fa*(eps - (J1/3)*identity) + 3.0d0/(2*fb)*J1*identity )
     end
 
     !---------------------------------

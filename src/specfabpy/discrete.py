@@ -11,6 +11,8 @@ import scipy.special as sp
 from .specfabpy import specfabpy as sf__ # sf private copy 
 lm__, nlm_len__ = sf__.init(20)
 
+from . import common as sfcom
+
 def lat2colat(lat, deg=False):   return 90 - lat   if deg else np.pi/2 - lat
 def colat2lat(colat, deg=False): return 90 - colat if deg else np.pi/2 - colat
 
@@ -19,7 +21,7 @@ def L2nlmlen(L): return int((L+1)*(L+2)/2)
 def cart2sph(v, deg=False):
 
     """
-    Cartesian vector(s) <-- spherical coordinates
+    Cartesian vector(s) --> spherical coordinates
     """
 
     v = np.array(v)
@@ -45,6 +47,21 @@ def sph2cart(colat, lon, deg=False):
     return r
 
 
+def sphericalbasisvectors(colat, lon, deg=False):
+
+    """
+    Spherical coordinates --> spherical basis vectors
+    """
+
+    if deg: colat, lon = np.deg2rad(colat), np.deg2rad(lon)
+
+    rhat = np.array([np.cos(lon)*np.sin(colat), np.sin(lon)*np.sin(colat), +np.cos(colat)]) 
+    that = np.array([np.cos(lon)*np.cos(colat), np.sin(lon)*np.cos(colat), -np.sin(colat)]) 
+    phat = np.array([-np.sin(lon), np.cos(lon), 0*lon]) 
+    
+    return (rhat,that,phat) # unit vectors (r, theta, phi)
+
+
 def vi2nlm(vi, L=6):
 
     """
@@ -67,23 +84,8 @@ def vi2nlm(vi, L=6):
         raise ValueError('sfdsc.vi2nlm(): only L <= 6 is supported')
 
     return nlm
-
-
-def sphericalbasisvectors(colat, lon, deg=False):
-
-    """
-    Spherical coordinates --> spherical basis vectors
-    """
-
-    if deg: colat, lon = np.deg2rad(colat), np.deg2rad(lon)
-
-    rhat = np.array([np.cos(lon)*np.sin(colat), np.sin(lon)*np.sin(colat), +np.cos(colat)]) 
-    that = np.array([np.cos(lon)*np.cos(colat), np.sin(lon)*np.cos(colat), -np.sin(colat)]) 
-    phat = np.array([-np.sin(lon), np.cos(lon), 0*lon]) 
     
-    return (rhat,that,phat) # unit vectors (r, theta, phi)
-
-
+    
 def Sl_delta(L):
 
     nlm_len = L2nlmlen(L)
@@ -110,6 +112,28 @@ def nlm_ideal_cases(norm=1/np.sqrt(4*np.pi)):
 
     return ((n20_unidir,n40_unidir), (n20_planar,n40_planar), (n20_circle,n40_circle))
     
+    
+class DFSE():
+    
+    """
+    Discrete Finite Strain Ellipse (FSE) solver
+    
+    Based on Lev and Hager (2008) 
+    """
+
+    def __init__(self, dim=2, F0=None):
+        self.dim = dim
+        self.F = F0 if F0 is not None else np.eye(dim)
+
+    def evolve(self, L, dt):
+        F0 = self.F.copy()
+        A = np.eye(self.dim) - dt/2*L
+        B = np.eye(self.dim) + dt/2*L
+        self.F = np.matmul(np.linalg.inv(A), np.matmul(B, F0))
+        
+    def eigenframe(self):
+        return sfcom.eigenframe(sfcom.F2C(self.F), modelplane=None) # first entry is largest stretching ratio pair  
+   
     
 class DDM():
 
@@ -141,48 +165,26 @@ class DDM():
         else:
             for ii in np.arange(self.N): self.v[ii,:] = v0
 
-
     @staticmethod 
     def velocityfield(v0, L, iota=1):
-    
         D = (L + L.T)/2 # L is velocity gradient
         W = (L - L.T)/2
-        
         v0sq = np.einsum('ni,nj->nij', v0,v0) 
         dvdt = np.einsum('ij,nj->ni', W, v0) # W.v
         asymprod = np.einsum('nij,jk->nik', v0sq, D) - np.einsum('ij,njk->nik', D, v0sq)
         dvdt += iota*np.einsum('nij,nj->ni', asymprod, v0) # iota*(v^2.D - D.v^2).v
-
         return dvdt
 
-
     def evolve(self, L, dt):
-        
-        self.v += dt*self.velocityfield(self.v, L)
+        self.v += dt*self.velocityfield(self.v, L, iota=self.iota)
         # re-normalize
         norms = np.linalg.norm(self.v, axis=1)
         self.v = np.array([self.v[ii,:]/norms[ii] for ii in np.arange(self.N)])
 
+    def a2(self):
+        return np.mean(np.einsum('ni,nj->nij', self.v, self.v), axis=0)
 
-    def get_eigenframe(self):
-    
-        a2_n = np.einsum('ni,nj->nij', self.v, self.v)
-        a2 = np.mean(a2_n, axis=0)
-        print(a2)
-        eigvals, eigvecs = np.linalg.eig(a2)
-        I = eigvals.argsort() 
-        return eigvecs[:,I], eigvals[I] # last entry is largest eigenvalue pair
+    def eigenframe(self, modelplane=None):
+        return sfcom.eigenframe(self.a2(), modelplane=modelplane) # (eigvals, eigvecs)
         
-    
-    def get_principal_dir_2D(self, outofplane='y'):
-
-        eigvecs, eigvals = self.get_eigenframe()
-#        print('--------')
-#        print(eigvals)
-#        print(eigvecs)
-        if outofplane == 'y': 
-            e1 = eigvecs[[0,2],-1] # x,z components of large eigenvalue vector
-            e1 /= np.linalg.norm(e1)
-            return e1
-        else: return None
 

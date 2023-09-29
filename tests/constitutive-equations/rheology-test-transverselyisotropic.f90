@@ -6,7 +6,7 @@ program demo
     
     implicit none
 
-    integer, parameter :: dp = 8
+!    integer, parameter :: dp = 8
     real(kind=dp)      :: A,n, Eij(2), m(3), t(3)
     real(kind=dp), dimension(3), parameter :: x1 = [1,0,0], x2 = [0,1,0], x3 = [0,0,1] ! x,y,z dir.
 

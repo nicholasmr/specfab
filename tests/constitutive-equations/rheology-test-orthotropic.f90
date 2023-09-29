@@ -6,10 +6,10 @@ program demo
     
     implicit none
 
-    integer, parameter :: dp = 8
+!    integer, parameter :: dp = 8
     real(kind=dp)      :: A,n, Eij(6), m1(3),m2(3),m3(3), rotang
     real(kind=dp), dimension(3), parameter :: x1 = [1,0,0], x2 = [0,1,0], x3 = [0,0,1] ! x,y,z dir.
-    real, parameter    :: Pi = 3.1415927
+!    real, parameter    :: Pi = 3.1415927
 
     call initspecfab(4) ! Not going to use specfab, but is good practice to initialize it even when using static routines (as is the case here).
 
