@@ -185,11 +185,8 @@ a_{xy} &amp; a_{yy} &amp; 0\\
 $$
 \Delta \lambda = \lambda_2 - \lambda_1,
 $$</p>
-<p>where <span class="arithmatex">\({\bf m}_1\)</span> and <span class="arithmatex">\({\bf m}_2\)</span> are the corresponding (horizontal) eigenvectors, and the eigenvalues are sorted such that <span class="arithmatex">\(\lambda_1 \leq \lambda_2\)</span>, or more precisely</p>
-<div class="arithmatex">\[ 
-0 \leq \lambda_1 \leq 1/3 \leq \lambda_2 \leq 1.
-\]</div>
-<p>In this eigenframe (<span class="arithmatex">\({\bf m}_1, {\bf m}_2, {\bf z}\)</span>), the structure tensor can therefore be written as </p>
+<p>where <span class="arithmatex">\({\bf m}_1\)</span> and <span class="arithmatex">\({\bf m}_2\)</span> are the corresponding (horizontal) eigenvectors, and the eigenvalues are sorted such that <span class="arithmatex">\(\lambda_1 \leq \lambda_2\)</span>.
+In this eigenframe (<span class="arithmatex">\({\bf m}_1, {\bf m}_2, {\bf z}\)</span>) the structure tensor is therefore</p>
 <div class="arithmatex">\[
 \langle c_i c_j \rangle 
 =
@@ -201,6 +198,14 @@ $$</p>
 ,
 \]</div>
 <p>where <span class="arithmatex">\(\operatorname{tr}(\langle c_i c_j \rangle) = 1\)</span> was used.</p>
+<!--
+, or more precisely
+
+$$ 
+0 \leq \lambda_1 \leq 1/3 \leq \lambda_2 \leq 1.
+$$
+-->
+
 <h3 id="gerbers-approximation">Gerber's approximation</h3>
 <p>Since <span class="arithmatex">\(\lambda_1\)</span> is unknown, the problem can be closed by making different assumptions about <span class="arithmatex">\(\lambda_1\)</span> given the local/upstream flow regime, such as proposed by <a href="https://www.nature.com/articles/s41467-023-38139-8">Gerber et al. (2023)</a>.
 Suppose <span class="arithmatex">\(\Delta\lambda\)</span> is measured in region where <span class="arithmatex">\(c\)</span>-axes are, to a good approximation, suspected to be distributed on the <span class="arithmatex">\({\bf m}_2\)</span>&mdash;<span class="arithmatex">\({\bf z}\)</span> plane because the smallest eigenvalue is vanishing, <span class="arithmatex">\(\lambda_1 \rightarrow 0\)</span>.
@@ -241,7 +246,7 @@ m1, m2, z = np.array([1,0,0]), np.array([0,1,0]), np.array([0,0,1]) # eigenvecto
 
 ### Rotate &lt;c_i c_j&gt; into a rotationally-symmetric frame about z
 Rm1 = Rotation.from_rotvec(np.pi/2 * m1).as_matrix() # Rotate 90 deg about m1 eigenvector
-Rm2 = Rotation.from_rotvec(np.pi/2 * m2).as_matrix() # Rotate 90 deg.about m2 eigenvector
+Rm2 = Rotation.from_rotvec(np.pi/2 * m2).as_matrix() # Rotate 90 deg about m2 eigenvector
 if dl &lt; 0.4:         a2_vs = a2 # Already in rotationally-symmetric frame about z
 if 0.4 &lt;= dl &lt;= 0.6: a2_vs = np.matmul(Rm2,np.matmul(a2,Rm2.T)) # Rotate vertical (m2--z) girdle into horizontal (m1--m2) girdle
 if dl &gt; 0.6:         a2_vs = np.matmul(Rm1,np.matmul(a2,Rm1.T)) # Rotate horizontal (m2) single-maximum into vertical (z) single-maximum
