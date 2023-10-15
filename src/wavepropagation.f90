@@ -8,7 +8,6 @@ module wavepropagation
     use elasticities
     use homogenizations
     use moments
-!    use dynamics
     use rotation
 
     implicit none 
@@ -39,198 +38,77 @@ contains
     ! nlm_3 := v
     !--------------
 
-    !--------------
-    ! For CPO defined by distributions m1,m2,m3 (b,n,v)
-    !--------------
+    function Vi_elastic_orthotropic(nlm_1,nlm_2,nlm_3, alpha,Lame_grain,rho, theta,phi) result (Vi)
 
-    function Vi_elastic_orthotropic(nlm_1,nlm_2,nlm_3, alpha,Lame_grain,rho, theta_n,phi_n) result (Vi)
-
-        ! Elastic phase velocities (qP, qS1, qS2) given orientation distributions nlm_1, nlm_2, nlm_3 and propagation directions (theta_n,phi_n) 
+        ! Elastic phase velocities (qP, qS1, qS2) given orientation distributions nlm_1, nlm_2, nlm_3 and propagation directions (theta, phi) 
+        ! *** Only Voigt homogenization is supported (alpha is dummy variable for now) ***
         
         implicit none
         
         complex(kind=dp), intent(in) :: nlm_1(:), nlm_2(:), nlm_3(:)
         real(kind=dp), intent(in)    :: alpha, Lame_grain(9), rho ! grain parameters
-        real(kind=dp), intent(in)    :: theta_n(:), phi_n(:) ! array of theta and phi values to calculate phase velocities (vi) along
-        character(len=1)             :: OPT
-        real(kind=dp)                :: Qnorm(3,3)
-        real(kind=dp)                :: Vi(3,size(theta_n)) ! qS1, qS2, qP phase velocities (in that order)
-        complex(kind=dp)             :: nlm_3_est(size(nlm_1))
+        real(kind=dp), intent(in)    :: theta(:), phi(:) ! array of theta and phi values to calculate phase velocities (vi) along
+        real(kind=dp)                :: Qnorm_Voigt(3,3)
+        real(kind=dp)                :: Vi(3,size(theta)) ! qS1, qS2, qP phase velocities (in that order)
+        complex(kind=dp)             :: nlm4_rot_1(L4len), nlm4_rot_2(L4len), nlm4_rot_3(L4len) ! truncated at L=4 and rotated
+        real(kind=dp)                :: a2_i(3, 3,3), a4_ii(3, 3,3,3,3), a4_jk(3, 3,3,3,3)
         
-        integer, parameter           :: n4mlen = nlm_lenvec(4)
-        complex(kind=dp)             :: nlm4_1(n4mlen), nlm4_rot_1(n4mlen) ! truncated at L=4, and its rotated form
-        complex(kind=dp)             :: nlm4_2(n4mlen), nlm4_rot_2(n4mlen) 
-        complex(kind=dp)             :: nlm4_3(n4mlen), nlm4_rot_3(n4mlen) 
-        
-        ! Estimate nlm_3 from nlm_1 and nlm_2 ?
-        if (real(nlm_3(1)) < 1e-10) then
-            nlm_3_est(:) = 0.0d0
-            nlm_3_est(:n4mlen) = a4_to_nlm(a4_orth(nlm_2,nlm_1))
-            OPT = 'e' ! estimated
-        else
-            nlm_3_est = nlm_3 ! use passed nlm_3
-            OPT = 't' ! true
-        end if
-        
-        ! l=0,2,4 coefficients
-        nlm4_1 = nlm_1(:n4mlen) 
-        nlm4_2 = nlm_2(:n4mlen) 
-        nlm4_3 = nlm_3_est(:n4mlen) 
+        do nn = 1,size(theta)
+            nlm4_rot_1 = rotate_nlm4(nlm_1(:L4len), -theta(nn), -phi(nn)) ! negative angles because we are are rotating the specified direction (back) into the vertical orientation
+            nlm4_rot_2 = rotate_nlm4(nlm_2(:L4len), -theta(nn), -phi(nn)) 
+            nlm4_rot_3 = rotate_nlm4(nlm_3(:L4len), -theta(nn), -phi(nn)) 
+            
+            call ai_orthotropic(nlm4_rot_1, nlm4_rot_2, nlm4_rot_3, a2_i, a4_ii, a4_jk)
+            Qnorm_Voigt = ai_to_Qnorm_orthotropic(a2_i, a4_ii, a4_jk, Lame_grain)
+            Vi(:,nn) = Qnorm_to_vi(Qnorm_Voigt, rho)
+        end do
+    end
+    
+    function Vi_elastic_orthotropic__discrete(mi, alpha,Lame_grain,rho, theta,phi) result (Vi)
 
-        do nn = 1,size(theta_n)
-            nlm4_rot_1 = rotate_nlm4(nlm4_1, -theta_n(nn), -phi_n(nn)) ! negative angles because we are are rotating the specified direction (back) into the vertical orientation
-            nlm4_rot_2 = rotate_nlm4(nlm4_2, -theta_n(nn), -phi_n(nn)) 
-            nlm4_rot_3 = rotate_nlm4(nlm4_3, -theta_n(nn), -phi_n(nn)) 
-            Qnorm = Qnorm_orthotropic(nlm4_rot_1,nlm4_rot_2,nlm4_rot_3, alpha, Lame_grain, OPT) ! effective acoustic tensor
-            Vi(:,nn) = Qnorm_to_vi(Qnorm, rho)
+        ! Elastic phase velocities (qP, qS1, qS2) given ensemble of crystallographic axes (m1', m2', m3') and propagation directions (theta, phi) 
+        ! *** Only Voigt homogenization is supported (alpha is dummy variable for now) ***
+                
+        implicit none
+        
+        real(kind=dp), intent(in) :: mi(:,:,:) ! (3,3,N) = (m'_i, xyz comp., grain no.) 
+        real(kind=dp), intent(in) :: alpha, Lame_grain(9), rho
+        real(kind=dp), intent(in) :: theta(:), phi(:) ! arrays of theta and phi values to calculate phase velocities (vi) along
+        real(kind=dp)             :: Qnorm_Voigt(3,3)
+        real(kind=dp)             :: Vi(3,size(theta)) ! qS1, qS2, qP phase velocities (in that order)
+        real(kind=dp)             :: mi_rot(3,3,size(mi,dim=3))
+        real(kind=dp)             :: a2_i(3, 3,3), a4_ii(3, 3,3,3,3), a4_jk(3, 3,3,3,3)
+        
+        do nn = 1,size(theta)
+            do jj = 1,size(mi,dim=3) ! grain no
+                do ii = 1,3 ! m'_i
+                    mi_rot(ii,:,jj) = rotate_vector(mi(ii,:,jj), -theta(nn), -phi(nn)) ! negative angles because we are are rotating the specified direction (back) into the vertical orientation
+                end do
+            end do
+
+            call ai_orthotropic_discrete(mi_rot, a2_i, a4_ii, a4_jk)
+            Qnorm_Voigt = ai_to_Qnorm_orthotropic(a2_i, a4_ii, a4_jk, Lame_grain)
+            Vi(:,nn) = Qnorm_to_vi(Qnorm_Voigt, rho)
         end do
     end
 
-    function Qnorm_orthotropic(nlm_1,nlm_2,nlm_3, alpha, Lame_grain, OPT) result (Qnorm)
-
-        ! Normalized Voigt--Reuss averaged acoustic tensor such that Q = k^2 * Qnorm
-        
-        implicit none
-        
-        complex(kind=dp), intent(in) :: nlm_1(:), nlm_2(:), nlm_3(:)
-        real(kind=dp), intent(in)    :: alpha, Lame_grain(9)
-        real(kind=dp)                :: Qnorm(3,3), Qnorm_Voigt(3,3)!, Qnorm_Reuss(3,3)
-        character(len=1)             :: OPT
-        
-        Qnorm_Voigt = Qnorm_orthotropic_Voigt(nlm_1,nlm_2,nlm_3, Lame_grain, OPT)
-        Qnorm = Qnorm_Voigt 
-!        Qnorm = (1-alpha)*Qnorm_Reuss + alpha*Qnorm_Voigt
-    end
-
-    function Qnorm_orthotropic_Voigt(nlm_1,nlm_2,nlm_3, Lame_grain, OPT) result (Qnorm)
-
-        ! Acoustic tensor, Qnorm=Qnorm_Voigt, such that div(stress) = k^2*matmul(Qnorm,u) where u is a plane wave in the strain field with k = [0,0,kz]
-        
-        implicit none
-        
-        complex(kind=dp), intent(in) :: nlm_1(:), nlm_2(:), nlm_3(:)
-        real(kind=dp), intent(in)    :: Lame_grain(9)
-        real(kind=dp)                :: Qnorm(3,3)
-        character(len=1)             :: OPT
-        
-        real(kind=dp) :: a2(3,3,3), a2v(3,6), a4v(3,6,6), a4_jk(3,3,3,3,3)
-
-        call f_ev_ck_Mandel(nlm_1, a2v(1,:), a4v(1,:,:)) ! Structure tensors in Mandel notation: a2v = ev_c2_Mandel, a4v = ev_c4_Mandel
-        call f_ev_ck_Mandel(nlm_2, a2v(2,:), a4v(2,:,:)) 
-        call f_ev_ck_Mandel(nlm_3, a2v(3,:), a4v(3,:,:)) 
-        a2(1,:,:) = vec_to_mat(a2v(1,:))
-        a2(2,:,:) = vec_to_mat(a2v(2,:))
-        a2(3,:,:) = vec_to_mat(a2v(3,:))
-
-        if (OPT == 'e') then
-            ! spectrally estimated structure tensors from m1,m2
-            a4_jk(1,:,:,:,:) = a4_jointcross(nlm_2,nlm_1) ! m3 := m1 x m2
-            a4_jk(2,:,:,:,:) = a4_jointcross(nlm_1,nlm_2) ! m3 := m1 x m2
-            a4_jk(3,:,:,:,:) = a4_joint(nlm_1,nlm_2)
-        else if (OPT == 't') then 
-            ! Should reproduce the discrete method for delta-distributed m1,m2,m3 (i.e. single grain behavior)
-!            a4_jk(1,:,:,:,:) = outerprod22(a2(2,:,:),a2(3,:,:))
-!            a4_jk(2,:,:,:,:) = outerprod22(a2(1,:,:),a2(3,:,:))
-!            a4_jk(3,:,:,:,:) = outerprod22(a2(1,:,:),a2(2,:,:))
-            a4_jk(1,:,:,:,:) = a4_joint(nlm_2,nlm_3) ! gives same result as above for delta functions (single crystal)
-            a4_jk(2,:,:,:,:) = a4_joint(nlm_1,nlm_3)
-            a4_jk(3,:,:,:,:) = a4_joint(nlm_1,nlm_2)
-        else
-            stop "Qnorm_orthotropic() error: OPT should be 't' or 'e' for true or estimated v(r) distribution."
-        end if 
-
-        Qnorm = ai_to_Qnorm_orthotropic(a2, a4v, a4_jk, Lame_grain) 
-    end
-
-    function ai_to_Qnorm_orthotropic(a2, a4v, a4_jk, Lame_grain) result (Qnorm)
+    function ai_to_Qnorm_orthotropic(a2_i, a4_ii, a4_jk, Lame_grain) result (Qnorm)
        
         implicit none
         
-        real(kind=dp), intent(in) :: Lame_grain(9), a2(3,3,3), a4v(3,6,6), a4_jk(3,3,3,3,3)
+        real(kind=dp), intent(in) :: Lame_grain(9), a2_i(3, 3,3), a4_ii(3, 3,3,3,3), a4_jk(3, 3,3,3,3)
         real(kind=dp)             :: lam(6), mu(3), Qnorm(3,3)
 
-        ! Separate grain Lame parameters
+        ! Grain Lame parameters
         lam(:) = Lame_grain(1:6) 
         mu(:)  = Lame_grain(7:9)
 
         Qnorm = 0.0d0 ! initialize
-        Qnorm = Qnorm + mu(1)/2*(a2(1,:,:) + matmul(ksq,a2(1,:,:)) + matmul(a2(1,:,:),ksq) + doubleinner22(a2(1,:,:),ksq)*identity)
-        Qnorm = Qnorm + mu(2)/2*(a2(2,:,:) + matmul(ksq,a2(2,:,:)) + matmul(a2(2,:,:),ksq) + doubleinner22(a2(2,:,:),ksq)*identity)
-        Qnorm = Qnorm + mu(3)/2*(a2(3,:,:) + matmul(ksq,a2(3,:,:)) + matmul(a2(3,:,:),ksq) + doubleinner22(a2(3,:,:),ksq)*identity)
-        Qnorm = Qnorm + lam(1)*vec_to_mat(matmul(a4v(1,:,:),mat_to_vec(ksq)))
-        Qnorm = Qnorm + lam(2)*vec_to_mat(matmul(a4v(2,:,:),mat_to_vec(ksq)))
-        Qnorm = Qnorm + lam(3)*vec_to_mat(matmul(a4v(3,:,:),mat_to_vec(ksq)))
-        Qnorm = Qnorm + lam(4)*( doubleinner42_firstlast(a4_jk(1,:,:,:,:),ksq) + transpose(doubleinner42_firstlast(a4_jk(1,:,:,:,:),ksq)) ) ! j,k=2,3
-        Qnorm = Qnorm + lam(5)*( doubleinner42_firstlast(a4_jk(2,:,:,:,:),ksq) + transpose(doubleinner42_firstlast(a4_jk(2,:,:,:,:),ksq)) ) ! j,k=1,3
-        Qnorm = Qnorm + lam(6)*( doubleinner42_firstlast(a4_jk(3,:,:,:,:),ksq) + transpose(doubleinner42_firstlast(a4_jk(3,:,:,:,:),ksq)) ) ! j,k=1,2
-    end
-
-    !--------------
-    ! For CPO defined by discrete ensemble of axes m1,m2,m3
-    !--------------
-
-    function Vi_elastic_orthotropic__discrete(m1,m2,m3, alpha,Lame_grain,rho, theta_n,phi_n) result (vi)
-
-        ! Elastic phase velocities (qP, qS1, qS2) given ensemble of crystallographic axes (m1,m2,m3) and propagation directions (theta_n,phi_n) 
-        
-        implicit none
-        
-        real(kind=dp), intent(in) :: m1(:,:), m2(:,:), m3(:,:) ! (3,N)
-        real(kind=dp), intent(in) :: alpha, Lame_grain(9), rho
-        real(kind=dp), intent(in) :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities (vi) along
-        real(kind=dp)             :: Qnorm(3,3)
-        real(kind=dp)             :: vi(3,size(theta_n)) ! qS1, qS2, qP phase velocities (in that order)
-        real(kind=dp), dimension(3,size(m1,dim=2)) :: m1_rot, m2_rot, m3_rot
-        
-        do nn = 1,size(theta_n)
-            do ii = 1,size(m1,dim=2)
-                m1_rot(:,ii) = rotate_vector(m1(:,ii), -theta_n(nn), -phi_n(nn)) ! negative angles because we are are rotating the specified direction (back) into the vertical orientation
-                m2_rot(:,ii) = rotate_vector(m2(:,ii), -theta_n(nn), -phi_n(nn)) 
-                m3_rot(:,ii) = rotate_vector(m3(:,ii), -theta_n(nn), -phi_n(nn))
-            end do
-            Qnorm = Qnorm_orthotropic_Voigt__discrete(m1_rot,m2_rot,m3_rot, Lame_grain) ! effective acoustic tensor, only Voigt case considered
-            vi(:,nn) = Qnorm_to_vi(Qnorm, rho)
-        end do
-    end
-
-    function Qnorm_orthotropic_Voigt__discrete(m1,m2,m3, Lame_grain) result (Qnorm)
-
-        ! Acoustic tensor, Qnorm=Qnorm_Voigt, such that div(stress) = k^2*matmul(Qnorm,u) where u is a plane wave in the strain field with k = [0,0,kz]
-        
-        implicit none
-        
-        real(kind=dp), intent(in) :: m1(:,:), m2(:,:), m3(:,:) ! (3,N)
-        real(kind=dp), intent(in) :: Lame_grain(9)
-        real(kind=dp)             :: Qnorm(3,3)
-        integer                   :: N, nn
-
-        real(kind=dp) :: a2_(3,3,3), a2(3,3,3), a4(3,3,3,3,3), a4v(3,6,6), a4_jk(3,3,3,3,3)
-
-        a2 = 0.0d0
-        a4 = 0.0d0
-        a4_jk = 0.0d0
-
-        N = size(m1, dim=2) 
-        do nn=1,N
-            a2_(1,:,:) = outerprod(m1(:,nn),m1(:,nn))
-            a2_(2,:,:) = outerprod(m2(:,nn),m2(:,nn))
-            a2_(3,:,:) = outerprod(m3(:,nn),m3(:,nn))
-
-            do ii=1,3            
-                a2(ii,:,:)     = a2(ii,:,:)     + a2_(ii,:,:)/N
-                a4(ii,:,:,:,:) = a4(ii,:,:,:,:) + outerprod22(a2_(ii,:,:), a2_(ii,:,:))/N
-            end do 
-            
-            a4_jk(1,:,:,:,:) = a4_jk(1,:,:,:,:) + outerprod22(a2_(2,:,:), a2_(3,:,:))/N
-            a4_jk(2,:,:,:,:) = a4_jk(2,:,:,:,:) + outerprod22(a2_(1,:,:), a2_(3,:,:))/N
-            a4_jk(3,:,:,:,:) = a4_jk(3,:,:,:,:) + outerprod22(a2_(1,:,:), a2_(2,:,:))/N
-        end do
-
         do ii=1,3
-            a4v(ii,:,:) = a4_to_mat(a4(ii,:,:,:,:))
+            Qnorm = Qnorm + mu(ii)/2  * (a2_i(ii,:,:) + anticommutator(a2_i(ii,:,:),ksq) + doubleinner22(a2_i(ii,:,:),ksq)*identity)
+            Qnorm = Qnorm + lam(ii)   * doubleinner42(a4_ii(ii,:,:,:,:),ksq)
+            Qnorm = Qnorm + lam(ii+3) * doubleinner42_firstlast(2*a4_sym2(a4_jk(ii,:,:,:,:)),ksq)
         end do
-        
-        Qnorm = ai_to_Qnorm_orthotropic(a2, a4v, a4_jk, Lame_grain) 
     end
 
     !---------------------------------

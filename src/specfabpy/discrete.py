@@ -62,6 +62,36 @@ def sphericalbasisvectors(colat, lon, deg=False):
     return (rhat,that,phat) # unit vectors (r, theta, phi)
 
 
+def idealstressstate(latres=40, lonres=80):
+
+    """
+    Idealized stress states w.r.t. spherical unit vectors over all S^2
+    
+    r = radial vector, t = theta vector, p = phi vector
+    """
+
+    vlat = np.deg2rad(np.linspace(-90, 90, latres))
+    vlon = np.deg2rad(np.linspace(0, 360, lonres))
+    vcolat = lat2colat(vlat, deg=False)
+
+    ### Determine spherical basis vectors
+    mlon, mlat = np.meshgrid(vlon, vlat)
+    mcolat = lat2colat(mlat, deg=False)
+    vr, vt, vp = sphericalbasisvectors(mcolat, mlon)
+
+    rr = np.einsum('ikl,jkl->ijkl', vr, vr)
+    rt = np.einsum('ikl,jkl->ijkl', vr, vt)
+    rp = np.einsum('ikl,jkl->ijkl', vr, vp)
+
+    id4 = np.zeros((3,3,latres,lonres)) # repeated identity matrix
+    id4[0,0,:,:] = id4[1,1,:,:] = id4[2,2,:,:] = 1
+    tau_rr = id4-3*rr
+    tau_rt = rt + np.einsum('ijkl->jikl',rt)
+    tau_rp = rp + np.einsum('ijkl->jikl',rp)
+
+    return (vr,vt,vp, rr,rt,rp, tau_rr,tau_rt,tau_rp, vlon,vlat, mlon,mlat)
+    
+
 def vi2nlm(vi, L=6):
 
     """

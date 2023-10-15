@@ -540,26 +540,26 @@ contains
     
     ! For a composite material consisting of orthotropic grains
     
-    function Vi_elastic_orthotropic(nlm_r1,nlm_r2,nlm_r3, alpha,lame_grain,rho, theta_n,phi_n) result(Vi)
+    function Vi_elastic_orthotropic(nlm_1,nlm_2,nlm_3, alpha,lame_grain,rho, theta,phi) result(Vi)
         use specfabpy_const
         implicit none
-        complex(kind=dp), intent(in) :: nlm_r1(:), nlm_r2(:), nlm_r3(:)
+        complex(kind=dp), intent(in) :: nlm_1(:), nlm_2(:), nlm_3(:)
         real(kind=dp), intent(in)    :: alpha, lame_grain(9), rho
-        real(kind=dp), intent(in)    :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities along
-        real(kind=dp)                :: Vi(3,size(theta_n)) ! qS1, qS2, qP phase velocities
+        real(kind=dp), intent(in)    :: theta(:), phi(:) ! arrays of theta and phi values to calculate phase velocities along
+        real(kind=dp)                :: Vi(3,size(theta)) ! qS1, qS2, qP phase velocities
 
-        Vi = Vi_elastic_orthotropic__sf(nlm_r1,nlm_r2,nlm_r3, alpha,lame_grain,rho, theta_n,phi_n) 
+        Vi = Vi_elastic_orthotropic__sf(nlm_1,nlm_2,nlm_3, alpha,lame_grain,rho, theta,phi) 
     end
     
-    function Vi_elastic_orthotropic__discrete(r1,r2,r3, alpha,lame_grain,rho, theta_n,phi_n) result(Vi)
+    function Vi_elastic_orthotropic__discrete(mi, alpha,lame_grain,rho, theta,phi) result(Vi)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in) :: r1(:,:), r2(:,:), r3(:,:)
+        real(kind=dp), intent(in) :: mi(:,:,:)
         real(kind=dp), intent(in) :: alpha, lame_grain(9), rho
-        real(kind=dp), intent(in) :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities along
-        real(kind=dp)             :: Vi(3,size(theta_n)) ! qS1, qS2, qP phase velocities
+        real(kind=dp), intent(in) :: theta(:), phi(:) ! arrays of theta and phi values to calculate phase velocities along
+        real(kind=dp)             :: Vi(3,size(theta)) ! qS1, qS2, qP phase velocities
 
-        Vi = Vi_elastic_orthotropic__discrete__sf(r1,r2,r3, alpha,lame_grain,rho, theta_n,phi_n) 
+        Vi = Vi_elastic_orthotropic__discrete__sf(mi, alpha,lame_grain,rho, theta,phi) 
     end
     
     ! For a composite material consisting of transversely isotropic grains
@@ -746,18 +746,18 @@ contains
         isvalid = nlm_isvalid__sf(nhat20, nhat40)
     end 
     
-    ! DELETE ONCE DEBUG FINISHED:
-    subroutine orthstructs(nlm_1,nlm_2,nlm_3, mi,  a2v_nlm, a2v_mi, a4v_nlm, a4v_mi)
-        use specfabpy_const
-        implicit none
-        complex(kind=dp), intent(in) :: nlm_1(:), nlm_2(:), nlm_3(:)
-        real(kind=dp), intent(in)    :: mi(:,:,:) ! (3,3,N) = (m'_i, xyz comp., grain no.) 
-        real(kind=dp)                :: a4v_jk_sym2(3,6,6), a4v_jk_sym4(3,6,6) ! see aiv_orthotropic() for defs
-        real(kind=dp), intent(out)   :: a2v_nlm(3,6), a2v_mi(3,6), a4v_nlm(3,6,6), a4v_mi(3,6,6)
-            
-        call aiv_orthotropic(nlm_1,nlm_2,nlm_3, a2v_nlm,a4v_nlm, a4v_jk_sym2,a4v_jk_sym4)
-        call aiv_orthotropic_discrete(mi, a2v_mi,a4v_mi, a4v_jk_sym2,a4v_jk_sym4)
-    end
+!    ! DELETE ONCE DEBUG FINISHED:
+!    subroutine orthstructs(nlm_1,nlm_2,nlm_3, mi,  a2v_nlm, a2v_mi, a4v_nlm, a4v_mi)
+!        use specfabpy_const
+!        implicit none
+!        complex(kind=dp), intent(in) :: nlm_1(:), nlm_2(:), nlm_3(:)
+!        real(kind=dp), intent(in)    :: mi(:,:,:) ! (3,3,N) = (m'_i, xyz comp., grain no.) 
+!        real(kind=dp)                :: a4v_jk_sym2(3,6,6), a4v_jk_sym4(3,6,6) ! see aiv_orthotropic() for defs
+!        real(kind=dp), intent(out)   :: a2v_nlm(3,6), a2v_mi(3,6), a4v_nlm(3,6,6), a4v_mi(3,6,6)
+!            
+!        call aiv_orthotropic(nlm_1,nlm_2,nlm_3, a2v_nlm,a4v_nlm, a4v_jk_sym2,a4v_jk_sym4)
+!        call aiv_orthotropic_discrete(mi, a2v_mi,a4v_mi, a4v_jk_sym2,a4v_jk_sym4)
+!    end
     
     !---------------------------------
     ! EXTERNAL, NON-CORE FEATURES

@@ -49,6 +49,37 @@ contains
             Y(ii,ii) = v(ii)
         end do
     end
+    
+    function a4_sym2(a4) result(X)
+        ! symmetric part of a4: (a4_jjkk + a_kkjj)/2
+        implicit none
+        real(kind=dp), intent(in) :: a4(3,3,3,3)
+        real(kind=dp) :: X(3,3,3,3)
+        integer :: jj,kk ! loop indices
+        do jj=1,3
+            do kk=1,3
+                X(jj,kk,:,:) = (a4(jj,kk,:,:) + a4(:,:,jj,kk))/2
+            end do
+        end do
+    end
+
+    function a4_sym4(a4) result(X)
+        ! symmetric part of a4: (a4_jkjk + a4_kjkj + a4_jkkj + a4_kjjk)/4
+        ! input a4(j,j,k,k) = <m'_j m'_j m'_k m'_k>
+        implicit none
+        real(kind=dp), intent(in) :: a4(3,3,3,3)
+        real(kind=dp) :: X(3,3,3,3)
+        integer :: ii,jj,kk,ll ! loop indices
+        do ii=1,3
+            do jj=1,3
+                do kk=1,3
+                    do ll=1,3
+                        X(ii,jj,kk,ll) = (a4(ii,kk,jj,ll) + a4(kk,jj,ii,ll) + a4(ii,ll,kk,jj) + a4(ll,jj,kk,ii))/4 
+                    end do
+                end do
+            end do
+        end do
+    end
 
     !------------------------
     ! OUTER PRODUCTS

@@ -72,6 +72,7 @@ def lagrangianparcel(sf, mod, strain_target, Nt=100, dt=None, nlm0=None, verbose
         nlm[nt,:] = nlm_prev + dt*np.matmul(M, nlm_prev)
         
         if verbose: bar.next()
+    bar.finish()
             
     return nlm, F, time, ugrad
                 

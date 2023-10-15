@@ -54,14 +54,40 @@ c_dbrown = '#8c510a'
 fontsize_default = 12
 isodist = 1/(4*np.pi) # value of ODF=n/N if isotropic and normalized
 
+### Aux
+
+kwargs_gl_default = {'ylocs':np.arange(-90,90+30,30), 'xlocs':np.arange(0,360+45,45), 'linewidth':0.5, 'color':'black', 'alpha':0.25, 'linestyle':'-'}
+kwargs_cb_default = {}
+
 ### Routines
 
+def plotS2field(ax, F, lon, lat, kwargs_cf={}, \
+            showcb=True, kwargs_cb=kwargs_cb_default, \
+            showgl=True, kwargs_gl=kwargs_gl_default, \
+    ):
+
+    ### Plot distribution
+    hcf = ax.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), **kwargs_cf)
+
+    ### Add grid lines
+    if showgl:
+        gl = ax.gridlines(crs=ccrs.PlateCarree(), **kwargs_gl)
+        gl.xlocator = mticker.FixedLocator(np.array([-135, -90, -45, 0, 90, 45, 135, 180]))
+
+    ### Add colorbar
+    if showcb: hcb = plt.colorbar(hcf, ax=ax, **kwargs_cb)
+    else:      hcb = None
+        
+    ### Return handles
+    return hcf, hcb
+    
+
 def plotODF(nlm, lm, ax, \
-        showcb=True, hidetruncerr=True, # options/flags \
+        showcb=True, showgl=True, hidetruncerr=True, # options/flags \
         norm=True, latres=50, lonres=2*50, nchunk=5, # general \
         cmap='Greys', lvlset='iso-up', # colormap and lvls \ 
         cbfraction=0.075, cbaspect=9, cborientation='horizontal', cbpad=0.1, cblabel='$n/N$ (ODF)', cbtickintvl=4, # colorbar \
-        kwargs_gridlines={'ylocs':np.arange(-90,90+30,30), 'xlocs':np.arange(0,360+45,45), 'linewidth':0.5, 'color':'black', 'alpha':0.25, 'linestyle':'-'}, # grid lines \
+        kwargs_gl=kwargs_gl_default, # grid lines \
     ):
     
     """ 
@@ -102,22 +128,17 @@ def plotODF(nlm, lm, ax, \
 
     ### Plot distribution
     # "nchunk" argument must be larger than 0 for isotropic distributions to be plotted correctly, else 0 is best choice.
-    hodf = ax.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), levels=lvls, cmap=cmap, nchunk=nchunk, extend=('max' if lvls[0]<1e-10 else 'both')) 
+    kwargs_cf = dict(levels=lvls, cmap=cmap, nchunk=nchunk, extend=('max' if lvls[0]<1e-10 else 'both'))
+    kwargs_cb = dict(ticks=lvls[::cbtickintvl], fraction=cbfraction, aspect=cbaspect, orientation=cborientation, pad=cbpad)
+    hodf, hcb = plotS2field(ax, F, lon, lat, kwargs_cf=kwargs_cf, showcb=showcb, kwargs_cb=kwargs_cb, showgl=showgl, kwargs_gl=kwargs_gl)
     #ax.set_facecolor(color_bad) # Set different color for bad (masked) values (default white)
-
-    ### Add grid lines
-    gl = ax.gridlines(crs=ccrs.PlateCarree(), **kwargs_gridlines)
-    gl.xlocator = mticker.FixedLocator(np.array([-135, -90, -45, 0, 90, 45, 135, 180]))
-
-    ### Add colorbar
+    
+    ### Adjust colorbar
     if showcb:
-        hcb = plt.colorbar(hodf, ax=ax, ticks=lvls[::cbtickintvl], fraction=cbfraction, aspect=cbaspect, orientation=cborientation, pad=cbpad)
         hcb.set_label(cblabel)
         cbax = hcb.ax.xaxis if cborientation == 'horizontal' else hcb.ax.yaxis
         cbax.set_ticks(lvls, minor=True)
         cbax.set_major_formatter(mticker.FuncFormatter(lvlfmt))
-    else:
-        hcb = None
         
     ### Return handles
     return hodf, hcb
@@ -159,9 +180,9 @@ def discretize(nlm, lm, latres, lonres):
     Sample distribution on equispaced lat--lon grid
     """
 
-    colat = np.linspace(0,   np.pi, latres) 
-    lon   = np.linspace(0, 2*np.pi, lonres) 
-    lon, colat = np.meshgrid(lon, colat) # gridded 
+    vcolat = np.linspace(0,   np.pi, latres) # vector
+    vlon   = np.linspace(0, 2*np.pi, lonres) # vector
+    lon, colat = np.meshgrid(vlon, vcolat) # gridded (matrix)
     lat = np.pi/2-colat
 
     nlmlen_from_nlm = len(nlm)
@@ -185,6 +206,16 @@ def plotS2point(ax, v, *args, **kwargs):
 
     lat, colat, lon = cart2sph(v, deg=True); 
     return ax.plot([lon],[lat], *args, **kwargs)
+    
+    
+def plotS2text(ax, v, text, *args, **kwargs):
+
+    """
+    Plot text on S2: wraps plt.text()
+    """
+
+    lat, colat, lon = cart2sph(v, deg=True); 
+    return ax.text(lon, lat, text, ha='center', va='center', **kwargs)
 
 
 def getprojection(rotation=45, inclination=45):

@@ -36,7 +36,7 @@ is the wave velocity squared.
 
 !!! note "Homogenization"
 
-    If wave lengths are much longer than the average grain size, the problem may be close by approximating the bulk permittivity tensor of a polycrystal by the grain-average permittivity tensor
+    If wave lengths are much longer than the average grain size, the problem can be closed by approximating the bulk polycrystalline permittivity tensor by the grain-averaged permittivity tensor
 
     $${\boldsymbol \epsilon} = \langle {\boldsymbol \epsilon}' \rangle,$$
     

@@ -26,7 +26,7 @@ from matplotlib.ticker import LogFormatter
 #---------------
 
 MAKE_FRAME_Eij = 1
-MAKE_FRAME_vi  = 1
+MAKE_FRAME_vi  = 0
 
 MAKE_GIFS = 1
 
@@ -100,7 +100,8 @@ def setup_fig():
 
     return axlist, fig, fraction, aspect
 
-def mkframe_Eij(nlm, Err,Ert,Erp, nn):
+
+def mkframe_Eij(nlm, Err,Ert,Erp, mlon,mlat, nn):
     
     axlist, fig, fraction, aspect = setup_fig()    
     ax1,ax2,ax3,ax4 = axlist
@@ -112,9 +113,9 @@ def mkframe_Eij(nlm, Err,Ert,Erp, nn):
     norm = colors.TwoSlopeNorm(vmin=lvls[0], vcenter=1, vmax=lvls[-1])
     kwargs = dict(cmap='RdBu', tickintvl=2, norm=norm, aspect=aspect, fraction=fraction, tick_labels=tick_labels)
 
-    plot_field(Err, ax2, lvls, cblbl=r'$E_{rr}$', **kwargs)
-    plot_field(Ert, ax3, lvls, cblbl=r'$E_{r\theta}$', **kwargs)
-    plot_field(Erp, ax4, lvls, cblbl=r'$E_{r\phi}$', **kwargs)
+    plot_field(Err, mlon, mlat, ax2, lvls, cblbl=r'$E_{rr}$', **kwargs)
+    plot_field(Ert, mlon, mlat, ax3, lvls, cblbl=r'$E_{r\theta}$', **kwargs)
+    plot_field(Erp, mlon, mlat, ax4, lvls, cblbl=r'$E_{r\phi}$', **kwargs)
 
     for axi in axlist: sfplt.plotcoordaxes(axi, geo, axislabels='vuxi', color='k')
     
@@ -126,7 +127,8 @@ def mkframe_Eij(nlm, Err,Ert,Erp, nn):
     plt.savefig(fout, transparent=transparent, dpi=200)
     plt.close()
    
-def mkframe_vi(nlm, vP, vS1, vS2, nn):
+   
+def mkframe_vi(nlm, vP,vS1,vS2, mlon,mlat, nn):
 
     axlist, fig, fraction, aspect = setup_fig()    
     ax1,ax2,ax3,ax4 = axlist
@@ -136,9 +138,9 @@ def mkframe_vi(nlm, vP, vS1, vS2, nn):
     kwargs = dict(cmap='RdBu', tickintvl=2, aspect=aspect, fraction=fraction)
     lvls = np.linspace(-6,6,9)
 
-    plot_field(vP,  ax2, lvls, cblbl=r'$V_{P}/V^{\mathrm{iso}}_{P}-1$  (\%)', **kwargs)
-    plot_field(vS1, ax3, lvls, cblbl=r'$V_{\mathrm{S}1}/V^{\mathrm{iso}}_{\mathrm{S}1}-1$  (\%)', **kwargs)
-    plot_field(vS2, ax4, lvls, cblbl=r'$V_{\mathrm{S}2}/V^{\mathrm{iso}}_{\mathrm{S}2}-1$  (\%)', **kwargs)
+    plot_field(vP,  mlon, mlat, ax2, lvls, cblbl=r'$V_{P}/V^{\mathrm{iso}}_{P}-1$  (\%)', **kwargs)
+    plot_field(vS1, mlon, mlat, ax3, lvls, cblbl=r'$V_{\mathrm{S}1}/V^{\mathrm{iso}}_{\mathrm{S}1}-1$  (\%)', **kwargs)
+    plot_field(vS2, mlon, mlat, ax4, lvls, cblbl=r'$V_{\mathrm{S}2}/V^{\mathrm{iso}}_{\mathrm{S}2}-1$  (\%)', **kwargs)
 
     for axi in axlist: sfplt.plotcoordaxes(axi, geo, axislabels='vuxi', color='k')
 
@@ -150,18 +152,16 @@ def mkframe_vi(nlm, vP, vS1, vS2, nn):
     plt.savefig(fout, transparent=transparent, dpi=200)
     plt.close()
 
-def plot_field(F, ax, lvls, cmap='Greys', cblbl=r'$E_{??}$', titlestr='', tickintvl=1, norm=None, tick_labels=None, aspect=9, fraction=0.6):
 
-    hdistr = ax.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), extend='both', norm=norm, cmap=cmap, levels=lvls, nchunk=5)
-    kwargs_gridlines = {'ylocs':np.arange(-90,90+30,30), 'xlocs':np.arange(0,360+45,45), 'linewidth':0.5, 'color':'black', 'alpha':0.25, 'linestyle':'-'}
-    gl = ax.gridlines(crs=ccrs.PlateCarree(), **kwargs_gridlines)
-    gl.xlocator = mticker.FixedLocator(np.array([-135, -90, -45, 0, 90, 45, 135, 180]))
-    kwargs = dict(ax=ax, fraction=fraction, aspect=aspect,  orientation='horizontal', pad=0.1)
-    if not np.isscalar(lvls): cb1 = plt.colorbar(hdistr, ticks=lvls[::tickintvl], **kwargs)
-    else:                     cb1 = plt.colorbar(hdistr,                          **kwargs)
-    cb1.set_label(cblbl)
-    if tick_labels is not None: cb1.set_ticklabels(tick_labels[::tickintvl])
+def plot_field(F, mlon, mlat, ax, lvls, cmap='Greys', cblbl=r'$E_{??}$', titlestr='', tickintvl=1, norm=None, tick_labels=None, aspect=9, fraction=0.6):
+
+    kwargs_cf = dict(extend='both', norm=norm, cmap=cmap, levels=lvls, nchunk=5)
+    kwargs_cb = dict(ticks=lvls[::tickintvl], fraction=fraction, aspect=aspect, orientation='horizontal', pad=0.1)    
+    hcf, hcb = sfplt.plotS2field(ax, F, mlon, mlat, kwargs_cf=kwargs_cf, showcb=True, kwargs_cb=kwargs_cb)
+    hcb.set_label(cblbl)
+    if tick_labels is not None: hcb.set_ticklabels(tick_labels[::tickintvl])
     ax.set_title(titlestr, fontsize=FS, pad=10)
+    
 
 #---------------
 # Main
@@ -170,45 +170,27 @@ def plot_field(F, ax, lvls, cmap='Greys', cblbl=r'$E_{??}$', titlestr='', tickin
 if MAKE_FRAME_Eij or MAKE_FRAME_vi:
 
     ### Determine fabric evolution
+    
     nlm, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, iota=+1, nu=1) # latrot only
     strain = np.array([sf.F_to_strain(F[tt,:,:])[2,2] for tt in range(Nt+1)])
 
-    ### S2 resolution
-    latres = 40
-    #latres = 25
-    lat = np.deg2rad(np.linspace(-90, 90, latres))
-    lon = np.deg2rad(np.linspace(0, 360, 2*latres))
-    colat = np.deg2rad(90) - lat
+    ### Init vars    
 
-    ### Init vars
-    
     # r = radial vector, t = theta vector, p = phi vector
-    dims = (Nt+1, len(lat),len(lon))
-    Err = np.ones(dims) # r-r longitidinal
+    (vr,vt,vp, rr,rt,rp, tau_rr,tau_rt,tau_rp, vlon,vlat, mlon,mlat) = sfdsc.idealstressstate()
+
+    dims = (Nt+1, len(vlat),len(vlon))
+    Err = np.ones(dims) # r-r longitudinal
     Ert = np.ones(dims) # r-t shear
     Erp = np.ones(dims) # r-p shear
     vP, vS1, vS2  = np.zeros(dims), np.zeros(dims), np.zeros(dims) 
 
-    ### Determine spherical basis vectors
-    lon2, colat2 = np.meshgrid(lon, colat)
-    vr, vt, vp = sfdsc.sphericalbasisvectors(colat2, lon2)
-
-    rr = np.einsum('ikl,jkl->ijkl', vr, vr)
-    rt = np.einsum('ikl,jkl->ijkl', vr, vt)
-    rp = np.einsum('ikl,jkl->ijkl', vr, vp)
-
-    id4 = np.zeros((3,3,latres,2*latres)) # repeated identity matrix
-    id4[0,0,:,:] = id4[1,1,:,:] = id4[2,2,:,:] = 1
-    tau_rr = id4-3*rr
-    tau_rt = rt + np.einsum('ijkl->jikl',rt)
-    tau_rp = rp + np.einsum('ijkl->jikl',rp)
+    ### Determine Eij and Vi for a given deformation (given time)
 
     for nn in np.arange(0,Nt+1):
 
-        ### Determine Eij and Vi for a given deformation (given time)
-
-        for ii, theta in enumerate(colat):
-            for jj, phi in enumerate(lon):
+        for ii, theta in enumerate(vlat):
+            for jj, phi in enumerate(vlon):
 
                 r,t,p = vr[:,ii,jj], vt[:,ii,jj], vp[:,ii,jj]
 
@@ -222,12 +204,12 @@ if MAKE_FRAME_Eij or MAKE_FRAME_vi:
                 
         ### Plot
         
-        if MAKE_FRAME_Eij: mkframe_Eij(nlm[nn,:], Err[nn,:,:], Ert[nn,:,:], Erp[nn,:,:], nn)
+        if MAKE_FRAME_Eij: mkframe_Eij(nlm[nn,:], Err[nn,:,:], Ert[nn,:,:], Erp[nn,:,:], mlon, mlat, nn)
         
         vP_rel  = vi_rel(vP[nn,:,:],  vP_iso)
         vS1_rel = vi_rel(vS1[nn,:,:], vS1_iso)
         vS2_rel = vi_rel(vS2[nn,:,:], vS2_iso)
-        if MAKE_FRAME_vi:  mkframe_vi( nlm[nn,:], vP_rel, vS1_rel, vS2_rel, nn)
+        if MAKE_FRAME_vi:  mkframe_vi( nlm[nn,:], vP_rel, vS1_rel, vS2_rel, mlon, mlat, nn)
 
 
 if MAKE_GIFS:

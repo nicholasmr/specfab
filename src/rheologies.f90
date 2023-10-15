@@ -199,10 +199,10 @@ contains
         
         gam = 2*Bij(1)*Bij(2) + 2*Bij(1)*Bij(3) + 2*Bij(2)*Bij(3) - Bij(1)**2 - Bij(2)**2 - Bij(3)**2 ! = (4*A)^2 (triangle area)
         
-        if (lami(1)<0.0d0 .or. lami(2)<0.0d0 .or. lami(3)<0.0d0) then
-            print *, 'E_ii^(2/(n+1)) for i=1,2,3: ', Bij(1:3)
-            print *, 'rheo_params_orthotropic() error: E_ii^(2/(n+1)) for i=1,2,3 does not fulfill the triangle inequality, needed to guarantee positive-valued energy dissipation.'
-        end if
+!        if (lami(1)<0.0d0 .or. lami(2)<0.0d0 .or. lami(3)<0.0d0) then
+!            print *, 'E_ii^(2/(n+1)) for i=1,2,3: ', Bij(1:3)
+!            print *, 'rheo_params_orthotropic() error: E_ii^(2/(n+1)) for i=1,2,3 does not fulfill the triangle inequality, needed to guarantee positive-valued energy dissipation.'
+!        end if
     end
 
     subroutine rheo_structs_orthotropic(tau, m1,m2,m3, OPT, Fij, Ii)

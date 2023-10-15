@@ -30,7 +30,8 @@ ice = {
 olivine = {
     'viscoplastic': {
         # (Eij_grain, alpha, n_grain)
-        'linear':    ((1,1,1, 1,1,1e1), 0.3, 1), # Linear mixed Taylor--Sachs best-fit parameters from Rathmann et al. (2023)
+#        'linear':    ((1,1,1, 1,1,1e1), 0.3, 1), # Linear mixed Taylor--Sachs best-fit parameters
+        'linear':    ((1,1,1, 1,1,1e2), 0, 1), # Linear Sachs parameters from Rathmann et al. (2023)
         'nonlinear': None,
     },
     'elastic': {

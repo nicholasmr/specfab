@@ -1,14 +1,18 @@
 ! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2023
 
-! Calculates of normalized vector moments (structure tensors) given the spectral expansion coefficients of CPO.
+! Normalized vector moments (structure tensors) given the spectral expansion coefficients of CPO.
 
 module moments 
 
     use header
     use mandel
+    use tensorproducts
 
     implicit none 
-
+    
+    real(kind=dp), parameter :: a2_iso(3,3)     = identity/3
+    real(kind=dp), parameter :: a4_iso(3,3,3,3) = reshape([ ( ( ( ( (identity(ii,jj)*identity(kk,ll)+identity(ii,kk)*identity(jj,ll)+identity(ii,ll)*identity(jj,kk))/15, ii=1,3), jj=1,3), kk=1,3), ll=1,3) ], [3,3,3,3]) 
+    
 contains      
 
     !---------------------------------
@@ -51,7 +55,7 @@ contains
         implicit none
         real(kind=dp), intent(in) :: a2(3,3)
         complex(kind=dp)          :: nlm(nlm_lenvec(2)) 
-        nlm = (0.0, 0.0) ! init
+        nlm = (0.0d0, 0.0d0) ! init
         include "include/a2_to_nlm__body.f90"
     end
 
@@ -61,7 +65,7 @@ contains
         real(kind=dp), intent(in) :: a4(3,3,3,3)
         complex(kind=dp)          :: nlm(nlm_lenvec(4)) 
         real(kind=dp)             :: a4Mandel(6,6)        
-        nlm = 0.0 ! init
+        nlm = 0.0d0 ! init
         a4Mandel = a4_to_mat(a4) ! 6x6 Mandel matrix of a4
         include "include/a4_to_nlm__body.f90"
     end
@@ -71,7 +75,7 @@ contains
         implicit none
         real(kind=dp), intent(in) :: a6(3,3,3,3,3,3)
         complex(kind=dp)          :: nlm(nlm_lenvec(6)) 
-        nlm = 0.0 ! init
+        nlm = 0.0d0 ! init
         include "include/a6_to_nlm__body.f90"
     end
 
@@ -139,7 +143,7 @@ contains
         complex(kind=dp) :: n2mhat(0:2)
 !        real(kind=dp) :: k = 0.0
         real(kind=dp) :: ev(3,3)
-        ev = 0.0
+        ev = 0.0d0
         include "include/ev_c2__body.f90"
 !        ev = ev * k/f_ev_c0(n00) ! not needed, <c^2> already normalized
     end
@@ -147,8 +151,8 @@ contains
     function f_ev_c4(n00,n2m,n4m) result(ev)
         implicit none
         complex(kind=dp), intent(in) :: n00, n2m(-2:2), n4m(-4:4)
-        real(kind=dp) :: k = 0.0, ev(3,3, 3,3)
-        ev = 0.0
+        real(kind=dp) :: k = 0.0d0, ev(3,3, 3,3)
+        ev = 0.0d0
         include "include/ev_c4__body.f90"
         ev = ev * k/f_ev_c0(n00)
     end
@@ -156,7 +160,8 @@ contains
     function f_ev_c4_Mandel(n00,n2m,n4m) result(ev)
         implicit none
         complex(kind=dp), intent(in) :: n00, n2m(-2:2), n4m(-4:4)
-        real(kind=dp) :: k = 0.0, ev(6,6)
+        real(kind=dp) :: k = 0.0d0, ev(6,6)
+        ev = 0.0d0
         include "include/ev_c4_Mandel__body.f90"
         ev = ev * k/f_ev_c0(n00)
     end
@@ -164,8 +169,8 @@ contains
     function f_ev_c6(n00,n2m,n4m,n6m) result(ev)
         implicit none
         complex(kind=dp), intent(in) :: n00, n2m(-2:2), n4m(-4:4), n6m(-6:6)
-        real(kind=dp) :: k = 0.0, ev(3,3, 3,3, 3,3)
-        ev = 0.0
+        real(kind=dp) :: k = 0.0d0, ev(3,3, 3,3, 3,3)
+        ev = 0.0d0
         include "include/ev_c6__body.f90"
         ev = ev * k/f_ev_c0(n00)
     end
@@ -173,8 +178,8 @@ contains
     function f_ev_c8(n00,n2m,n4m,n6m,n8m) result(ev)
         implicit none
         complex(kind=dp), intent(in) :: n00, n2m(-2:2), n4m(-4:4), n6m(-6:6), n8m(-8:8)
-        real(kind=dp) :: k = 0.0, ev(3,3, 3,3, 3,3, 3,3)
-        ev = 0.0
+        real(kind=dp) :: k = 0.0d0, ev(3,3, 3,3, 3,3, 3,3)
+        ev = 0.0d0
         include "include/ev_c8__body.f90"
         ev = ev * k/f_ev_c0(n00)
     end
@@ -192,21 +197,12 @@ contains
         real(kind=dp)                :: k=0.0, norm=0.0, ev(3,3)
         complex(kind=dp)             :: b00,n00, b2m(-2:2),n2m(-2:2), b4m(-4:4),n4m(-4:4), b6m(-6:6),n6m(-6:6)
         
-!        complex(kind=dp)             :: vlm(1+5+9) ! l<=4 sufficient
-!        real(kind=dp)                :: a4_v(3,3,3,3)
- 
         call decompose_nlm(blm, b00,b2m,b4m,b6m)
         call decompose_nlm(nlm, n00,n2m,n4m,n6m)
         
         ev = 0.0
         include "include/ev_v2__body.f90"
-!        ev = ev * k/(f_ev_c0(b00)*f_ev_c0(n00)) ! incorrectly normalized if blm and nlm are not delta funcs.
         ev = ev * k/norm
-        
-!        ! Alternative using a4_orth for supposedly better accuracy (gives poorer eigenenhancement estimates? to be understood)
-!        a4_v = a4_orth(blm,nlm) ! <v^4>
-!        vlm(:) = a4_to_nlm(a4_v) ! vlm for l<=4
-!        ev = a2(vlm) 
     end
     
     function a4_orth(blm,nlm) result(ev)
@@ -223,13 +219,12 @@ contains
         
         ev = 0.0
         include "include/ev_v4__body.f90"
-!        ev = ev * k/(f_ev_c0(b00)*f_ev_c0(n00)) ! incorrectly normalized if blm and nlm are not delta funcs.
         ev = ev * k/norm 
     end
   
     function a4_joint(blm,nlm) result(ev)
     
-        ! Calculates <n^2 b^2 xi(r,r') > where kernel xi=sin^2(angle between n and b)
+        ! Calculates < b^2 n^2 xi(r,r') > where kernel xi=sin^2(alpha) where alpha = angle between n and b vectors
 
         implicit none
         complex(kind=dp), intent(in) :: blm(:), nlm(:)
@@ -241,7 +236,6 @@ contains
         
         ev = 0.0
         include "include/ev_c2b2__body.f90"
-!        ev = ev * k/(f_ev_c0(b00)*f_ev_c0(n00)) ! incorrectly normalized if blm and nlm are not delta funcs.
         ev = ev * k/norm 
     end
     
@@ -259,7 +253,6 @@ contains
         
         ev = 0.0
         include "include/ev_c2v2__body.f90"
-!        ev = ev * k/(f_ev_c0(b00)*f_ev_c0(n00)) ! incorrectly normalized if blm and nlm are not delta funcs.
         ev = ev * k/norm 
     end
     
@@ -355,6 +348,68 @@ contains
         n2m = nlm(L2rng)
         if (size(nlm) >= nlm_lenvec(4)) n4m = nlm(L4rng)
         if (size(nlm) >= nlm_lenvec(6)) n6m = nlm(L6rng)
+    end
+    
+    subroutine ai_orthotropic(nlm_1,nlm_2,nlm_3, a2_i, a4_ii, a4_jk)
+    
+        implicit none
+        
+        complex(kind=dp), intent(in) :: nlm_1(:), nlm_2(:), nlm_3(:)
+        real(kind=dp), intent(out)   :: a2_i(3, 3,3), a4_ii(3, 3,3,3,3), a4_jk(3, 3,3,3,3) ! a4_jk = <m_j m_j m_k m_k>
+
+        a2_i(1, :,:)      = a2(nlm_1) ! <m1'^2>
+        a2_i(2, :,:)      = a2(nlm_2) ! <m2'^2>
+        a4_ii(1, :,:,:,:) = a4(nlm_1) ! <m1'^4>
+        a4_ii(2, :,:,:,:) = a4(nlm_2) ! <m2'^4>
+        a4_jk(3, :,:,:,:) = a4_joint(nlm_1,nlm_2) ! <m1'^2 m2'^2>
+
+        ! Is nlm_3 given? Use it
+        if (real(nlm_3(1)) > 1e-8) then
+            a2_i(3, :,:)      = a2(nlm_3) ! <m3'^2>
+            a4_ii(3, :,:,:,:) = a4(nlm_3) ! <m3'^4>
+            a4_jk(1, :,:,:,:) = a4_joint(nlm_2,nlm_3) ! <m2'^2 m3'^2>
+            a4_jk(2, :,:,:,:) = a4_joint(nlm_1,nlm_3) ! <m1'^2 m3'^2>
+            
+        ! else derive nlm_3 from nlm_1, nlm_2
+        else
+            a2_i(3, :,:)      = a2_orth(nlm_1, nlm_2) ! <m3'^2> 
+            a4_ii(3, :,:,:,:) = a4_orth(nlm_1, nlm_2) ! <m3'^4>
+            a4_jk(1, :,:,:,:) = a4_jointcross(nlm_2,nlm_1) ! <m2'^2 m3'^2> 
+            a4_jk(2, :,:,:,:) = a4_jointcross(nlm_1,nlm_2) ! <m1'^2 m3'^2> 
+        end if
+    end
+    
+    subroutine ai_orthotropic_discrete(mi, a2_i, a4_ii, a4_jk)
+
+        implicit none
+        
+        real(kind=dp), intent(in)  :: mi(:,:,:) ! (3,3,N) = (m'_i, xyz comp., grain no.) 
+        real(kind=dp), intent(out) :: a2_i(3, 3,3), a4_ii(3, 3,3,3,3), a4_jk(3, 3,3,3,3)
+        real(kind=dp) :: m1(3), m2(3), m3(3)
+        integer       :: ii, nn, N
+
+        a2_i  = 0.0d0
+        a4_ii = 0.0d0
+        a4_jk = 0.0d0
+        
+        N = size(mi, dim=3) ! number of grains
+        
+        do nn=1,N
+        
+            do ii=1,3
+                m1 = mi(ii,:,nn) ! use m1 as dummy
+                a2_i(ii, :,:)      = a2_i(ii, :,:)      + outerprod(m1,m1)/N
+                a4_ii(ii, :,:,:,:) = a4_ii(ii, :,:,:,:) + outerprod4(m1,m1,m1,m1)/N
+            end do 
+            
+            m1 = mi(1,:,nn)
+            m2 = mi(2,:,nn)
+            m3 = mi(3,:,nn)
+            
+            a4_jk(1, :,:,:,:) = a4_jk(1, :,:,:,:) + outerprod4(m2,m2, m3,m3)/N
+            a4_jk(2, :,:,:,:) = a4_jk(2, :,:,:,:) + outerprod4(m1,m1, m3,m3)/N
+            a4_jk(3, :,:,:,:) = a4_jk(3, :,:,:,:) + outerprod4(m1,m1, m2,m2)/N
+        end do
     end
     
 end module moments

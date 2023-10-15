@@ -10,7 +10,7 @@ module enhancementfactors
     use homogenizations
 
     implicit none 
-
+    
 contains      
 
     !---------------------------------
@@ -97,6 +97,8 @@ contains
 
         ! Generalized enhancement factor for orthotropic grains and a linear Taylor--Sachs homogenization scheme.
 
+        ! *** So far only Sachs (alpha=0) is supported ***
+
         implicit none
         
         complex(kind=dp), intent(in) :: nlm_1(:), nlm_2(:), nlm_3(:)
@@ -104,28 +106,24 @@ contains
         integer, intent(in)          :: n_grain
         real(kind=dp)                :: vw(3,3), Evw_sachs, Evw_taylor, Evw
         complex(kind=dp)             :: nlm_iso(size(nlm_1))
-        real(kind=dp)                :: a2v(3,6), a4v(3,6,6), a4v_jk_sym2(3,6,6), a4v_jk_sym4(3,6,6) ! see aiv_orthotropic() for defs
-        real(kind=dp)                :: a2v_iso(3,6), a4v_iso(3,6,6), a4v_jk_sym2_iso(3,6,6), a4v_jk_sym4_iso(3,6,6) 
-    
-        vw = outerprod(v,w)
-        Evw_sachs  = 0.0d0
+
+        real(kind=dp)                :: a2_i(3, 3,3), a4_ii(3, 3,3,3,3), a4_jk(3, 3,3,3,3) 
+        real(kind=dp)                :: a2_i_iso(3, 3,3), a4_ii_iso(3, 3,3,3,3), a4_jk_iso(3, 3,3,3,3) 
+
+        Evw_sachs  = 0.0d0    
         Evw_taylor = 0.0d0
+        vw = outerprod(v,w)
     
         nlm_iso(:) = 0.0d0
-        nlm_iso(1) = 1.0d0
-    
-        call aiv_orthotropic(nlm_1,nlm_2,nlm_3, a2v,a4v,a4v_jk_sym2,a4v_jk_sym4)
-        call aiv_orthotropic(nlm_iso,nlm_iso,nlm_iso, a2v_iso,a4v_iso,a4v_jk_sym2_iso,a4v_jk_sym4_iso)
+        nlm_iso(1) = nlm_1(1)
         
-!        print *, 'cont.: ',a2v
-    
-        Evw_sachs = doubleinner22(rheo_fwd_orthotropic_sachshomo(tau, a2v,    a4v,    a4v_jk_sym2,    a4v_jk_sym4,     Eij_grain,n_grain), vw) / &
-                    doubleinner22(rheo_fwd_orthotropic_sachshomo(tau, a2v_iso,a4v_iso,a4v_jk_sym2_iso,a4v_jk_sym4_iso, Eij_grain,n_grain), vw)
-                    
-        Evw_taylor = doubleinner22(rheo_fwd_orthotropic_taylorhomo(tau, a2v,    a4v,    a4v_jk_sym2,    a4v_jk_sym4,     Eij_grain,n_grain), vw) / &
-                     doubleinner22(rheo_fwd_orthotropic_taylorhomo(tau, a2v_iso,a4v_iso,a4v_jk_sym2_iso,a4v_jk_sym4_iso, Eij_grain,n_grain), vw)
-                    
-        Evw = (1-alpha)*Evw_Sachs + alpha*Evw_taylor                    
+        call ai_orthotropic(nlm_1, nlm_2, nlm_3, a2_i, a4_ii, a4_jk)
+        call ai_orthotropic(nlm_iso, nlm_iso, nlm_iso, a2_i_iso, a4_ii_iso, a4_jk_iso)
+
+        Evw_sachs  = doubleinner22(rheo_fwd_orthotropic_sachshomo( tau, a2_i,     a4_ii,     a4_jk,     Eij_grain,n_grain), vw) / &
+                     doubleinner22(rheo_fwd_orthotropic_sachshomo( tau, a2_i_iso, a4_ii_iso, a4_jk_iso, Eij_grain,n_grain), vw)
+
+        Evw = Evw_Sachs
     end
     
     function Evw_orthotropic_discrete(v,w,tau, mi, Eij_grain,alpha,n_grain)  result(Evw)
@@ -139,31 +137,28 @@ contains
         integer, intent(in)          :: n_grain
         real(kind=dp)                :: vw(3,3), Evw_sachs, Evw_taylor, Evw(size(v,dim=2))
         integer                      :: nn
-        complex(kind=dp)             :: nlm_iso(1+5+9)
-        real(kind=dp)                :: a2v(3,6), a4v(3,6,6), a4v_jk_sym2(3,6,6), a4v_jk_sym4(3,6,6) ! see aiv_orthotropic() for defs
-        real(kind=dp)                :: a2v_iso(3,6), a4v_iso(3,6,6), a4v_jk_sym2_iso(3,6,6), a4v_jk_sym4_iso(3,6,6) 
+        complex(kind=dp)             :: nlm_iso(L4len)
+        
+        real(kind=dp)                :: a2_i(3, 3,3), a4_ii(3, 3,3,3,3), a4_jk(3, 3,3,3,3) 
+        real(kind=dp)                :: a2_i_iso(3, 3,3), a4_ii_iso(3, 3,3,3,3), a4_jk_iso(3, 3,3,3,3) 
     
         Evw_sachs  = 0.0d0
         Evw_taylor = 0.0d0
     
         nlm_iso(:) = 0.0d0
-        nlm_iso(1) = 1.0d0
+        nlm_iso(1) = 1.0d0/sqrt(4*Pi)
     
-        call aiv_orthotropic_discrete(mi, a2v,a4v,a4v_jk_sym2,a4v_jk_sym4) ! this is the only difference from the continuous version, Evw_orthotropic()
-        call aiv_orthotropic(nlm_iso,nlm_iso,nlm_iso, a2v_iso,a4v_iso,a4v_jk_sym2_iso,a4v_jk_sym4_iso)
-        
-        !print *, 'desc.: ',a2v
+        call ai_orthotropic_discrete(mi, a2_i, a4_ii, a4_jk)
+        call ai_orthotropic(nlm_iso,nlm_iso,nlm_iso, a2_i_iso, a4_ii_iso, a4_jk_iso)
     
+        ! Loop over stress configurations for which enhancement factors are requested
         do nn = 1,size(v,dim=2)
             vw = outerprod(v(:,nn),w(:,nn))
             
-            Evw_sachs = doubleinner22(rheo_fwd_orthotropic_sachshomo(tau(:,:,nn), a2v,    a4v,    a4v_jk_sym2,    a4v_jk_sym4,     Eij_grain,n_grain), vw) / &
-                        doubleinner22(rheo_fwd_orthotropic_sachshomo(tau(:,:,nn), a2v_iso,a4v_iso,a4v_jk_sym2_iso,a4v_jk_sym4_iso, Eij_grain,n_grain), vw)
+            Evw_sachs = doubleinner22(rheo_fwd_orthotropic_sachshomo(tau(:,:,nn), a2_i,     a4_ii,     a4_jk,     Eij_grain,n_grain), vw) / &
+                        doubleinner22(rheo_fwd_orthotropic_sachshomo(tau(:,:,nn), a2_i_iso, a4_ii_iso, a4_jk_iso, Eij_grain,n_grain), vw)
                         
-            Evw_taylor = doubleinner22(rheo_fwd_orthotropic_taylorhomo(tau(:,:,nn), a2v,    a4v,    a4v_jk_sym2,    a4v_jk_sym4,     Eij_grain,n_grain), vw) / &
-                         doubleinner22(rheo_fwd_orthotropic_taylorhomo(tau(:,:,nn), a2v_iso,a4v_iso,a4v_jk_sym2_iso,a4v_jk_sym4_iso, Eij_grain,n_grain), vw)
-                        
-            Evw(nn) = (1-alpha)*Evw_Sachs + alpha*Evw_taylor
+            Evw(nn) = Evw_Sachs
         end do
     end
     

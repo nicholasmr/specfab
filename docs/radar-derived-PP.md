@@ -7,42 +7,29 @@ $$
 \epsilon_{ij}' = (2\epsilon_{\perp}' + \epsilon_{\parallel}') \frac{\delta_{ij}}{3}
 + (\epsilon_{\parallel}'-\epsilon_{\perp}') \left(c_i c_j - \frac{\delta_{ij}}{3} \right),
 $$
-where $\epsilon_{\parallel}'$ and $\epsilon_{\perp}'$ are the permittivities parallel and perpendicular to the $c$-axis, respectively, which depend on ice temperature and EM-wave frequency ([Fujita et al., 2000](https://eprints.lib.hokudai.ac.jp/dspace/bitstream/2115/32469/1/P185-212.pdf)).
+where $\epsilon_{\parallel}'$ and $\epsilon_{\perp}'$ are the components parallel and perpendicular to the $c$-axis, respectively, which depend on ice temperature and EM-wave frequency ([Fujita et al., 2000](https://eprints.lib.hokudai.ac.jp/dspace/bitstream/2115/32469/1/P185-212.pdf)).
 
-If EM-wave lengths are much longer than the average grain size, the bulk permittivity tensor of polycrystalline ice may be approximated as the grain-average permittivity tensor, constructed by averaging over all grain orientations (over the CPO):
+For wave lengths much longer than the average grain size, the bulk permittivity tensor of polycrystalline ice may be approximated as the grain-average permittivity tensor, $\epsilon_{ij} \simeq \langle \epsilon_{ij}' \rangle$, constructed by averaging over all grain orientations (over the CPO) assuming grain sizes are uncorrelated with orientation:
 
 $$
-\epsilon_{ij} \simeq 
 \langle \epsilon_{ij}' \rangle = 
 (2\epsilon_{\perp}' + \epsilon_{\parallel}') \frac{\delta_{ij}}{3}
 + (\epsilon_{\parallel}'-\epsilon_{\perp}') \left(\langle c_i c_j \rangle - \frac{\delta_{ij}}{3} \right)
 ,
 $$
 
-where $\langle c_i c_j \rangle$ is the second-order [structure tensor](cpo-structuretensors.md) (`a2` in specfab; a.k.a. ${\bf a}^{(2)}$), defined as the average outer product of grain $c$-axes (assuming grain sizes are uncorrelated with orientation):
+where $\langle c_i c_j \rangle$ is the second-order [structure tensor](cpo-structuretensors.md), defined as
 
 $$ 
 \langle c_i c_j \rangle = 
 \frac{1}{N}\sum_{k=1}^N { c_i^{(k)} c_j^{(k)} }.
 $$
 
-Here, the Cartesian components of $\langle c_i c_j \rangle$ are written as 
-
-$$
-\langle c_i c_j \rangle =
-\left[\begin{matrix}
-a_{xx} & a_{xy} & a_{xz}\\ 
-a_{xy} & a_{yy} & a_{yz}\\ 
-a_{xz} & a_{yz} & a_{zz}
-\end{matrix}\right]
-.
-$$
-
-Properties like [EM-wave speed](wavepropagation-electromagnetic.md) and radar return-power anomalies depend on the bulk permittivity tensor $\epsilon_{ij}$, and therefore, given measurements of such quantities, information about $\langle c_i c_j \rangle$ can be inferred (see e.g. [Gerber et al., 2023](https://www.nature.com/articles/s41467-023-38139-8), and references therein).
+Thus, because the bulk permittivity tensor $\epsilon_{ij}$ can be inferred from [EM-wave speeds](wavepropagation-electromagnetic.md) and radar return-power anomalies, so can $\langle c_i c_j \rangle$.
 
 ## Radar measurements $\rightarrow$ CPO
 
-A useful approximation over large parts of ice sheets is that $\langle c_i c_j \rangle$ has a vertical (${\bf z}$) eigenvector, and hence
+A useful approximation over large parts of ice sheets is that $\langle c_i c_j \rangle$ has a vertical eigenvector, in which case the Cartesian components are
 
 $$
 \langle c_i c_j \rangle 
@@ -55,13 +42,13 @@ a_{xy} & a_{yy} & 0\\
 .
 $$
 
-In this tutorial, we consider the common case where the difference in horizontal eigenvalues of $\langle c_i c_j \rangle$ can be inferred from ice-penetrating radar, that is
+Let us consider the usual case where the difference in horizontal eigenvalues of $\langle c_i c_j \rangle$ can be inferred from ice-penetrating radar, that is
 $$
 \Delta \lambda = \lambda_2 - \lambda_1,
 $$
 
-where ${\bf m}_1$ and ${\bf m}_2$ are the corresponding (horizontal) eigenvectors, and the eigenvalues are sorted such that $\lambda_1 \leq \lambda_2$.
-In this eigenframe (${\bf m}_1, {\bf m}_2, {\bf z}$) the structure tensor is therefore
+where ${\bf m}_1$ and ${\bf m}_2$ are the corresponding horizontal eigenvectors, and eigenvalues are sorted such that $\lambda_1 \leq \lambda_2$.
+It follows that posing the structure tensor in its eigenframe (${\bf m}_1, {\bf m}_2, {\bf z}$), gives
 
 $$
 \langle c_i c_j \rangle 
@@ -74,19 +61,12 @@ $$
 ,
 $$
 
-where $\operatorname{tr}(\langle c_i c_j \rangle) = 1$ was used.
-
-<!--
-, or more precisely
-
-$$ 
-0 \leq \lambda_1 \leq 1/3 \leq \lambda_2 \leq 1.
-$$
--->
+where the identity $\operatorname{tr}(\langle c_i c_j \rangle) = 1$ was used.
 
 ### Gerber's approximation 
 
 Since $\lambda_1$ is unknown, the problem can be closed by making different assumptions about $\lambda_1$ given the local/upstream flow regime, such as proposed by [Gerber et al. (2023)](https://www.nature.com/articles/s41467-023-38139-8).
+
 Suppose $\Delta\lambda$ is measured in region where $c$-axes are, to a good approximation, suspected to be distributed on the ${\bf m}_2$&mdash;${\bf z}$ plane because the smallest eigenvalue is vanishing, $\lambda_1 \rightarrow 0$.
 In this case, $\Delta \lambda = 0$ represents a perfect single-maximum along ${\bf z}$, $\Delta \lambda = 0.5$ a perfect girdle in the ${\bf m}_2$&mdash;${\bf z}$ plane, and $\Delta \lambda = 1$ a perfect single-maximum along ${\bf m}_2$, respectively:
 
@@ -96,12 +76,12 @@ In this case, $\Delta \lambda = 0$ represents a perfect single-maximum along ${\
 
 If $\langle c_i c_j \rangle$ can be inferred from radar sounding following the above method, so can the bulk strain-rate enhancement factors, $E_{ij}$, in the same eigenframe (i.e. [eigenenhancements](enhancements-strainrate.md)).
 
-The eigenenhancements depend, however, also on the fourth-order structure tensor, $\langle c_i c_j c_k c_l \rangle$, but the bulk permittivity $\epsilon_{ij}$ &mdash; and therefore radar-sounding methods &mdash; is insensitive to $\langle c_i c_j c_k c_l \rangle$.
-To overcome this, a simple empirical correlation exists that allows determining $\langle c_i c_j c_k c_l \rangle$ given $\langle c_i c_j\rangle$ if the CPO has an approximate rotational symmetry axis. 
+The eigenenhancements depend, however, also on the fourth-order structure tensor, $\langle c_i c_j c_k c_l \rangle$, but the bulk permittivity $\epsilon_{ij}$ is insensitive to $\langle c_i c_j c_k c_l \rangle$.
+To overcome this, a simple empirical correlation is adopted that allows determining $\langle c_i c_j c_k c_l \rangle$ given $\langle c_i c_j\rangle$ if the CPO is approximately rotationally symmetric.
 
 ### Correlation between $\langle c_i c_j c_k c_l \rangle$ and $\langle c_i c_j\rangle$
 
-If the CPO rotational symmetry axis is rotated into the vertical direction, $\langle c_i c_j\rangle$ depends only on $\hat{n}_2^0 = n_2^0/n_0^0:$
+If the CPO symmetry axis is rotated into the vertical direction, $\langle c_i c_j\rangle$ depends only on the normalized [spectral component](cpo-representation.md) $\hat{n}_2^0 = n_2^0/n_0^0:$
 
 $$
 \langle c_i c_j\rangle = \frac{\delta_{ij}}{3} +  \frac{2\sqrt{5}}{15} \hat{n}_2^0
@@ -119,7 +99,7 @@ The figure below shows the empirical correlation between these two components ba
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/state-space-validation/ice/state-space-empcorr.png){: style="width:570px"}
 
 Thus, if $\hat{n}_2^0$ is extracted from $\langle c_i c_j\rangle$ in this frame, $\hat{n}_4^0$ can be derived and hence $\langle c_i c_j c_k c_l \rangle$ constructed.
-To pose the CPO in the original, unrotated eigenframe (${\bf m}_1, {\bf m}_2, {\bf z}$), the resulting expansion series is rotated back.
+To pose the CPO in the original, unrotated eigenframe (${\bf m}_1, {\bf m}_2, {\bf z}$), the resulting expansion series is finally rotated back, allowing eigenenhancements to easily be calculated using specfab.
 
 ### Code example
 

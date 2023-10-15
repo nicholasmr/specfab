@@ -12,44 +12,24 @@ from specfabpy import plotting as sfplt
 FS = sfplt.setfont_tex()
 
 #----------------------
-# Idealized moments for test cases
+# Idealized structure tensors for test cases
 #----------------------
 
 x,y,z = [1,0,0],[0,1,0],[0,0,1]
 
-### a2
+L = 2
+x2 = sf.nlm_ideal(x,0,L) 
+y2 = sf.nlm_ideal(y,0,L)
+z2 = sf.nlm_ideal(z,0,L)
+G2xy = sf.nlm_ideal(z,np.pi/2,L)
+G2yz = sf.nlm_ideal(x,np.pi/2,L)
 
-# Single maximum
-x2 = np.einsum('i,j',x,x)
-y2 = np.einsum('i,j',y,y)
-z2 = np.einsum('i,j',z,z)
-
-# Girdle
-G2xy = (x2+y2)/2
-G2xz = (y2+z2)/2
-G2yz = (y2+z2)/2
-
-### a4
-
-# Single maximum
-x4 = np.einsum('i,j,k,l',x,x,x,x)
-y4 = np.einsum('i,j,k,l',y,y,y,y)
-z4 = np.einsum('i,j,k,l',z,z,z,z)
-
-# Girdle
-def f_G4pq(p,q):
-    pq = np.einsum('i,j',p,q)
-    pq2 = pq + pq.T
-    p2q2 = np.einsum('i,j',p,p)+np.einsum('i,j',q,q)
-    a4 = (np.einsum('i,j,k,l',p,p,p,p) + np.einsum('i,j,k,l',q,q,q,q))/4 \
-          + (np.einsum('ij,kl',p2q2,p2q2) + np.einsum('ij,kl',pq2,pq2))/8
-    return a4
-  
-G4xy = f_G4pq(x,y)
-G4xz = f_G4pq(x,z)
-G4yz = f_G4pq(y,z)
-
-#----------------------
+L = 4
+x4 = sf.nlm_ideal(x,0,L) 
+y4 = sf.nlm_ideal(y,0,L)
+z4 = sf.nlm_ideal(z,0,L)
+G4xy = sf.nlm_ideal(z,np.pi/2,L)
+G4yz = sf.nlm_ideal(x,np.pi/2,L)
 
 a2_pairs = ((x2,y2), (y2,z2), (G2xy,z2), (G2yz,x2))
 a4_pairs = ((x4,y4), (y4,z4), (G4xy,z4), (G4yz,x4))
@@ -67,6 +47,8 @@ a = 0.00
 kwargs_gsupdate = {'left':a, 'right':1-a, 'top':0.99, 'bottom':0.07, 'wspace':0.015*10, 'hspace':0.6}
 
 geo, prj = sfplt.getprojection(rotation=45, inclination=45)
+
+lvlset = (np.linspace(0,0.4,9), lambda x,p:'%.1f'%x) # custom level set: (list of levels, how to format colorbar tick labels)
 
 def make_fig(rows=4,cols=3,figsize=figsize):
     fig = plt.figure(figsize=figsize)
@@ -91,21 +73,26 @@ if 1:
     lm, nlm_len = sf.init(2)
     fig, gs = make_fig()
         
-    for ii, (a2_b, a2_n) in enumerate(a2_pairs):
+    for ii, (blm, nlm) in enumerate(a2_pairs):
 
         (ax1,ax2,ax3) = get_axes(gs,ii)
 
-        blm = sf.a2_to_nlm(a2_b)
-        nlm = sf.a2_to_nlm(a2_n)
         vlm = sf.a2_to_nlm(sf.a2_orth(blm,nlm))
 
-        sfplt.plotODF(blm, lm, ax1, cblabel=r'$b/N$ ($L=2$)')
+        if 0:        
+            print('------ a2 for blm, nlm, vlm ---------')        
+            print(sf.a2(blm))
+            print(sf.a2(nlm))
+            print(sf.a2_orth(blm,nlm))
+            print('---------------')
+
+        sfplt.plotODF(blm, lm, ax1, cblabel=r'$b/N$ ($L=2$)', lvlset=lvlset)
         sfplt.plotcoordaxes(ax1, geo, axislabels='vuxi')
 
-        sfplt.plotODF(nlm, lm, ax2, cblabel=r'$n/N$ ($L=2$)')
+        sfplt.plotODF(nlm, lm, ax2, cblabel=r'$n/N$ ($L=2$)', lvlset=lvlset)
         sfplt.plotcoordaxes(ax2, geo, axislabels='vuxi')
         
-        sfplt.plotODF(vlm, lm, ax3, cblabel=r'$v/N$ ($L=2$)')
+        sfplt.plotODF(vlm, lm, ax3, cblabel=r'$v/N$ ($L=2$)', lvlset=lvlset)
         sfplt.plotcoordaxes(ax3, geo, axislabels='vuxi')
 
     fout = 'vlm-L2-deltafunc.png'
@@ -122,21 +109,19 @@ if 1:
     lm, nlm_len = sf.init(4)
     fig, gs = make_fig()
         
-    for ii, (a4_b, a4_n) in enumerate(a4_pairs):
+    for ii, (blm, nlm) in enumerate(a4_pairs):
 
         (ax1,ax2,ax3) = get_axes(gs,ii)
         
-        blm = sf.a4_to_nlm(a4_b)
-        nlm = sf.a4_to_nlm(a4_n)
         vlm = sf.a4_to_nlm(sf.a4_orth(blm,nlm))
 
-        sfplt.plotODF(blm, lm, ax1, cblabel=r'$b/N$ ($L=4$)')
+        sfplt.plotODF(blm, lm, ax1, cblabel=r'$b/N$ ($L=4$)', lvlset=lvlset)
         sfplt.plotcoordaxes(ax1, geo, axislabels='vuxi')
 
-        sfplt.plotODF(nlm, lm, ax2, cblabel=r'$n/N$ ($L=4$)')
+        sfplt.plotODF(nlm, lm, ax2, cblabel=r'$n/N$ ($L=4$)', lvlset=lvlset)
         sfplt.plotcoordaxes(ax2, geo, axislabels='vuxi')
         
-        sfplt.plotODF(vlm, lm, ax3, cblabel=r'$v/N$ ($L=4$)')
+        sfplt.plotODF(vlm, lm, ax3, cblabel=r'$v/N$ ($L=4$)', lvlset=lvlset)
         sfplt.plotcoordaxes(ax3, geo, axislabels='vuxi')
 
     fout = 'vlm-L4-deltafunc.png'
@@ -202,13 +187,13 @@ if 1:
                 
             tt = -1
 
-            sfplt.plotODF(blm[tt,:len_L], lm, ax1, cblabel=r'$b/N$ ($L=%i$)'%(Ltrunc))
+            sfplt.plotODF(blm[tt,:len_L], lm, ax1, cblabel=r'$b/N$ ($L=%i$)'%(Ltrunc), lvlset=lvlset)
             sfplt.plotcoordaxes(ax1, geo, axislabels='vuxi')
 
-            sfplt.plotODF(nlm[tt,:len_L], lm, ax2, cblabel=r'$n/N$ ($L=%i$)'%(Ltrunc))
+            sfplt.plotODF(nlm[tt,:len_L], lm, ax2, cblabel=r'$n/N$ ($L=%i$)'%(Ltrunc), lvlset=lvlset)
             sfplt.plotcoordaxes(ax2, geo, axislabels='vuxi')
             
-            sfplt.plotODF(vlm[tt,:len_L], lm, ax3, cblabel=r'$v/N$ ($L=%i$)'%(Ltrunc))
+            sfplt.plotODF(vlm[tt,:len_L], lm, ax3, cblabel=r'$v/N$ ($L=%i$)'%(Ltrunc), lvlset=lvlset)
             sfplt.plotcoordaxes(ax3, geo, axislabels='vuxi')
 
             if 1:
@@ -228,7 +213,7 @@ if 1:
                 print('vlm (should be isotropic) = ', vlm)
 
                 (ax1,ax2,ax3) = get_axes(gs,1)
-                sfplt.plotODF(vlm[:len_L], lm_L, ax3, cblabel=r'$v/N$ | isotropic CPO')
+                sfplt.plotODF(vlm[:len_L], lm_L, ax3, cblabel=r'$v/N$ | isotropic CPO', lvlset=lvlset)
                 sfplt.plotcoordaxes(ax3, geo, axislabels='vuxi')
 
             fout = 'vlm-L%i-sf-%s.png'%(Ltrunc,exprtype)

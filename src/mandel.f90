@@ -65,4 +65,32 @@ contains
         M(6,:) = [s*A(1,2,1,1), s*A(1,2,2,2), s*A(1,2,3,3), 2*A(1,2,2,3), 2*A(1,2,1,3), 2*A(1,2,1,2)]
     end
 
+    function mat3333_to_mat99(Q) result(P)
+        ! 3x3x3x3 arbitrary tensor to 9x9 matrix
+        implicit none
+        real(kind=dp), intent(in)  :: Q(3,3,3,3) 
+        real(kind=dp)              :: P(9,9) 
+        include "include/P3333_to_P99.f90"
+    end
+    
+    function mat33_to_vec9(Q) result(V)
+        ! 3x3 symmetric tensor to 9x1 vector
+        implicit none
+        real(kind=dp), intent(in)  :: Q(3,3) 
+        real(kind=dp)              :: V(9) 
+        V = [Q(1,1),Q(1,2),Q(1,3), & 
+             Q(1,2),Q(2,2),Q(2,3), &
+             Q(1,3),Q(2,3),Q(3,3)]
+    end
+
+    function vec9_to_mat33(V) result(Q)
+        ! 9x1 vector to 3x3 tensor
+        implicit none
+        real(kind=dp), intent(in)  :: V(9) 
+        real(kind=dp)              :: Q(3,3) 
+        Q(1,:) = [V(1),V(2),V(3)]
+        Q(2,:) = [V(4),V(5),V(6)]
+        Q(3,:) = [V(7),V(8),V(9)]
+    end
+
 end module mandel
