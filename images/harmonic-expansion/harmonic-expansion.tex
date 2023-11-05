@@ -1,6 +1,6 @@
 \documentclass[tikz,margin=0.0mm]{standalone}
 
-% pdftocairo -singlefile -transp -r 150 -png harmonic-expansion.pdf harmonic-expansion
+% pdftocairo -singlefile -transp -r 125 -png harmonic-expansion.pdf harmonic-expansion
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -13,7 +13,7 @@
 \begin{document}
 
 \gdef\dx{4.5}
-\gdef\dy{5}
+\gdef\dy{4.7}
 \gdef\fs{27}
 
 \begin{tikzpicture}[scale=1]
@@ -29,7 +29,7 @@
 \node[] at ({2*\dx},0) {\includegraphics[scale=1]{Y21.png}};
 \node[] at ({3*\dx},0) {\includegraphics[scale=1]{Y22.png}};
 
-\gdef\jj{0}
+\gdef\jj{-0.8}
 \node[] at ({(\jj+0)*\dx},-\dy) {\includegraphics[scale=1]{Y40.png}};
 \node[] at ({(\jj+1)*\dx},-\dy) {\includegraphics[scale=1]{Y41.png}};
 \node[] at ({(\jj+2)*\dx},-\dy) {\includegraphics[scale=1]{Y42.png}};
@@ -41,10 +41,12 @@
 	\node[] at ({(\i+0.5)*\dx},-0.5) {\fontsize{\fs}{\fs}\selectfont $\bf +$};
 }
 
-\foreach \i in {-1,...,3}
+\foreach \i in {-1,...,4}
 {
 	\node[] at ({(\i+0.5+\jj)*\dx},-0.5-\dy) {\fontsize{\fs}{\fs}\selectfont $\bf +$};
 }
+
+\node[] at ({(4+0.2)*\dx+\jj},-0.6-1*\dy) {\fontsize{\fs}{\fs}\selectfont $\bf\cdots$};
 
 \end{tikzpicture}
 
