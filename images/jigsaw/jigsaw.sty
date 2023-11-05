@@ -1,0 +1,100 @@
+% !TeX root = jigsaw-doc.tex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% The jigsaw package 
+% A package to draw jigsaw pieces with tikz 
+% Maintained by samcarter
+%
+% Project repository and bug tracker:
+% https://github.com/samcarter/jigsaw
+%
+% Released under the LaTeX Project Public License v1.3c or later
+% See http://www.latex-project.org/lppl.txt
+%
+% Version 0.1a
+% NOv 9, 2018   
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\ProvidesPackage{jigsaw}
+ [2018/11/09 v0.1a Draw jigsaw pieces in TikZ]
+
+\RequirePackage{tikz}
+
+\RequirePackage{ifluatex}
+\RequirePackage{ifxetex}
+
+\ifluatex
+  \let\pdfrandomseed\randomseed
+\fi
+
+\ifxetex
+  \pgfmathsetseed{\time}
+\else
+  \pgfmathsetseed{\number\pdfrandomseed}
+\fi
+
+\pgfmathparse{int(random(1,120))}
+
+\newcommand{\side}[1]{
+(0.0,#1*0.00) .. controls (0.0,#1*0.00) and (0.4,#1*-0.04) .. 
+(0.4,#1*0.04) .. controls (0.4,#1*0.11) and (0.2,#1*0.26) .. 
+(0.5,#1*0.26) .. controls (0.8,#1*0.26) and (0.6,#1*0.11) .. 
+(0.6,#1*0.04) .. controls (0.6,#1*-0.04) and (1.0,#1*0.00) .. 
+(1.0,#1*0.00)
+}
+
+\newcommand{\halfpiece}[2]{
+	\draw \side{#1} [rotate around={90:(0.5,0.5)}] \side{#2};
+}
+
+\newcommand{\piece}[5][\@nil]{
+	\def\tmp{#1}%
+	\ifx\tmp\@nnil
+	\else
+		\fill[#1] 
+    	\side{#2} -- (0.5,0.5)
+    	[rotate around={90:(0.5,0.5)}] \side{#3} -- (0.5,0.5)
+    	[rotate around={180:(0.5,0.5)}] \side{#5} -- (0.5,0.5)
+    	[rotate around={270:(0.5,0.5)}] \side{#4} -- (0.5,0.5)
+    	-- cycle;
+  \fi
+  \draw 
+    \side{#2}
+    [rotate around={90:(0.5,0.5)}] \side{#3}
+    [rotate around={180:(0.5,0.5)}] \side{#5}
+    [rotate around={270:(0.5,0.5)}] \side{#4};    
+}
+
+\newcommand{\tile}[5][\@nil]{%
+	\begin{tikzpicture}
+		\path (0,0) rectangle (1,0.97);
+		\begin{pgfinterruptboundingbox}
+			\piece[#1]{#2}{#3}{#4}{#5}
+		\end{pgfinterruptboundingbox}	
+	\end{tikzpicture}%
+}
+
+\pgfmathdeclarerandomlist{inout}{{-1}{1}}
+
+\newcommand{\jigsaw}[2]{%
+    \def\xmax{#1}
+    \def\ymax{#2}
+    \foreach \x in {1,...,\xmax}{
+        \foreach \y in {1,...,\ymax}{
+            \ifnum\y=1
+                \def\bottom{0}
+            \else
+                \pgfmathrandomitem{\bottom}{inout}%
+            \fi
+            \ifnum\x=\xmax
+                \def\right{0}
+            \else
+                \pgfmathrandomitem{\right}{inout}%
+            \fi
+            \begin{scope}[xshift=\x cm-1cm, yshift=\y cm-1cm]
+                \halfpiece{\bottom}{\right}
+            \end{scope}
+        }
+    }
+    \draw (0,0) -- (0,\ymax) -- (\xmax,\ymax);
+}

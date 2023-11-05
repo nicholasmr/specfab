@@ -40,6 +40,30 @@ def F2C(F):
     return C
     
     
+def mat2d(D3, modelplane):
+
+    """
+    Model-plane strain-rate tensor from R^3 strain-rate tensor
+    """
+    
+    if modelplane=='xy':
+        D2 = np.array([ \
+            [D3[0,0], D3[0,1]], \
+            [D3[1,0], D3[1,1]] \
+        ])
+    
+    elif modelplane=='xz':  
+        D2 = np.array([ \
+            [D3[0,0], D3[0,2]], \
+            [D3[2,0], D3[2,2]] \
+        ])
+        
+    else:
+        raise ValueError('invalid modelplane "%s"'%(modelplane))
+        
+    return D2
+    
+    
 def mat3d(D2, modelplane, reshape=False): 
 
     """
@@ -63,3 +87,4 @@ def mat3d(D2, modelplane, reshape=False):
         raise ValueError('invalid modelplane "%s"'%(modelplane))
         
     return D3
+

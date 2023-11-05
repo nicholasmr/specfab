@@ -42,13 +42,14 @@ a_{xy} & a_{yy} & 0\\
 .
 $$
 
-Let us consider the usual case where the difference in horizontal eigenvalues of $\langle c_i c_j \rangle$ can be inferred from ice-penetrating radar, that is
+Let us consider the usual case where the difference in horizontal eigenvalues of $\langle c_i c_j \rangle$,
+
 $$
 \Delta \lambda = \lambda_2 - \lambda_1,
 $$
 
-where ${\bf m}_1$ and ${\bf m}_2$ are the corresponding horizontal eigenvectors, and eigenvalues are sorted such that $\lambda_1 \leq \lambda_2$.
-It follows that posing the structure tensor in its eigenframe (${\bf m}_1, {\bf m}_2, {\bf z}$), gives
+can be inferred from ice-penetrating radar, where ${\bf m}_1$ and ${\bf m}_2$ are the corresponding horizontal eigenvectors and eigenvalues are sorted such that $\lambda_1 \leq \lambda_2$.
+It follows that the structure tensor, posed in its eigenframe (${\bf m}_1, {\bf m}_2, {\bf z}$), is
 
 $$
 \langle c_i c_j \rangle 
