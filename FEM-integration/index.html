@@ -87,6 +87,8 @@
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">FEM integration</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#the-coupled-problem">The coupled problem</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#fenics">FEniCS</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#elmer">Elmer</a>
@@ -126,9 +128,19 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="finite-element-integration">Finite element integration</h1>
-<p>To be updated.</p>
+<h2 id="the-coupled-problem">The coupled problem</h2>
+<p>The coupled evolution of flow and CPO can be solved by joining different components of specfab together with a Stokes flow solver (purple piece):</p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/jigsaw/jigsaw01.png#center" style="width:300px" /></p>
+<p>That is, specfab can model/provides</p>
+<ul>
+<li><a href="../cpo-dynamics-tranisotropic/">CPO evolution</a> (green piece)</li>
+<li><a href="../enhancements-strainrate/">Viscous anisotropies</a> induced by CPOs (orange piece)</li>
+<li><a href="../constitutive-viscoplastic/">Bulk anisotropic power-law rheologies</a> if provided with viscous anisotropies (blue piece)</li>
+</ul>
 <h2 id="fenics">FEniCS</h2>
+<p>To be updated.  </p>
 <h2 id="elmer">Elmer</h2>
+<p>To be updated.</p>
               
             </div>
           </div><footer>
