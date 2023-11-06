@@ -129,7 +129,7 @@
 <p>The <span class="arithmatex">\(k\)</span>-th order structure tensor is the average <span class="arithmatex">\(k\)</span>-th repeated outer product of a crystallographic axis with itself (vector moments).
 For example, in the case of a discrete ensemble of <span class="arithmatex">\({\bf c}\)</span> axes they are</p>
 <div class="arithmatex">\[ 
-{\bf a}^{(k)}=\frac{1}{N}\sum_i^N ({\bf c}_i\otimes)^k,
+{\bf a}^{(k)} = \frac{1}{N}\sum_i^N ({\bf c}_i\otimes)^k,
 \]</div>
 <p>where <span class="arithmatex">\(N\)</span> is the total number of grains, assuming equal grain weight (i.e. mass) for simplicity.
 Alternatively, if the distribution function of <span class="arithmatex">\({\bf c}\)</span> axes is known, <span class="arithmatex">\(n(\theta,\phi)\)</span>, the structure tensors are</p>
@@ -138,6 +138,12 @@ Alternatively, if the distribution function of <span class="arithmatex">\({\bf c
 ,
 \]</div>
 <p>where <span class="arithmatex">\(\mathrm{d}\Omega = \sin(\theta) \mathrm{d}\theta \mathrm{d}\phi\)</span> is the infinitesimal solid angle, <span class="arithmatex">\(\hat{{\bf r}}(\theta,\phi)\)</span> is the radial unit vector, and <span class="arithmatex">\(N=\int_{S^2} n(\theta,\phi) \, \mathrm{d}\Omega\)</span>.</p>
+<div class="admonition note">
+<p class="admonition-title">Principal frame</p>
+<p>Since <span class="arithmatex">\(n(\theta,\phi)\)</span> is antipodally symmetric, the first (<span class="arithmatex">\(k=1\)</span>) vector moment vanishes identically. Hence, <span class="arithmatex">\({\bf a}^{(2)}\)</span> measures the variance of <span class="arithmatex">\(\bf c\)</span> axes around the three coordinate axes.</p>
+<p>The principal frame of <span class="arithmatex">\({\bf a}^{(2)}\)</span> therefore has a similar interpretation as in PCA:
+The first principal component (eigenvector) is the direction that maximizes the variance (eigenvalue) of the projected data, the second component (eigenvector) is the direction orthogonal to the first component that maximizes the variance of the projected data, and so on with the third component. </p>
+</div>
 <h2 id="convert-to-spectral">Convert to spectral</h2>
 <p>Converting between spectral and tensorial representations is a linear problem in the sense that </p>
 <div class="arithmatex">\[

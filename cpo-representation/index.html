@@ -187,6 +187,7 @@
 <p>From specfab's point-of-view, the difference is a matter of normalization: since the models of <a href="../cpo-dynamics-tranisotropic/">CPO evolution</a> (lattice rotation, DDRX, CDRX) conserve the normalization, the two views are effectively the same, not least because CPO-derived quantities depend on the normalized distributions (which are identical).
 The mass-density-fraction interpretation rests, however, on stronger physical grounds as mass is conserved but grain numbers are not.</p>
 <h2 id="harmonic-expansion">Harmonic expansion</h2>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/harmonic-expansion/harmonic-expansion.png#center" style="width:750px" /></p>
 <p>The distributions of crystallographic axes are represented as spherical harmonic expansion series.
 <br>
 E.g. for transversely isotropic grains where only <span class="arithmatex">\(n(\theta,\phi)\)</span> is relevant:
@@ -195,10 +196,8 @@ n(\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}Y_{l}^{m}(\theta,\phi) \qua
 $$</p>
 <p>Thus, the CPO state is described by the vector of complex-valued expansion coefficients</p>
 <div class="arithmatex">\[
-{\bf s} = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}] \quad\text{(state vector)}.
+{\bf s} = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}] \quad\text{(state vector)},
 \]</div>
-<p>Or graphically:
-<img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/harmonic-expansion/harmonic-expansion.png#center" style="width:750px" /></p>
 <p>where the magnitude and complex phase of the coefficients determine the size and rotation of the contribution from the associated harmonic mode.</p>
 <h3 id="reduced-form">Reduced form</h3>
 <p>Not all expansion coefficients are independent for real-valued expansion series, but must fulfill</p>
