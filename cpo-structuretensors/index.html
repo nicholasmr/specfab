@@ -50,6 +50,8 @@
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Structure tensors</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#principal-frame">Principal frame</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#convert-to-spectral">Convert to spectral</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#construct-from-measurements">Construct from measurements</a>
@@ -138,12 +140,19 @@ Alternatively, if the distribution function of <span class="arithmatex">\({\bf c
 ,
 \]</div>
 <p>where <span class="arithmatex">\(\mathrm{d}\Omega = \sin(\theta) \mathrm{d}\theta \mathrm{d}\phi\)</span> is the infinitesimal solid angle, <span class="arithmatex">\(\hat{{\bf r}}(\theta,\phi)\)</span> is the radial unit vector, and <span class="arithmatex">\(N=\int_{S^2} n(\theta,\phi) \, \mathrm{d}\Omega\)</span>.</p>
-<div class="admonition note">
-<p class="admonition-title">Principal frame</p>
-<p>Since <span class="arithmatex">\(n(\theta,\phi)\)</span> is antipodally symmetric, the first (<span class="arithmatex">\(k=1\)</span>) vector moment vanishes identically. Hence, <span class="arithmatex">\({\bf a}^{(2)}\)</span> measures the variance of <span class="arithmatex">\(\bf c\)</span> axes around the three coordinate axes.</p>
-<p>The principal frame of <span class="arithmatex">\({\bf a}^{(2)}\)</span> therefore has a similar interpretation as in PCA:
-The first principal component (eigenvector) is the direction that maximizes the variance (eigenvalue) of the projected data, the second component is the direction orthogonal to the first component that maximizes the variance of the projected data, and so on with the third component. </p>
-</div>
+<h2 id="principal-frame">Principal frame</h2>
+<p>Since <span class="arithmatex">\(n(\theta,\phi)\)</span> is antipodally symmetric, the first (<span class="arithmatex">\(k=1\)</span>) vector moment vanishes identically. Hence, <span class="arithmatex">\({\bf a}^{(2)}\)</span> measures the variance of <span class="arithmatex">\(\bf c\)</span> axes around the three coordinate axes.
+Posing <span class="arithmatex">\({\bf a}^{(2)}\)</span> in its principal frame</p>
+<div class="arithmatex">\[ 
+{\bf a}^{(2)} = \left[\begin{matrix}
+\lambda_1 &amp; 0 &amp; 0\\ 
+0 &amp; \lambda_2 &amp; 0\\ 
+0 &amp; 0 &amp; \lambda_3\\ 
+\end{matrix}\right]
+\]</div>
+<p>therefore has a similar interpretation as in PCA:
+the first principal component (eigenvector <span class="arithmatex">\({\bf m}_1\)</span>) is the direction that maximizes the variance (eigenvalue <span class="arithmatex">\(\lambda_1\)</span>) of the projected data (red curve), the second component is the direction orthogonal to the first component that maximizes the variance of the projected data, and so on with the third component. </p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/harmonic-expansion/a2.png#center" style="width:750px" /></p>
 <h2 id="convert-to-spectral">Convert to spectral</h2>
 <p>Converting between spectral and tensorial representations is a linear problem in the sense that </p>
 <div class="arithmatex">\[
