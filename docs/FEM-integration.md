@@ -1,8 +1,35 @@
 # Finite element integration
 
-To be updated.
+## The coupled problem 
+
+The coupled evolution of flow and CPO can be solved by joining different components of specfab together with a Stokes flow solver (purple piece):
+
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/jigsaw/jigsaw01.png#center){: style="width:360px"}
+
+That is, specfab can model/provides
+
+* [CPO evolution](cpo-dynamics-tranisotropic.md) (green piece)
+* [Viscous anisotropies](enhancements-strainrate.md) induced by CPOs (orange piece)
+* [Bulk anisotropic power-law rheologies](constitutive-viscoplastic.md) if provided with viscous anisotropies (blue piece)
+
+## Elmer/Ice
+
+See [Lilien et al. (2023)](https://doi.org/10.1017/jog.2023.78) for ice-flow modelling.
 
 ## FEniCS
 
-## Elmer 
+To be updated.	
+
+
+<!--
+## Icepack
+
+To be updated.	
+
+## Úa
+
+To be updated.	
+
+-->
+
 

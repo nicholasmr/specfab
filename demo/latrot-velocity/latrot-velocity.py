@@ -14,6 +14,7 @@ from specfabpy import discrete as sfdsc
 from specfabpy import plotting as sfplt
 FS = sfplt.setfont_tex(fontsize=12)
 FSSMALL = FS-1
+FSAX = FS+1
 
 ### High-res grid
 
@@ -119,7 +120,7 @@ def plot(ugrad, ax, titlestr='', speedthres=0):
         
 ### Plot
 
-geo, prj = sfplt.getprojection(rotation=50+180, inclination=50)
+geo, prj = sfplt.getprojection(rotation=55-90, inclination=50) # old: 50+180
 
 scale = 2.6
 fig = plt.figure(figsize=(3/2*1.45*scale,1.00*scale))
@@ -133,17 +134,17 @@ ax3 = fig.add_subplot(gs[0,2], projection=prj); ax3.set_global();
 ### Plot 1
 ugrad = np.diag([0.5,0.5,-1]) # uniaxial compression along z
 plot(ugrad, ax1, titlestr=r'%s Unconfined pure shear'%(r'{\Large \textit{(a)}}\,\,'), speedthres=10e-2)
-sfplt.plotcoordaxes(ax1, geo, axislabels='vuxi', color='k')
+sfplt.plotcoordaxes(ax1, geo, axislabels='vuxi', fontsize=FSAX, color='k')
 
 #### Plot 2
-ugrad = np.diag([+1,0,-1]) # confined uniaxial compression along z
+ugrad = np.diag([0,+1,-1]) # confined uniaxial compression along z
 plot(ugrad, ax2, titlestr=r'%s Confined pure shear'%(r'{\Large \textit{(b)}}\,\,'))
-sfplt.plotcoordaxes(ax2, geo, axislabels='vuxi', color='k')
+sfplt.plotcoordaxes(ax2, geo, axislabels='vuxi', fontsize=FSAX, color='k')
 
 #### Plot 3
-ugrad = np.einsum('i,j',[1,0,0],[0,0,1]) # x-z shear
+ugrad = np.einsum('i,j',[0,1,0],[0,0,1]) # y-z shear
 plot(ugrad, ax3, titlestr=r'%s Simple shear'%(r'{\Large \textit{(c)}}\,\,'))
-sfplt.plotcoordaxes(ax3, geo, axislabels='vuxi', color='k')
+sfplt.plotcoordaxes(ax3, geo, axislabels='vuxi', fontsize=FSAX, color='k')
 
 fout = 'latrot-velocity.png'
 print('Saving %s'%(fout))

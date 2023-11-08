@@ -4,7 +4,7 @@ The $k$-th order structure tensor is the average $k$-th repeated outer product o
 For example, in the case of a discrete ensemble of ${\bf c}$ axes they are
 
 $$ 
-{\bf a}^{(k)}=\frac{1}{N}\sum_i^N ({\bf c}_i\otimes)^k,
+{\bf a}^{(k)} = \frac{1}{N}\sum_i^N ({\bf c}_i\otimes)^k,
 $$
 
 where $N$ is the total number of grains, assuming equal grain weight (i.e. mass) for simplicity.
@@ -16,6 +16,14 @@ $$
 $$
 
 where $\mathrm{d}\Omega = \sin(\theta) \mathrm{d}\theta \mathrm{d}\phi$ is the infinitesimal solid angle, $\hat{{\bf r}}(\theta,\phi)$ is the radial unit vector, and $N=\int_{S^2} n(\theta,\phi) \, \mathrm{d}\Omega$.
+
+!!! note "Principal frame"
+
+    Since $n(\theta,\phi)$ is antipodally symmetric, the first ($k=1$) vector moment vanishes identically. Hence, ${\bf a}^{(2)}$ measures the variance of $\bf c$ axes around the three coordinate axes.
+    
+    The principal frame of ${\bf a}^{(2)}$ therefore has a similar interpretation as in PCA:
+    The first principal component (eigenvector) is the direction that maximizes the variance (eigenvalue) of the projected data, the second component is the direction orthogonal to the first component that maximizes the variance of the projected data, and so on with the third component. 
+    
 
 ## Convert to spectral 
 

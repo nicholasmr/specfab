@@ -19,7 +19,7 @@ MAKE_FRAMES = True
 MAKE_ANI    = 0
 
 Mtypes = ['LROT','DDRX','CDRX']
-Mtypes = ['DDRX',]
+#Mtypes = ['LROT','CDRX']
 
 ### Numerics
 
@@ -36,7 +36,7 @@ nlm = {\
 }
 
 for ii, Mtype in enumerate(Mtypes):
-    for jj, exptype in enumerate(['uc_zz', 'cc_zx', 'ss_xz']):
+    for jj, exptype in enumerate(['uc_zz', 'cc_zy', 'ss_yz']):
 
         # Process rate magnitude
         if Mtype == 'LROT': kwargs = dict(iota=1,    Lambda=None, Gamma0=None, nu=1)
@@ -52,17 +52,18 @@ for ii, Mtype in enumerate(Mtypes):
             mod = dict(type='ps', r=0,  axis=2)
             strain_target = -0.90
 
-        if exptype == 'cc_zx': # Confined compression
-            mod = dict(type='ps', r=+1, axis=2)
+        if exptype == 'cc_zy': # Confined compression
+            mod = dict(type='ps', r=-1, axis=2)
             strain_target = -0.90
 
-        if exptype == 'ss_xz': # Simple shear
-            mod = dict(type='ss', plane=1)
+        if exptype == 'ss_yz': # Simple shear
+            mod = dict(type='ss', plane=0)
             strain_target = np.deg2rad(75) if Mtype == 'LROT' else np.deg2rad(66.5) # => dt as uc/cc if not LROT
         
         # Integrate 
         nlm[Mtype][jj,:,:], *_ = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, nlm0=nlm0, **kwargs)
 
+#Mtypes = ['CDRX',]
 print('Model integrations finished...')
         
 ### Plot
@@ -73,7 +74,7 @@ import matplotlib.ticker as mticker
 import matplotlib.gridspec as gridspec
 import cartopy.crs as ccrs
 
-geo, prj = sfplt.getprojection(rotation=55+180, inclination=50)
+geo, prj = sfplt.getprojection(rotation=55-90, inclination=50)
 
 for ii, Mtype in enumerate(Mtypes):
 
@@ -96,7 +97,7 @@ for ii, Mtype in enumerate(Mtypes):
             
             lvlset = [np.linspace(0,1,9), lambda x,p:'%.1f'%x]
             for jj in range(3): sfplt.plotODF(nlm[Mtype][jj,tt,:], lm, axi[jj], lvlset=lvlset)
-            #for jj in range(3): sfplt.plotcoordaxes(axi[jj], geo, axislabels='vuxi')
+            for jj in range(3): sfplt.plotcoordaxes(axi[jj], geo, axislabels='vuxi')
             
             axi[0].set_title(r'%s Unconfined pure shear'%(r'{\Large \textit{(a)}}\,\,'), fontsize=FS, pad=10)
             axi[1].set_title(r'%s Confined pure shear'%(r'{\Large \textit{(b)}}\,\,'), fontsize=FS, pad=10)

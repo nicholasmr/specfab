@@ -65,6 +65,11 @@ nlm = sf.a2_to_nlm(a2)
 #nlm = 1/np.sqrt(4*np.pi) * np.array([1,0.5,-0.325, 0,0,0])
 lvlset = (np.linspace(0,0.25,9), lambda x,p:'%.1f'%x) 
 sfplt.plotODF(nlm, lm, ax, lvlset=lvlset, showcb=False)
+
+#cmap = cmr.get_sub_cmap('Greys', 0.08, 1) # don't include pure white to distinguish from white figure background
+#cmap.set_under('tab:red')
+#sfplt.plotODF(nlm, lm, ax, lvlset=lvlset, extend='both', hidetruncerr=True, cmap=cmap)
+
 fout = 'nlm.png'
 print('Saving %s'%(fout))
 plt.savefig(fout, transparent=True, dpi=350)
@@ -73,36 +78,38 @@ plt.savefig(fout, transparent=True, dpi=350)
 # Decomposition
 #-----------------
 
-nlm_mag = 1 #1/4
-phi = np.deg2rad(0)
+if 1:
 
-lm_list = ((0,0), (2,0), (2,1), (2,2), (4,0), (4,1), (4,2), (4,3), (4,4),)
-#lm_list = ((2,2), )
+    nlm_mag = 1 #1/4
+    phi = np.deg2rad(0)
 
-for (l,m) in lm_list:
+    lm_list = ((0,0), (2,0), (2,1), (2,2), (4,0), (4,1), (4,2), (4,3), (4,4),)
+    #lm_list = ((2,2), )
 
-    scale = 1.3
-    fig = plt.figure(figsize=(1.125*scale,1.3*scale))
-    gs = gridspec.GridSpec(1, 1)
-    a=0.14
-    gs.update(top=0.80, bottom=0.00, left=a, right=1-a)
-    ax = fig.add_subplot(gs[0, 0], projection=prj)
-    ax.set_global()
-    
-    if m == 0:
-        (F,lon,lat) = discretize_fabric([nlm_mag], np.array([[l,],[m,]]))
-        title = '$n_{%i}^{%i} Y_{%i}^{%i}$'%(l,m, l,m)
-        plot_Ylm(F, lon, lat, ax=ax, title=title)
+    for (l,m) in lm_list:
 
-    else:
-        nlm = nlm_mag*np.exp(m*1j*phi)
-        sign = (-1)**(m)
-        (F,lon,lat) = discretize_fabric([sign*np.conj(nlm),nlm], np.array([[l,l],[m,-m]]))
-        title = r'$%s\big(n_{%i}^{%i}\big)^* Y_{%i}^{-%i} + n_{%i}^{%i}Y_{%i}^{%i}$' % ('+' if sign>0 else '-', l,m, l,m, l,m, l,m)
-        plot_Ylm(F, lon, lat, ax=ax, title=title)
+        scale = 1.3
+        fig = plt.figure(figsize=(1.125*scale,1.3*scale))
+        gs = gridspec.GridSpec(1, 1)
+        a=0.14
+        gs.update(top=0.80, bottom=0.00, left=a, right=1-a)
+        ax = fig.add_subplot(gs[0, 0], projection=prj)
+        ax.set_global()
+        
+        if m == 0:
+            (F,lon,lat) = discretize_fabric([nlm_mag], np.array([[l,],[m,]]))
+            title = '$n_{%i}^{%i} Y_{%i}^{%i}$'%(l,m, l,m)
+            plot_Ylm(F, lon, lat, ax=ax, title=title)
 
-    fout = 'Y%i%i.png'%(l,m)
-    print('Saving %s'%(fout))
-    plt.savefig(fout, transparent=True, dpi=350)
-    
-   
+        else:
+            nlm = nlm_mag*np.exp(m*1j*phi)
+            sign = (-1)**(m)
+            (F,lon,lat) = discretize_fabric([sign*np.conj(nlm),nlm], np.array([[l,l],[m,-m]]))
+            title = r'$%s\big(n_{%i}^{%i}\big)^* Y_{%i}^{-%i} + n_{%i}^{%i}Y_{%i}^{%i}$' % ('' if sign>0 else '-', l,m, l,m, l,m, l,m)
+            plot_Ylm(F, lon, lat, ax=ax, title=title)
+
+        fout = 'Y%i%i.png'%(l,m)
+        print('Saving %s'%(fout))
+        plt.savefig(fout, transparent=True, dpi=350)
+        
+       

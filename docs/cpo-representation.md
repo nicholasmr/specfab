@@ -34,6 +34,8 @@ The mass-density-fraction interpretation rests, however, on stronger physical gr
 
 ## Harmonic expansion
 
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/harmonic-expansion/harmonic-expansion.png#center){: style="width:750px"}
+
 The distributions of crystallographic axes are represented as spherical harmonic expansion series.
 <br>
 E.g. for transversely isotropic grains where only $n(\theta,\phi)$ is relevant:
@@ -45,8 +47,10 @@ $$
 Thus, the CPO state is described by the vector of complex-valued expansion coefficients
 
 $$
-{\bf s} = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}] \quad\text{(state vector)}.
+{\bf s} = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}] \quad\text{(state vector)},
 $$
+
+where the magnitude and complex phase of the coefficients determine the size and rotation of the contribution from the associated harmonic mode.
 
 ### Reduced form
 

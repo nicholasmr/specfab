@@ -9,6 +9,7 @@ from specfabpy import specfab as sf
 from specfabpy import discrete as sfdsc
 from specfabpy import plotting as sfplt
 FS = sfplt.setfont_tex()
+FSAX = FS+1
 
 import matplotlib.pyplot as plt
 from matplotlib import rcParams, rc
@@ -22,7 +23,7 @@ lon   = np.linspace(0, 2*np.pi, 2*latres)
 lon, colat = np.meshgrid(lon, colat) 
 lat = sfdsc.colat2lat(colat)
 
-geo, prj = sfplt.getprojection(rotation=60, inclination=45)
+geo, prj = sfplt.getprojection(rotation=55-90, inclination=50)
 
 def plot(clm, ax=None, cmap='RdBu_r', cblbl=r'$\Gamma/\Gamma_0$', titlestr=''):
 
@@ -57,18 +58,18 @@ nlm[0] = 1/np.sqrt(4*np.pi) # Assume isotropic state for calculating decay rate
 ### Plot 1
 tau = np.diag([0.5,0.5,-1]) # Unconfined UC in z
 plot(sf.DDRX_decayrate(nlm, tau), ax1, titlestr=r'%s Unconfined pure shear'%(r'{\Large \textit{(a)}}\,\,'))
-sfplt.plotcoordaxes(ax1, geo, axislabels='vuxi', color='k')
+sfplt.plotcoordaxes(ax1, geo, axislabels='vuxi', fontsize=FSAX, color='k')
 
 ### Plot 2
-tau = np.diag([-1,0,+1]) # Confined UC in z
+tau = np.diag([0,+1,-1]) # Confined UC in z
 plot(sf.DDRX_decayrate(nlm, tau), ax2, titlestr=r'%s Confined pure shear'%(r'{\Large \textit{(b)}}\,\,'))
-sfplt.plotcoordaxes(ax2, geo, axislabels='vuxi', color='k')
+sfplt.plotcoordaxes(ax2, geo, axislabels='vuxi', fontsize=FSAX, color='k')
 
 ### Plot 3
-tau = np.matrix([[0,0,1],[0,0,0],[1,0,0]]) # SS xz
-#tau = np.matrix([[0,1,0],[1,0,0],[0,0,0]]) # SS xy
+tau = np.einsum('i,j',[0,1,0],[0,0,1]) # y-z shear
+tau = (tau + tau.T)/2
 plot(sf.DDRX_decayrate(nlm, tau), ax3, titlestr=r'%s Simple shear'%(r'{\Large \textit{(c)}}\,\,'))
-sfplt.plotcoordaxes(ax3, geo, axislabels='vuxi', color='k')
+sfplt.plotcoordaxes(ax3, geo, axislabels='vuxi', fontsize=FSAX, color='k')
 
 fout = 'ddrx-decayrate.png'
 print('Saving %s'%(fout))

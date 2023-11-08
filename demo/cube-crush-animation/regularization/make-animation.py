@@ -9,6 +9,7 @@ from specfabpy import integrator as sfint
 from specfabpy import discrete as sfdsc
 from specfabpy import plotting as sfplt
 FS = sfplt.setfont_tex()
+FSAX = FS+1
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -80,18 +81,18 @@ if PLOT_FRAMES:
         
         ### Plot ODFs
         
-        geo, prj = sfplt.getprojection(rotation=45, inclination=50)
+        geo, prj = sfplt.getprojection(rotation=55-90, inclination=50)
         ax_ODF = [fig.add_subplot(gs[0, 1+ii], projection=prj) for ii in [0,1]]
 
         lvlset = [np.linspace(0,1,9), lambda x,p:'%.1f'%x]
 
         sfplt.plotODF(nlm_reg[tt,:], lm, ax_ODF[0], lvlset=lvlset)
-        sfplt.plotcoordaxes(ax_ODF[0], geo, axislabels='vuxi')
+        sfplt.plotcoordaxes(ax_ODF[0], geo, fontsize=FSAX, axislabels='vuxi')
         ax_ODF[0].set_global()
         ax_ODF[0].set_title(r'$\bf{M}=\bf{M}_\mathrm{LROT} + \bf{M}_\mathrm{REG}$', fontsize=FS+1, pad=10)
         
         sfplt.plotODF(nlm_noreg[tt,:], lm, ax=ax_ODF[1], lvlset=lvlset)
-        sfplt.plotcoordaxes(ax_ODF[1], geo, axislabels='vuxi')
+        sfplt.plotcoordaxes(ax_ODF[1], geo, fontsize=FSAX, axislabels='vuxi')
         ax_ODF[1].set_global()
         ax_ODF[1].set_title(r'$\bf{M}=\bf{M}_\mathrm{LROT}$', fontsize=FS+1, pad=10)
 
