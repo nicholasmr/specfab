@@ -156,7 +156,7 @@ E_{ij} = \frac{
 <div class="arithmatex">\[
 {\bf S}({\bf e}_i, {\bf e}_j) = \tau_0
 \begin{cases}
-    {\bf I}/3 - {\bf e}_i \otimes {\bf e}_i \;\;\quad\quad\text{if}\quad i=j \\
+    {\bf I} - 3{\bf e}_i \otimes {\bf e}_i \;\;\quad\quad\text{if}\quad i=j \\
     {\bf e}_i \otimes {\bf e}_j + {\bf e}_j \otimes {\bf e}_i \quad\text{if}\quad i\neq j \\
 \end{cases}
 .
@@ -222,16 +222,18 @@ E_{ij} = \frac{
 \qquad \text{(Taylor homogenization)}
 \]</div>
 <p>where <span class="arithmatex">\(\langle \cdot \rangle^{-1}\)</span> inverts the tensorial relationship.</p>
-<p>If a linear combination of the two homogenizations is considered</p>
+<p>If a linear combination of the two homogenizations is considered, equation (1) can be written as </p>
 <div class="arithmatex">\[
-{\bf D} = (1-\alpha){\bf D}^{\mathrm{Sachs}} + {\alpha} {\bf D}^{\mathrm{Taylor}} ,
-\]</div>
-<p>equation (1) becomes</p>
-<div class="arithmatex">\[ 
-E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}}
+E_{ij} = (1-\alpha) \frac{{\bf e}_i \cdot {\bf D}^{\mathrm{Sachs}}({\bf S}) \cdot {\bf e}_j}
+{{\bf e}_i \cdot {\bf D}^{\mathrm{Sachs}}_{\mathrm{iso}}({\bf S}) \cdot {\bf e}_j }
++ {\alpha} \frac{ {\bf e}_i \cdot {\bf D}^{\mathrm{Taylor}}({\bf S}) \cdot {\bf e}_j }
+{ {\bf e}_i \cdot {\bf D}^{\mathrm{Taylor}}_{\mathrm{iso}}({\bf S}) \cdot {\bf e}_j }
 ,
 \]</div>
-<p>where <span class="arithmatex">\(\alpha\)</span> is a free parameter.</p>
+<p>where <span class="arithmatex">\(\alpha\)</span> is a free parameter, or simply</p>
+<div class="arithmatex">\[
+E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}} .
+\]</div>
 <div class="admonition warning">
 <p class="admonition-title">Grain parameters</p>
 <p>The grain viscous (rheological) parameters, used for homogenization, should be understood as the <em>effective</em> values needed to reproduce deformation experiments on polycrystals, and not measured values derived from experiments on single crystals.</p>
