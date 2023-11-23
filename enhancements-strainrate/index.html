@@ -194,27 +194,26 @@ E_{ij} = \frac{
 </tbody>
 </table>
 <h2 id="grain-homogenization">Grain homogenization</h2>
-<p>To calculate <span class="arithmatex">\(E_{ij}\)</span> for a given CPO using (1) requires an <em>effective</em> rheology that takes the microstructure into account.</p>
-<p>In the simplest case, polycrystals may be regarded as an ensemble of interactionless grains (monocrystals) subject to either a homogeneous stress field over the polycrystal scale</p>
+<p>Calculating <span class="arithmatex">\(E_{ij}\)</span> using (1) for a given CPO requires an <em>effective</em> rheology that takes the microstructure into account.</p>
+<p>In the simplest case, polycrystals may be regarded as an ensemble of interactionless grains (monocrystals), subject to either a homogeneous stress field over the polycrystal scale:</p>
 <div class="arithmatex">\[
 {\bf S}' = {\bf S}
 ,
 \qquad\qquad \text{(Sachs's hypothesis)}
 \]</div>
-<p>or a homogeneous stain-rate field</p>
+<p>or a homogeneous stain-rate field:</p>
 <div class="arithmatex">\[
 {\bf D}' = {\bf D} 
 ,
 \qquad\qquad \text{(Taylor's hypothesis)}
 \]</div>
 <p>where <span class="arithmatex">\({\bf S}'\)</span> and <span class="arithmatex">\({\bf D}'\)</span> are the <em>microscopic</em> (grain-scale) stress and strain-rate tensors, respectively.</p>
-<p>Hence, the effective rheology can be approximated as the orientation-averaged monocrystal rheology</p>
+<p>The effective rheology can then be approximated as the ensemble-averaged monocrystal rheology for either case:</p>
 <div class="arithmatex">\[
 {\bf D}^{\mathrm{Sachs}} = \langle {\bf D}'({\bf S}') \rangle = \langle {\bf D}'({\bf S}) \rangle
 ,
 \qquad\qquad \text{(Sachs homogenization)}
 \]</div>
-<p>or</p>
 <div class="arithmatex">\[
 \qquad
 {\bf D}^{\mathrm{Taylor}} = \langle {\bf S}'({\bf D}') \rangle^{-1} = \langle {\bf S}'({\bf D}) \rangle^{-1}
@@ -230,13 +229,14 @@ E_{ij} = (1-\alpha) \frac{{\bf e}_i \cdot {\bf D}^{\mathrm{Sachs}}({\bf S}) \cdo
 { {\bf e}_i \cdot {\bf D}^{\mathrm{Taylor}}_{\mathrm{iso}}({\bf S}) \cdot {\bf e}_j }
 ,
 \]</div>
-<p>where <span class="arithmatex">\(\alpha\)</span> is a free parameter, or simply</p>
+<p>or simply</p>
 <div class="arithmatex">\[
-E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}} .
+E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}} ,
 \]</div>
+<p>where <span class="arithmatex">\(\alpha\)</span> is a free parameter.</p>
 <div class="admonition warning">
 <p class="admonition-title">Grain parameters</p>
-<p>The grain viscous (rheological) parameters, used for homogenization, should be understood as the <em>effective</em> values needed to reproduce deformation experiments on polycrystals, and not measured values derived from experiments on single crystals.</p>
+<p>The grain viscous parameters used for homogenization should be understood as the <em>effective</em> values needed to reproduce deformation experiments on polycrystals; they are not the values derived from experiments on single crystals.</p>
 </div>
 <h3 id="transversely-isotropic-grains">Transversely isotropic grains</h3>
 <table>
