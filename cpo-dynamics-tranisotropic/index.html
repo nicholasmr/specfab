@@ -375,7 +375,7 @@ Gamma0 = Lambda = None  # DDRX and CDRX rate factors (=None =&gt; disabled)
 # See page &quot;Miscellaneous --&gt; Deformation Modes&quot; for T and r definitions
 mod, target = dict(type='ps', axis=2, T=+1, r=0), -0.95      # uniaxial compression along z until strain_zz = target
 mod, target = dict(type='ps', axis=2, T=-1, r=0), 6          # uniaxial extension along z until strain_zz = target
-mod, target = dict(type='ss', plane=1, T=+1), np.deg2rad(80) # simple shear until tan(strain_xz) = target
+mod, target = dict(type='ss', plane=1, T=+1), np.deg2rad(80) # simple shear until arctan(strain_xz) = target
 
 ### Integrate parcel CPO evolution
 
