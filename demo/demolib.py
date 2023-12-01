@@ -10,6 +10,7 @@ import matplotlib.colors
 from specfabpy import discrete as sfdsc
 from specfabpy import plotting as sfplt
 
+c_iso    = sfplt.c_vdgray
 c_planar = '#8c510a' 
 c_unidir = '#01665e'
 c_circle = '#762a83'
@@ -27,7 +28,8 @@ cvl_circle = '#fddbc7'
 #-------------------------
 
 def plot_nlm_cases(ax, fs, ms=7.5, norm=1/np.sqrt(4*np.pi), \
-                    show_circle=True, isolbl_above=True, dy0=0.075, dx0_unidir=-0.03):
+                    show_circle=True, isolbl_above=True, dy0=0.075, dx0_unidir=-0.03,
+                    c_planar=c_planar, c_circle=c_circle, c_unidir=c_unidir, c_iso=c_iso):
 
     nl0_unidir, nl0_planar, nl0_circle = sfdsc.nlm_ideal_cases(norm=norm)
     dy = dy0/norm
@@ -35,8 +37,8 @@ def plot_nlm_cases(ax, fs, ms=7.5, norm=1/np.sqrt(4*np.pi), \
     kwargs_mrk = dict(marker='o', ms=ms, ls='none', zorder=20)
     kwargs_lbl = dict(ha='center', va='center', ma='center', fontsize=fs, zorder=20)
     
-    ax.plot(0, 0, c=sfplt.c_vdgray, **kwargs_mrk)
-    plt.text(0, +dy if isolbl_above else -dy, r'{\bf Isotropic}', color=sfplt.c_vdgray, **kwargs_lbl)
+    ax.plot(0, 0, c=c_iso, **kwargs_mrk)
+    plt.text(0, +dy if isolbl_above else -dy, r'{\bf Isotropic}', color=c_iso, **kwargs_lbl)
 
     ax.plot(*nl0_unidir, c=c_unidir, **kwargs_mrk)
     plt.text(nl0_unidir[0]+dx0_unidir/norm, nl0_unidir[1]+dy, '{\\bf Unidirectional}', color=c_unidir, **kwargs_lbl)

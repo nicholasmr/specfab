@@ -17,13 +17,23 @@ $$
 
 where $\mathrm{d}\Omega = \sin(\theta) \mathrm{d}\theta \mathrm{d}\phi$ is the infinitesimal solid angle, $\hat{{\bf r}}(\theta,\phi)$ is the radial unit vector, and $N=\int_{S^2} n(\theta,\phi) \, \mathrm{d}\Omega$.
 
-!!! note "Principal frame"
+## Principal frame
 
-    Since $n(\theta,\phi)$ is antipodally symmetric, the first ($k=1$) vector moment vanishes identically. Hence, ${\bf a}^{(2)}$ measures the variance of $\bf c$ axes around the three coordinate axes.
+Since $n(\theta,\phi)$ is antipodally symmetric, odd moments (odd $k$) vanish identically. Hence, ${\bf a}^{(2)}$ measures the variance of $\bf c$ axes around the three coordinate axes.
+Posing ${\bf a}^{(2)}$ in its principal frame
+
+$$ 
+{\bf a}^{(2)} = \left[\begin{matrix}
+\lambda_1 & 0 & 0\\ 
+0 & \lambda_2 & 0\\ 
+0 & 0 & \lambda_3\\ 
+\end{matrix}\right]
+$$
     
-    The principal frame of ${\bf a}^{(2)}$ therefore has a similar interpretation as in PCA:
-    The first principal component (eigenvector) is the direction that maximizes the variance (eigenvalue) of the projected data, the second component is the direction orthogonal to the first component that maximizes the variance of the projected data, and so on with the third component. 
-    
+therefore has a similar interpretation as in PCA:
+the first principal component (eigenvector ${\bf m}_1$) is the direction that maximizes the variance (eigenvalue $\lambda_1$) of the projected data (red curve), the second component is the direction orthogonal to the first component that maximizes the variance of the projected data, and so on with the third component. 
+
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/harmonic-expansion/a2.png#center){: style="width:750px"}
 
 ## Convert to spectral 
 

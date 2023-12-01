@@ -19,7 +19,7 @@ for a stress state aligned with $({\bf e}_i, {\bf e}_j)$:
 $$
 {\bf S}({\bf e}_i, {\bf e}_j) = \tau_0
 \begin{cases}
-    {\bf I}/3 - {\bf e}_i \otimes {\bf e}_i \;\;\quad\quad\text{if}\quad i=j \\
+    {\bf I} - 3{\bf e}_i \otimes {\bf e}_i \;\;\quad\quad\text{if}\quad i=j \\
     {\bf e}_i \otimes {\bf e}_j + {\bf e}_j \otimes {\bf e}_i \quad\text{if}\quad i\neq j \\
 \end{cases}
 .
@@ -51,9 +51,9 @@ These are the enhancements factors needed to specify the viscous anisotropy in [
 
 ## Grain homogenization 
 
-To calculate $E_{ij}$ for a given CPO using (1) requires an *effective* rheology that takes the microstructure into account.
+Calculating $E_{ij}$ using (1) for a given CPO requires an *effective* rheology that takes the microstructure into account.
 
-In the simplest case, polycrystals may be regarded as an ensemble of interactionless grains (monocrystals) subject to either a homogeneous stress field over the polycrystal scale
+In the simplest case, polycrystals may be regarded as an ensemble of interactionless grains (monocrystals), subject to either a homogeneous stress field over the polycrystal scale:
 
 $$
 {\bf S}' = {\bf S}
@@ -61,7 +61,7 @@ $$
 \qquad\qquad \text{(Sachs's hypothesis)}
 $$
 
-or a homogeneous stain-rate field
+or a homogeneous stain-rate field:
 
 $$
 {\bf D}' = {\bf D} 
@@ -71,15 +71,13 @@ $$
 
 where ${\bf S}'$ and ${\bf D}'$ are the *microscopic* (grain-scale) stress and strain-rate tensors, respectively.
 
-Hence, the effective rheology can be approximated as the orientation-averaged monocrystal rheology
+The effective rheology can then be approximated as the ensemble-averaged monocrystal rheology for either case:
 
 $$
 {\bf D}^{\mathrm{Sachs}} = \langle {\bf D}'({\bf S}') \rangle = \langle {\bf D}'({\bf S}) \rangle
 ,
 \qquad\qquad \text{(Sachs homogenization)}
 $$
-
-or
 
 $$
 \qquad
@@ -90,23 +88,26 @@ $$
 
 where $\langle \cdot \rangle^{-1}$ inverts the tensorial relationship.
 
-If a linear combination of the two homogenizations is considered
+If a linear combination of the two homogenizations is considered, equation (1) can be written as 
 
 $$
-{\bf D} = (1-\alpha){\bf D}^{\mathrm{Sachs}} + {\alpha} {\bf D}^{\mathrm{Taylor}} ,
-$$
-
-equation (1) becomes
-
-$$ 
-E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}}
+E_{ij} = (1-\alpha) \frac{{\bf e}_i \cdot {\bf D}^{\mathrm{Sachs}}({\bf S}) \cdot {\bf e}_j}
+{{\bf e}_i \cdot {\bf D}^{\mathrm{Sachs}}_{\mathrm{iso}}({\bf S}) \cdot {\bf e}_j }
++ {\alpha} \frac{ {\bf e}_i \cdot {\bf D}^{\mathrm{Taylor}}({\bf S}) \cdot {\bf e}_j }
+{ {\bf e}_i \cdot {\bf D}^{\mathrm{Taylor}}_{\mathrm{iso}}({\bf S}) \cdot {\bf e}_j }
 ,
+$$
+
+or simply
+
+$$
+E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}} ,
 $$
 
 where $\alpha$ is a free parameter.
 
 !!! warning "Grain parameters"
-    The grain viscous (rheological) parameters, used for homogenization, should be understood as the *effective* values needed to reproduce deformation experiments on polycrystals, and not measured values derived from experiments on single crystals.
+    The grain viscous parameters used for homogenization should be understood as the *effective* values needed to reproduce deformation experiments on polycrystals; they are not the values derived from experiments on single crystals.
 
 ### Transversely isotropic grains
 

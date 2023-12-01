@@ -45,11 +45,13 @@ where the operator (matrix) ${\bf M}$ represents the effect of a given CPO proce
     The distributions may also be understood as the mass density fraction of grains with a given slip-plane-normal and slip-direction orientation.
     See [CPO representation](cpo-representation.md) for details.
 
-!!! tip "Modes of deformation"
+## Lagrangian parcel
 
-    The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different [modes of deformation](deformation-modes.md):
+<center> ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/parcel-trajectory.png#center){: style="width:440px"} </center>
 
-    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center){: style="width:620px"}
+The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different [modes of deformation](deformation-modes.md):
+
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center){: style="width:620px"}
 
 - - -
 

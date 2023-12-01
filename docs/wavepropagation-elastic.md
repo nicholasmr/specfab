@@ -52,7 +52,7 @@ is the wave velocity squared.
     
 
 !!! warning "Grain parameters" 
-    The grain elastic parameters, used for homogenization, should be understood as the *effective* polycrystal values needed to reproduce experimental results, and not measured values derived from experiments on single crystals.
+    The grain elastic parameters used for homogenization should be understood as the *effective* polycrystal values needed to reproduce experimental results; they are not the values derived from experiments on single crystals.
 
 ## Transversely isotropic grains
 

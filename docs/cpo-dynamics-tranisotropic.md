@@ -39,11 +39,13 @@ $$
     $n(\theta,\phi)$ may also be understood as the mass density fraction of grains with a given slip-plane normal orientation.
     See [CPO representation](cpo-representation.md) for details.
 
-!!! tip "Modes of deformation"
+## Lagrangian parcel
 
-    The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different [modes of deformation](deformation-modes.md):
+<center> ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/parcel-trajectory.png#center){: style="width:440px"} </center>
 
-    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center){: style="width:620px"}
+The tutorial shows how to model the CPO evolution of a Lagrangian material parcel subject to three different [modes of deformation](deformation-modes.md):
+
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center){: style="width:620px"}
 
 - - -
 
@@ -93,7 +95,7 @@ where ${\bf M_{\mathrm{LROT}}}$ is given analytically in [Rathmann et al. (2021)
 ```python
 import numpy as np
 from specfabpy import specfab as sf
-# L=6 truncation is sufficient in this case, but larger L allows a very strong fabric to develop 
+# L=8 truncation is sufficient in this case, but larger L allows a very strong fabric to develop 
 #  and minimizes the effect that regularization has on low wavenumber modes (l=2,4)
 lm, nlm_len = sf.init(8) 
 
@@ -120,10 +122,8 @@ for tt in np.arange(1,Nt):
     nlm[tt,:] = nlm_prev + dt*np.matmul(M, nlm_prev) # Euler step
     nlm[tt,:] = sf.apply_bounds(nlm[tt,:]) # Apply spectral bounds if needed
 
-# See "plotting" pages for how to plot resulting ODFs
+# See page "Miscellaneous --> Plotting" for how to plot resulting ODFs given nlm
 ```
-
-See also [demo code in repository](https://github.com/nicholasmr/specfab/tree/main/demo/fabric-evolution).
 
 - - -
 
@@ -169,7 +169,7 @@ ${\bf M_{\mathrm{DDRX}}}$ is given analytically in [Rathmann and Lilien (2021)](
 ```python
 import numpy as np
 from specfabpy import specfab as sf
-# L=6 truncation is sufficient in this case, but larger L allows a very strong fabric to develop 
+# L=8 truncation is sufficient in this case, but larger L allows a very strong fabric to develop 
 #  and minimizes the effect that regularization has on low wavenumber modes (l=2,4)
 lm, nlm_len = sf.init(8) 
 
@@ -193,7 +193,7 @@ for tt in np.arange(1,Nt):
     nlm[tt,:] = nlm_prev + dt*np.matmul(M, nlm_prev) # Complete Euler step
     nlm[tt,:] = sf.apply_bounds(nlm[tt,:]) # Apply spectral bounds if needed    
 
-# See "plotting" pages for how to plot resulting ODFs
+# See page "Miscellaneous --> Plotting" for how to plot resulting ODFs given nlm
 ```
 
 - - -
@@ -257,6 +257,44 @@ This allows the growth of high wavenumber modes to be disproportionately damped 
 !!! note 
     As a rule-of-thumb, regularization affects the highest and next-highest modes $l{\geq}L-2$ and can therefore not be expected to evolve freely. 
     This, in turn, means that [structure tensors](cpo-representation.md) `a2` and `a4`, and hence [calculated enhancement factors](enhancements-strainrate.md), might be affected by regularization unless $L{\geq}8$ is chosen. 
+
+- - -
+
+## High-level integrator
+
+Alternatively, you can use the high-level Lagrangian parcel integrator for constant stress/strain-rate:
+
+```python
+import numpy as np
+from specfabpy import specfab as sf
+from specfabpy import integrator as sfint
+lm, nlm_len = sf.init(8) 
+
+### Process rate factors etc.
+
+iota, zeta = 1, 0       # deck-of-cards behaviour for lattice rotation (=None => disabled)
+nu = 1                  # scale the regularization magnitude by this amount (=None => no regularization)
+Gamma0 = Lambda = None  # DDRX and CDRX rate factors (=None => disabled)
+
+### Mode of deformation (mod) and parcel strain target 
+
+# Note: axes 0,1,2 = x,y,z, planes 0,1,2 = yz,xz,xy
+# See page "Miscellaneous --> Deformation Modes" for T and r definitions
+mod, target = dict(type='ps', axis=2, T=+1, r=0), -0.95      # uniaxial compression along z until strain_zz = target
+mod, target = dict(type='ps', axis=2, T=-1, r=0), 6          # uniaxial extension along z until strain_zz = target
+mod, target = dict(type='ss', plane=1, T=+1), np.deg2rad(80) # simple shear until arctan(strain_xz) = target
+
+### Integrate parcel CPO evolution
+
+nlm0 = np.zeros((nlm_len), dtype=np.complex64)
+nlm0[0] = 1/np.sqrt(4*np.pi) # normalized and isotropic initial state
+Nt = 200 # Number of integration steps
+nlm, F, time, ugrad = sfint.lagrangianparcel(sf, mod, target, Nt=Nt, nlm0=nlm0, iota=iota, zeta=zeta, Gamma0=Gamma0, Lambda=Lambda, nu=nu) # returns (state vector, deformation gradient tensor, time vector, velocity gradient)
+
+# See page "Miscellaneous --> Plotting" for how to plot resulting ODFs given nlm and parcel shape given F
+```
+
+- - -
 
 ## Validation
 

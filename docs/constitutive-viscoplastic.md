@@ -10,7 +10,7 @@ where $\bf{D}$ and $\bf{S}$ are the strain-rate and deviatoric stress tensors, r
 -->
 
 !!! note "Eigenenhancements"
-    Anisotropic viscosities/fluidities are prescribed in terms of logitudinal and shear strain-rate enhancement factors w.r.t rheological symmetry axes, termed [eigenenhancements](enhancements-strainrate.md) ($E_{ij}$).
+    Bulk viscous anisotropy is prescribed in terms of logitudinal and shear strain-rate enhancement factors w.r.t rheological symmetry axes, termed [eigenenhancements](enhancements-strainrate.md) ($E_{ij}$).
 
 ## Transversely isotropic
 

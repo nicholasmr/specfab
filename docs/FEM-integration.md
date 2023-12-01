@@ -8,9 +8,9 @@ The coupled evolution of flow and CPO can be solved by joining different compone
 
 That is, specfab can model/provides
 
-* [CPO evolution](cpo-dynamics-tranisotropic.md) (green piece)
-* [Viscous anisotropies](enhancements-strainrate.md) induced by CPOs (orange piece)
-* [Bulk anisotropic power-law rheologies](constitutive-viscoplastic.md) if provided with viscous anisotropies (blue piece)
+* [CPO evolution](cpo-dynamics-tranisotropic.md) given the local large-scale stress, strain-rate and temperature (green piece)
+* [Viscous anisotropies](enhancements-strainrate.md) induced by the local CPO (orange piece)
+* [Bulk anisotropic rheologies](constitutive-viscoplastic.md) given the local viscous anisotropy (blue piece)
 
 ## Elmer/Ice
 

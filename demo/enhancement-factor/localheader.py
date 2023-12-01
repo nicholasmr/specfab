@@ -19,14 +19,15 @@ tau_mm = tau0*(np.identity(3)/3 - mm)
 tau_mt = tau0*(mt + mt.T) 
 tau_pq = tau0*(pq + pq.T)
 
-def Eij_maps_tranisotropic(X,Y, paramcombo, Ecc=None, Eca=None, alpha=None, n_grain=1):
+def Eij_maps_tranisotropic(X,Y, paramcombo, nlm=None, Ecc=None, Eca=None, alpha=None, n_grain=1):
 
     X_map, Y_map = np.meshgrid(X, Y, indexing='xy')
 
     size = (len(Y),len(X))
     Emm_map, Emt_map, Epq_map = np.zeros(size), np.zeros(size), np.zeros(size)
 
-    nlm_unidir = sf__.nlm_ideal(m, 0, L__)
+    if nlm is None: nlm = sf__.nlm_ideal(m, 0, L__) # assume unidirectional in z
+    else: pass
 
     for ii,y in enumerate(Y):
         for jj,x in enumerate(X):
@@ -47,9 +48,9 @@ def Eij_maps_tranisotropic(X,Y, paramcombo, Ecc=None, Eca=None, alpha=None, n_gr
                 
             grain_params = ((Ecc,Eca), alpha, n_grain)
             
-            Emm_map[ii,jj] = sf__.Evw_tranisotropic(nlm_unidir, m,m,tau_mm, *grain_params)
-            Emt_map[ii,jj] = sf__.Evw_tranisotropic(nlm_unidir, m,t,tau_mt, *grain_params)
-            Epq_map[ii,jj] = sf__.Evw_tranisotropic(nlm_unidir, p,q,tau_pq, *grain_params)
+            Emm_map[ii,jj] = sf__.Evw_tranisotropic(nlm, m,m,tau_mm, *grain_params)
+            Emt_map[ii,jj] = sf__.Evw_tranisotropic(nlm, m,t,tau_mt, *grain_params)
+            Epq_map[ii,jj] = sf__.Evw_tranisotropic(nlm, p,q,tau_pq, *grain_params)
             
             
     return Emm_map, Emt_map, Epq_map, X_map, Y_map

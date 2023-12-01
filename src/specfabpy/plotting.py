@@ -5,6 +5,7 @@ import scipy.special as sp
 #import code # code.interact(local=locals())
 
 from .discrete import cart2sph
+from .specfabpy import specfabpy as sf__ # sf private copy 
 
 import matplotlib.pyplot as plt
 from matplotlib import rcParams, rc
@@ -37,6 +38,7 @@ c_lgreen  = '#b2df8a'
 c_vlgreen = '#e5f5e0'
 c_dgreen  = '#006d2c'
 
+c_vlgray = matplotlib.colors.to_hex('0.925')
 c_lgray  = matplotlib.colors.to_hex('0.85')
 c_gray   = matplotlib.colors.to_hex('gray')
 c_dgray  = matplotlib.colors.to_hex('0.3')
@@ -45,6 +47,7 @@ c_vdgray = matplotlib.colors.to_hex('0.125')
 c_orange = '#d94701'
 c_yellow = '#ffff99'
 c_purple = '#6a51a3'
+c_dpurple = '#762a83'
 
 c_brown  = '#b15928'
 c_dbrown = '#8c510a'
@@ -86,7 +89,7 @@ def plotODF(nlm, lm, ax, \
         showcb=True, showgl=True, hidetruncerr=True, # options/flags \
         norm=True, latres=50, lonres=2*50, nchunk=5, # general \
         cmap='Greys', lvlset='iso-up', # colormap and lvls \ 
-        cbfraction=0.075, cbaspect=9, cborientation='horizontal', cbpad=0.1, cblabel='$n/N$ (ODF)', cbtickintvl=4, # colorbar \
+        cbfraction=0.075, cbaspect=9, cborientation='horizontal', cbpad=0.1, cblabel='$n/N$ (ODF)', cbtickintvl=4, extend=None, # colorbar \
         kwargs_gl=kwargs_gl_default, # grid lines \
     ):
     
@@ -102,7 +105,7 @@ def plotODF(nlm, lm, ax, \
     
     ### Discretize distribution on regular grid for contourf() 
     (F, lat, lon) = discretize(nlm, lm, latres, lonres)
-    if hidetruncerr: F[F<0] = 0 # ignore numerical/truncation errors    
+    if hidetruncerr: F[F<0] = 1e-10 # ignore numerical/truncation errors    
 
     ### Determine colormap
     if isinstance(cmap, str) and cmap == 'Greys' and \
@@ -128,7 +131,7 @@ def plotODF(nlm, lm, ax, \
 
     ### Plot distribution
     # "nchunk" argument must be larger than 0 for isotropic distributions to be plotted correctly, else 0 is best choice.
-    kwargs_cf = dict(levels=lvls, cmap=cmap, nchunk=nchunk, extend=('max' if lvls[0]<1e-10 else 'both'))
+    kwargs_cf = dict(levels=lvls, cmap=cmap, nchunk=nchunk, extend=extend if (extend is not None) else ('max' if lvls[0]<1e-10 else 'both'))
     kwargs_cb = dict(ticks=lvls[::cbtickintvl], fraction=cbfraction, aspect=cbaspect, orientation=cborientation, pad=cbpad)
     hodf, hcb = plotS2field(ax, F, lon, lat, kwargs_cf=kwargs_cf, showcb=showcb, kwargs_cb=kwargs_cb, showgl=showgl, kwargs_gl=kwargs_gl)
     #ax.set_facecolor(color_bad) # Set different color for bad (masked) values (default white)
@@ -204,8 +207,11 @@ def plotS2point(ax, v, *args, **kwargs):
     Plot point on S2: wraps plt.plot()
     """
 
-    lat, colat, lon = cart2sph(v, deg=True); 
-    return ax.plot([lon],[lat], *args, **kwargs)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        warnings.filterwarnings("ignore", message="posx and posy should be finite values")
+        lat, colat, lon = cart2sph(v, deg=True); 
+        return ax.plot([lon],[lat], *args, **kwargs)
     
     
 def plotS2text(ax, v, text, *args, **kwargs):
@@ -214,8 +220,11 @@ def plotS2text(ax, v, text, *args, **kwargs):
     Plot text on S2: wraps plt.text()
     """
 
-    lat, colat, lon = cart2sph(v, deg=True); 
-    return ax.text(lon, lat, text, ha='center', va='center', **kwargs)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        warnings.filterwarnings("ignore", message="posx and posy should be finite values")
+        lat, colat, lon = cart2sph(v, deg=True); 
+        return ax.text(lon, lat, text, ha='center', va='center', **kwargs)
 
 
 def getprojection(rotation=45, inclination=45):
@@ -255,6 +264,46 @@ def panellabel(ax, loc, txt, frameon=True, alpha=1.0, fontsize=fontsize_default,
     ax.add_artist(at)
 
 
+def plotODFinset(ax,fig,prj, nlm,lm, arrang,arrlen,pad,anchor, W,H, title='', fstitle=12, ytitle=None, nchunk=None, \
+                    pad0mul=0, cmap='Greys', lvlset='iso-up', showcb=True, carr=c_vdgray, lwarr=1.5, arrscale=18):
+
+    """
+    Plot ODF as inset with arrow
+    """
+    
+    arr = arrlen*np.array([np.cos(np.deg2rad(arrang)),np.sin(np.deg2rad(arrang))])
+    darr = pad*arr
+
+    n20, n40 = np.real(nlm[sf__.I20]/nlm[0]), np.real(nlm[sf__.I40]/nlm[0])
+    xy0 = (n20+darr[0], n40+darr[1]) # arrow start
+    xy1 = (n20+arr[0], n40+arr[1]) # arrow tip
+
+    darr0 = pad*pad0mul*arr
+    axpos0 = (n20+arr[0]+darr[0]+darr0[0], n40+arr[1]+darr[1]+darr0[1]) # arrow tip
+    trans = ax.transData.transform(axpos0)
+    trans = fig.transFigure.inverted().transform(trans)
+    
+    axpos = [trans[0]-W/2, trans[1]-H/2, W,H]
+    if anchor == 'N': axpos[1] += -H/2
+    if anchor == 'S': axpos[1] += +H/2
+    if anchor == 'E': axpos[0] += -W/2
+    if anchor == 'W': axpos[0] += +W/2
+    
+    axin = plt.axes(axpos, projection=prj)
+    axin.set_global()
+    
+    ### Plot arrow to ODF state
+#    sc = np.diff(ylims)/np.diff(xlims)
+    arrowprops = dict(arrowstyle="-|>", mutation_scale=arrscale, connectionstyle="arc3", linewidth=lwarr, edgecolor=carr, facecolor=carr)
+    ax.annotate("", xy=xy0, xycoords='data', xytext=xy1, textcoords='data', zorder=20, arrowprops=arrowprops)
+
+    ### Plot ODF    
+    plotODF(nlm, lm, axin, lvlset=lvlset, cmap=cmap, showcb=showcb, nchunk=nchunk)
+    axin.set_title(title, fontsize=fstitle, multialignment='center', y=ytitle)
+    
+    return axin
+    
+
 def plotFSE(ax, center, eigenvectors, eigenvalues, N=50, lw=0.5, ls='-', c='tab:green', scale=0.05):
 
     """
@@ -271,9 +320,9 @@ def plotFSE(ax, center, eigenvectors, eigenvalues, N=50, lw=0.5, ls='-', c='tab:
     
     
 def plotparcel(ax, F, scale=1, axscale=1, elev=20, azim=35, \
-                lw=1, facecolor='k', edgecolor='0.10',  \
+                lw=1, facecolor='k', edgecolor='0.10', alphamul=1,  \
                 axislabels=True, colorax='k', fonttex=False, fontsize=fontsize_default, \
-                drawinit=True, colorinit=c_dred, lwinit=1, \
+                drawinit=True, colorinit=c_dred, lwinit=1, posinit0=[0,0,0] \
                 ):
 
     """
@@ -294,7 +343,7 @@ def plotparcel(ax, F, scale=1, axscale=1, elev=20, azim=35, \
     ### Plot parcel sides
     
     args = (lw, '-', facecolor, edgecolor)
-    at, ab, ah = 0.025, 0.10, 0.10
+    at, ab, ah = 0.025*alphamul, 0.10*alphamul, 0.10*alphamul
     _plotparcel_side(ax, p_top,   F, at, *args)
     _plotparcel_side(ax, p_bot,   F, ab, *args)
     _plotparcel_side(ax, p_front, F, ah, *args)
@@ -304,12 +353,14 @@ def plotparcel(ax, F, scale=1, axscale=1, elev=20, azim=35, \
 
     ### Plot initial geometry
 
+    s = scale # shorthand
+    x0,y0,z0 = [i0*s for i0 in posinit0] # unpack
     if drawinit:
-        kwargs = dict(ls='--', lw=lwinit, c=colorinit, zorder=10)
-        points = ([0,0], [0,1*scale], [1*scale,1*scale], [1*scale,0])
-        for p in points: ax.plot([p[0]]*2, [p[1]]*2, [0,scale*1], **kwargs)
-        for p in points: ax.plot([0,scale*1], [p[0]]*2, [p[1]]*2, **kwargs)
-        for p in points: ax.plot([p[0]]*2, [0,scale*1], [p[1]]*2, **kwargs)
+        kwargs = dict(ls='--', lw=lwinit, c=colorinit, zorder=10, clip_on=False)
+        points = ([0,0], [0,1*s], [1*s,1*s], [1*s,0])
+        for p in points: ax.plot([x0+p[0]]*2, [y0+p[1]]*2, [z0,z0+s*1], **kwargs)
+        for p in points: ax.plot([x0,x0+s*1], [y0+p[0]]*2, [z0+p[1]]*2, **kwargs)
+        for p in points: ax.plot([x0+p[0]]*2, [y0,y0+s*1], [z0+p[1]]*2, **kwargs)
 
     ### Axes 
 
@@ -325,9 +376,9 @@ def plotparcel(ax, F, scale=1, axscale=1, elev=20, azim=35, \
         kwargs = dict(color=colorax, fontsize=fontsize, va='center', ha='center', zorder=10)
         if fonttex: xilbl = [r"$\vu{x}$", r"$\vu{y}$", r"$\vu{z}$"]
         else:       xilbl = [r"$\bf{x}$", r"$\bf{y}$", r"$\bf{z}$"]
-        ax.text(one.max() , 0, 0, xilbl[0], **kwargs)
-        ax.text(0, one.max(), 0,  xilbl[1], **kwargs)
-        ax.text(0, 0, one.max() , xilbl[2], **kwargs)
+        ax.text(x0+one.max() , y0, z0, xilbl[0], **kwargs)
+        ax.text(x0, y0+one.max(), z0,  xilbl[1], **kwargs)
+        ax.text(x0, y0, z0+one.max() , xilbl[2], **kwargs)
 
     ### Debug 
     
