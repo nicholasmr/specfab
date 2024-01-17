@@ -70,26 +70,26 @@
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-orthotropic/">Orthotropic grains</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">Viscous</span></p>
+              <p class="caption"><span class="caption-text">Viscous anisotropy</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain-rate enhancements</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../constitutive-viscoplastic/">Constitutive equations</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">Elastic</span></p>
+              <p class="caption"><span class="caption-text">Elastic anisotropy</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-elastic/">Wave propagation</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Constitutive equations</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">Electromagnetic</span></p>
+              <p class="caption"><span class="caption-text">Electromagnetic anisotropy</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Wave propagation</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">Further applications</span></p>
+              <p class="caption"><span class="caption-text">Application gallery</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
                   </li>
@@ -128,20 +128,20 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="structure-tensors">Structure tensors</h1>
-<p>The <span class="arithmatex">\(k\)</span>-th order structure tensor is the average <span class="arithmatex">\(k\)</span>-th repeated outer product of a crystallographic axis with itself (vector moments).
-For example, in the case of a discrete ensemble of <span class="arithmatex">\({\bf c}\)</span> axes they are</p>
+<p>The <span class="arithmatex">\(k\)</span>-th order structure tensor (vector moment) is defined as the average <span class="arithmatex">\(k\)</span>-th repeated outer product of a slip-system axis (crystallographic axis) with itself.
+For example, in the case of a discrete ensemble of slip plane normals (e.g. <span class="arithmatex">\({\bf n} = {\bf c}\)</span> for ice) they are</p>
 <div class="arithmatex">\[ 
-{\bf a}^{(k)} = \frac{1}{N}\sum_i^N ({\bf c}_i\otimes)^k,
+{\bf a}^{(k)}({\bf n}_i) = \frac{1}{N}\sum_i^N ({\bf n}_i\otimes)^k,
 \]</div>
 <p>where <span class="arithmatex">\(N\)</span> is the total number of grains, assuming equal grain weight (i.e. mass) for simplicity.
-Alternatively, if the distribution function of <span class="arithmatex">\({\bf c}\)</span> axes is known, <span class="arithmatex">\(n(\theta,\phi)\)</span>, the structure tensors are</p>
+Alternatively, if the distribution function of <span class="arithmatex">\({\bf n}\)</span> axes is known, i.e. <span class="arithmatex">\(n(\theta,\phi)\)</span>, the structure tensors are</p>
 <div class="arithmatex">\[ 
-{\bf a}^{(k)}=\frac{1}{N} \int_{S^2} (\hat{{\bf r}}\otimes)^k n(\theta,\phi) \, \mathrm{d}\Omega
+{\bf a}^{(k)}(n) = \frac{1}{N} \int_{S^2} (\hat{{\bf r}}\otimes)^k n(\theta,\phi) \, \mathrm{d}\Omega
 ,
 \]</div>
 <p>where <span class="arithmatex">\(\mathrm{d}\Omega = \sin(\theta) \mathrm{d}\theta \mathrm{d}\phi\)</span> is the infinitesimal solid angle, <span class="arithmatex">\(\hat{{\bf r}}(\theta,\phi)\)</span> is the radial unit vector, and <span class="arithmatex">\(N=\int_{S^2} n(\theta,\phi) \, \mathrm{d}\Omega\)</span>.</p>
 <h2 id="principal-frame">Principal frame</h2>
-<p>Since <span class="arithmatex">\(n(\theta,\phi)\)</span> is antipodally symmetric, odd moments (odd <span class="arithmatex">\(k\)</span>) vanish identically. Hence, <span class="arithmatex">\({\bf a}^{(2)}\)</span> measures the variance of <span class="arithmatex">\(\bf c\)</span> axes around the three coordinate axes.
+<p>Since <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span> are antipodally symmetric, odd moments (odd <span class="arithmatex">\(k\)</span>) vanish identically. Hence, <span class="arithmatex">\({\bf a}^{(2)}(n)\)</span> and  <span class="arithmatex">\({\bf a}^{(2)}(b)\)</span> measure the variance of <span class="arithmatex">\(\bf n\)</span> and <span class="arithmatex">\(\bf b\)</span> axes, respectively, around the three coordinate axes.
 Posing <span class="arithmatex">\({\bf a}^{(2)}\)</span> in its principal frame</p>
 <div class="arithmatex">\[ 
 {\bf a}^{(2)} = \left[\begin{matrix}
@@ -156,7 +156,7 @@ the first principal component (eigenvector <span class="arithmatex">\({\bf m}_1\
 <h2 id="convert-to-spectral">Convert to spectral</h2>
 <p>Converting between spectral and tensorial representations is a linear problem in the sense that </p>
 <div class="arithmatex">\[
-{\bf a}^{(k)} = {\bf f}(\hat{n}_2^{m}, \hat{n}_4^{m}, \cdots, \hat{n}_k^{m}) 
+{\bf a}^{(k)}(n) = {\bf f}(\hat{n}_2^{m}, \hat{n}_4^{m}, \cdots, \hat{n}_k^{m}) 
 ,
 \qquad\text{(for all $m$)}
 \]</div>
@@ -175,7 +175,8 @@ the first principal component (eigenvector <span class="arithmatex">\({\bf m}_1\
 \end{matrix}\right]
 ,
 \]</div>
-<p>but for higher-order structure tensors the expressions are long (not shown).</p>
+<p>but for higher-order structure tensors the expressions are long (not shown).
+The above applies to <span class="arithmatex">\(b(\theta,\phi)\)</span> as well.</p>
 <p>The following code example shows how to convert between the representations:</p>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfab as sf
