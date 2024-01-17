@@ -1,4 +1,4 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2023
+# N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2024
 
 #-------------------
 # Compiler

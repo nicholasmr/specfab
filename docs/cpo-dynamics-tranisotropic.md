@@ -4,7 +4,7 @@ This tutorial focuses on modelling the CPO evolution of polycrystalline glacier 
 
 | Polycrystal | Grain slip system (${\bf n}={\bf c}$) |
 | :-: | :-: |
-| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png){: style="width:200px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slipplane.png){: style="width:170px"} |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png){: style="width:200px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/slip-plane.png){: style="width:170px"} |
 
 ## Problem
 

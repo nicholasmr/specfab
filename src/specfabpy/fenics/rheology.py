@@ -143,7 +143,7 @@ class ASSA():
     Anisotropic Shallow Shelf Approximation (ASSA)
     """
     
-    def __init__(self, n=3, rheology='Orthotropic', modelplane='xz'):
+    def __init__(self, n=3, rheology='Orthotropic', modelplane='xz', **kwargs):
 
         self.n = n
         self.rheology = rheology
@@ -161,7 +161,7 @@ class ASSA():
     def A(self, T):
         A0, Qe, gasconst = 3.985e-13, 60e3, 8.314 
         T0 = 273.15
-        A = A0*np.exp(-Qe/(gasconst*(T+T0))) # flow-rate factor 
+        A = A0*exp(-Qe/(gasconst*(T+T0))) # flow-rate factor 
         return A
 
     def get_R(self, u, n, A, mi, Eij):

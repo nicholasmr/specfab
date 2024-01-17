@@ -8,7 +8,7 @@ if len(glob.glob('specfabpy/*.so')) == 0:
     print('No compiled specfabpy found. Run `make specfabpy`')
 else:
     setup(name='specfabpy',
-          version='2023.12.1',
+          version='2023.12.9',
           author="Nicholas M. Rathmann and David A. Lilien",
           author_email="rathmann@nbi.ku.dk",
           description="specfab Python module",

@@ -1,17 +1,17 @@
 # Structure tensors
 
-The $k$-th order structure tensor is the average $k$-th repeated outer product of a crystallographic axis with itself (vector moments).
-For example, in the case of a discrete ensemble of ${\bf c}$ axes they are
+The $k$-th order structure tensor (vector moment) is defined as the average $k$-th repeated outer product of a slip-system axis (crystallographic axis) with itself.
+For example, in the case of a discrete ensemble of slip plane normals (e.g. ${\bf n} = {\bf c}$ for ice) they are
 
 $$ 
-{\bf a}^{(k)} = \frac{1}{N}\sum_i^N ({\bf c}_i\otimes)^k,
+{\bf a}^{(k)}({\bf n}_i) = \frac{1}{N}\sum_i^N ({\bf n}_i\otimes)^k,
 $$
 
 where $N$ is the total number of grains, assuming equal grain weight (i.e. mass) for simplicity.
-Alternatively, if the distribution function of ${\bf c}$ axes is known, $n(\theta,\phi)$, the structure tensors are
+Alternatively, if the distribution function of ${\bf n}$ axes is known, i.e. $n(\theta,\phi)$, the structure tensors are
 
 $$ 
-{\bf a}^{(k)}=\frac{1}{N} \int_{S^2} (\hat{{\bf r}}\otimes)^k n(\theta,\phi) \, \mathrm{d}\Omega
+{\bf a}^{(k)}(n) = \frac{1}{N} \int_{S^2} (\hat{{\bf r}}\otimes)^k n(\theta,\phi) \, \mathrm{d}\Omega
 ,
 $$
 
@@ -19,7 +19,7 @@ where $\mathrm{d}\Omega = \sin(\theta) \mathrm{d}\theta \mathrm{d}\phi$ is the i
 
 ## Principal frame
 
-Since $n(\theta,\phi)$ is antipodally symmetric, odd moments (odd $k$) vanish identically. Hence, ${\bf a}^{(2)}$ measures the variance of $\bf c$ axes around the three coordinate axes.
+Since $n(\theta,\phi)$ and $b(\theta,\phi)$ are antipodally symmetric, odd moments (odd $k$) vanish identically. Hence, ${\bf a}^{(2)}(n)$ and  ${\bf a}^{(2)}(b)$ measure the variance of $\bf n$ and $\bf b$ axes, respectively, around the three coordinate axes.
 Posing ${\bf a}^{(2)}$ in its principal frame
 
 $$ 
@@ -40,7 +40,7 @@ the first principal component (eigenvector ${\bf m}_1$) is the direction that ma
 Converting between spectral and tensorial representations is a linear problem in the sense that 
 
 $$
-{\bf a}^{(k)} = {\bf f}(\hat{n}_2^{m}, \hat{n}_4^{m}, \cdots, \hat{n}_k^{m}) 
+{\bf a}^{(k)}(n) = {\bf f}(\hat{n}_2^{m}, \hat{n}_4^{m}, \cdots, \hat{n}_k^{m}) 
 ,
 \qquad\text{(for all $m$)}
 $$
@@ -65,6 +65,7 @@ $$
 $$
 
 but for higher-order structure tensors the expressions are long (not shown).
+The above applies to $b(\theta,\phi)$ as well.
 
 The following code example shows how to convert between the representations:
 

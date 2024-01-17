@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2021-2023
+# Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2021-2024
 
 """
 FEniCS interface for CPO dynamics using specfab
@@ -16,7 +16,7 @@ class CPO():
     Class representing a single crystallographic axis
     """
 
-    def __init__(self, mesh, boundaries, ds, n, L, modelplane='xz', nu_multiplier=1, nu_realspace=1e-3): 
+    def __init__(self, mesh, boundaries, ds, n, L, nu_multiplier=1, nu_realspace=1e-3, modelplane='xz'):
 
         ### Setup
         
@@ -104,7 +104,15 @@ class CPO():
             
         elif self.modelplane=='xz':
             assign(self.w, project(Constant(wr), self.V)) # real part            
-        
+
+
+    def set_state(self, w, interp=True):
+        if interp:
+            raise ValueError('CPO.set_state() supports only setting function space vars, not interpolating expressions or constants.')
+        else:
+            self.w.assign(w)
+            self.w_prev.assign(w)
+                    
 
     def set_BCs(self, wr, wi, domid, domain=None):
 

@@ -1,4 +1,4 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2023
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2024
 
 ! Normalized vector moments (structure tensors) given the spectral expansion coefficients of CPO.
 
@@ -191,6 +191,7 @@ contains
     function a2_orth(blm,nlm) result(ev)
     
         ! Calculates <v^2> where v = b x n
+        ! Identically includes xi=sin^2(alpha) kernel due to cross product
 
         implicit none
         complex(kind=dp), intent(in) :: blm(:), nlm(:)
@@ -208,6 +209,7 @@ contains
     function a4_orth(blm,nlm) result(ev)
     
         ! Calculates <v^4> where v = b x n
+        ! Identically includes xi=sin^4(alpha) kernel due to cross product
 
         implicit none
         complex(kind=dp), intent(in) :: blm(:), nlm(:)
@@ -241,7 +243,8 @@ contains
     
     function a4_jointcross(blm,nlm) result(ev)
     
-        ! Calculates <n^2 v^2> where v = b x n
+        ! Calculates <n^2 v^2> where v = b x n 
+        ! Identically includes xi=sin^2(alpha) kernel due to cross product
 
         implicit none
         complex(kind=dp), intent(in) :: blm(:), nlm(:)
@@ -350,65 +353,65 @@ contains
         if (size(nlm) >= nlm_lenvec(6)) n6m = nlm(L6rng)
     end
     
-    subroutine ai_orthotropic(nlm_1,nlm_2,nlm_3, a2_i, a4_ii, a4_jk)
+    subroutine ai_orthotropic(qlm_1,qlm_2,qlm_3, a2_i, a4_ii, a4_jk)
     
         implicit none
         
-        complex(kind=dp), intent(in) :: nlm_1(:), nlm_2(:), nlm_3(:)
+        complex(kind=dp), intent(in) :: qlm_1(:), qlm_2(:), qlm_3(:) ! distributions of of slip-system axes qi = (b,n,v), respectively
         real(kind=dp), intent(out)   :: a2_i(3, 3,3), a4_ii(3, 3,3,3,3), a4_jk(3, 3,3,3,3) ! a4_jk = <m_j m_j m_k m_k>
 
-        a2_i(1, :,:)      = a2(nlm_1) ! <m1'^2>
-        a2_i(2, :,:)      = a2(nlm_2) ! <m2'^2>
-        a4_ii(1, :,:,:,:) = a4(nlm_1) ! <m1'^4>
-        a4_ii(2, :,:,:,:) = a4(nlm_2) ! <m2'^4>
-        a4_jk(3, :,:,:,:) = a4_joint(nlm_1,nlm_2) ! <m1'^2 m2'^2>
+        a2_i(1, :,:)      = a2(qlm_1) ! <q1^2>
+        a2_i(2, :,:)      = a2(qlm_2) ! <q2^2>
+        a4_ii(1, :,:,:,:) = a4(qlm_1) ! <q1^4>
+        a4_ii(2, :,:,:,:) = a4(qlm_2) ! <q2^4>
+        a4_jk(3, :,:,:,:) = a4_joint(qlm_1,qlm_2) ! <q1^2 q2^2>
 
-        ! Is nlm_3 given? Use it
-        if (real(nlm_3(1)) > 1e-8) then
-            a2_i(3, :,:)      = a2(nlm_3) ! <m3'^2>
-            a4_ii(3, :,:,:,:) = a4(nlm_3) ! <m3'^4>
-            a4_jk(1, :,:,:,:) = a4_joint(nlm_2,nlm_3) ! <m2'^2 m3'^2>
-            a4_jk(2, :,:,:,:) = a4_joint(nlm_1,nlm_3) ! <m1'^2 m3'^2>
+        ! Is qlm_3 given? Use it
+        if (real(qlm_3(1)) > 1e-8) then
+            a2_i(3, :,:)      = a2(qlm_3) ! <q3^2>
+            a4_ii(3, :,:,:,:) = a4(qlm_3) ! <q3^4>
+            a4_jk(1, :,:,:,:) = a4_joint(qlm_2,qlm_3) ! <q2^2 q3^2>
+            a4_jk(2, :,:,:,:) = a4_joint(qlm_1,qlm_3) ! <q1^2 q3^2>
             
-        ! else derive nlm_3 from nlm_1, nlm_2
+        ! else derive qlm_3 from qlm_1, qlm_2 (i.e. v from n,b distributions)
         else
-            a2_i(3, :,:)      = a2_orth(nlm_1, nlm_2) ! <m3'^2> 
-            a4_ii(3, :,:,:,:) = a4_orth(nlm_1, nlm_2) ! <m3'^4>
-            a4_jk(1, :,:,:,:) = a4_jointcross(nlm_2,nlm_1) ! <m2'^2 m3'^2> 
-            a4_jk(2, :,:,:,:) = a4_jointcross(nlm_1,nlm_2) ! <m1'^2 m3'^2> 
+            a2_i(3, :,:)      = a2_orth(qlm_1, qlm_2) ! <q3^2> 
+            a4_ii(3, :,:,:,:) = a4_orth(qlm_1, qlm_2) ! <q3^4>
+            a4_jk(1, :,:,:,:) = a4_jointcross(qlm_2,qlm_1) ! <q2^2 q3^2> 
+            a4_jk(2, :,:,:,:) = a4_jointcross(qlm_1,qlm_2) ! <q1^2 q3^2> 
         end if
     end
     
-    subroutine ai_orthotropic_discrete(mi, a2_i, a4_ii, a4_jk)
+    subroutine ai_orthotropic_discrete(qi, a2_i, a4_ii, a4_jk)
 
         implicit none
         
-        real(kind=dp), intent(in)  :: mi(:,:,:) ! (3,3,N) = (m'_i, xyz comp., grain no.) 
+        real(kind=dp), intent(in)  :: qi(:,:,:) ! (3,3,N) = (m'_i, xyz comp., grain no.) 
         real(kind=dp), intent(out) :: a2_i(3, 3,3), a4_ii(3, 3,3,3,3), a4_jk(3, 3,3,3,3)
-        real(kind=dp) :: m1(3), m2(3), m3(3)
+        real(kind=dp) :: q1(3), q2(3), q3(3)
         integer       :: ii, nn, N
 
         a2_i  = 0.0d0
         a4_ii = 0.0d0
         a4_jk = 0.0d0
         
-        N = size(mi, dim=3) ! number of grains
+        N = size(qi, dim=3) ! number of grains
         
         do nn=1,N
         
             do ii=1,3
-                m1 = mi(ii,:,nn) ! use m1 as dummy
-                a2_i(ii, :,:)      = a2_i(ii, :,:)      + outerprod(m1,m1)/N
-                a4_ii(ii, :,:,:,:) = a4_ii(ii, :,:,:,:) + outerprod4(m1,m1,m1,m1)/N
+                q1 = qi(ii,:,nn) ! use q1 as dummy
+                a2_i(ii, :,:)      = a2_i(ii, :,:)      + outerprod(q1,q1)/N
+                a4_ii(ii, :,:,:,:) = a4_ii(ii, :,:,:,:) + outerprod4(q1,q1,q1,q1)/N
             end do 
             
-            m1 = mi(1,:,nn)
-            m2 = mi(2,:,nn)
-            m3 = mi(3,:,nn)
+            q1 = qi(1,:,nn)
+            q2 = qi(2,:,nn)
+            q3 = qi(3,:,nn)
             
-            a4_jk(1, :,:,:,:) = a4_jk(1, :,:,:,:) + outerprod4(m2,m2, m3,m3)/N
-            a4_jk(2, :,:,:,:) = a4_jk(2, :,:,:,:) + outerprod4(m1,m1, m3,m3)/N
-            a4_jk(3, :,:,:,:) = a4_jk(3, :,:,:,:) + outerprod4(m1,m1, m2,m2)/N
+            a4_jk(1, :,:,:,:) = a4_jk(1, :,:,:,:) + outerprod4(q2,q2, q3,q3)/N
+            a4_jk(2, :,:,:,:) = a4_jk(2, :,:,:,:) + outerprod4(q1,q1, q3,q3)/N
+            a4_jk(3, :,:,:,:) = a4_jk(3, :,:,:,:) + outerprod4(q1,q1, q2,q2)/N
         end do
     end
     

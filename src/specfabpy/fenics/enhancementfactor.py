@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2021-2023
+# Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2021-2024
 
 """
 FEniCS interface for calculating bulk enhancement factors given CPO field
@@ -93,7 +93,7 @@ class EnhancementFactor():
    
         """
         Bulk enhancement factors w.r.t. ei=(e1,e2,e3) axes for *transversely isotropic* grains.
-        If ei=(), then CPO (a^(2)) eigenvectors are assumed ei=(m1,m2,m3) => Eij are the eigenenhancements.
+        If ei=() then a^(2) eigenvectors are taken, ei=(m1,m2,m3), and Eij are the eigenenhancements.
         """
     
         if n_grain != 1: raise ValueError('only n_grain = 1 (linear viscous) is supported')
@@ -129,7 +129,7 @@ class EnhancementFactor():
    
         """
         Bulk enhancement factors w.r.t. ei=(e1,e2,e3) axes for *orthotropic* grains.
-        If ei=(), then CPO (a^(2)) eigenvectors are assumed ei=(m1,m2,m3) => Eij are the eigenenhancements.
+        If ei=() then a^(2) eigenvectors are taken, ei=(m1,m2,m3), and Eij are the eigenenhancements.
         """
     
         if n_grain != 1: raise ValueError('only n_grain = 1 (linear viscous) is supported')
