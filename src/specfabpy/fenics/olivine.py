@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2022-2023
+# Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2022-2024
 
 import copy, sys, time, code # code.interact(local=locals())
  
@@ -21,9 +21,10 @@ class OlivineFabric():
     cij_Abramson1997 = sfconst.olivine['elastic']['Abramson1997']
     cij_Jacobsen2008 = sfconst.olivine['elastic']['Jacobsen2008']
 
-    def __init__(self, meshargs, L=8, nu_realspace=1e-3, nu_multiplier=1, enable_SDM=True, enable_FSE=False, Cij=None, rho=None): 
+    def __init__(self, meshargs, L=8, fabrictype='A', nu_realspace=1e-3, nu_multiplier=1, enable_SDM=True, enable_FSE=False, Cij=None, rho=None): 
         mesh, boundaries, ds, n = meshargs
         self.L = L
+        self.fabrictype = fabrictype
         sf__.init(self.L)
         self.set_elastic_params(Cij=Cij, rho=rho)
         self.enable_SDM = enable_SDM
@@ -37,6 +38,9 @@ class OlivineFabric():
         self.SDM_b.initialize(wr=None) 
         self.SDM_n.set_BCs([], [], []) # no BCs
         self.SDM_b.set_BCs([], [], [])
+        
+        if fabrictype not in ['A', 'B', 'C']:
+            raise ValueError('Fabric type "%s" not among supported types "A", "B", "C"'%(fabrictype))
 
     def set_state(self, sb, sn, interp=True):
         if interp:
@@ -61,8 +65,17 @@ class OlivineFabric():
             self.FSE.evolve(u, dt)
             
     def set_elastic_params(self, Cij=None, rho=None):
-        if Cij is not None: self.Lame_grain = sf__.Cij_to_Lame_orthotropic(Cij) 
-        if rho is not None: self.rho = rho
+        if Cij is not None: 
+            # Lame_grain = (lam11,lam22,lam33, lam23,lam13,lam12, mu1,mu2,mu3) w.r.t. mi' axes
+            l = np.concatenate(([None], sf__.Cij_to_Lame_orthotropic(Cij))) # prepend "None" for easy indexing
+            # (1,2,3, 4,5,6, 7,8,9)
+            # Lame_grain should be (lam_bb,lam_nn,lam_vv, lam_nv,lam_bv,lam_nb, mu_b,mu_n,mu_v)
+            if self.fabrictype == 'A': l = l[1:] # already correct order since (b,n,v)=(m1',m2',m3') for A-type
+            if self.fabrictype == 'B': l = [l[3],l[2],l[1], l[6],l[5],l[4], l[9],l[8],l[7]] # (b,n,v)=(m3',m2',m1')
+            if self.fabrictype == 'C': l = [l[3],l[1],l[2], l[6],l[4],l[5], l[9],l[7],l[8]] # (b,n,v)=(m3',m1',m2')
+            self.Lame_grain = l
+        if rho is not None: 
+            self.rho = rho
 
     def get_elastic_velocities(self, x,y, theta,phi, alpha=1):
         alpha = 1 # only strain homogenization is so far supported (alpha=1)

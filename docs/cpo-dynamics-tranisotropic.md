@@ -1,10 +1,12 @@
 # CPO dynamics for transversely isotropic grains
 
-This tutorial focuses on modelling the CPO evolution of polycrystalline glacier ice, understood as the distribution of ${c}$-axes; that is, the distribution $n(\theta,\phi)$ of (easy) slip-plane normals of grains, ${\bf n}$.
+This tutorial focuses on modelling the CPO evolution of polycrystalline glacier ice.
+That is, the distribution $n(\theta,\phi)$ of (easy) slip-plane normals of grains (${\bf n}={\bf c}$).
 
-| Polycrystal | Grain slip system (${\bf n}={\bf c}$) |
-| :-: | :-: |
-| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png){: style="width:200px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/slip-plane.png){: style="width:170px"} |
+| <center>Polycrystalline ice</center> | <center>Ensemble of slip elements</center> |
+| :- | :- |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png){: style="width:240px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/polycrystal-disk.png){: style="width:240px"} |
+
 
 ## Problem
 

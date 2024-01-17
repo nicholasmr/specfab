@@ -9,13 +9,27 @@ Supported grain symmetry groups are:
 | Transversely isotropic | $n(\theta,\phi)$                  | Distribution of slip-plane normals |
 | Orthotropic            | $n(\theta,\phi),\,b(\theta,\phi)$ | Distribution of slip-plane normals and slip directions |
 
-Thus, depending on which crystallographic slip system is preferentially activated, $n(\theta,\phi)$ and $b(\theta,\phi)$ may refer to the distributions of different crystallographic axes:
+Thus, depending on which crystallographic slip system is preferentially activated, $n(\theta,\phi)$ and $b(\theta,\phi)$ may refer to the distributions of different crystallographic axes.
 
-| <center> Monocrystal slip system</center> | <center>Polycrystalline ice</center> | <center>Polycrystalline olivine</center> |
-| :- | :- | :- |
-| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/slip-plane.png){: style="width:160px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png){: style="width:210px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:210px"} |
-| Slip-plane normal (${\bf n}$) <br>and slip direction (${\bf b}$) | $n(\theta,\phi)$ is the ${\bf c}$-axis distribution | $n(\theta,\phi)$ and $b(\theta,\phi)$ are the <br> distributions of particular <br> crystallographic axes (${\bf m}'_i$) <br> depending on fabric type <br> (A&mdash;E type). |
+!!! note "Glacier ice"
 
+    Since ice grains are approximately transversely isotropic, tracking $n(\theta,\phi)$ (the $c$-axis distribution) is sufficient for representing the CPO.
+
+    | <center>Polycrystalline ice</center> | <center>Ensemble of slip elements</center> |
+    | :- | :- |
+    | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png){: style="width:250px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/polycrystal-disk.png){: style="width:250px"} |
+
+!!! note "Olivine"
+
+    For orthotropic grains such as olivine, both $n(\theta,\phi)$ and $b(\theta,\phi)$ distributions must be tracked to represent the CPO.
+
+    | <center>Polycrystalline olivine</center> | <center>Ensemble of slip elements</center> |
+    | :- | :- |
+    | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:250px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/polycrystal-plane.png){: style="width:250px"} |
+
+    Note that $n(\theta,\phi)$ and $b(\theta,\phi)$ represent the distributions of particular crystallographic axes (${\bf m}'_i$) depending on fabric type (A&mdash;E type).
+    
+   
 ## ODF
 
 The orientation distribution function (ODF) of a given slip-system axis (crystallographic axis) $f\in \lbrace n,b\rbrace$ is defined as the normalized distribution

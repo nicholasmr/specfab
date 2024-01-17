@@ -1,4 +1,4 @@
-! Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2021-2023
+! Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2021-2024
 
 module wavepropagation  
 
@@ -26,39 +26,42 @@ contains
     !---------------------------------
 
     !--------------
+    ! Crystallographic axis definitions
+    !--------------
+    ! qlm_1 := b
+    ! qlm_2 := n
+    ! qlm_3 := v
+    !--------------
     ! Parameter definitions
     !--------------
     ! alpha:      Reuss--Voigt homogenization weight
-    ! Lame_grain: Monocrystal Lame parameters (lam11,lam22,lam33,lam12,lam13,lam23, mu1,mu2,mu3)
-    !--------------
-    ! Crystallographic axis definitions
-    !--------------
-    ! nlm_1 := b
-    ! nlm_2 := n
-    ! nlm_3 := v
+    ! Lame_grain: Monocrystal Lame parameters (lam11,lam22,lam33, lam23,lam13,lam12, mu1,mu2,mu3) w.r.t. qi=(b,n,v) axes.
     !--------------
 
-    function Vi_elastic_orthotropic(nlm_1,nlm_2,nlm_3, alpha,Lame_grain,rho, theta,phi) result (Vi)
+    function Vi_elastic_orthotropic(qlm_1,qlm_2,qlm_3, alpha,Lame_grain,rho, theta,phi) result (Vi)
 
-        ! Elastic phase velocities (qP, qS1, qS2) given orientation distributions nlm_1, nlm_2, nlm_3 and propagation directions (theta, phi) 
+        ! Elastic phase velocities (qP, qS1, qS2) given orientation distributions qlm_1, qlm_2, qlm_3 and propagation directions (theta, phi) 
         ! *** Only Voigt homogenization is supported (alpha is dummy variable for now) ***
+
+        ! NOTE: Subscripts of Lame parameters (lam11,lam22,lam33, lam23,lam13,lam12, mu1,mu2,mu3) refer to the qi'th axis (i.e. distributions qlm_i). 
+        ! E.g. lam11 is NOT the Lame parameter along m1', but q1(=b). So unless A-type fabrics are assumed, the entries in Lame_grain should be re-ordered.
         
         implicit none
         
-        complex(kind=dp), intent(in) :: nlm_1(:), nlm_2(:), nlm_3(:)
+        complex(kind=dp), intent(in) :: qlm_1(:), qlm_2(:), qlm_3(:)
         real(kind=dp), intent(in)    :: alpha, Lame_grain(9), rho ! grain parameters
         real(kind=dp), intent(in)    :: theta(:), phi(:) ! array of theta and phi values to calculate phase velocities (vi) along
         real(kind=dp)                :: Qnorm_Voigt(3,3)
         real(kind=dp)                :: Vi(3,size(theta)) ! qS1, qS2, qP phase velocities (in that order)
-        complex(kind=dp)             :: nlm4_rot_1(L4len), nlm4_rot_2(L4len), nlm4_rot_3(L4len) ! truncated at L=4 and rotated
+        complex(kind=dp)             :: qlm4_rot_1(L4len), qlm4_rot_2(L4len), qlm4_rot_3(L4len) ! truncated at L=4 and rotated
         real(kind=dp)                :: a2_i(3, 3,3), a4_ii(3, 3,3,3,3), a4_jk(3, 3,3,3,3)
         
         do nn = 1,size(theta)
-            nlm4_rot_1 = rotate_nlm4(nlm_1(:L4len), -theta(nn), -phi(nn)) ! negative angles because we are are rotating the specified direction (back) into the vertical orientation
-            nlm4_rot_2 = rotate_nlm4(nlm_2(:L4len), -theta(nn), -phi(nn)) 
-            nlm4_rot_3 = rotate_nlm4(nlm_3(:L4len), -theta(nn), -phi(nn)) 
+            qlm4_rot_1 = rotate_nlm4(qlm_1(:L4len), -theta(nn), -phi(nn)) ! negative angles because we are are rotating the specified direction (back) into the vertical orientation
+            qlm4_rot_2 = rotate_nlm4(qlm_2(:L4len), -theta(nn), -phi(nn)) 
+            qlm4_rot_3 = rotate_nlm4(qlm_3(:L4len), -theta(nn), -phi(nn)) 
             
-            call ai_orthotropic(nlm4_rot_1, nlm4_rot_2, nlm4_rot_3, a2_i, a4_ii, a4_jk)
+            call ai_orthotropic(qlm4_rot_1, qlm4_rot_2, qlm4_rot_3, a2_i, a4_ii, a4_jk)
             Qnorm_Voigt = ai_to_Qnorm_orthotropic(a2_i, a4_ii, a4_jk, Lame_grain)
             Vi(:,nn) = Qnorm_to_vi(Qnorm_Voigt, rho)
         end do
@@ -106,8 +109,8 @@ contains
         Qnorm = 0.0d0 ! initialize
         do ii=1,3
             Qnorm = Qnorm + mu(ii)/2  * (a2_i(ii,:,:) + anticommutator(a2_i(ii,:,:),ksq) + doubleinner22(a2_i(ii,:,:),ksq)*identity)
-            Qnorm = Qnorm + lam(ii)   * doubleinner42(a4_ii(ii,:,:,:,:),ksq)
-            Qnorm = Qnorm + lam(ii+3) * doubleinner42_firstlast(2*a4_sym2(a4_jk(ii,:,:,:,:)),ksq)
+            Qnorm = Qnorm + lam(ii)   * doubleinner42(a4_ii(ii,:,:,:,:),ksq) ! 11=bb, 22=nn, 33=vv terms
+            Qnorm = Qnorm + lam(ii+3) * doubleinner42_firstlast(2*a4_sym2(a4_jk(ii,:,:,:,:)),ksq) ! 23=nv, 13=bv, 12=nb terms
         end do
     end
 
