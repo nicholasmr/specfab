@@ -155,28 +155,44 @@
 </tr>
 </tbody>
 </table>
-<p>Thus, depending on which crystallographic slip system is preferentially activated, <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span> may refer to the distributions of different crystallographic axes:</p>
+<p>Thus, depending on which crystallographic slip system is preferentially activated, <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span> may refer to the distributions of different crystallographic axes.</p>
+<div class="admonition note">
+<p class="admonition-title">Glacier ice</p>
+<p>Since ice grains are approximately transversely isotropic, tracking <span class="arithmatex">\(n(\theta,\phi)\)</span> (the <span class="arithmatex">\(c\)</span>-axis distribution) is sufficient for representing the CPO.</p>
 <table>
 <thead>
 <tr>
-<th align="left"><center> Monocrystal slip system</center></th>
 <th align="left"><center>Polycrystalline ice</center></th>
-<th align="left"><center>Polycrystalline olivine</center></th>
+<th align="left"><center>Ensemble of slip elements</center></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="left"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/slip-plane.png" style="width:160px" /></td>
-<td align="left"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png" style="width:210px" /></td>
-<td align="left"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png" style="width:210px" /></td>
-</tr>
-<tr>
-<td align="left">Slip-plane normal (<span class="arithmatex">\({\bf n}\)</span>) <br>and slip direction (<span class="arithmatex">\({\bf b}\)</span>)</td>
-<td align="left"><span class="arithmatex">\(n(\theta,\phi)\)</span> is the <span class="arithmatex">\({\bf c}\)</span>-axis distribution</td>
-<td align="left"><span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span> are the <br> distributions of particular <br> crystallographic axes (<span class="arithmatex">\({\bf m}'_i\)</span>) <br> depending on fabric type <br> (A&mdash;E type).</td>
+<td align="left"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png" style="width:250px" /></td>
+<td align="left"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/polycrystal-disk.png" style="width:250px" /></td>
 </tr>
 </tbody>
 </table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Olivine</p>
+<p>For orthotropic grains such as olivine, both <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span> distributions must be tracked to represent the CPO.
+Note that <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span> represent the distributions of particular crystallographic axes (<span class="arithmatex">\({\bf m}'_i\)</span>) depending on fabric type (A&mdash;E type).</p>
+<table>
+<thead>
+<tr>
+<th align="left"><center>Polycrystalline olivine</center></th>
+<th align="left"><center>Ensemble of slip elements</center></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png" style="width:250px" /></td>
+<td align="left"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/polycrystal-plane.png" style="width:250px" /></td>
+</tr>
+</tbody>
+</table>
+</div>
 <h2 id="odf">ODF</h2>
 <p>The orientation distribution function (ODF) of a given slip-system axis (crystallographic axis) <span class="arithmatex">\(f\in \lbrace n,b\rbrace\)</span> is defined as the normalized distribution</p>
 <div class="arithmatex">\[ 
