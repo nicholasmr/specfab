@@ -10,6 +10,7 @@ nav:
     - 'CPO dynamics':
         - Transversely isotropic grains: cpo-dynamics-tranisotropic.md
         - Orthotropic grains: cpo-dynamics-orthotropic.md
+        - Plastic spin: plastic-spin.md
     - 'Viscous anisotropy':
         - Strain-rate enhancements: enhancements-strainrate.md
         - Constitutive equations: constitutive-viscoplastic.md

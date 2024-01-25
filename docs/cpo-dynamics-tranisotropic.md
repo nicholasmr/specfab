@@ -36,6 +36,7 @@ $$
 {\bf M} = {\bf M_{\mathrm{LROT}}} + {\bf M_{\mathrm{DDRX}}} + {\bf M_{\mathrm{CDRX}}} + \cdots \quad\text{(operator)}. 
 $$
 
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/crystal-processes-combined.png){: style="width:750px"}
 
 !!! note 
     $n(\theta,\phi)$ may also be understood as the mass density fraction of grains with a given slip-plane normal orientation.
