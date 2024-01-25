@@ -56,10 +56,14 @@
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">CPO dynamics</span></p>
-              <ul>
+              <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-tranisotropic/">Transversely isotropic grains</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-orthotropic/">Orthotropic grains</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Plastic spin</a>
+    <ul class="current">
+    </ul>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Viscous anisotropy</span></p>
@@ -109,6 +113,7 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>CPO dynamics &raquo;</li>
       <li>Plastic spin</li>
     <li class="wy-breadcrumbs-aside">
     </li>
@@ -119,36 +124,63 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="plastic-spin">Plastic spin</h1>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/crystal-processes-1.png" style="width:120px" /></p>
-<p>To be documented</p>
-<!--
-
-The strain-induced rotation of $c$-axes is modelled given the (local) velocity gradient tensor $\nabla {\bf u}$ ([Svendsen and Hutter, 1996](https://doi.org/10.3189/S0260305500013525)).
-The model is a kinematic model in the sense that $c$-axes rotate in response to the bulk rate of stretching, ${\bf D}$, and spin, ${\bf W}$, thereby allowing the detailed microscopic stress and strain rate fields to be neglected and hence interactions between neighboring grains to be disregarded.
-
-The modelled $c$-axes are taken to rotate with the bulk continuum spin (${\bf W}$), plus some plastic spin correction (${\bf W}_{\mathrm{p}}$), so that the $c$-axis velocity field on the unit sphere is
-
-$$
-{\bf \dot{c}} = ({\bf W} + {\bf W}_{\mathrm{p}}) \cdot {\hat {\bf r}} \quad\text{($c$-axis velocity field on $S^2$)}
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/plastic-spin.png" style="width:380px" /></p>
+<p>The orientation of slip systems generally tends towards aligning with the bulk shear-plane axes. 
+Thus, if the two are perfectly aligned, the slip-system orientation should be unaffected by continued shearing (i.e. be in steady state).
+Clearly, slip-system orientations can therefore not simply co-rotate with the bulk spin (<span class="arithmatex">\(\bf W\)</span>) like passive material line elements (plane elements), i.e. 
+<span class="arithmatex">\({\bf \dot{n}} \neq {\bf W} \cdot {\bf n}\)</span>.
+Rather, slip systems must experience some plastic spin correction, <span class="arithmatex">\({\bf W}_\mathrm{p}\)</span>, such that&mdash;in the case of perfect alignment&mdash;the plastic spin exactly counteracts the bulk spin to achieve steady state:</p>
+<div class="arithmatex">\[
+{\bf \dot{n}} = ({\bf W} + {\bf W}_{\mathrm{p}}) \cdot {\bf n} = {\bf 0} .
+\]</div>
+<p>Here, the functional form of <span class="arithmatex">\({\bf W}_\mathrm{p}\)</span> is breifly discussed following <a href="https://doi.org/10.1016/0749-6419(91)90028-W">Aravas and Aifantis (1991)</a> and <a href="https://www.doi.org/10.1088/0965-0393/2/3A/005">Aravas (1994)</a> (among others). </p>
+<p>For a constant rate of shear deformation (<span class="arithmatex">\(1/T\)</span>) aligned with the <span class="arithmatex">\({\bf b}\)</span>&mdash;<span class="arithmatex">\({\bf n}\)</span> system, </p>
+<div class="arithmatex">\[
+{\bf F}_{\mathrm{S}}
+= {\bf I} + \frac{t}{T} {\bf b}\otimes{\bf n}
+\quad \Rightarrow\quad
+\nabla {\bf u} = 
+\frac{1}{T} {\bf b}\otimes{\bf n}
 ,
-$$
-
-where ${\hat {\bf r}}$ is the radial unit vector, and the plastic spin depends on ${\bf D}$ to lowest and second lowest order following Wang (1969) and [Aravas (1994)](https://www.doi.org/10.1088/0965-0393/2/3A/005): 
-
-$$
-{\bf W}_{\mathrm{p}} = 
+\]</div>
+<p>the bulk stretching (strain rate) and spin tensors are, respectively,</p>
+<div class="arithmatex">\[
+{\bf D} = \frac{1}{2T} ({\bf b}\otimes{\bf n} + {\bf n}\otimes{\bf b}),
+\\
+{\bf W} = \frac{1}{2T} ({\bf b}\otimes{\bf n} - {\bf n}\otimes{\bf b}) .
+\]</div>
+<p>Since <span class="arithmatex">\({\bf W}_\mathrm{p} = -{\bf W}\)</span> is required in steady state, it follows from eliminating <span class="arithmatex">\(1/(2T)\)</span> by calculating 
+<span class="arithmatex">\({\bf D} \cdot {\bf n}\otimes{\bf n}\)</span>, 
+<span class="arithmatex">\({\bf n}\otimes{\bf n} \cdot {\bf D}\)</span>, 
+<span class="arithmatex">\({\bf D} \cdot {\bf b}\otimes{\bf b}\)</span>, and 
+<span class="arithmatex">\({\bf b}\otimes{\bf b} \cdot {\bf D}\)</span>, 
+that</p>
+<div class="arithmatex">\[
+{\bf W}_\mathrm{p}({\bf D},{\bf n}) = +{\bf n}\otimes{\bf n} \cdot {\bf D} - {\bf D} \cdot {\bf n}\otimes{\bf n} ,
+\\
+{\bf W}_\mathrm{p}({\bf D},{\bf b}) = -{\bf b}\otimes{\bf b} \cdot {\bf D} + {\bf D} \cdot {\bf b}\otimes{\bf b} ,
+\]</div>
+<p>so that </p>
+<div class="arithmatex">\[
+{\bf \dot{n}} = ({\bf W} + {\bf W}_{\mathrm{p}}({\bf D},{\bf n})) \cdot {\bf n},
+\\ 
+{\bf \dot{b}} = ({\bf W} + {\bf W}_{\mathrm{p}}({\bf D},{\bf b})) \cdot {\bf b}.
+\]</div>
+<p>Indeed, this result agrees with representation theorems for isotropic functions (Wang, 1969), stating that an anti-symmetric tensor-value function of a symmetric tensor (<span class="arithmatex">\({\bf D}\)</span>) and a vector (<span class="arithmatex">\({\hat {\bf r}}\)</span>) is to lowest order given by</p>
+<div class="arithmatex">\[
+{\bf W}_{\mathrm{p}}({\bf D},{\hat {\bf r}}) = 
 \iota({\hat {\bf r}}\otimes{\hat {\bf r}}\cdot{\bf D} - {\bf D}\cdot{\hat {\bf r}}\otimes{\hat {\bf r}})
-+
-\zeta({\hat {\bf r}}\otimes{\hat {\bf r}}\cdot{\bf D}^2 - {\bf D}^2\cdot{\hat {\bf r}}\otimes{\hat {\bf r}})
 .
-$$
-
-By requiring that basal planes preserve their orientation when subject to simple shear (like a deck of cards), it can be shown that $\iota=1$ and $\zeta=0$.
-
--->
+\]</div>
+<p>To be consistent with the above, <span class="arithmatex">\(\iota = +1\)</span> for <span class="arithmatex">\({\hat {\bf r}}={\bf n}\)</span> and <span class="arithmatex">\(\iota = -1\)</span> for <span class="arithmatex">\({\hat {\bf r}}={\bf b}\)</span>.</p>
+<p><span class="arithmatex">\({\bf W}_\mathrm{p}({\bf D},{\bf n})\)</span> and <span class="arithmatex">\({\bf W}_\mathrm{p}({\bf D},{\bf b})\)</span> are then generally taken to relevant for other modes of deformation, too.</p>
               
             </div>
           </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../cpo-dynamics-orthotropic/" class="btn btn-neutral float-left" title="Orthotropic grains"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../enhancements-strainrate/" class="btn btn-neutral float-right" title="Strain-rate enhancements">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
 
   <hr/>
 
@@ -170,6 +202,10 @@ By requiring that basal planes preserve their orientation when subject to simple
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
+      <span><a href="../cpo-dynamics-orthotropic/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../enhancements-strainrate/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
