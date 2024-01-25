@@ -87,6 +87,7 @@ module specfabpy
         nhat40_empcorr_ice__sf => nhat40_empcorr_ice, &
         nlm_ideal__sf => nlm_ideal, &        
         nlm_isvalid__sf => nlm_isvalid, &
+        Lame_olivine_A2X__sf => Lame_olivine_A2X, &
         L2len__sf => L2len, L4len__sf => L4len, L6len__sf => L6len, L8len__sf => L8len
         
     implicit none
@@ -745,6 +746,15 @@ contains
         logical                      :: isvalid(size(nhat20))
         isvalid = nlm_isvalid__sf(nhat20, nhat40)
     end 
+    
+    subroutine Lame_olivine_A2X(LameA, Xtype, LameX)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in)  :: LameA(9) ! (lam11,lam22,lam33, lam23,lam13,lam12, mu1,mu2,mu3) w.r.t. m1',m2',m3'
+        real(kind=dp), intent(out) :: LameX(9)
+        character*1, intent(in) :: Xtype
+        call Lame_olivine_A2X__sf(LameA, Xtype, LameX)
+    end
     
 !    ! DELETE ONCE DEBUG FINISHED:
 !    subroutine orthstructs(nlm_1,nlm_2,nlm_3, mi,  a2v_nlm, a2v_mi, a4v_nlm, a4v_mi)

@@ -77,7 +77,7 @@ $$
 
 By requiring that basal planes preserve their orientation when subject to simple shear (like a deck of cards), it can be shown that $\iota=1$ and $\zeta=0$.
 
-The corresponding effect on the continuous $c$-axis distribution is modelled as a conservative advection process on the surface of the unit sphere:
+The corresponding effect on the continuous $c$-axis distribution is modelled as a conservative advection process on the surface of the unit sphere (Fokker&mdash;Planck equation on $S^2$):
 
 $$ 
 \frac{\mathrm{D} n}{\mathrm{D} t} = -\nabla_{S^2}\cdot(n{\bf \dot{c}}) 

@@ -138,4 +138,19 @@ contains
         Lame(6) = Cij(9)
     end
     
+    subroutine Lame_olivine_A2X(LameA, Xtype, LameX)
+        implicit none
+        real(kind=dp), intent(in)  :: LameA(9) ! (lam11,lam22,lam33, lam23,lam13,lam12, mu1,mu2,mu3) w.r.t. m1',m2',m3'
+        real(kind=dp), intent(out) :: LameX(9)
+        character*1, intent(in) :: Xtype
+        
+        if (Xtype == 'B') then
+            LameX(:) = [LameA(3),LameA(2),LameA(1), LameA(6),LameA(5),LameA(4), LameA(9),LameA(8),LameA(7)] ! (b,n,v)=(m3',m2',m1')
+        else if (Xtype == 'C') then
+            LameX(:) = [LameA(3),LameA(1),LameA(2), LameA(6),LameA(4),LameA(5), LameA(9),LameA(7),LameA(8)] ! (b,n,v)=(m3',m2',m1')
+        else
+            stop "Lame_olivine_A2X(): Fabric type not supported"
+        end if        
+    end
+   
 end module elasticities

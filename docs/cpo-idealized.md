@@ -1,16 +1,16 @@
 # Idealized CPOs
 
-Three types of idealized CPO states can be said to exist:
+If concerned with the distribution of a *single* crystallographic axis, three types of idealized CPO states can be said to exist:
 
-* **Unidirectional CPO**: crystallographic axes are perfectly aligned, i.e. perfect single maximum.
-* **Planar CPO**: crystallographic axes are perfectly distributed on a plane, i.e. a great circle on $S^2$.
-* **Circle CPO**: crystallographic axes are perfectly distributed on a small circle on $S^2$.
+* **Unidirectional CPO**: all axes are perfectly aligned, i.e. perfect single maximum.
+* **Planar CPO**: all axes are perfectly distributed on a plane, i.e. a great circle on $S^2$.
+* **Circle CPO**: all axes are perfectly distributed on a small circle on $S^2$.
 
-Each of these can be expanded in terms of spherical harmonics by using the sifting property of the delta function, $\delta({\hat {\bf r}})$.
+Each of these can be expanded as a spherical harmonics series by using the sifting property of the delta function $\delta({\hat {\bf r}})$.
 
 ## Unidirectional
 
-Consider the case where grains are perfectly aligned with ${{\bf m}}$ such that $n({\hat {\bf r}}) = \delta({\hat {\bf r}}-{{\bf m}})$.
+Consider the case where slip-plane normals are perfectly aligned with ${{\bf m}}$ such that $n({\hat {\bf r}}) = \delta({\hat {\bf r}}-{{\bf m}})$.
 The corresponding expansion coefficients follow from the usual overlap integral:
 
 $$

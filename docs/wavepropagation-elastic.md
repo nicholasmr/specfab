@@ -123,9 +123,13 @@ blm[:sf.L4len] = sf.a4_to_nlm(a4_b) # determine l<=4 expansion coefficients of O
 
 ### Physical parameters (SI units)
 rho = 3355 # density of olivine
+alpha = 1 # Voigt--Reuss weight; only alpha=1 supported for now
 Cij = (320.5e9, 196.5e9, 233.5e9,  64.0e9, 77.0e9, 78.7e9,  76.8e9, 71.6e9, 68.15e9) # Abramson (1997) parameters (C11,C22,C33,C44,C55,C66,C23,C13,C12)
 Lame_grain = sf.Cij_to_Lame_orthotropic(Cij) # Lame parameters (lam11,lam22,lam33, lam23,lam13,lam12, mu1,mu2,mu3)
-alpha = 1 # Voigt--Reuss weight; only alpha=1 supported for now
+# Note that the above ordering of Lame/Cij parameters assume an A-type fabric; that is, (blm,nlm,vlm) refer to the distibutions of (m1',m2',m3') axes, respectively.
+# If concerned with another fabric type, the components can easily be re-ordered:
+#Lame_grain = sf.Lame_olivine_A2X(Lame_grain, 'B') # B-type Lame paremeters
+#Lame_grain = sf.Lame_olivine_A2X(Lame_grain, 'C') # C-type Lame paremeters
 
 ### Propagation directions of interest
 theta, phi = np.deg2rad([90,70,]), np.deg2rad([0,10,]) # wave-vector directions (theta is colatitude, phi is longitude)

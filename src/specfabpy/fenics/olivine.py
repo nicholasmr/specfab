@@ -71,8 +71,8 @@ class OlivineFabric():
             # (1,2,3, 4,5,6, 7,8,9)
             # Lame_grain should be (lam_bb,lam_nn,lam_vv, lam_nv,lam_bv,lam_nb, mu_b,mu_n,mu_v)
             if self.fabrictype == 'A': l = l[1:] # already correct order since (b,n,v)=(m1',m2',m3') for A-type
-            if self.fabrictype == 'B': l = [l[3],l[2],l[1], l[6],l[5],l[4], l[9],l[8],l[7]] # (b,n,v)=(m3',m2',m1')
-            if self.fabrictype == 'C': l = [l[3],l[1],l[2], l[6],l[4],l[5], l[9],l[7],l[8]] # (b,n,v)=(m3',m1',m2')
+            if self.fabrictype == 'B': l = sf.Lame_olivine_A2X(l,'B') #[l[3],l[2],l[1], l[6],l[5],l[4], l[9],l[8],l[7]] # (b,n,v)=(m3',m2',m1')
+            if self.fabrictype == 'C': l = sf.Lame_olivine_A2X(l,'C') #[l[3],l[1],l[2], l[6],l[4],l[5], l[9],l[7],l[8]] # (b,n,v)=(m3',m1',m2')
             self.Lame_grain = l
         if rho is not None: 
             self.rho = rho
