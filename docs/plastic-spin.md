@@ -3,11 +3,11 @@
 
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/plastic-spin.png){: style="width:380px"}
 
-The orientation of slip systems generally tends towards aligning with the bulk shear-plane axes. 
+In bulk simple shear, the orientation of slip systems generally tends towards the bulk shear-plane axes. 
 Thus, if the two are perfectly aligned, the slip-system orientation should be unaffected by continued shearing (i.e. be in steady state).
-Clearly, slip-system orientations can therefore not simply co-rotate with the bulk spin ($\bf W$) like passive material line elements (plane elements), i.e. 
+Clearly, slip-system orientations do therefore not simply co-rotate with the bulk spin ($\bf W$) like passive material line elements (plane elements) subject to a flow field, i.e. 
 ${\bf \dot{n}} \neq {\bf W} \cdot {\bf n}$.
-Rather, slip systems must experience some plastic spin correction, ${\bf W}_\mathrm{p}$, such that&mdash;in the case of perfect alignment&mdash;the plastic spin exactly counteracts the bulk spin to achieve steady state:
+Rather, slip systems must experience an additional spin contribution &mdash;a plastic spin ${\bf W}_\mathrm{p}$&mdash;such that, in the case of perfect alignment, the bulk spin is exactly counteracted to achieve steady state:
 
 $$
 {\bf \dot{n}} = ({\bf W} + {\bf W}_{\mathrm{p}}) \cdot {\bf n} = {\bf 0} .
