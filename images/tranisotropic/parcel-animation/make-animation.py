@@ -6,7 +6,7 @@ Make animation from scratch
 
 import os, PyPDF2
 
-MAKE_PDF = 0
+MAKE_PDF = 1
 MAKE_ANI = 1
 
 #-----------------------
