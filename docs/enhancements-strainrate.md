@@ -113,7 +113,7 @@ where $\alpha$ is a free parameter.
 
 | Monocrystal | Polycrystal |
 | :-: | :-: |
-| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-monocrystal.png){: style="width:210px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-monocrystal.png){: style="width:140px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} |
 
 If grains are approximately transversely isotropic, the grain rheology can be modelled using the [transversely isotropic power-law rheology](constitutive-viscoplastic.md).
 This requires specifying the grain eigenenhancements $E_{mm}'$ and $E_{mt}'$, the power-law exponent $n'$, and the Taylor&mdash;Sachs weight $\alpha$.

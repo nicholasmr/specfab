@@ -3,14 +3,14 @@
 
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/plastic-spin.png){: style="width:380px"}
 
-In bulk simple shear, the orientation of slip systems generally tends towards the bulk shear-plane axes. 
+In bulk simple shear, the dominant slip-system orientation of grains tends to align with the bulk shear-plane system. 
 Thus, if the two are perfectly aligned, the slip-system orientation should be unaffected by continued shearing (i.e. be in steady state).
-Clearly, slip-system orientations do therefore not simply co-rotate with the bulk spin ($\bf W$) like passive material line elements (plane elements) subject to a flow field, i.e. 
+Clearly, slip systems do therefore not simply co-rotate with the bulk continuum spin ($\bf W$) like passive material line elements embedded in a flow field, i.e. 
 ${\bf \dot{n}} \neq {\bf W} \cdot {\bf n}$.
-Rather, slip systems must experience an additional spin contribution &mdash;a plastic spin ${\bf W}_\mathrm{p}$&mdash;such that, in the case of perfect alignment, the bulk spin is exactly counteracted to achieve steady state:
+Rather, slip systems must be subject to an additional contribution &mdash; a plastic spin ${\bf W}_\mathrm{p}$ &mdash; such that the bulk spin is exactly counteracted to achieve steady state:
 
 $$
-{\bf \dot{n}} = ({\bf W} + {\bf W}_{\mathrm{p}}) \cdot {\bf n} = {\bf 0} .
+{\bf \dot{n}} = ({\bf W} + {\bf W}_{\mathrm{p}}) \cdot {\bf n} = {\bf 0} \quad\text{for ${\bf b}$&ndash;${\bf n}$ shear}.
 $$
 
 Here, the functional form of ${\bf W}_\mathrm{p}$ is breifly discussed following [Aravas and Aifantis (1991)](https://doi.org/10.1016/0749-6419(91)90028-W) and [Aravas (1994)](https://www.doi.org/10.1088/0965-0393/2/3A/005) (among others). 
@@ -26,7 +26,7 @@ $$
 ,
 $$
 
-the bulk stretching (strain rate) and spin tensors are, respectively,
+the bulk strain-rate and spin tensors are, respectively,
 
 $$
 {\bf D} = \frac{1}{2T} ({\bf b}\otimes{\bf n} + {\bf n}\otimes{\bf b}),

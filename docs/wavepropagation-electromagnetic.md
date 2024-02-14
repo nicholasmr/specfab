@@ -46,7 +46,7 @@ is the wave velocity squared.
 
 | Monocrystal | Polycrystal |
 | :-: | :-: |
-| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-electromagnetic-monocrystal.png){: style="width:210px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-electromagnetic-monocrystal.png){: style="width:140px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} |
 
 
 If grains are approximately transversely isotropic w.r.t. the symmetry axis ${\bf m}'$, the dielectric permittivity tensor of a single crystal can be written as

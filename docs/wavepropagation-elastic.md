@@ -58,7 +58,7 @@ is the wave velocity squared.
 
 | Monocrystal | Polycrystal |
 | :-: | :-: |
-| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-elastic-monocrystal.png){: style="width:210px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-elastic-monocrystal.png){: style="width:140px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png){: style="width:220px"} |
 
 If grains are approximately transversely isotropic, the grain elastic behaviour can be modelled using the [transversely isotropic elastic constitutive equation](constitutive-elastic.md).
 This requires specifying the grain elastic parameters $\lambda'$, $\mu'$, $\hat{\lambda}'$, $\hat{\mu}'$, $\hat{\gamma}'$, and the Voigt&mdash;Reuss weight $\alpha$.

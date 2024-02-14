@@ -22,6 +22,7 @@ nav:
     - 'Application gallery': 
         - Radar-derived physical properties: radar-derived-PP.md
         - FEM integration: FEM-integration.md
+        - Lagrangian parcel integrator: Lagrangian-parcel-integrator.md
     - 'Miscellaneous': 
         - Plotting: plotting.md
         - Deformation modes: deformation-modes.md
