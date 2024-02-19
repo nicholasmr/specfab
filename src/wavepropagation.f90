@@ -214,8 +214,52 @@ contains
     ! ELECTROMAGNETIC
     !-----------------------------------------------
 
-    ! N/A
+    function Vi_electromagnetic_tranisotropic(nlm, eps_m, eps_t, mu, theta,phi) result (Vi)
 
+        ! EM S1,S2 velocities (fast,slow) given nlm and propagation directions (theta,phi) 
+        
+        ! Assumes transversely isotropic grains with relative dielectric permittivity eps'_ij = = diag(eps_a, eps_a, eps_c)
+        !  where eps_c and eps_a are the principal relative permittivities parallel and perpendicular to the symmetry axis.
+        
+        implicit none
+        
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: eps_m, eps_t, mu
+        real(kind=dp), intent(in)    :: theta(:), phi(:) ! arrays of theta and phi values to calculate phase velocities (vi) along
+
+        real(kind=dp)                :: Vi(2,size(theta)) ! qS1, qS2, qP phase velocities
+        integer, parameter           :: n4mlen = nlm_lenvec(4)
+        complex(kind=dp)             :: nlm4(n4mlen), nlm4_rot(n4mlen) ! nlm truncated at L=4, and its rotated form
+
+        real(kind=dp), parameter     :: c = 299792458.0d0 ! speed of light in vacuum
+        real(kind=dp)                :: a2_(3,3), eps(3,3), w, omega, qi(4), kzi(2)
+        
+        nlm4 = nlm(:n4mlen) ! l=0,2,4 coefficients
+
+        do nn = 1,size(theta)
+            nlm4_rot = rotate_nlm4(nlm4, -theta(nn), -phi(nn)) ! negative angles because we are are rotating the specified direction (back) into the vertical orientation
+
+            a2_ = a2(nlm4_rot)
+            eps = (2*eps_t+eps_m)*identity/3.d0 + (eps_m-eps_t)*(a2_-identity/3.d0)
+            omega = 1.0d0 ! magnitude does not matter since it cancels when calculating Vi below
+
+            ! --- Exported from Mathematica ---
+
+            w = (omega/c)**2 * mu
+            qi(1) = ((-1.0d0)*Sqrt((-1.0d0)*eps(3,3)**(-1.0d0)*((eps(1,3)**(2.0d0) + eps(2,3)**(2.0d0) + (-1.0d0)*(eps(1,1) + eps(2,2))*eps(3,3))*w + Sqrt(((eps(1,3)**(2.0d0) + eps(2,3)**(2.0d0))**(2.0d0) + (-2.0d0)*(eps(1,3)**(2.0d0)*(eps(1,1) + (-1.0d0)*eps(2,2)) + (4.0d0)*eps(1,2)*eps(1,3)*eps(2,3) + ((-1.0d0)*eps(1,1) + eps(2,2))*eps(2,3)**(2.0d0))*eps(3,3) + ((4.0d0)*eps(1,2)**(2.0d0) + (eps(1,1) + (-1.0d0)*eps(2,2))**(2.0d0))*eps(3,3)**(2.0d0))*w**(2.0d0)))))/Sqrt((2.0d0))
+            qi(2) = Sqrt((-1.0d0)*eps(3,3)**(-1.0d0)*((eps(1,3)**(2.0d0) + eps(2,3)**(2.0d0) + (-1.0d0)*(eps(1,1) + eps(2,2))*eps(3,3))*w + Sqrt(((eps(1,3)**(2.0d0) + eps(2,3)**(2.0d0))**(2.0d0) + (-2.0d0)*(eps(1,3)**(2.0d0)*(eps(1,1) + (-1.0d0)*eps(2,2)) + (4.0d0)*eps(1,2)*eps(1,3)*eps(2,3) + ((-1.0d0)*eps(1,1) + eps(2,2))*eps(2,3)**(2.0d0))*eps(3,3) + ((4.0d0)*eps(1,2)**(2.0d0) + (eps(1,1) + (-1.0d0)*eps(2,2))**(2.0d0))*eps(3,3)**(2.0d0))*w**(2.0d0))))/Sqrt((2.0d0))
+            qi(3) = ((-1.0d0)*Sqrt(eps(3,3)**(-1.0d0)*((-1.0d0)*(eps(1,3)**(2.0d0) + eps(2,3)**(2.0d0) + (-1.0d0)*(eps(1,1) + eps(2,2))*eps(3,3))*w + Sqrt(((eps(1,3)**(2.0d0) + eps(2,3)**(2.0d0))**(2.0d0) + (-2.0d0)*(eps(1,3)**(2.0d0)*(eps(1,1) + (-1.0d0)*eps(2,2)) + (4.0d0)*eps(1,2)*eps(1,3)*eps(2,3) + ((-1.0d0)*eps(1,1) + eps(2,2))*eps(2,3)**(2.0d0))*eps(3,3) + ((4.0d0)*eps(1,2)**(2.0d0) + (eps(1,1) + (-1.0d0)*eps(2,2))**(2.0d0))*eps(3,3)**(2.0d0))*w**(2.0d0)))))/Sqrt((2.0d0))
+            qi(4) = Sqrt(eps(3,3)**(-1.0d0)*((-1.0d0)*(eps(1,3)**(2.0d0) + eps(2,3)**(2.0d0) + (-1.0d0)*(eps(1,1) + eps(2,2))*eps(3,3))*w + Sqrt(((eps(1,3)**(2.0d0) + eps(2,3)**(2.0d0))**(2.0d0) + (-2.0d0)*(eps(1,3)**(2.0d0)*(eps(1,1) + (-1.0d0)*eps(2,2)) + (4.0d0)*eps(1,2)*eps(1,3)*eps(2,3) + ((-1.0d0)*eps(1,1) + eps(2,2))*eps(2,3)**(2.0d0))*eps(3,3) + ((4.0d0)*eps(1,2)**(2.0d0) + (eps(1,1) + (-1.0d0)*eps(2,2))**(2.0d0))*eps(3,3)**(2.0d0))*w**(2.0d0))))/Sqrt((2.0d0))
+
+            ! --- End ---
+            
+            kzi(1) = qi(2) ! Positive fast S-wave (S1)
+            kzi(2) = qi(4) ! Positive slow S-wave (S2)
+            
+            Vi(:,nn) = omega/kzi(:)
+        end do
+    end
+    
     !-----------------------------------------------
     ! SUPPORTING ROUTINES
     !-----------------------------------------------

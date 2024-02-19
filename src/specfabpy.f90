@@ -41,7 +41,7 @@ module specfabpy
         rheo_fwd_tranisotropic_sachshomo__sf  => rheo_fwd_tranisotropic_sachshomo, &
         rheo_fwd_tranisotropic_taylorhomo__sf => rheo_fwd_tranisotropic_taylorhomo, &
         
-        ! Elasticities 
+        ! Elasticity
         elas_rev_tranisotropic__sf => elas_rev_tranisotropic, &
         elas_fwd_tranisotropic__sf => elas_fwd_tranisotropic, &
         Vi_elastic_tranisotropic__sf => Vi_elastic_tranisotropic, &
@@ -50,6 +50,9 @@ module specfabpy
         Qnorm_tranisotropic__sf => Qnorm_tranisotropic, &
         Cij_to_Lame_tranisotropic__sf => Cij_to_Lame_tranisotropic, &
         Cij_to_Lame_orthotropic__sf   => Cij_to_Lame_orthotropic, &
+        
+        ! Electromagnetic
+        Vi_electromagnetic_tranisotropic__sf => Vi_electromagnetic_tranisotropic, &
         
         ! Fluid enhancement factors
         Eij_tranisotropic__sf => Eij_tranisotropic, &
@@ -584,6 +587,21 @@ contains
         real(kind=dp)                :: Qnorm(3,3)
 
         Qnorm = Qnorm_tranisotropic__sf(nlm, alpha, lame_grain)
+    end
+    
+    !---------------------------------
+    ! ELECTROMAGNETIC PHASE VELOCITIES
+    !---------------------------------
+    
+    function Vi_electromagnetic_tranisotropic(nlm, eps_m, eps_t, mu, theta_n,phi_n) result(Vi)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: eps_m, eps_t, mu
+        real(kind=dp), intent(in)    :: theta_n(:), phi_n(:) ! arrays of theta and phi values to calculate phase velocities along
+        real(kind=dp)                :: Vi(2,size(theta_n)) ! qS1, qS2 phase velocities
+
+        Vi = Vi_electromagnetic_tranisotropic__sf(nlm, eps_m, eps_t, mu, theta_n,phi_n)
     end
     
     !---------------------------------

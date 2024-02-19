@@ -25,7 +25,7 @@ class OlivineFabric():
         mesh, boundaries, ds, n = meshargs
         self.L = L
         self.fabrictype = fabrictype
-        sf__.init(self.L)
+        self.lm, self.nlm_len = sf__.init(self.L)
         self.set_elastic_params(Cij=Cij, rho=rho)
         self.enable_SDM = enable_SDM
         self.enable_FSE = enable_FSE
@@ -76,11 +76,19 @@ class OlivineFabric():
             self.Lame_grain = l
         if rho is not None: 
             self.rho = rho
-
+            
     def get_elastic_velocities(self, x,y, theta,phi, alpha=1):
         alpha = 1 # only strain homogenization is so far supported (alpha=1)
         nlm, blm = self.get_state(x,y)
         vlm = 0*nlm # estimate from joint ODF (nlm and blm) if zero
         vS1, vS2, vP = sf__.Vi_elastic_orthotropic(blm, nlm, vlm, alpha,self.Lame_grain,self.rho, theta,phi) # calculate elastic phase velocities using specfab
         return (vP, vS1, vS2)
+        
+    def get_elastic_velocities__isotropic(self, alpha=1):
+        alpha = 1
+        theta,phi = 0,0
+        nlm = blm = vlm = [1/np.sqrt(4*np.pi)] + [0]*(self.nlm_len-1)
+        vS1, vS2, vP = sf__.Vi_elastic_orthotropic(blm, nlm, vlm, alpha,self.Lame_grain,self.rho, theta,phi)
+        return (vP, vS1, vS2)
+    
 

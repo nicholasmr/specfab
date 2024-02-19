@@ -133,7 +133,7 @@ class CPO():
                 self.bcs += [DirichletBC(self.W, wr[ii], domain, did)] # real part
                 
 
-    def evolve(self, u, dt, iota=+1, Gamma0=None, Lambda0=None):
+    def evolve(self, u, dt, iota=+1, Gamma0=None, Lambda0=None, steadystate=False):
     
         """
         Evolve CPO using Laplacian stabilized, Euler time integration
@@ -143,11 +143,11 @@ class CPO():
             raise ValueError('CPO state "w" not set. Did you forget to initialize the CPO field?')
             
         self.w_prev.assign(self.w) # current state (w) must be set
-        F = self.weakform(u, dt, iota, Gamma0, Lambda0)
+        F = self.weakform(u, dt, iota, Gamma0, Lambda0, steadystate=steadystate)
         solve(lhs(F)==rhs(F), self.w, self.bcs, solver_parameters={'linear_solver':'gmres', }) # fastest tested are: gmres, bicgstab, tfqmr (For non-symmetric problems, a Krylov solver for non-symmetric systems, such as GMRES, is a better choice)
 
 
-    def weakform(self, u, dt, iota, Gamma0, Lambda0, zeta=0):
+    def weakform(self, u, dt, iota, Gamma0, Lambda0, zeta=0, steadystate=False):
 
         """
         Build weak form from dynamical matrices
@@ -176,15 +176,16 @@ class CPO():
         dtinv = Constant(1/dt)    
        
         if self.modelplane=='xy':
-            
-            # Time derivative
-            F  = dtinv * dot( (self.pr-self.w_prev.sub(0)), self.qr)*dx # real part
-            F += dtinv * dot( (self.pi-self.w_prev.sub(1)), self.qi)*dx # imag part
 
             # Real space advection
-            F += dot(dot(u, nabla_grad(self.pr)), self.qr)*dx # real part
+            F  = dot(dot(u, nabla_grad(self.pr)), self.qr)*dx # real part
             F += dot(dot(u, nabla_grad(self.pi)), self.qi)*dx # imag part
             
+            # Time derivative
+            if not steadystate:
+                F += dtinv * dot( (self.pr-self.w_prev.sub(0)), self.qr)*dx # real part
+                F += dtinv * dot( (self.pi-self.w_prev.sub(1)), self.qi)*dx # imag part
+           
             # Real space stabilization (Laplacian diffusion)
             F += self.nu_realspace * inner(grad(self.pr), grad(self.qr))*dx # real part
             F += self.nu_realspace * inner(grad(self.pi), grad(self.qi))*dx # imag part
@@ -201,11 +202,12 @@ class CPO():
 
         elif self.modelplane=='xz':
                 
-            # Time derivative
-            F = dtinv * dot( (self.pr-self.w_prev), self.qr)*dx # real part
-
             # Real space advection
-            F += dot(dot(u, nabla_grad(self.pr)), self.qr)*dx # real part
+            F = dot(dot(u, nabla_grad(self.pr)), self.qr)*dx # real part
+                
+            # Time derivative
+            if not steadystate:
+                F += dtinv * dot( (self.pr-self.w_prev), self.qr)*dx # real part
             
             # Real space stabilization (Laplacian diffusion)
             F += self.nu_realspace * inner(grad(self.pr), grad(self.qr))*dx # real part
@@ -217,7 +219,7 @@ class CPO():
             # Orientation space stabilization (hyper diffusion)
             Mrr_REG,  *_ = self.Mk_REG  # unpack for readability 
             F += -self.nu_multiplier * sum([ dot(Mrr_REG[ii], self.pr)*self.qr_sub[ii]*dx for ii in np.arange(self.nlm_len)]) # real part
-                
+
         return F
         
         

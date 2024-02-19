@@ -99,7 +99,7 @@ Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, Lame_grain, rho, theta,phi) # phase
 
 | Monocrystal | Polycrystal |
 | :-: | :-: |
-| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-elastic-monocrystal.png){: style="width:250px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-elastic-monocrystal.png){: style="width:190px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
 
 If grains are approximately orthotropic, the grain elastic behaviour can be modelled using the [orthotropic elastic constitutive equation](constitutive-elastic.md).
 This requires specifying the grain elastic parameters $\lambda_{ij}'$, $\mu_{i}'$, and the Voigt&mdash;Reuss weight $\alpha$.

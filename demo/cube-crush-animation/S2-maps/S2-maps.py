@@ -25,8 +25,9 @@ from matplotlib.ticker import LogFormatter
 # Run options
 #---------------
 
-MAKE_FRAME_Eij = 1
-MAKE_FRAME_vi  = 0
+MAKE_FRAME_Eij   = 0
+MAKE_FRAME_vi    = 0 # elastic
+MAKE_FRAME_vi_EM = 0
 
 MAKE_GIFS = 1
 
@@ -38,7 +39,7 @@ transparent = True
 
 ### Mode of deformation
 
-mod = dict(type='ps', axis=2, T=1, r=0) # uniaxial compression along z
+mod = dict(type='ps', axis=2, T=1, r=1) # uniaxial compression along z
 strain_target = -0.98
 Nt = 100
 
@@ -54,7 +55,7 @@ nlm_iso[0] = np.sqrt(4*np.pi)
 
 (Eij_grain, alpha, n_grain) = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
 
-### Phase velocities
+### Elastic phase velocities
 
 # Physical parameters
 rho = sfconst.ice['density'] # density of ice
@@ -66,6 +67,19 @@ vi_iso = sf.Vi_elastic_tranisotropic(nlm_iso, alpha, lame_grain, rho, 0,0) # pha
 vP_iso, vS1_iso, vS2_iso = vi_iso[2,0], vi_iso[0,0], vi_iso[1,0]
 
 def vi_rel(vi, vi_iso):
+    return 100*(np.divide(vi,vi_iso) -1)
+
+### EM phase velocities
+
+epsa = 3.17 - 0.034 * 1
+epsc = 3.17
+mu = 1
+
+vi_EM_iso = sf.Vi_electromagnetic_tranisotropic(nlm_iso, epsc,epsa,mu, 0,0) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:]
+vS1_EM_iso, vS2_EM_iso = vi_EM_iso[0,0], vi_EM_iso[1,0]
+print('vSi EM:',  vS1_EM_iso*1e-6, vS2_EM_iso*1e-6 )
+
+def vi_EM_rel(vi, vi_iso):
     return 100*(np.divide(vi,vi_iso) -1)
 
 ### Debug 
@@ -100,6 +114,22 @@ def setup_fig():
 
     return axlist, fig, fraction, aspect
 
+
+def setup_fig_narrow():
+
+    scale = 2.6
+    fig = plt.figure(figsize=(3/2*1.1*scale,0.90*scale))
+    gs = fig.add_gridspec(1,3)
+    gs.update(left=0.025, right=1-0.02, top=0.88, bottom=0.25, wspace=0.4, hspace=0.4)
+
+    axlist = [fig.add_subplot(gs[0,ii], projection=prj) for ii in range(3)]
+    for axi in axlist: axi.set_global()
+
+    fraction = 0.07
+    aspect = 10
+
+    return axlist, fig, fraction, aspect
+    
 
 def mkframe_Eij(nlm, Err,Ert,Erp, mlon,mlat, nn):
     
@@ -153,6 +183,35 @@ def mkframe_vi(nlm, vP,vS1,vS2, mlon,mlat, nn):
     plt.close()
 
 
+def mkframe_vi_EM(nlm, vS1,vS2,vSrel, mlon,mlat, nn):
+
+    axlist, fig, fraction, aspect = setup_fig_narrow()
+    ax1,ax2,ax3 = axlist
+#    axlist, fig, fraction, aspect = setup_fig()    
+#    ax1,ax2,ax3,ax4 = axlist
+
+    sfplt.plotODF(nlm, lm, ax1, lvlset=[np.linspace(0.0,0.8,9), lambda x,p:'%.1f'%x], cbaspect=aspect, cbfraction=fraction)
+
+    kwargs = dict(cmap='RdBu', tickintvl=4, aspect=aspect, fraction=fraction)
+    lvls = np.linspace(-0.2,0.2,9)
+
+    plot_field(vS1, mlon, mlat, ax2, lvls, cblbl=r'$V_{\mathrm{S}1}/V^{\mathrm{iso}}_{\mathrm{S}1}-1$  (\%)', **kwargs)
+    plot_field(vS2, mlon, mlat, ax3, lvls, cblbl=r'$V_{\mathrm{S}2}/V^{\mathrm{iso}}_{\mathrm{S}2}-1$  (\%)', **kwargs)
+    
+    #lvls = np.linspace(-2,2,9)
+    #plot_field(vSrel, mlon, mlat, ax4, lvls, cblbl=r'$V_{\mathrm{S}1}/V_{\mathrm{S}1}-1$  (\%)', **kwargs)
+
+    for axi in axlist: sfplt.plotcoordaxes(axi, geo, axislabels='vuxi', color='k')
+
+    ttl = ax2.set_title(r'Confined compression, $\epsilon_{zz} = %+.2f$'%(strain[nn]), fontsize=FS+2, pad=13)
+    ttl.set_position([0.5, 1.07])
+
+    fout = 'frames/S2-vi-EM-%03i.png'%(nn)
+    print('Saving %s'%(fout))
+    plt.savefig(fout, transparent=transparent, dpi=200)
+    plt.close()
+
+
 def plot_field(F, mlon, mlat, ax, lvls, cmap='Greys', cblbl=r'$E_{??}$', titlestr='', tickintvl=1, norm=None, tick_labels=None, aspect=9, fraction=0.6):
 
     kwargs_cf = dict(extend='both', norm=norm, cmap=cmap, levels=lvls, nchunk=5)
@@ -167,7 +226,7 @@ def plot_field(F, mlon, mlat, ax, lvls, cmap='Greys', cblbl=r'$E_{??}$', titlest
 # Main
 #---------------
 
-if MAKE_FRAME_Eij or MAKE_FRAME_vi:
+if MAKE_FRAME_Eij or MAKE_FRAME_vi or MAKE_FRAME_vi_EM:
 
     ### Determine fabric evolution
     
@@ -183,7 +242,8 @@ if MAKE_FRAME_Eij or MAKE_FRAME_vi:
     Err = np.ones(dims) # r-r longitudinal
     Ert = np.ones(dims) # r-t shear
     Erp = np.ones(dims) # r-p shear
-    vP, vS1, vS2  = np.zeros(dims), np.zeros(dims), np.zeros(dims) 
+    vP, vS1, vS2 = np.zeros(dims), np.zeros(dims), np.zeros(dims) 
+    vS1_EM, vS2_EM = np.zeros(dims), np.zeros(dims)
 
     ### Determine Eij and Vi for a given deformation (given time)
 
@@ -192,24 +252,39 @@ if MAKE_FRAME_Eij or MAKE_FRAME_vi:
         for ii, theta in enumerate(vlat):
             for jj, phi in enumerate(vlon):
 
+                colat = sfdsc.lat2colat(theta)
+
                 r,t,p = vr[:,ii,jj], vt[:,ii,jj], vp[:,ii,jj]
 
-                args = (Eij_grain,alpha,n_grain)
-                Err[nn,ii,jj] = sf.Evw_tranisotropic(nlm[nn,:], r,r,tau_rr[:,:,ii,jj], *args)
-                Ert[nn,ii,jj] = sf.Evw_tranisotropic(nlm[nn,:], r,t,tau_rt[:,:,ii,jj], *args)
-                Erp[nn,ii,jj] = sf.Evw_tranisotropic(nlm[nn,:], r,p,tau_rp[:,:,ii,jj], *args)
+                if MAKE_FRAME_Eij: 
+                    args = (Eij_grain,alpha,n_grain)
+                    Err[nn,ii,jj] = sf.Evw_tranisotropic(nlm[nn,:], r,r,tau_rr[:,:,ii,jj], *args)
+                    Ert[nn,ii,jj] = sf.Evw_tranisotropic(nlm[nn,:], r,t,tau_rt[:,:,ii,jj], *args)
+                    Erp[nn,ii,jj] = sf.Evw_tranisotropic(nlm[nn,:], r,p,tau_rp[:,:,ii,jj], *args)
 
-                vi = sf.Vi_elastic_tranisotropic(nlm[nn,:], alpha, lame_grain, rho, theta,phi) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
-                vP[nn,ii,jj], vS1[nn,ii,jj], vS2[nn,ii,jj] = vi[2,0], vi[0,0], vi[1,0]
+                if MAKE_FRAME_vi: 
+                    vi = sf.Vi_elastic_tranisotropic(nlm[nn,:], alpha, lame_grain, rho, colat,phi) # phase velocities are V_S1=vi[0,:], V_S2=vi[1,:], V_P=vi[2,:]
+                    vP[nn,ii,jj], vS1[nn,ii,jj], vS2[nn,ii,jj] = vi[2,0], vi[0,0], vi[1,0]
                 
+                if MAKE_FRAME_vi_EM: 
+                    vS1_EM[nn,ii,jj], vS2_EM[nn,ii,jj] = sf.Vi_electromagnetic_tranisotropic(nlm[nn,:], epsc,epsa,mu, colat,phi) 
+               
         ### Plot
         
-        if MAKE_FRAME_Eij: mkframe_Eij(nlm[nn,:], Err[nn,:,:], Ert[nn,:,:], Erp[nn,:,:], mlon, mlat, nn)
+        if MAKE_FRAME_Eij: 
+            mkframe_Eij(nlm[nn,:], Err[nn,:,:], Ert[nn,:,:], Erp[nn,:,:], mlon, mlat, nn)
         
-        vP_rel  = vi_rel(vP[nn,:,:],  vP_iso)
-        vS1_rel = vi_rel(vS1[nn,:,:], vS1_iso)
-        vS2_rel = vi_rel(vS2[nn,:,:], vS2_iso)
-        if MAKE_FRAME_vi:  mkframe_vi( nlm[nn,:], vP_rel, vS1_rel, vS2_rel, mlon, mlat, nn)
+        if MAKE_FRAME_vi: 
+            vP_rel  = vi_rel(vP[nn,:,:],  vP_iso)
+            vS1_rel = vi_rel(vS1[nn,:,:], vS1_iso)
+            vS2_rel = vi_rel(vS2[nn,:,:], vS2_iso)
+            mkframe_vi(nlm[nn,:], vP_rel, vS1_rel, vS2_rel, mlon, mlat, nn)
+
+        if MAKE_FRAME_vi_EM: 
+            vS1_EM_rel = vi_EM_rel(vS1_EM[nn,:,:], vS1_EM_iso)
+            vS2_EM_rel = vi_EM_rel(vS2_EM[nn,:,:], vS2_EM_iso)
+            vS_EM_rel = np.divide(vS1_EM[nn,:,:],vS2_EM[nn,:,:])
+            mkframe_vi_EM(nlm[nn,:], vS1_EM_rel,vS2_EM_rel,vS_EM_rel, mlon, mlat, nn)
 
 
 if MAKE_GIFS:
@@ -217,13 +292,16 @@ if MAKE_GIFS:
     for ii in np.arange(Nt,Nt+40):
         os.system('cp frames/S2-Eij-%03d.png frames/S2-Eij-%03d.png'%(Nt-1, ii))
         os.system('cp frames/S2-vi-%03d.png  frames/S2-vi-%03d.png'%(Nt-1, ii))
+        os.system('cp frames/S2-vi-EM-%03d.png  frames/S2-vi-EM-%03d.png'%(Nt-1, ii))
         
     os.system('ffmpeg -y -f image2 -framerate 50 -stream_loop 0 -i frames/S2-Eij-%03d.png -vcodec libx264 -crf 20  -pix_fmt yuv420p S2-Eij.avi')
     os.system('ffmpeg -y -f image2 -framerate 50 -stream_loop 0 -i frames/S2-vi-%03d.png  -vcodec libx264 -crf 20  -pix_fmt yuv420p S2-vi.avi')
+    os.system('ffmpeg -y -f image2 -framerate 50 -stream_loop 0 -i frames/S2-vi-EM-%03d.png  -vcodec libx264 -crf 20  -pix_fmt yuv420p S2-vi-EM.avi')
 
-    os.system('rm S2-Eij.gif S2-vi.gif')
+    os.system('rm S2-Eij.gif S2-vi.gif S2-vi-EM.gif')
 
-    os.system('ffmpeg -i S2-Eij.avi -vf "fps=20,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 S2-Eij.gif')
-    os.system('ffmpeg -i S2-vi.avi  -vf "fps=20,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 S2-vi.gif')
+    os.system('ffmpeg -i S2-Eij.avi   -vf "fps=20,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 S2-Eij.gif')
+    os.system('ffmpeg -i S2-vi.avi    -vf "fps=20,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 S2-vi.gif')
+    os.system('ffmpeg -i S2-vi-EM.avi -vf "fps=20,scale=550:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 S2-vi-EM.gif')
 
        
