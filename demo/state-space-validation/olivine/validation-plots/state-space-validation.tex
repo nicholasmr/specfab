@@ -1,0 +1,68 @@
+\documentclass[tikz,11pt,border=0.0pt]{standalone}
+
+\usepackage{physics}
+\usepackage{siunitx}
+\usepackage{txfonts}
+
+\usepackage{pgfplots}
+
+\usetikzlibrary{arrows.meta}
+%\usetikzlibrary{arrows.new}
+\usetikzlibrary{patterns}
+\usetikzlibrary{decorations.markings}
+\usetikzlibrary{backgrounds}
+
+\usepackage{xcolor}
+
+\usetikzlibrary{fit}
+\makeatletter
+\tikzset{
+  fitting node/.style={
+    inner sep=0pt,
+    fill=none,
+    draw=none,
+    reset transform,
+    fit={(\pgf@pathminx,\pgf@pathminy) (\pgf@pathmaxx,\pgf@pathmaxy)}
+  },
+  reset transform/.code={\pgftransformreset}
+}
+\makeatother
+
+\begin{document}
+
+
+\definecolor{bgcolor}{HTML}{f7f6ee} % grayish
+%\definecolor{bgcolor}{HTML}{ffffff}
+
+%\tikzset{every picture/.style={line cap=round, line width=0.75pt}}
+\tikzset{
+labeltitle/.style={font=\fontsize{13.25}{13.25}\selectfont},
+typelabel/.style={labeltitle, font=\bf, black},
+%grpbox/.style={fill=bgcolor!280,draw=bgcolor!360}, % ,draw=bgcolor!360
+grpbox/.style={fill=none},
+%
+mypicture/.style={scale=1,background rectangle/.style={fill=bgcolor}, 	inner frame xsep=2.0ex, inner frame ysep=2.0ex, show background rectangle},
+}
+
+\gdef\insetpanel#1#2#3{
+	\fill[grpbox] (0em,0em) rectangle ++(55.5em,27.5em) node[fitting node] (R) {}; 
+	\node[yshift=+1.2em, anchor=west] at (R.north west) {#3};
+	
+	\node[inner sep=1em, anchor=south west] (p1) at (0,0) 
+		{\includegraphics[scale=1]{state-space-validation-#1.pdf}};
+	
+	\node[inner ysep=1em, xshift=-0.9em, anchor=south west] (p2) at (p1.south east) 
+		{\includegraphics[scale=1]{state-space-validation-#2.pdf}};
+
+	\node[anchor=south, yshift=-1em] at (p1.north) {\Large $b(\vu{r})$ state space};
+	\node[anchor=south, yshift=-1em] at (p2.north) {\Large $n(\vu{r})$ state space};
+}
+
+\begin{tikzpicture}[mypicture]
+	\insetpanel{0}{1}{\fontsize{16}{0}\selectfont \textit{(a)}\; Uniaxial compression along $\vu{z}$}
+	\begin{scope}[yshift=-30.5em]
+	\insetpanel{2}{3}{\fontsize{16}{0}\selectfont \textit{(b)}\; Uniaxial extension along $\vu{z}$}
+	\end{scope}
+\end{tikzpicture}
+
+\end{document}

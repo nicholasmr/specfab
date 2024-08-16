@@ -32,7 +32,8 @@ def azz_to_n20(x): return (x - 1/3)/(2/np.sqrt(5)) # inv
 def get_deg(lat_or_colat, lon): return (np.rad2deg(lat_or_colat), np.rad2deg(lon))
 
 def f_Fxz(F):        return [ F[tt,0,2] for tt in range(F.shape[0]) ]
-def f_strainxz(F):   return [ sf.F_to_strain(F[tt,:,:])[0,2] for tt in range(F.shape[0]) ]
+def f_strainxz(F):   return [   sf.F_to_strain(F[tt,:,:])[0,2] for tt in range(F.shape[0]) ]
+def f_gammaxz(F):    return [ 2*sf.F_to_strain(F[tt,:,:])[0,2] for tt in range(F.shape[0]) ] # https://www.continuummechanics.org/strain.html
 
 def f_Fzz(F):        return [ F[tt,2,2] for tt in range(F.shape[0]) ]
 def f_strainzz(F):   return [ sf.F_to_strain(F[ii,:,:])[2,2] for ii in range(F.shape[0]) ]

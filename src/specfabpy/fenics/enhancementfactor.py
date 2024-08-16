@@ -9,6 +9,7 @@ import numpy as np
 from dolfin import *
 from ..specfabpy import specfabpy as sf__ # sf private copy 
 from ..common import *
+from .rheology import Orthotropic, Isotropic
 
 import copy, sys, time, code # code.interact(local=locals())
 
@@ -34,8 +35,9 @@ class EnhancementFactor():
         self.Rele = FiniteElement(eletype, self.mesh.ufl_cell(), eleorder)
         self.R  = FunctionSpace(self.mesh, self.Rele) # for scalars 
         self.R3 = VectorFunctionSpace(self.mesh, eletype, eleorder, dim=3) # for vectors
-        self.numdofs = Function(self.R).vector().local_size()   
+        self.numdofs = Function(self.R).vector().local_size()
         self.R3_assigner = FunctionAssigner(self.R3, [self.R, self.R, self.R]) # for constructing vectors from their components
+        self.G = TensorFunctionSpace(self.mesh, eletype, eleorder, shape=(2,2)) # strain-rate and spin function space 
         
 
     def V2R(self, wV):
@@ -167,4 +169,51 @@ class EnhancementFactor():
         Eij[Eij < 0] = 1e-2 # Set negative E_ij to a very small value (flow inhibiting)
         
         return self.np_to_func(ei, Eij, ai) # return ei_df, Eij_df, ai_df
+        
+    
+    def E_EIE(self, u, Eij, mi, n, q=None, dim=2):
+    
+        """
+        Equivalent isotropic enhancement factor (EIE) estimated from tensorial viscous structure.
+        """
+        
+        if q is None: q = -n-1 # ideal solution
+        
+        D = sym(grad(u))
+        if dim==2: D = as_tensor(mat3d(D, self.modelplane)) # 2x2 to 3x3 strain-rate tensor
+        
+        ort = Orthotropic(n=Constant(n))
+        iso = Isotropic(  n=Constant(n))
+
+        # Effective strain rates
+        epsE_ort = sqrt(inner(ort.C_inv(D, mi, Eij), D))
+        epsE_iso = sqrt(inner(iso.C_inv(D),D))
+
+        # Equivalent isotropic enhancement factor
+        E = (epsE_ort/epsE_iso)**(q)
+        
+        return project(E, self.R) # E as function
+        
+
+    def E_CAFFE(self, u, w, Emin, Emax):
+    
+        """
+        CAFFE model (Placidi et al., 2010)
+
+        Assumes D(stress tensor) = D(strain-rate tensor) where D is the deformability
+        """
+
+        Df = project( sym(grad(u)), self.G).vector()[:] # flattened strain-rate tensor
+        E = np.zeros((self.numdofs))
+        nlm = self.nlm_nodal(w) # (nlm component, node)
+        
+        for nn in np.arange(self.numdofs): 
+            D = mat3d(Df[nn*4:(nn+1)*4], self.modelplane, reshape=True) # strain-rate tensor of nn-th node
+            E[nn] = sf__.E_CAFFE(D, nlm[:,nn], Emin, Emax)
+        
+        E_df = Function(self.R)
+        E_df.vector()[:] = E[:]
+        
+        return E_df
+
 

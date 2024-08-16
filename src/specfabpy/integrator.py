@@ -61,6 +61,11 @@ def lagrangianparcel(sf, mod, strain_target, Nt=100, dt=None, nlm0=None, verbose
     # Lattice rotation
     M_LROT = sf.M_LROT(nlm_dummy, D, W, iota, zeta) if iota is not None else M_zero
            
+    ### Process rate factors 
+    
+    Gamma0_ = Gamma0(ugrad=ugrad) if callable(Gamma0) else Gamma0
+
+           
     ### Euler integration
 
     if verbose: bar = Bar('MOD=%s :: Nt=%i :: dt=%.2e :: nlm_len=%i ::'%(mod['type'],Nt,dt,nlm_len), max=Nt-1, fill='#', suffix='%(percent).1f%% - %(eta)ds')
@@ -68,7 +73,7 @@ def lagrangianparcel(sf, mod, strain_target, Nt=100, dt=None, nlm0=None, verbose
     for nt in np.arange(1,Nt+1):
         nlm_prev = nlm[nt-1,:]
         M = M_LROT + M_CDRX + M_REG
-        M += Gamma0*sf.M_DDRX(nlm_prev, S) if Gamma0 is not None else M_zero
+        M += Gamma0_*sf.M_DDRX(nlm_prev, S) if Gamma0_ is not None else M_zero
         nlm[nt,:] = nlm_prev + dt*np.matmul(M, nlm_prev)
         
         if verbose: bar.next()

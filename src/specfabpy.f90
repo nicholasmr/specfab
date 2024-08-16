@@ -1,4 +1,4 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2023
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2024
 
 ! This file is a wrapper for the Fortran routines to be provided in specfabpy
 
@@ -56,11 +56,14 @@ module specfabpy
         
         ! Fluid enhancement factors
         Eij_tranisotropic__sf => Eij_tranisotropic, &
+!        Eij_tranisotropic_HSP__sf => Eij_tranisotropic_HSP, &
         Eij_orthotropic__sf   => Eij_orthotropic, &
         Evw_tranisotropic__sf => Evw_tranisotropic, &
+        Evw_tranisotropic_HSP__sf => Evw_tranisotropic_HSP, &
         Evw_orthotropic__sf   => Evw_orthotropic, &
         Evw_orthotropic_discrete__sf => Evw_orthotropic_discrete, &
         frame__sf => frame, &
+        E_EIE__sf => E_EIE, E_CAFFE__sf => E_CAFFE, E_ESTAR__sf => E_ESTAR, &
         
         ! nlm and rnlm representations
         lm__sf => lm, &
@@ -155,12 +158,12 @@ contains
         M_DDRX = M_DDRX__sf(nlm, tau)
     end
 
-    function M_DDRX_src(nlmlen, tau)
+    function M_DDRX_src(nlm, tau)
         use specfabpy_const
         implicit none
-        integer, intent(in)       :: nlmlen
+        complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), intent(in) :: tau(3,3)
-        complex(kind=dp)          :: M_DDRX_src(nlmlen,nlmlen)
+        complex(kind=dp)          :: M_DDRX_src(size(nlm),size(nlm))
         
         M_DDRX_src = M_DDRX_src__sf(tau)
     end
@@ -248,6 +251,17 @@ contains
         Eij = Eij_tranisotropic__sf(nlm, e1,e2,e3, Eij_grain,alpha,n_grain)
     end
 
+    function Evw_tranisotropic_HSP(nlm, v,w,tau, Eij_grain,beta,n_grain) result(Evw)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in) :: v(3),w(3), tau(3,3), Eij_grain(2),beta
+        integer, intent(in)       :: n_grain
+        real(kind=dp)             :: Evw
+        
+        Evw = Evw_tranisotropic_HSP__sf(v,w, tau, nlm, Eij_grain,beta,n_grain)
+    end
+
     function Evw_orthotropic(nlm_r1, nlm_r2, nlm_r3, v,w,tau, Eij_grain, alpha, n_grain) result(Evw)
         use specfabpy_const
         implicit none
@@ -281,6 +295,39 @@ contains
         
         Eij = Eij_orthotropic__sf(nlm_r1,nlm_r2,nlm_r3, e1,e2,e3, Eij_grain,alpha,n_grain)
     end
+    
+    ! Equivalent isotropic enhancement factors
+    
+    function E_EIE(eps, nglen, q, nlm, Eij_grain,alpha,n_grain) result(E)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in)    :: eps(3,3), nglen, q, Eij_grain(2), alpha
+        integer, intent(in)          :: n_grain
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp)                :: E
+        
+        E = E_EIE__sf(eps, nglen, q, nlm, Eij_grain,alpha,n_grain)
+    end
+    
+    function E_CAFFE(eps, nlm, Emin, Emax)  result(E)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in)    :: eps(3,3), Emin, Emax
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp)                :: E
+        
+        E = E_CAFFE__sf(eps, nlm, Emin, Emax)
+    end
+    
+!    function Eiso_ESTAR(eps, ...)  result(E)
+!        use specfabpy_const
+!        implicit none
+!        real(kind=dp), intent(in)    :: eps(3,3), Emin, Emax
+!        complex(kind=dp), intent(in) :: nlm(:)
+!        real(kind=dp)                :: E
+!        
+!        E = Eiso_ESTAR__sf(eps, ...)
+!    end
     
     !---------------------------------
     ! STRUCTURE TENSORS
@@ -677,25 +724,17 @@ contains
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), intent(in)    :: tau(3,3) ! DDRX rate contant, dev. stress tensor
         complex(kind=dp)             :: DDRX_decayrate(lmDDRX_len)
-        !...
-        complex(kind=dp) :: g(lmDDRX_len)
-        real(kind=dp)    :: Davg
-        complex(kind=dp) :: qt(-2:2)
-        real(kind=dp)    :: k
+        complex(kind=dp) :: g(lmDDRX_len), qt(-2:2)
+        real(kind=dp)    :: evD, k
 
-        ! Quadric expansion coefficients of tau
-        qt = quad_rr(tau)
+        qt = quad_rr(tau) ! Quadric expansion coefficients
+        include "include/ddrx-coupling-weights.f90" ! Harmonic expansion coefficients of D (requires qt, sets g and k)
+        g = k*g * 5/doubleinner22(tau,tau) ! Normalize by tau:tau/5
+
+        evD = ev_D(nlm, tau) ! <D>
         
-        ! Harmonic interaction weights 
-        include "include/ddrx-coupling-weights.f90"
-        g = k*g/doubleinner22(tau,tau) ! = D
-        
-        Davg = doubleinner22(matmul(tau,tau), a2__sf(nlm)) - doubleinner22(tau,doubleinner42(a4__sf(nlm),tau)) ! (tau.tau):a2 - tau:a4:tau 
-        Davg = Davg/doubleinner22(tau,tau) ! = <D>
-        
-        ! Davg is the "isotropic reference to be subtracted"; that is, we subtract a constant value from "D" (on S^2), which amounts to adjusting the value of the isotropic speactral expansion coefficient (l,m=0,0). 
-        ! The factor of Sqrt(4*Pi) ensures that the isotropic contribution is indeed n00*Y00 = Sqrt(4*Pi)*Davg*Y00 = Davg
-        g(1) = g(1) - Sqrt(4*Pi)*Davg 
+        ! <D> is the isotropic reference level to be subtracted from D (on S^2), amounting to adjusting the isotropic harmonic mode (l,m=0,0).
+        g(1) = g(1) - Sqrt(4*Pi)*evD ! Prefactor Sqrt(4*Pi) ensures the isotropic contribution is indeed n00*Y00 = Sqrt(4*Pi)*<D>*Y00 = <D>
         
         ! Calculate D - <D>
         DDRX_decayrate = g 

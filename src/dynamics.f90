@@ -1,4 +1,4 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2022
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2024
 
 ! CPO dynamics in spectral space.
 
@@ -57,7 +57,7 @@ contains
 
         real(kind=dp), intent(in) :: eps(3,3), omg(3,3), iota, zeta ! strain-rate (eps), spin (omg), eps^1 coefficient (iota), eps^2 coefficient (zeta)
         complex(kind=dp)          :: M_LROT(nlm_len,nlm_len), qe(-2:2), qo(-1:1)
-        integer, parameter        :: SHI_LATROT = 1+5 ! Scope of harmonic interactions (in wave space) for LATROT
+        integer, parameter        :: SHI_LATROT = 1+5 ! Scope of harmonic interactions for LATROT
         complex(kind=dp), dimension(SHI_LATROT) :: g0,     gz,     gn,     gp
         complex(kind=dp), dimension(SHI_LATROT) :: g0_rot, gz_rot, gn_rot, gp_rot
         complex(kind=dp), dimension(SHI_LATROT) :: g0_Tay, gz_Tay, gn_Tay, gp_Tay
@@ -99,33 +99,21 @@ contains
         
         ! Nucleation and migration recrystalization modeled as a decay process (Placidi et al., 2010).
         ! Returns matrix M such that d/dt (nlm)_i = M_ij (nlm)_j
-        ! NOTICE: This is Gamma/Gamma_0. The caller must multiply by an appropriate DDRX rate factor, Gamma_0(T,tau,eps,...).
+        
+        ! NOTICE: This is Gamma/Gamma0. The caller must multiply by an appropriate DDRX rate factor, Gamma0(T,tau,eps,...).
         
         implicit none
 
         complex(kind=dp), intent(in) :: nlm(nlm_len)
-        real(kind=dp), intent(in)    :: tau(3,3) ! Deviatoric stress tensor
+        real(kind=dp), intent(in)    :: tau(3,3) ! Stress tensor
         complex(kind=dp)             :: M_DDRX(nlm_len,nlm_len)
         real(kind=dp)                :: Davg
-        real(kind=dp)                :: tausq(3,3), trtausq ! tau.tau, tau:tau
-        real(kind=dp)                :: a4v(6,6), a2v(6), tauv(6), a4tauv(6)
 
-        ! Get linear source term
-        M_DDRX = M_DDRX_src(tau)
-
-        ! Calculate nonlinear sink term, <D>
-        tausq = matmul(tau,tau) ! = tau.tau
-        trtausq = tausq(1,1) + tausq(2,2) + tausq(3,3) ! = tr(tau.tau) = tau:tau
-        call f_ev_ck_Mandel(nlm, a2v, a4v) ! Structure tensors in Mandel notation
-        tauv = mat_to_vec(tau) ! 6x1 Mandel vector        
-        a4tauv = matmul(a4v,tauv) ! = a4:tau in Mandel notation (6x1 vector)
-        Davg = dot_product(mat_to_vec(tausq),a2v) - dot_product(tauv,a4tauv) ! = (tau.tau):a2 - tau:a4:tau 
-        Davg = Davg/trtausq ! normalize by tau:tau
+        M_DDRX = M_DDRX_src(tau)        ! Linear source term (D in matrix form)
+        Davg   = ev_D(nlm, tau) ! Nonlinear sink term (<D>)
         
-        ! Add source and sink terms
-        ! I.e. add <D> to all diagonal entries such that M_ij := Gamma_ij/Gamma0 = (D_ij - <D>*I_ij)/(tau:tau) (where I is the identity)
         do ii = 1, nlm_len    
-            M_DDRX(ii,ii) = M_DDRX(ii,ii) - Davg 
+            M_DDRX(ii,ii) = M_DDRX(ii,ii) - Davg ! Add <D> to diagonal such that M = Gamma/Gamma0 = D - <D>*I
         end do
     end
 
@@ -137,24 +125,67 @@ contains
 
         implicit none
 
-        real(kind=dp), intent(in) :: tau(3,3) ! dev. stress tensor
+        real(kind=dp), intent(in) :: tau(3,3) ! Stress tensor
         complex(kind=dp)          :: M_DDRX_src(nlm_len,nlm_len), qt(-2:2)
-        integer, parameter        :: SHI_DDRX = 1+5+9 ! Scope of harmonic interactions (in wave space) for DDRX
+        integer, parameter        :: SHI_DDRX = 1+5+9 ! Scope of harmonic interactions for DDRX
         real(kind=dp)             :: k
         complex(kind=dp)          :: g(SHI_DDRX)
 
-        ! Quadric expansion coefficients
-        qt = quad_rr(tau)
-
-        ! Harmonic interaction weights (requires qt, sets g and k)
-        include "include/ddrx-coupling-weights.f90"
-
-        ! D
-        g = k*g ! common prefactor
-        g = g/doubleinner22(tau,tau) ! normalize (can be done already here since it is a constant prefactor for M_DDRX_src)
+        qt = quad_rr(tau) ! Quadric expansion coefficients
+        include "include/ddrx-coupling-weights.f90" ! Harmonic expansion coefficients of D (requires qt, sets g and k)
+        g = k*g * 5/doubleinner22(tau,tau) ! Normalize by tau:tau/5
+        
         do ii = 1, nlm_len    
             M_DDRX_src(ii,1:nlm_len) = matmul(GC(ii,:nlm_len,1:SHI_DDRX), g) ! len(g)=SHI_DDRX
         end do
+    end
+
+    function ev_D(nlm, tau) 
+    
+        !------------------
+        ! DDRX sink term <D>, where D is the deformability
+        !------------------
+    
+        implicit none
+
+        complex(kind=dp), intent(in) :: nlm(nlm_len)
+        real(kind=dp), intent(in)    :: tau(3,3) ! Stress tensor
+        real(kind=dp)                :: ev_D
+        real(kind=dp)                :: tauv(6), tausq(3,3), norm, a4v(6,6), a2v(6)
+
+        tauv = mat_to_vec(tau) ! 6x1 Mandel vector
+        tausq = matmul(tau,tau) ! = tau.tau
+        norm = tausq(1,1) + tausq(2,2) + tausq(3,3) ! tr(tau.tau) = tau:tau
+        
+        call f_ev_ck_Mandel(nlm, a2v, a4v) ! Structure tensors in Mandel notation
+        ev_D = dot_product(mat_to_vec(tausq),a2v) - dot_product(tauv,matmul(a4v,tauv)) ! (tau.tau):a2 - tau:a4:tau
+        ev_D = 5 * ev_D/norm ! Normalize by tau:tau/5 
+    end
+    
+    subroutine ev_Dk(nlm, tau, ev_D2, ev_D4)
+    
+        !------------------
+        ! DDRX sink term <D c^k> for k=2,4, where D is the deformability
+        !------------------
+    
+        implicit none
+
+        complex(kind=dp), intent(in) :: nlm(nlm_len)
+        real(kind=dp), intent(in)    :: tau(3,3) ! Stress tensor
+        real(kind=dp), intent(out)   :: ev_D2(3,3), ev_D4(3,3,3,3)
+        
+        real(kind=dp)                :: tauv(6), tausq(3,3), norm
+        real(kind=dp)                :: a2mat(3,3), a4mat(3,3,3,3), a6mat(3,3,3,3, 3,3), a8mat(3,3,3,3, 3,3,3,3)
+
+        tauv = mat_to_vec(tau) ! 6x1 Mandel vector
+        tausq = matmul(tau,tau) ! = tau.tau
+        norm = tausq(1,1) + tausq(2,2) + tausq(3,3) ! tr(tau.tau) = tau:tau
+        call f_ev_ck(nlm, 'f', a2mat, a4mat, a6mat, a8mat) 
+        
+        ev_D2 = doubleinner42(a4mat,tausq) - doubleinner42(doubleinner62(a6mat,tau),tau)
+        ev_D4 = doubleinner62(a6mat,tausq) - doubleinner62(doubleinner82(a8mat,tau),tau)
+        ev_D2 = 5 * ev_D2/norm ! Normalize by tau:tau/5 
+        ev_D4 = 5 * ev_D4/norm 
     end
     
     function Gamma0(eps, T, A, Q)
@@ -188,6 +219,7 @@ contains
         
         ! Rotation recrystalization (polygonization) as a Laplacian diffusion process (Godert, 2003).
         ! Returns matrix M such that d/dt (nlm)_i = M_ij (nlm)_j
+        
         ! NOTICE: This gives the unscaled effect of CDRX. The caller must multiply by an appropriate CDRX rate factor (scale) that should depend on temperature, stress, etc.
 
         implicit none

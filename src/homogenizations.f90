@@ -10,7 +10,8 @@ module homogenizations
     use moments
     use rheologies
     use elasticities
-
+    use dynamics 
+    
     implicit none 
 
     integer, private       :: Lcap
@@ -112,6 +113,33 @@ contains
         end if
 
         eps = ev_etac0*tau - coefA*doubleinner22(ev_etac2,tau)*identity + coefB*a4tau + coefC*(matmul(tau,ev_etac2)+matmul(ev_etac2,tau))
+    end
+    
+
+    function rheo_fwd_tranisotropic_HSPhomo(tau, nlm, Eij_grain,beta,n_grain) result(eps)
+    
+        ! Grain-averaged forward rheology subject to HSP homogenization
+        
+        implicit none
+        
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: Eij_grain(2), tau(3,3), beta
+        integer, intent(in)          :: n_grain
+        
+        real(kind=dp)                :: eps_Sachs(3,3), eps_fluc(3,3), eps(3,3)
+        real(kind=dp)                :: ev_D0, ev_D2(3,3), ev_D4(3,3,3,3), coefA,coefB,coefC
+
+        if (n_grain .eq. 1) then
+            call rheo_params_tranisotropic(Eij_grain,3,DFLOAT(n_grain),1, coefA,coefB,coefC)
+            eps_Sachs = rheo_fwd_tranisotropic_sachshomo(tau, nlm, Eij_grain,n_grain)
+            ev_D0 = ev_D(nlm, tau)
+            call ev_Dk(nlm, tau, ev_D2, ev_D4)
+            eps_fluc = ev_D0*tau - coefA*doubleinner22(ev_D2,tau)*identity + coefB*doubleinner42(ev_D4,tau) + coefC*(matmul(tau,ev_D2)+matmul(ev_D2,tau))
+            eps = eps_Sachs + beta*(eps_fluc - ev_D0*eps_Sachs)
+        else
+            print *, "n'=", n_grain
+            stop "specfab error: unsupported n'"
+        end if
     end
     
     function rheo_fwd_tranisotropic_taylorhomo(tau, nlm, Eij_grain,n_grain) result(eps)

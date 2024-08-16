@@ -19,13 +19,14 @@ nav:
         - Constitutive equations: constitutive-elastic.md
     - 'Electromagnetic anisotropy':
         - Wave propagation: wavepropagation-electromagnetic.md
-    - 'Application gallery': 
-        - Radar-derived physical properties: radar-derived-PP.md
-        - FEM integration: FEM-integration.md
-        - Lagrangian parcel integrator: Lagrangian-parcel-integrator.md
     - 'Miscellaneous': 
         - Plotting: plotting.md
         - Deformation modes: deformation-modes.md
+    - 'Application gallery': 
+        - Radar-derived physical properties: radar-derived-PP.md
+        - Steady-state CPO field: steady-cpo-solver.md
+        - Lagrangian parcel integrator: Lagrangian-parcel-integrator.md
+        - FEM integration: FEM-integration.md
 
 theme: 
     name: 'readthedocs'

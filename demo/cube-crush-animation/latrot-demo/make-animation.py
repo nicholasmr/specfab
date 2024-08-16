@@ -17,8 +17,15 @@ framerate = 15
 scale = 600
 numfmt = '%03d'
 
-fallframes = 'allframes.pdf'
-fout = 'latrot-demo'
+# full frame
+#fallframes = 'allframes'
+#fout = 'latrot-demo'
+#scale = 600
+
+# partial frame 
+fallframes = 'allframes--no-Eij'
+fout = 'latrot-demo--no-Eij'
+scale = 400
 
 #-----------------------
 
@@ -27,9 +34,9 @@ if MAKE_FRAMES:
     os.system(r'python3 latrot-demo-frames.py ue')
     
 if MAKE_PDF:
-    os.system(r'pdflatex allframes.tex')
-    os.system(r'pdfseparate %s frames/frame-%s.pdf'%(fallframes,numfmt))
-    Npages = len(PyPDF2.PdfReader(open(fallframes,'rb')).pages)
+    os.system(r'pdflatex %s.tex'%(fallframes))
+    os.system(r'pdfseparate %s.pdf frames/frame-%s.pdf'%(fallframes,numfmt))
+    Npages = len(PyPDF2.PdfReader(open('%s.pdf'%(fallframes),'rb')).pages)
     for i in range(1,Npages+1): 
         print('pdftocairo frame %i'%(i))
         os.system('pdftocairo -singlefile -png -r %i frames/frame-%03d.pdf frames/frame-%03d'%(density, i,i))

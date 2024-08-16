@@ -8,6 +8,7 @@ from netCDF4 import Dataset
 
 from specfabpy import specfab as sf
 from specfabpy import discrete as sfdsc
+from specfabpy import common as sfcom
 from specfabpy import plotting as sfplt
 FS = sfplt.setfont_tex()
 
@@ -81,23 +82,23 @@ for tt in tsteps:
     sfplt.plotODF(c[tt,:], lm, ax_ODF, cmap='Greys')
     sfplt.plotcoordaxes(ax_ODF, geo, axislabels='vuxi')
 
-    # a4 eigen tensors
-    Q1,Q2,Q3,Q4,Q5,Q6, eigvals6 = sf.a4_eigentensors(c[tt,:])
-    _, W1 = np.linalg.eig(Q6)
-    _, W2 = np.linalg.eig(Q5)
+    # a4 eigentensors
+    Wi = [sfcom.eigenframe4(c[tt,:], i=i, modelplane='xy')[0] for i in range(6)]
+    code.interact(local=locals())
+#    Q1,Q2,Q3,Q4,Q5,Q6, eigvals6 = sf.a4_eigentensors(c[tt,:])
+#    _, W1 = np.linalg.eig(Q6)
 
-    c0, c1, ms = 'tab:red', 'tab:blue', 7
+    ms = 7
     kwargs = dict(ms=ms, markerfacecolor='none', markeredgewidth=1.0, transform=geo)
+    ci = ['r','b','g','m','c','y']
+    mrk = ['o','s','d','^','v','>']
     
-    for ii in np.arange(3):
-    
-        ei = W1[:,ii]
-        sfplt.plotS2point(ax_ODF, +ei, marker='s', markeredgecolor=c0, **kwargs)
-        sfplt.plotS2point(ax_ODF, -ei, marker='s', markeredgecolor=c0, **kwargs)
-        
-        ei = W2[:,ii]
-        sfplt.plotS2point(ax_ODF, +ei, marker='o', markeredgecolor=c1, **kwargs)
-        sfplt.plotS2point(ax_ODF, -ei, marker='o', markeredgecolor=c1, **kwargs)
+    for ii in range(6):
+        wi = Wi[ii]
+        for kk in range(3):
+            ei = wi[:,kk]
+            sfplt.plotS2point(ax_ODF, +ei, marker=mrk[ii], markeredgecolor=ci[ii], **kwargs)
+            sfplt.plotS2point(ax_ODF, -ei, marker=mrk[ii], markeredgecolor=ci[ii], **kwargs)
 
     #----------------------
     # Eigenvalues
@@ -121,8 +122,8 @@ for tt in tsteps:
     
     ax_ai.plot([tt,tt],[0,1],':k',lw=lw+1)
 
-    steps = np.arange(len(ai_spec[:,0]))
     ai_spec, ai_tens = eigenvalues(a2_spec), eigenvalues(a2_tens)
+    steps = np.arange(len(ai_spec[:,0]))
 
     ax_ai.plot(steps, ai_spec[:,0], '-', color='#e31a1c', label='$a_{1}$ (spec.)', lw=lwtrue+0.25)
     ax_ai.plot(steps, ai_spec[:,1], '-', color='#33a02c', label='$a_{2}$ (spec.)', lw=lwtrue+0.50)

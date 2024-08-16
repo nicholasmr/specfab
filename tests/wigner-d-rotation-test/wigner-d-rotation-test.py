@@ -13,13 +13,11 @@ L = 12
 lm, nlm_len = sf.init(L)
 nlm = np.zeros((4, nlm_len), dtype=np.complex64) # The expansion coefficients
 
-if 1:
-    a2 = np.diag([0.0,0.0,1.0]) # any second-order structure tensor (not necessarily diagonal)
-    nlm[0,0:6] = sf.a2_to_nlm(a2) # l=2 expansion coefficients for corresponding ODF (a2 is normalized)
-else:
-    nlm[0,0] = 1/np.sqrt(4*np.pi)
-#    nlm[0,nlm_len-13] = 0.25
-    nlm[0,nlm_len-(2*12+1)-(2*10+1)-0*(2*8+1)-0*(2*6+1)-0*(2*4+1)] = 0.3
+a2 = np.diag([.2, .0, .8]) # any second-order structure tensor (not necessarily diagonal)
+nlm[0,:sf.L2len] = sf.a2_to_nlm(a2) # l=2 expansion coefficients for corresponding ODF (a2 is normalized)
+if 0:
+    nlm[0,sf.L4len+2] = 0.2
+    nlm[0,sf.L4len+4] = 0.2
 
 # Wigner D rotation of nlm, implemented in specfab only for components l<=12
 lat = np.deg2rad(60) # z-->x angle

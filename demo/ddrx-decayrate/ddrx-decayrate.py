@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 from matplotlib import rcParams, rc
 import matplotlib.ticker as mticker
 import matplotlib.gridspec as gridspec
+import matplotlib.colors as colors
 import cartopy.crs as ccrs
 
 latres = 60 # latitude resolution on S^2        
@@ -29,13 +30,14 @@ def plot(clm, ax=None, cmap='RdBu_r', cblbl=r'$\Gamma/\Gamma_0$', titlestr=''):
 
     F = np.sum([ clm[ii]*sp.sph_harm(m, l, lon,colat) for ii,(l,m) in enumerate(lm.T) ], axis=0)
     F = np.real(F) # nonzero imag values are rounding errors
-    llim=0.3
-    lvls = np.arange(-llim,llim+1e-5, 0.1)
-    hdistr = ax.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), extend='both', cmap=cmap, levels=lvls)
+    print('min/max = %f / %f'%(F.min(), F.max()))
+    lvls = np.arange(-1,1.55, 0.5)
+    bnorm = colors.CenteredNorm(vcenter=0)
+    hdistr = ax.contourf(np.rad2deg(lon), np.rad2deg(lat), F, transform=ccrs.PlateCarree(), extend='neither', cmap=cmap, norm=bnorm, levels=lvls)
     kwargs_gridlines = {'ylocs':np.arange(-90,90+30,30), 'xlocs':np.arange(0,360+45,45), 'linewidth':0.5, 'color':'black', 'alpha':0.25, 'linestyle':'-'}
     gl = ax.gridlines(crs=ccrs.PlateCarree(), **kwargs_gridlines)
     gl.xlocator = mticker.FixedLocator(np.array([-135, -90, -45, 0, 90, 45, 135, 180]))
-    cb1 = plt.colorbar(hdistr, ax=ax, fraction=0.055, aspect=10,  orientation='horizontal', pad=0.1, ticks=lvls[1::2])   
+    cb1 = plt.colorbar(hdistr, ax=ax, fraction=0.055, aspect=10,  orientation='horizontal', pad=0.1, ticks=lvls[0::2])   
     cb1.set_label(cblbl)
     cb1.ax.xaxis.set_ticks(lvls, minor=True)
     ax.set_title(titlestr, fontsize=FS, pad=10)

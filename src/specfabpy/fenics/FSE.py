@@ -11,10 +11,13 @@ class FSE():
     Finite Strain Ellipse (FSE) solver
     """
 
-    def __init__(self, mesh, boundaries, ds, n, F0=np.eye(2)): 
+    def __init__(self, mesh, boundaries, F0=np.eye(2), ds=None, nvec=None): 
 
         ### Save inputs
-        self.mesh, self.boundaries, self.ds, self.n = mesh, boundaries, ds, n
+        self.mesh, self.boundaries = mesh, boundaries
+        self.ds = ds   if ds   is not None else Measure('ds', domain=self.mesh, subdomain_data=self.boundaries)
+        self.n  = nvec if nvec is not None else FacetNormal(self.mesh)
+#        self.mesh, self.boundaries, self.ds, self.n = mesh, boundaries, ds, n
         #self.F0 = F0 # not used
 
         ### Function spaces

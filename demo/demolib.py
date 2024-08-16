@@ -28,7 +28,7 @@ cvl_circle = '#fddbc7'
 #-------------------------
 
 def plot_nlm_cases(ax, fs, ms=7.5, norm=1/np.sqrt(4*np.pi), \
-                    show_circle=True, isolbl_above=True, dy0=0.075, dx0_unidir=-0.03,
+                    show_circle=True, isolbl_above=True, dy0=0.075, dx0_unidir=-0.03, dx0_planar=0.0,
                     c_planar=c_planar, c_circle=c_circle, c_unidir=c_unidir, c_iso=c_iso):
 
     nl0_unidir, nl0_planar, nl0_circle = sfdsc.nlm_ideal_cases(norm=norm)
@@ -44,7 +44,7 @@ def plot_nlm_cases(ax, fs, ms=7.5, norm=1/np.sqrt(4*np.pi), \
     plt.text(nl0_unidir[0]+dx0_unidir/norm, nl0_unidir[1]+dy, '{\\bf Unidirectional}', color=c_unidir, **kwargs_lbl)
 
     ax.plot(*nl0_planar, c=c_planar, **kwargs_mrk)
-    plt.text(nl0_planar[0], nl0_planar[1]+dy, '{\\bf Planar}', color=c_planar, **kwargs_lbl)
+    plt.text(nl0_planar[0]+dx0_planar/norm, nl0_planar[1]+dy, '{\\bf Planar}', color=c_planar, **kwargs_lbl)
 
     if show_circle:
         ax.plot(*nl0_circle, c=c_circle, **kwargs_mrk)
