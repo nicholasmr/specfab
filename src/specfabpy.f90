@@ -33,11 +33,16 @@ module specfabpy
         a2_orth__sf => a2_orth, a4_orth__sf => a4_orth, &
 
         ! Rheologies
-        rheo_rev_isotropic__sf     => rheo_rev_isotropic,     rheo_fwd_isotropic__sf     => rheo_fwd_isotropic, &
-        rheo_rev_tranisotropic__sf => rheo_rev_tranisotropic, rheo_fwd_tranisotropic__sf => rheo_fwd_tranisotropic, &
-        rheo_rev_orthotropic__sf   => rheo_rev_orthotropic,   rheo_fwd_orthotropic__sf   => rheo_fwd_orthotropic, &
-        rheo_rev_orthotropic_Martin__sf => rheo_rev_orthotropic_Martin, rheo_fwd_orthotropic_Martin__sf => rheo_fwd_orthotropic_Martin, &
-        rheo_rev_orthotropic_Pettit__sf => rheo_rev_orthotropic_Pettit, rheo_fwd_orthotropic_Pettit__sf => rheo_fwd_orthotropic_Pettit, &
+        rheo_rev_isotropic__sf     => rheo_rev_isotropic, &
+        rheo_fwd_isotropic__sf     => rheo_fwd_isotropic, &
+        rheo_rev_tranisotropic__sf => rheo_rev_tranisotropic, &
+        rheo_fwd_tranisotropic__sf => rheo_fwd_tranisotropic, &
+        rheo_rev_orthotropic__sf   => rheo_rev_orthotropic, &
+        rheo_fwd_orthotropic__sf   => rheo_fwd_orthotropic, &
+        rheo_rev_orthotropic_Martin__sf => rheo_rev_orthotropic_Martin, &
+        rheo_fwd_orthotropic_Martin__sf => rheo_fwd_orthotropic_Martin, &
+        rheo_rev_orthotropic_Pettit__sf => rheo_rev_orthotropic_Pettit, &
+        rheo_fwd_orthotropic_Pettit__sf => rheo_fwd_orthotropic_Pettit, &
         rheo_fwd_tranisotropic_sachshomo__sf  => rheo_fwd_tranisotropic_sachshomo, &
         rheo_fwd_tranisotropic_taylorhomo__sf => rheo_fwd_tranisotropic_taylorhomo, &
         
