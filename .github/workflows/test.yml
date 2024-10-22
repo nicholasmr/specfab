@@ -33,3 +33,32 @@ jobs:
           constitutive-equations/rheology-test-transverselyisotropic
           reduced-coef-test/reduced-coef-test
           wigner-d-rotation-test/discrete-rotation-test
+
+  test-firedrake:
+    runs-on: ubuntu-latest
+    container:
+      image: docker.io/firedrakeproject/firedrake-vanilla:2024-05
+      options: --user root
+    steps:
+      - name: Check out git repository
+        uses: actions/checkout@v4
+      - name: Activate firedrake virtual environment
+        run: |
+          . /home/firedrake/firedrake/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
+      - name: Install dependences
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnetcdff-dev
+          python -m pip install "numpy<2" "setuptools < 65" cartopy cmasher
+      - name: Build package
+        working-directory: ./src
+        run: make all
+      - name: Install Python package
+        working-directory: ./src
+        run: |
+          make specfabpy
+          python -m pip install .
+      - name: Run test suite
+        working-directory: ./tests
+        run: python firedrake/simpleshear-rathmann.py
