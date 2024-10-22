@@ -14,5 +14,11 @@ else:
           description="specfab Python module",
           url="https://github.com/nicholasmr/specfab",
           packages=['.'],
-          package_data={'': ['specfabpy/specfabpy.cpython*.so', 'specfabpy/*.py', 'specfabpy/fenics/*.py']},
+          package_data={
+                '': [
+                    'specfabpy/specfabpy.cpython*.so', 
+                    'specfabpy/*.py', 
+                    'specfabpy/fenics/*.py',
+                    'specfabpy/firedrake/*.py',
+                ]},
     )

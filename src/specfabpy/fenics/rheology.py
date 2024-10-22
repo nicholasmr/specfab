@@ -158,10 +158,9 @@ class ASSA():
     def strainrate(self, u): 
         return sym(grad(u)) 
 
-    def A(self, T):
-        A0, Qe, gasconst = 3.985e-13, 60e3, 8.314 
-        T0 = 273.15
-        A = A0*exp(-Qe/(gasconst*(T+T0))) # flow-rate factor 
+    def A(self, T, T0=0):
+        A0, Q, R = 3.985e-13, 60e3, 8.314 
+        A = A0*exp(-Q/(R*(T+T0))) # flow-rate factor 
         return A
 
     def get_R(self, u, n, A, mi, Eij):

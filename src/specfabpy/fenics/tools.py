@@ -40,3 +40,8 @@ def velgrid2velfuncspace(xv,yv, ux,uy, V=None, \
 
     return (u, uxi, uyi)
 
+def dt_CFL(hmin, umag):
+    # CFL condition: dt = 0.5 * hmin/vmax
+    vmax = abs(umag.vector()[:]).max()
+    return 0.5 * hmin/vmax 
+    

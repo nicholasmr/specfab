@@ -97,6 +97,11 @@ specfabpy: $(SPECFAB).o
 python: specfabpy
 	python3 setup.py install --user
 
+# Build and install specfabpy for firedrake/icepack docker enviroment
+# @TODO: prepend all "pip install" dependencies (cartopy, ....)
+icepack: specfabpy
+	python3 setup.py install
+
 #-------------------
 
 constitutive-tests: $(SPECFAB).o

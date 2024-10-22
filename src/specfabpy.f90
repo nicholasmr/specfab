@@ -76,6 +76,7 @@ module specfabpy
         nlm_to_rnlm__sf => nlm_to_rnlm, rnlm_to_nlm__sf => rnlm_to_nlm, &
         reduce_M__sf => reduce_M, &
         rotate_nlm__sf => rotate_nlm, &
+        rotate_nlm_xz2xy__sf => rotate_nlm_xz2xy, &
         rotate_vector__sf => rotate_vector, &
         Sl__sf => Sl, & ! power spectrum
         
@@ -303,15 +304,15 @@ contains
     
     ! Equivalent isotropic enhancement factors
     
-    function E_EIE(eps, nglen, q, nlm, Eij_grain,alpha,n_grain) result(E)
+    function E_EIE(eps, nglen, nlm, m1,m2,m3, Eij_grain,alpha,n_grain) result(E)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in)    :: eps(3,3), nglen, q, Eij_grain(2), alpha
-        integer, intent(in)          :: n_grain
+        real(kind=dp), intent(in)    :: eps(3,3), nglen, m1(3),m2(3),m3(3), Eij_grain(2), alpha
         complex(kind=dp), intent(in) :: nlm(:)
+        integer, intent(in)          :: n_grain
         real(kind=dp)                :: E
         
-        E = E_EIE__sf(eps, nglen, q, nlm, Eij_grain,alpha,n_grain)
+        E = E_EIE__sf(eps, nglen, nlm, m1,m2,m3, Eij_grain,alpha,n_grain)
     end
     
     function E_CAFFE(eps, nlm, Emin, Emax)  result(E)
@@ -718,6 +719,15 @@ contains
         complex(kind=dp)             :: nlm_rot(size(nlm))
         
         nlm_rot = rotate_nlm__sf(nlm, theta,phi)
+    end
+    
+    function rotate_nlm_xz2xy(nlm) result (nlm_rot)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:) 
+        complex(kind=dp)             :: nlm_rot(size(nlm))
+        
+        nlm_rot = rotate_nlm_xz2xy__sf(nlm)
     end
   
     function DDRX_decayrate(nlm, tau)

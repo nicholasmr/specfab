@@ -176,6 +176,18 @@ def plotcoordaxes(ax, geo, axislabels='xi', color=c_dred, fontsize=None, negaxes
         ax.text(dphi+0,  0, r'$-%s'%lbls[0][1:], **kwargs)
         ax.text(dphi+90, 0, r'$-%s'%lbls[1][1:], **kwargs)
             
+            
+def plotmi(ax, mi, geo, marker='.', ms=9, markeredgewidth=1.0, markerfacecolor=c_dred, markeredgecolor=c_dred, **kwargs):
+
+    """
+    Plot symmetry axes m_i
+    """
+
+    kwargs_default = dict(marker=marker, ms=ms, markeredgewidth=markeredgewidth, markerfacecolor=markerfacecolor, markeredgecolor=markeredgecolor, transform=geo)
+    for kk in range(3):
+        plotS2point(ax, +mi[:,kk], **kwargs_default, **kwargs)
+        plotS2point(ax, -mi[:,kk], **kwargs_default, **kwargs)
+            
 
 def discretize(nlm, lm, latres, lonres):
 

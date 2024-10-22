@@ -6,6 +6,7 @@ FEniCS interface for CPO dynamics using specfab
 """
 
 import numpy as np
+from datetime import datetime
 from dolfin import *
 from ..specfabpy import specfabpy as sf__ # sf private copy 
 from .. import common as sfcom
@@ -16,7 +17,7 @@ class CPO():
     Class representing a single crystallographic axis
     """
 
-    def __init__(self, mesh, boundaries, L, nu_multiplier=1, nu_realspace=1e-3, modelplane='xz', ds=None, nvec=None):
+    def __init__(self, mesh, boundaries, L, nu_multiplier=1, nu_realspace=1e-3, modelplane='xz', symframe=-1, ds=None, nvec=None):
 
         ### Setup
         
@@ -26,6 +27,7 @@ class CPO():
         self.L = int(L) # spectral truncation
         self.USE_REDUCED = True # use reduced representation of fabric state vector 
 
+        self.symframe = symframe
         self.modelplane = modelplane
         if self.modelplane not in ['xy', 'xz']: 
             raise ValueError('modelplane "%s" should be either "xy" or "xz"'%(self.modelplane))
@@ -117,7 +119,7 @@ class CPO():
             self.w_prev.assign(w)
                     
 
-    def set_BCs(self, wr, wi, domid, domain=None):
+    def set_BCs(self, wr, wi, domids, domain=None):
 
         """
         Set boundary conditions
@@ -126,7 +128,7 @@ class CPO():
         self.bcs = []
         if domain is None: domain = self.boundaries 
         
-        for ii, did in enumerate(domid):
+        for ii, did in enumerate(domids):
         
             if self.modelplane=='xy':
                 self.bcs += [DirichletBC(self.W.sub(0), wr[ii], domain, did)] # real part
@@ -136,18 +138,18 @@ class CPO():
                 self.bcs += [DirichletBC(self.W, wr[ii], domain, did)] # real part
                 
     
-    def set_isotropic_BCs(self, domid, domain=None):
+    def set_isotropic_BCs(self, domids, domain=None):
 
         """
         Easy setting of isotropic boundary conditions
         """
     
-        wr = [Constant(self.nlm_iso),]
-        wi = [Constant(self.nlm_zero),]
-        self.set_BCs(wr, wi, [domid,], domain=domain)
+        wr = [Constant(self.nlm_iso)]  * len(domids)
+        wi = [Constant(self.nlm_zero)] * len(domids)
+        self.set_BCs(wr, wi, domids, domain=domain)
     
 
-    def evolve(self, u, S, dt, iota=+1, Gamma0=None, Lambda0=None, steadystate=False):
+    def evolve(self, u, S, dt, iota=+1, Gamma0=None, Lambda0=None, steadystate=False, disable_advection=False):
     
         """
         Evolve CPO using Laplacian stabilized, Euler time integration
@@ -157,11 +159,34 @@ class CPO():
             raise ValueError('CPO state "w" not set. Did you forget to initialize the CPO field?')
             
         self.w_prev.assign(self.w) # current state (w) must be set
-        F = self.weakform(u, S, dt, iota, Gamma0, Lambda0, steadystate=steadystate)
-        solve(lhs(F)==rhs(F), self.w, self.bcs, solver_parameters={'linear_solver':'gmres', }) # fastest tested are: gmres, bicgstab, tfqmr (For non-symmetric problems, a Krylov solver for non-symmetric systems, such as GMRES, is a better choice)
+        F = self.weakform(u, S, dt, iota, Gamma0, Lambda0, steadystate=steadystate, disable_advection=disable_advection)
+        solve(lhs(F)==rhs(F), self.w, self.bcs, solver_parameters={'linear_solver':'gmres', }) # fastest tested are: gmres, bicgstab, tfqmr (for non-symmetric problems, a Krylov solver such as GMRES is a better choice)
 
 
-    def weakform(self, u, S, dt, iota, Gamma0, Lambda0, zeta=0, steadystate=False):
+    def solvesteady(self, u, S, iota=+1, Gamma0=None, Lambda0=None, disable_advection=False, \
+                                    dt=None, tol=1e-7, maxiter=400):
+
+        nlin = (Gamma0 is not None) or (dt is not None)
+        kwargs_dyn = dict(iota=iota, Gamma0=Gamma0, Lambda0=Lambda0, disable_advection=disable_advection)
+
+        err  = 1 # error measure ||w-w0||
+        err0 = 1 # at t=0
+        iter = 0 # iteration counter
+
+        if nlin: 
+            while err/err0 > tol and iter < maxiter:
+                tstart=datetime.now()
+                iter += 1
+                self.evolve(u, S, dt, steadystate=False, **kwargs_dyn)
+                diff = self.w.vector()[:] - self.w_prev.vector()[:]
+                err = np.linalg.norm(diff, ord=np.Inf)/self.numdofs
+                if iter==1: err0 = err
+                print('  Iteration %d of %d (%is): soldiff/soldiff_prev = %.2e (tol = %.3e)'%(iter, maxiter, (datetime.now()-tstart).total_seconds(), err/err0, tol))
+        else:
+            self.evolve(u, S, 1, steadystate=True, **kwargs_dyn)
+
+
+    def weakform(self, u, S, dt, iota, Gamma0, Lambda0, zeta=0, steadystate=False, disable_advection=False):
 
         """
         Build weak form from dynamical matrices
@@ -177,7 +202,7 @@ class CPO():
         Sf = project(S, self.G).vector()[:] # deviatoric stress
         
         # Dynamical matrices at each DOF
-        if ENABLE_LROT: M_LROT_nodal    = np.array([self.sf.reduce_M(self.sf.M_LROT(self.nlm_dummy, self.mat3d(Df[nn*4:(nn+1)*4]), self.mat3d(Wf[nn*4:(nn+1)*4]), iota, zeta), self.nlm_len) for nn in np.arange(self.numdofs)] )
+        if ENABLE_LROT: M_LROT_nodal     = np.array([self.sf.reduce_M(self.sf.M_LROT(self.nlm_dummy, self.mat3d(Df[nn*4:(nn+1)*4]), self.mat3d(Wf[nn*4:(nn+1)*4]), iota, zeta), self.nlm_len) for nn in np.arange(self.numdofs)] )
         if ENABLE_DDRX: M_DDRX_src_nodal = np.array([self.sf.reduce_M(self.sf.M_DDRX_src(self.nlm_dummy, self.mat3d(Sf[nn*4:(nn+1)*4])), self.nlm_len) for nn in np.arange(self.numdofs)] )
         M_REG_nodal = np.array([self.sf.reduce_M(self.sf.M_REG(self.nlm_dummy, self.mat3d(Df[nn*4:(nn+1)*4])), self.nlm_len) for nn in np.arange(self.numdofs)] )
         
@@ -196,24 +221,29 @@ class CPO():
        
         if self.modelplane=='xy':
 
-            # Real space advection, div(s*u)
-            F  = dot(dot(u, nabla_grad(self.pr)), self.qr)*dx # real part
-            F += dot(dot(u, nabla_grad(self.pi)), self.qi)*dx # imag part
-            
+            # Real space stabilization (Laplacian diffusion)
+            F  = self.nu_realspace * inner(grad(self.pr), grad(self.qr))*dx # real part
+            F += self.nu_realspace * inner(grad(self.pi), grad(self.qi))*dx # imag part
+
             # Time derivative
             if not steadystate:
                 F += dtinv * dot( (self.pr-self.w_prev.sub(0)), self.qr)*dx # real part
                 F += dtinv * dot( (self.pi-self.w_prev.sub(1)), self.qi)*dx # imag part
-           
-            # Real space stabilization (Laplacian diffusion)
-            F += self.nu_realspace * inner(grad(self.pr), grad(self.qr))*dx # real part
-            F += self.nu_realspace * inner(grad(self.pi), grad(self.qi))*dx # imag part
+
+            # Real space advection
+            if not disable_advection:
+                F += dot(dot(u, nabla_grad(self.pr)), self.qr)*dx # real part
+                F += dot(dot(u, nabla_grad(self.pi)), self.qi)*dx # imag part
      
             # Lattice rotation
             if ENABLE_LROT:
                 Mrr_LROT, Mri_LROT, Mir_LROT, Mii_LROT = self.Mk_LROT # unpack for readability 
                 F += -sum([ (dot(Mrr_LROT[ii], self.pr) + dot(Mri_LROT[ii], self.pi))*self.qr_sub[ii]*dx for ii in np.arange(self.nlm_len)]) # real part
                 F += -sum([ (dot(Mir_LROT[ii], self.pr) + dot(Mii_LROT[ii], self.pi))*self.qi_sub[ii]*dx for ii in np.arange(self.nlm_len)]) # imag part
+            
+            # DDRX 
+            if ENABLE_DDRX:
+                raise ValueError('CPO(): DDRX evolution is not yet supported for modelplane="xy"')
             
             # Orientation space stabilization (hyper diffusion)
             Mrr_REG,  Mri_REG,  Mir_REG,  Mii_REG  = self.Mk_REG  # unpack for readability 
@@ -222,16 +252,17 @@ class CPO():
 
         elif self.modelplane=='xz':
                 
-            # Real space advection, div(s*u)
-            F = dot(dot(u, nabla_grad(self.pr)), self.qr)*dx # real part
+            # Real space stabilization (Laplacian diffusion)
+            F = self.nu_realspace * inner(grad(self.pr), grad(self.qr))*dx # real part
                 
             # Time derivative
             if not steadystate:
                 F += dtinv * dot( (self.pr-self.w_prev), self.qr)*dx # real part
-            
-            # Real space stabilization (Laplacian diffusion)
-            F += self.nu_realspace * inner(grad(self.pr), grad(self.qr))*dx # real part
-     
+
+            # Real space advection
+            if not disable_advection:
+                F += dot(dot(u, nabla_grad(self.pr)), self.qr)*dx # real part
+    
             # Lattice rotation
             if ENABLE_LROT:
                 Mrr_LROT, *_ = self.Mk_LROT # unpack for readability 
@@ -242,7 +273,6 @@ class CPO():
                 Mrr_DDRX_src, *_ = self.Mk_DDRX_src # unpack for readability 
                 F_src  = sum([ -Gamma0*dot(Mrr_DDRX_src[ii], self.pr)*self.qr_sub[ii]*dx for ii in np.arange(self.nlm_len)]) 
                 F_sink = sum([ -Gamma0*dot(Mrr_DDRX_src[0],self.w_prev)/self.w_prev[0]*self.pr_sub[ii] * self.qr_sub[ii]*dx for ii in np.arange(self.nlm_len)]) # nonlinear sink term is linearized around previous solution (self.w_prev) following Rathmann and Lilien (2021)
-#                F_sink = sum([ -Gamma0*dot(Mrr_DDRX_src[0],self.pr)*self.pr_sub[ii] * self.qr_sub[ii]*dx for ii in np.arange(self.nlm_len)]) # nonlinear sink term is linearized around previous solution (self.w_prev) following Rathmann and Lilien (2021)
                 F += F_src - F_sink
             
             # Orientation space stabilization (hyper diffusion)
@@ -274,15 +304,15 @@ class CPO():
         """
         
         self.w.set_allow_extrapolation(extrapolate)
+        if modelplane is None: modelplane = self.modelplane # no modelplane set? 
 
         xf, yf = np.array(x, ndmin=1), np.array(y, ndmin=1)
         if len(xf.shape) > 1: raise ValueError('eigenframe(): only 1D (x,y) are supported (i.e. flattened)')
         
         N = len(xf)
         eigvecs, eigvals = np.zeros((N,3,3)), np.zeros((N,3))
-        for ii in np.arange(N):
-            a2 = self.sf.a2(self.get_nlm(xf[ii],yf[ii]))
-            eigvecs[ii,:,:], eigvals[ii,:] = sfcom.eigenframe(a2, modelplane=modelplane)
+        for ii in np.arange(N): 
+            eigvecs[ii,:,:], eigvals[ii,:] = sfcom.eigenframe(self.get_nlm(xf[ii],yf[ii]), symframe=self.symframe, modelplane=modelplane)
 
         return (eigvecs[0,:,:], eigvals[0,:]) if N==1 else (eigvecs, eigvals)
                    

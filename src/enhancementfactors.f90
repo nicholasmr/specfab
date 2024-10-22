@@ -184,31 +184,31 @@ contains
     ! EQUIVALENT ISOTROPIC ENHANCEMENT FACTOR FOR GLACIER ICE
     !---------------------------------
     
-    function E_EIE(eps, nglen, q, nlm, Eij_grain,alpha,n_grain)  result(E)
+    function E_EIE(eps, nglen, nlm, m1,m2,m3, Eij_grain,alpha,n_grain)  result(E)
     
-        ! Rathmann et al. (2024)
+        ! Equivalent Isotropic Enhancement (EIE), Rathmann et al. (2024)
 
         implicit none
         
-        real(kind=dp), intent(in)    :: eps(3,3), nglen, q, Eij_grain(2), alpha
-        integer, intent(in)          :: n_grain
+        real(kind=dp), intent(in)    :: eps(3,3), nglen, m1(3),m2(3),m3(3), Eij_grain(2), alpha
         complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp)                :: E, epsE_iso, epsE_ort, Eij(6), m1(3),m2(3),m3(3), eigvals(3)
+        integer, intent(in)          :: n_grain
+        real(kind=dp)                :: E, epsE_iso, epsE_ort, Eij(6), q
         real(kind=dp)                :: lami(6),gam,ci(6), Fij(6,3,3), Ii(6)
 
-        ! Effective isotropic strain rate
-        epsE_iso = sqrt(doubleinner22(eps,eps)/2) 
-
         ! Effective orthotropic strain rate
-        call frame(nlm, 'e', m1,m2,m3, eigvals) 
         Eij = Eij_tranisotropic(nlm, m1,m2,m3, Eij_grain,alpha,n_grain)
         call rheo_params_orthotropic(Eij, nglen, lami, gam)
         ci(1:3) = 4.0d0/3 * lami(1:3)/gam
         ci(4:6) =       2 * 1/lami(4:6)
         call rheo_structs_orthotropic(eps,m1,m2,m3, 'R', Fij, Ii)
         epsE_ort = sqrt(sum(ci*Ii**2)/2) 
+
+        ! Effective isotropic strain rate
+        epsE_iso = sqrt(doubleinner22(eps,eps)/2) 
         
-        ! R24 definition of equiv. isotropic enhancement
+        ! Definition of EIE
+        q = -nglen-1
         E = (epsE_ort/epsE_iso)**q
     end
     
@@ -236,11 +236,15 @@ contains
     function E_ESTAR(eps,spin, Ec,Es)  result(E)
     
         ! Implements Graham et al. (2018)
+        
+        ! **NOT YET IMPLEMENTED**
 
         implicit none
         
         real(kind=dp), intent(in)    :: eps(3,3), spin(3,3), Ec, Es
-        real(kind=dp)                :: E, epsE, epsprime
+        real(kind=dp)                :: E !, epsE, epsprime
+
+        E = 0.0d0
 
 !        ! Magnitude of the shear strain rate on the locally non-rotating shear plane
 !        omg = 0.5d0 * 1

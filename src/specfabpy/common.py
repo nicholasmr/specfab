@@ -9,15 +9,20 @@ import numpy as np
 from .specfabpy import specfabpy as sf__ # sf private copy 
 lm__, nlm_len__ = sf__.init(20)
 
-import sys, os, code # code.interact(local=locals()) # @TODO DELETE ME
 
-def eigenframe(a2, modelplane=None):
+def eigenframe(Z, modelplane=None, symframe=-1):
 
     """
-    Principal frame using a^(2) structure tensor
+    Principal fabric frame (typically a^(2) principal axes).
     """
 
-    eigvals, eigvecs = np.linalg.eig(a2)
+    # Is input one-dimensional (vector)? => assume nlm was passed
+    if len(Z.shape) == 1: 
+        Q = sf__.a2(Z) if (symframe == -1) else sf__.a4_eigentensors(Z)[symframe]
+    else:                 
+        Q = Z # assume Z = a^(2) passed directly
+        
+    eigvals, eigvecs = np.linalg.eig(Q)
     
     if modelplane is None: 
         I = np.flip(eigvals.argsort()) # largest eigenvalue pair is first entry
@@ -32,29 +37,18 @@ def eigenframe(a2, modelplane=None):
     return eigvecs[:,I], eigvals[I]
     
     
-def eigenframe4(nlm, i=5, modelplane=None):
+def pfJ(nlm): 
 
     """
-    Principal frame using a^(4) eigentensor Qi[i]
+    Pole figure J (pfJ) index
     """
-
-    *Qi, eigvals = sf__.a4_eigentensors(nlm)
-
-    eigvals, eigvecs = np.linalg.eig(Qi[i]) # Q5 or Q6
     
-    if modelplane is None: 
-        I = np.flip(eigvals.argsort()) # largest eigenvalue pair is first entry
-        
-    else:
-        if   modelplane=='xy': I = abs(eigvecs[2,:]).argsort() # last entry is eigenvector with largest z-value (component out of model plane)
-        elif modelplane=='xz': I = abs(eigvecs[1,:]).argsort() # ... same but for y-value
-        
-        if eigvals[I[0]] < eigvals[I[1]]: 
-            I[[0,1]] = I[[1,0]] # swap sorted indices so largest eigenvalue entry is first
+    k = np.sqrt(4*np.pi)**2
+    if len(nlm.shape) == 2: J_i = [ k*np.sum(np.square(np.absolute(nlm[:,ii]))) for ii in range(nlm.shape[1]) ]
+    else:                   J_i =   k*np.sum(np.square(np.absolute(nlm[:,ii])))
+    return J_i
     
-    return eigvecs[:,I], eigvals[I]
-    
-    
+   
 def F2C(F):
 
     """

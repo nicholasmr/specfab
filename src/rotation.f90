@@ -54,6 +54,19 @@ contains
 !        end if
     end
     
+    function rotate_nlm_xz2xy(nlm) result (nlm_rot)
+
+        implicit none
+
+        complex(kind=dp), intent(in) :: nlm(:) ! nlm truncated at L=12
+        complex(kind=dp)             :: nlm_rot(size(nlm))
+        real(kind=dp), parameter     :: deg90 = Pi/2
+        
+        nlm_rot = rotate_nlm(nlm,     0.0d0, -deg90) ! 90 deg clockwise around z 
+        nlm_rot = rotate_nlm(nlm_rot, +deg90, 0.0d0) ! 90 deg counterclockwise around y 
+        nlm_rot = rotate_nlm(nlm_rot, 0.0d0, +deg90) ! 90 deg counterclockwise around z 
+    end
+    
     function rotate_vector(v, theta, phi) result(w)
     
         ! theta is angle rotating z->x, i.e. around y
