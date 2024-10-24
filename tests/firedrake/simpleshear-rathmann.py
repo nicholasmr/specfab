@@ -32,7 +32,12 @@ modelplane = 'xz'
 CPO_kwargs = dict(nu_multiplier=1, nu_realspace=1e-3, modelplane=modelplane)
 
 iota, Gamma0 = +1, None # lattice rotation only
-#iota, Gamma0 = 0, 1e-6 # DDRX only
+#iota, Gamma0 = 0, 1e-3 # DDRX only
+
+# Viscous anisotropy homogenization parameters
+alpha         = 0.455    # Taylor--Sachs homogenization weight
+Eij_grain     = (1, 1e3) # (Ecc, Eca) grain enhancements
+n_grain       = 1        # grain power-law exponent (only n_grain=1 supported)
 
 """
 Setup firedrake CPO class
@@ -52,7 +57,6 @@ u = fd.Function(V).interpolate(expr)
 # Isotropic ice incoming from left-hand boundary, remaining boundaries are free (no fabric fluxes)
 boundaries = (1,2,3,4) 
 fabric = IceFabric(mesh, boundaries, L, **CPO_kwargs)
-fabric.initialize() # set isotroic CPO field
 fabric.set_isotropic_BCs((1,))
 
 tau = fd.project(fd.grad(u), T) # assume coaxial driving stress
@@ -85,7 +89,7 @@ while nn < Nt:
         
     if nn==1 or nn%1==0:
     
-        fname = 'simpleshear-%s-%02d.png'%('LROT' if Gamma0 is None else 'DDRX', nn)
+        fname = 'simpleshear-%s-%i.png'%('LROT' if Gamma0 is None else 'DDRX', nn) # %02d
         print('[->] Plotting model state: %s'%(fname))
 
         ### Setup figure
@@ -93,9 +97,9 @@ while nn < Nt:
         figscale = 1
         fig = plt.figure(figsize=(14*figscale, 8*figscale))
         gs = gridspec.GridSpec(1, 3, wspace=0.25, hspace=0.3, left=0.08, right=0.97, top=0.98, bottom=0.37)
-        ax1 = fig.add_subplot(gs[0,0])
+        ax3 = fig.add_subplot(gs[0,0])
         ax2 = fig.add_subplot(gs[0,1])
-        ax3 = fig.add_subplot(gs[0,2])
+        ax1 = fig.add_subplot(gs[0,2])
         axes = (ax1,ax2,ax3)
         
         kwargs_cb = dict(pad=0.12, aspect=22, fraction=0.09, orientation='horizontal')
@@ -112,11 +116,13 @@ while nn < Nt:
         cbar.ax.set_xlabel(r'$J$ (CPO strength)')
 
         ax = ax3
-        E0, E1, dE = (0.5, 1.5, 0.1)
-        lvls = np.arange(E0, E1+1e-3, dE)
+        lvls = np.arange(0.5, 1.5+1e-3, 0.1)
         divnorm = colors.TwoSlopeNorm(vmin=np.amin(lvls), vcenter=1, vmax=np.amax(lvls))
         kwargs_E = dict(levels=lvls, norm=divnorm, extend='both', cmap='PuOr_r')
-        E_CAFFE = fabric.E_CAFFE(u)
+
+        E_CAFFE = fabric.E_CAFFE(u)        
+        mi, Eij, lami = fabric.Eij(Eij_grain, alpha, n_grain)
+#        h = fd.pyplot.tricontourf(Eij[1], axes=ax, **kwargs_E)
         h = fd.pyplot.tricontourf(E_CAFFE, axes=ax, **kwargs_E)
         cbar = plt.colorbar(h, ax=ax, **kwargs_cb)
         cbar.ax.set_xlabel(r'$E$ (CAFFE)')
@@ -131,25 +137,22 @@ while nn < Nt:
 
         ### ODF insets
         
-        def plot_ODF(x,y, CPOx,CPOy, mrk, W=0.18):
-
-            geo, prj = sfplt.getprojection(rotation=-90-20, inclination=50)   
-            axin = plt.axes([x,y , W, W], projection=prj) 
+        def plot_ODF(p, pax, mrk, W=0.18):
+            
+            geo, prj = sfplt.getprojection(rotation=-110, inclination=50)
+            axin = plt.axes([*pax, W,W], projection=prj) 
             axin.set_global()
-            for ax in (ax1,ax2):
-                points, = ax.plot(CPOx, CPOy, mrk, markersize=12, markeredgewidth=1.1, markeredgecolor='k', markerfacecolor='w')
-            sfplt.plotODF(fabric.get_nlm(CPOx, CPOy), fabric.lm, axin, cmap='Greys', cblabel='ODF', lvlset=(np.linspace(0.1, 0.3, 5), lambda x,p:'%.1f'%x), showcb=True)
+            sfplt.plotODF(fabric.get_nlm(*p), fabric.lm, axin, cmap='Greys', cblabel='ODF', lvlset=(np.linspace(0.1, 0.3, 5), lambda x,p:'%.1f'%x), showcb=True)
             sfplt.plotcoordaxes(axin, geo, color='k')
-            kwargs = dict(marker='.', ms=7, markeredgewidth=1.0, transform=geo, zorder=10, markerfacecolor=sfplt.c_dred, markeredgecolor=sfplt.c_dred)
-            m1 = fabric.eigenframe(CPOx, CPOy)[0][:,0] # pick out m1
-            sfplt.plotS2point(axin, +m1, **kwargs)
-            sfplt.plotS2point(axin, -m1, **kwargs)
+            mi = fabric.eigenframe(*p)[0]
+            sfplt.plotmi(axin, mi, geo, ms=15, colors=(sfplt.c_dred,sfplt.c_dgreen,sfplt.c_dblue))
             axin.set_title(r'@ "%s"'%(mrk))
+            for ax in (ax1,ax2,ax3): points, = ax.plot(*p, mrk, markersize=12, markeredgewidth=1.1, markeredgecolor='k', markerfacecolor='w')
 
         # Plot for selected locations
-        plot_ODF(0.2,0.08, 0.1,0.1, '^')
-        plot_ODF(0.4,0.08, 0.5,0.4, 'X')
-        plot_ODF(0.6,0.08, 0.9,0.6, 's')
+        plot_ODF((0.1,0.1), (0.2,0.08), '^')
+        plot_ODF((0.5,0.4), (0.4,0.08), 'X')
+        plot_ODF((0.9,0.6), (0.6,0.08), 's')
             
         ### Save plot
         

@@ -5,7 +5,8 @@
 #-------------------
 
 COMPILER=gfortran -ffree-line-length-none -m64 -Wall -fPIC -Wno-integer-division -Wno-unused-dummy-argument
-OPTS=-O2 -mcmodel=medium -lm -llapack -lblas
+# -mcmodel=medium might be needed if support for L>20 truncation is requested
+OPTS=-O2 -mcmodel=small -lm -llapack -lblas
 OPTSNETCDF=-lnetcdff -I/usr/include -L/usr/lib 
 
 VERBOSE_F2PY=--quiet
@@ -100,6 +101,8 @@ python: specfabpy
 # Build and install specfabpy for firedrake/icepack docker enviroment
 # @TODO: prepend all "pip install" dependencies (cartopy, ....)
 icepack: specfabpy
+	pip install cartopy cmasher setuptools==61
+	#pip install . # 
 	python3 setup.py install
 
 #-------------------

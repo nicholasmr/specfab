@@ -160,7 +160,7 @@ class CPO():
             
         self.w_prev.assign(self.w) # current state (w) must be set
         F = self.weakform(u, S, dt, iota, Gamma0, Lambda0, steadystate=steadystate, disable_advection=disable_advection)
-        solve(lhs(F)==rhs(F), self.w, self.bcs, solver_parameters={'linear_solver':'gmres', }) # fastest tested are: gmres, bicgstab, tfqmr (for non-symmetric problems, a Krylov solver such as GMRES is a better choice)
+        solve(lhs(F)==rhs(F), self.w, self.bcs, solver_parameters={'linear_solver':'gmres', }) # fastest tested are: gmres, bicgstab, tfqmr --- note this is a non-symmetric system!
 
 
     def solvesteady(self, u, S, iota=+1, Gamma0=None, Lambda0=None, disable_advection=False, \
