@@ -31,7 +31,6 @@ Lambda0         : CDRX rate factor
 TODO:
 - SSA fabric source/sinks and topo advection terms need to be included 
 - DDRX solver fails (complains nonliner solver diverged, but problem is linearized and works in fenics??)
-- Steady state solver does not work unless RHS is not an empty form. Adding some dummy zero term seems to work..
 """
 
 import numpy as np
@@ -191,8 +190,12 @@ class IceFabric:
         dtinv = Constant(1/dt)
         if not steadystate:
             F += dtinv * dot( (self.p-self.s0), self.q)*dx
-            
-#        F += dot(self.s_null,self.q)*dx # dummy zero term to make rhs(F) work when solving steady-state problem 
+
+        # dummy zero term to make rhs(F) work when solving steady-state problem 
+        # this can probably be removed once the SSA source/sink terms are added
+        s_null = Function(self.S)
+        s_null.vector()[:] = 0.0
+        F += dot(s_null, self.q)*dx
 
         # Real space stabilization (Laplacian diffusion)
         if ENABLE_REG:
