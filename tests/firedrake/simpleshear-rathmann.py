@@ -30,14 +30,14 @@ Fabric problem setup
 ### Numerics and regularization
 
 Nt = 20 # number of time steps to take
-L  = 8 # spectral truncation
+L  = 6 # spectral truncation
 modelplane = 'xz'
-CPO_kwargs = dict(nu_multiplier=1, nu_realspace=1e-3, modelplane=modelplane)
+fabric_kwargs = dict(nu_multiplier=1, nu_realspace=1e-3, modelplane=modelplane)
 
 ### Fabric dynamics
 
 iota, Gamma0 = +1, None # lattice rotation only
-#iota, Gamma0 = None, 1e-0 # DDRX only
+#iota, Gamma0 = None, 1e-0 # DDRX only @TODO not yet working, says nonlinear solver fails, but problem is linearized and works in fenics??
 
 ### Viscous anisotropy homogenization parameters
 
@@ -46,7 +46,7 @@ Eij_grain     = (1, 1e3) # (Ecc, Eca) grain enhancements
 n_grain       = 1        # grain power-law exponent (only n_grain=1 supported)
 
 """
-Setup firedrake CPO class
+Setup firedrake fabric class
 """
 
 ### Mesh and function spaces
@@ -68,15 +68,15 @@ tau = fd.project(fd.grad(u), T) # assume driving stress is coaxial to strain-rat
 ### Initialize fabric module
 
 boundaries = (1,2,3,4) 
-fabric = IceFabric(mesh, boundaries, L, **CPO_kwargs)
+fabric = IceFabric(mesh, boundaries, L, **fabric_kwargs) # initializes as isotropic fabric field
 fabric.set_isotropic_BCs((1,)) # isotropic ice incoming from left-hand boundary, remaining boundaries are free (no fabric fluxes)
 
 """
 Solve for steady state 
 """
 
-fabric.evolve(u, tau, 1, iota=iota, Gamma0=Gamma0, steadystate=False)
-pfJ_steady = fabric.pfJ()
+fabric.evolve(u, tau, 100, iota=iota, Gamma0=Gamma0, steadystate=False) # if dt is large => steady state
+pfJ_steady = fabric.pfJ().copy(deepcopy=True)
 
 """
 Time evolution
@@ -100,6 +100,7 @@ while nn < Nt:
 
     nn += 1
     t  += dt
+    
     print("*** Step %i :: dt=%.2e, t=%.2e" % (nn, dt, t))
     fabric.evolve(u, tau, dt, iota=iota, Gamma0=Gamma0)
     mi, Eij, lami = fabric.get_Eij(Eij_grain, alpha, n_grain)
@@ -133,10 +134,10 @@ while nn < Nt:
         h = fd.pyplot.quiver(u, axes=ax, cmap='Reds', width=0.0075)
         
         ax = axr1[1]
-#        h = fd.pyplot.tricontourf(pfJ_steady, axes=ax, levels=np.arange(1, 3+1e-3, 0.2), extend='max', cmap='YlGnBu')
-#        cbar = plt.colorbar(h, ax=ax, **kwargs_cb)
-#        cbar.ax.set_xlabel(r'$J$ index (steady-state)')
-#        h = fd.pyplot.quiver(u, axes=ax, cmap='Reds', width=0.0075)
+        h = fd.pyplot.tricontourf(pfJ_steady, axes=ax, levels=np.arange(1, 3+1e-3, 0.2), extend='max', cmap='YlGnBu')
+        cbar = plt.colorbar(h, ax=ax, **kwargs_cb)
+        cbar.ax.set_xlabel(r'$J$ index (steady-state)')
+        h = fd.pyplot.quiver(u, axes=ax, cmap='Reds', width=0.0075)
 
         ax = axr1[2]
         lvls_E = np.arange(0.6, 2+1e-3, 0.1)
@@ -152,7 +153,7 @@ while nn < Nt:
             cbar = plt.colorbar(h, ax=ax, **kwargs_cb)
             cbar.ax.set_xlabel(r'$\lambda_%i$'%(ii+1))
 
-        idx = ['11','22','33','23','13','12']
+        idx = ['11','22','33','23','13','12'] # Voigt ordering
         for ii, ax in enumerate(axr2[:]):
             h = fd.pyplot.tricontourf(Eij[ii], axes=ax, **kwargs_E)
             cbar = plt.colorbar(h, ax=ax, **kwargs_cb)
@@ -175,7 +176,7 @@ while nn < Nt:
             axin.set_global()
             sfplt.plotODF(fabric.get_nlm(*p), fabric.lm, axin, cmap='Greys', cblabel='ODF', lvlset=(np.linspace(0.0, 0.3, 6), lambda x,p:'%.1f'%x), showcb=True)
             sfplt.plotcoordaxes(axin, geo, color='k')
-            mi = fabric.eigenframe(*p)[0]
+            mi, lami = fabric.eigenframe(*p)
             sfplt.plotmi(axin, mi, geo, ms=15, colors=(sfplt.c_dred,sfplt.c_dgreen,sfplt.c_dblue))
             axin.set_title(r'@ "%s"'%(mrk))
             for ax in axes: points, = ax.plot(*p, mrk, markersize=12, markeredgewidth=1.1, markeredgecolor='k', markerfacecolor='w')
