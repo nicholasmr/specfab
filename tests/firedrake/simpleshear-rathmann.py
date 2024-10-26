@@ -75,7 +75,7 @@ fabric.set_isotropic_BCs((1,)) # isotropic ice incoming from left-hand boundary,
 Solve for steady state 
 """
 
-fabric.evolve(u, tau, 100, iota=iota, Gamma0=Gamma0, steadystate=False) # if dt is large => steady state
+fabric.evolve(u, tau, 1, iota=iota, Gamma0=Gamma0, steadystate=True) # if dt is large => steady state
 pfJ_steady = fabric.pfJ().copy(deepcopy=True)
 
 """
