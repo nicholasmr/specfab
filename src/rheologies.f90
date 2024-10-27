@@ -249,7 +249,7 @@ contains
 
     !---------------------------------
     ! ORTHOTROPIC RHEOLOGY 
-    ! ... with Pettit's hypothesis that the *fluidity* is orientation independant.
+    ! ... with Pettit's hypothesis that the *fluidity* is orientation independent
     !---------------------------------
 
     function rheo_fwd_orthotropic_Pettit(tau, A, n, m1,m2,m3, Eij) result(eps)
@@ -290,7 +290,7 @@ contains
 
     !---------------------------------
     ! ORTHOTROPIC RHEOLOGY 
-    ! ... with Martin's hypothesis that the *viscosity* is orientation independant.
+    ! ... with Martin's hypothesis that the *viscosity* is orientation independent
     !---------------------------------
 
     function rheo_fwd_orthotropic_Martin(tau, A, n, m1,m2,m3, Eij) result(eps)

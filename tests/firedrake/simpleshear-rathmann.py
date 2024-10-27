@@ -30,20 +30,24 @@ Fabric problem setup
 ### Numerics and regularization
 
 Nt = 20 # number of time steps to take
-L  = 6 # spectral truncation
-modelplane = 'xz'
-fabric_kwargs = dict(nu_multiplier=1, nu_realspace=1e-3, modelplane=modelplane)
+L  = 6  # spectral truncation *** set L=8 or L=10 unless debugging ***
+
+fabric_kwargs = dict(nu_multiplier=1, nu_realspace=1e-4, modelplane='xz') # nu_realspace must be adjusted when changing mesh/resolution (trial-and-error so that solution is stable and smooth)
 
 ### Fabric dynamics
 
-iota, Gamma0 = +1, None # lattice rotation only
-#iota, Gamma0 = None, 1e-0 # DDRX only @TODO not yet working, says nonlinear solver fails, but problem is linearized and works in fenics??
+ENABLE_LROT = 0 # boolean flag
+ENABLE_DDRX = 1 # boolean flag
+
+iota   = +1    # deck-of-cards behaviour for lattice rotatio 
+#Gamma0 = 1e-1  # uniform DDRX rate factor
+Gamma0 = 'L23' # DDRX rate factor that depends on both temperature and strainrate (Lilen et al, 2023)
 
 ### Viscous anisotropy homogenization parameters
 
-alpha         = 0.455    # Taylor--Sachs homogenization weight
-Eij_grain     = (1, 1e3) # (Ecc, Eca) grain enhancements
-n_grain       = 1        # grain power-law exponent (only n_grain=1 supported)
+alpha     = 0.455    # Taylor--Sachs homogenization weight
+Eij_grain = (1, 1e3) # (Ecc, Eca) grain enhancements
+n_grain   = 1        # grain power-law exponent (only n_grain=1 supported)
 
 """
 Setup firedrake fabric class
@@ -63,7 +67,11 @@ T = fd.TensorFunctionSpace(mesh, "CG", 1)
 u0, H = 1, 1
 expr = fd.as_vector(( u0*(x[1]/H)**2, 0 )) # non-uniform horizontal shear
 u = fd.Function(V).interpolate(expr)
-tau = fd.project(fd.grad(u), T) # assume driving stress is coaxial to strain-rate (in two-way coupling this should be modelled tau) 
+tau = fd.project(fd.sym(fd.grad(u)), T) # assume driving stress is coaxial to strain-rate (in two-way coupling this should be modelled tau) 
+
+h_min = 1/nx
+v_max = abs(u.vector()[:]).max()
+dt_CFL = 0.5*h_min/v_max
 
 ### Initialize fabric module
 
@@ -71,11 +79,19 @@ boundaries = (1,2,3,4)
 fabric = IceFabric(mesh, boundaries, L, **fabric_kwargs) # initializes as isotropic fabric field
 fabric.set_isotropic_BCs((1,)) # isotropic ice incoming from left-hand boundary, remaining boundaries are free (no fabric fluxes)
 
+if not ENABLE_LROT: iota   = None
+if not ENABLE_DDRX: Gamma0 = None
+
+if Gamma0 == 'L23': 
+    T = -20 + 273 # deg. K
+    Gamma0 = fabric.Gamma0_Lilien(u,T)
+
 """
 Solve for steady state 
 """
 
-fabric.evolve(u, tau, 1, iota=iota, Gamma0=Gamma0, steadystate=True) # if dt is large => steady state
+if ENABLE_DDRX: fabric.evolve(u, tau, 30*dt_CFL, iota=iota, Gamma0=Gamma0, steadystate=False, DDRX_LINEARIZE=2) # solving directly for nonlinear steady-state not yet supported, so take a large time step intead to approximate steady-state in plot
+else:           fabric.evolve(u, tau, 1,         iota=iota, Gamma0=Gamma0, steadystate=True)
 pfJ_steady = fabric.pfJ().copy(deepcopy=True)
 
 """
@@ -86,10 +102,7 @@ fabric.initialize() # reset to isotropic
 
 ### Determine time step using CFL criterion
 
-h_min = 1/nx
-v_max = abs(u.vector()[:]).max()
-dt = 0.5*h_min/v_max
-dt *= 4 # more aggresive time-stepping than CFL
+dt = 4*dt_CFL # more aggresive time-stepping than CFL
 
 ### Get ready
 

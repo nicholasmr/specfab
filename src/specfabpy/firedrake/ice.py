@@ -30,7 +30,6 @@ Lambda0         : CDRX rate factor
 """
 TODO:
 - SSA fabric source/sinks and topo advection terms need to be included 
-- DDRX solver fails (complains nonliner solver diverged, but problem is linearized and works in fenics??)
 """
 
 import numpy as np
@@ -150,15 +149,19 @@ class IceFabric:
         self.s0.assign(self.s)
         F = self._get_weakform(*args, **kwargs)
         solve(lhs(F)==rhs(F), self.s, self.bcs, solver_parameters={'linear_solver':'gmres',}) # non-symmetric system (fastest tested are: gmres, bicgstab, tfqmr)
+#        solve(F==0, self.s, self.bcs, solver_parameters={'linear_solver':'gmres',}) # non-symmetric system (fastest tested are: gmres, bicgstab, tfqmr)
         self._nlm_nodal()
 
-    def _get_weakform(self, u, S, dt, iota=None, Gamma0=None, Lambda0=None, zeta=0, steadystate=False):
+    def _get_weakform(self, u, S, dt, iota=None, Gamma0=None, Lambda0=None, zeta=0, steadystate=False, DDRX_LINEARIZE=2):
 
         # Crystal processes to include
         ENABLE_LROT = iota is not None
         ENABLE_DDRX = (Gamma0 is not None) and (S is not None)
         ENABLE_CDRX = Lambda0 is not None
         ENABLE_REG  = True
+        
+        if DDRX_LINEARIZE not in [0,1,2]:
+            raise ValueError('DDRX_LINEARIZE must be 1 or 2 (0=nonlinear, 1=Naive Picard, 2=Taylor linearized)')
 
         # Flattened strain-rate and spin tensors for accessing them per node
         Df = project( sym(grad(u)), self.G).vector()[:] # strain rate
@@ -201,17 +204,26 @@ class IceFabric:
         if ENABLE_REG:
             F += self.nu_realspace * inner(grad(self.p), grad(self.q))*dx
 
-        # Lattice rotation
         if ENABLE_LROT:
             F += -sum([ dot(self.Mrr_LROT[ii], self.p)*self.qs[ii]*dx for ii in self.srrng])
 
-        # DDRX
         if ENABLE_DDRX:
-            # @TODO NOT WORKING???
-            F_src  = -Gamma0*sum([ dot(self.Mrr_DDRX_src[ii], self.p)*self.qs[ii]*dx for ii in self.srrng]) 
-            F_sink = -Gamma0*sum([ dot(self.Mrr_DDRX_src[0], self.s0)/self.s0[0]*self.ps[ii] * self.qs[ii]*dx for ii in self.srrng]) # nonlinear sink term is linearized around previous solution (self.s0) following Rathmann and Lilien (2021)
-            F += F_src - F_sink
-#            F += F_sink
+            F_src  = -sum([Gamma0*dot(self.Mrr_DDRX_src[ii], self.p)*self.qs[ii]*dx for ii in self.srrng]) 
+            D0 = dot(self.Mrr_DDRX_src[0], self.s0)/self.s0.sub(0) # <D> for s=s0 
+            if DDRX_LINEARIZE==1:
+                # nonlinear sink linearized by using previous solution (self.s0) to calculate <D> (Rathmann and Lilien, 2021)
+                F_snk = -sum([Gamma0*D0*self.ps[ii]*self.qs[ii]*dx for ii in self.srrng]) 
+            elif DDRX_LINEARIZE==2:
+                # nonlinear sink linearized around previous solution, s=s0
+                f0 = -sum([Gamma0*D0*self.s0.sub(ii)*self.qs[ii]*dx for ii in self.srrng])
+                dD0 = lambda ii: self.Mrr_DDRX_src[0].sub(ii)*self.s0.sub(ii)/self.s0.sub(0) # d<D>/dnlm at s=s0
+                df = -sum([Gamma0*(D0+dD0(ii))*(self.ps[ii]-self.s0.sub(ii)) * self.qs[ii]*dx for ii in self.srrng])
+                F_snk = f0 + df
+            elif DDRX_LINEARIZE==0:
+                # @TODO not working, weak form does not compile/solve without error
+                D = dot(self.Mrr_DDRX_src[0], self.s)/self.s.sub(0) # <D>
+                F_snk = -sum([Gamma0*D*self.s.sub(ii)*self.qs[ii]*dx for ii in self.srrng])
+            F += F_src - F_snk
 
         # Orientation space stabilization (hyper diffusion)
         F += -self.nu_multiplier * sum([ dot(self.Mrr_REG[ii], self.p)*self.qs[ii]*dx for ii in self.srrng])
@@ -291,3 +303,9 @@ class IceFabric:
             
         return (self.mi, self.Eij, self.lami)
                 
+    def Gamma0_Lilien(self, u, T, A=4.3e7, Q=3.36e4):
+        # DDRX rate factor from Dome C ice-core calibration experiment (Lilien et al., 2023, p. 7)
+        R = Constant(8.314) # gas constant (J/mol*K)
+        D = sym(grad(u))
+        epsE = sqrt(inner(D,D)/2)
+        return project(epsE*Constant(A)*exp(-Constant(Q)/(R*T)), self.R)
