@@ -73,9 +73,9 @@ class IceFabric:
         self.numdofs = self.R.dim()
         # Test, trial, solution container
         self.p = TrialFunction(self.S)
-        self.q = TestFunction(self.S)
-        self.ps = split(self.p)
-        self.qs = split(self.q)
+        self.w = TestFunction(self.S)
+#        self.ps = split(self.p)
+        self.ws = split(self.w)
         self.s  = Function(self.S)
         self.s0 = Function(self.S)
         # Dynamical matrices rows, e.g. M_LROT[i,:] (this account for the real-real coefficient interactions, sufficient for xz problems)
@@ -140,16 +140,16 @@ class IceFabric:
         self.rnlm = np.array([sp.sub(ii).vector()[:] + 0j for ii in self.srrng]) # reduced form (rnlm) per node
         self.nlm  = np.array([self.sf.rnlm_to_nlm(self.rnlm[:,nn], self.nlm_len) for nn in self.dofs0]) # full form (nlm) per node (nlm[node,coef])
 
-    def evolve(self, *args, **kwargs):
+    def evolve(self, *args, DDRX_LINEARIZE=2, **kwargs):
         """
         The fabric solver, called to step fabric field forward in time by amount dt
         
         @TODO: this routine and _get_weakform() can surely be optimized by better choice of linear solver, preconditioning, and not assembling the weak form on every solve call
         """
         self.s0.assign(self.s)
-        F = self._get_weakform(*args, **kwargs)
-        solve(lhs(F)==rhs(F), self.s, self.bcs, solver_parameters={'linear_solver':'gmres',}) # non-symmetric system (fastest tested are: gmres, bicgstab, tfqmr)
-#        solve(F==0, self.s, self.bcs, solver_parameters={'linear_solver':'gmres',}) # non-symmetric system (fastest tested are: gmres, bicgstab, tfqmr)
+        F = self._get_weakform(*args, DDRX_LINEARIZE=DDRX_LINEARIZE, **kwargs)
+        FORM = (F==0) if DDRX_LINEARIZE == 0 else (lhs(F)==rhs(F))
+        solve(FORM, self.s, self.bcs, solver_parameters={'linear_solver':'gmres',}) # non-symmetric system (fastest tested are: gmres, bicgstab, tfqmr)
         self._nlm_nodal()
 
     def _get_weakform(self, u, S, dt, iota=None, Gamma0=None, Lambda0=None, zeta=0, steadystate=False, DDRX_LINEARIZE=2):
@@ -162,6 +162,8 @@ class IceFabric:
         
         if DDRX_LINEARIZE not in [0,1,2]:
             raise ValueError('DDRX_LINEARIZE must be 1 or 2 (0=nonlinear, 1=Naive Picard, 2=Taylor linearized)')
+        
+        s, ss = (self.s, split(self.s)) if DDRX_LINEARIZE == 0 else (self.p, split(self.p))
 
         # Flattened strain-rate and spin tensors for accessing them per node
         Df = project( sym(grad(u)), self.G).vector()[:] # strain rate
@@ -187,46 +189,46 @@ class IceFabric:
         ### Construct weak form
 
         # Real space advection
-        F = dot(dot(u, nabla_grad(self.p)), self.q)*dx
+        F = dot(dot(u, nabla_grad(s)), self.w)*dx
 
         # Time derivative
         dtinv = Constant(1/dt)
         if not steadystate:
-            F += dtinv * dot( (self.p-self.s0), self.q)*dx
+            F += dtinv * dot( (s-self.s0), self.w)*dx
 
         # dummy zero term to make rhs(F) work when solving steady-state problem 
         # this can probably be removed once the SSA source/sink terms are added
         s_null = Function(self.S)
         s_null.vector()[:] = 0.0
-        F += dot(s_null, self.q)*dx
+        F += dot(s_null, self.w)*dx
 
         # Real space stabilization (Laplacian diffusion)
         if ENABLE_REG:
-            F += self.nu_realspace * inner(grad(self.p), grad(self.q))*dx
+            F += self.nu_realspace * inner(grad(s), grad(self.w))*dx
 
         if ENABLE_LROT:
-            F += -sum([ dot(self.Mrr_LROT[ii], self.p)*self.qs[ii]*dx for ii in self.srrng])
+            F += -sum([ dot(self.Mrr_LROT[ii], s)*self.ws[ii]*dx for ii in self.srrng])
 
         if ENABLE_DDRX:
-            F_src  = -sum([Gamma0*dot(self.Mrr_DDRX_src[ii], self.p)*self.qs[ii]*dx for ii in self.srrng]) 
+            F_src  = -sum([Gamma0*dot(self.Mrr_DDRX_src[ii], s)*self.ws[ii]*dx for ii in self.srrng]) 
             D0 = dot(self.Mrr_DDRX_src[0], self.s0)/self.s0.sub(0) # <D> for s=s0 
             if DDRX_LINEARIZE==1:
                 # nonlinear sink linearized by using previous solution (self.s0) to calculate <D> (Rathmann and Lilien, 2021)
-                F_snk = -sum([Gamma0*D0*self.ps[ii]*self.qs[ii]*dx for ii in self.srrng]) 
+                F_snk = -sum([Gamma0*D0*ss[ii]*self.ws[ii]*dx for ii in self.srrng]) 
             elif DDRX_LINEARIZE==2:
                 # nonlinear sink linearized around previous solution, s=s0
-                f0 = -sum([Gamma0*D0*self.s0.sub(ii)*self.qs[ii]*dx for ii in self.srrng])
+                f0 = -sum([Gamma0*D0*self.s0.sub(ii)*self.ws[ii]*dx for ii in self.srrng])
                 dD0 = lambda ii: self.Mrr_DDRX_src[0].sub(ii)*self.s0.sub(ii)/self.s0.sub(0) # d<D>/dnlm at s=s0
-                df = -sum([Gamma0*(D0+dD0(ii))*(self.ps[ii]-self.s0.sub(ii)) * self.qs[ii]*dx for ii in self.srrng])
+                df = -sum([Gamma0*(D0+dD0(ii))*(ss[ii]-self.s0.sub(ii))*self.ws[ii]*dx for ii in self.srrng])
                 F_snk = f0 + df
             elif DDRX_LINEARIZE==0:
-                # @TODO not working, weak form does not compile/solve without error
-                D = dot(self.Mrr_DDRX_src[0], self.s)/self.s.sub(0) # <D>
-                F_snk = -sum([Gamma0*D*self.s.sub(ii)*self.qs[ii]*dx for ii in self.srrng])
+                # @TODO does not converge from isotropy... needs more work
+                D = dot(self.Mrr_DDRX_src[0], s)/ss[0] # <D>
+                F_snk = -sum([Gamma0*D*ss[ii]*self.ws[ii]*dx for ii in self.srrng])
             F += F_src - F_snk
 
         # Orientation space stabilization (hyper diffusion)
-        F += -self.nu_multiplier * sum([ dot(self.Mrr_REG[ii], self.p)*self.qs[ii]*dx for ii in self.srrng])
+        F += -self.nu_multiplier*sum([dot(self.Mrr_REG[ii], s)*self.ws[ii]*dx for ii in self.srrng])
 
         return F
         

@@ -36,11 +36,11 @@ fabric_kwargs = dict(nu_multiplier=1, nu_realspace=1e-4, modelplane='xz') # nu_r
 
 ### Fabric dynamics
 
-ENABLE_LROT = 0 # boolean flag
-ENABLE_DDRX = 1 # boolean flag
+ENABLE_LROT = 1 # boolean flag
+ENABLE_DDRX = 0 # boolean flag
 
 iota   = +1    # deck-of-cards behaviour for lattice rotatio 
-#Gamma0 = 1e-1  # uniform DDRX rate factor
+#Gamma0 = 1e-1 # uniform DDRX rate factor
 Gamma0 = 'L23' # DDRX rate factor that depends on both temperature and strainrate (Lilen et al, 2023)
 
 ### Viscous anisotropy homogenization parameters
@@ -100,14 +100,9 @@ Time evolution
 
 fabric.initialize() # reset to isotropic
 
-### Determine time step using CFL criterion
-
-dt = 4*dt_CFL # more aggresive time-stepping than CFL
-
-### Get ready
-
-t = 0.0
 nn = 0
+t  = 0.0
+dt = 4*dt_CFL # more aggresive time-stepping than CFL
 
 while nn < Nt:
 
