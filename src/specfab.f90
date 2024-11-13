@@ -17,6 +17,7 @@ module specfab
     use reducedform
     use deformationmodes
     use idealstate
+    use frames
 
     implicit none 
 

@@ -1,0 +1,68 @@
+\documentclass[tikz,11pt,border=0.0pt]{standalone}
+
+\usepackage{physics}
+\usepackage{siunitx}
+\usepackage{txfonts}
+
+\usepackage{pgfplots}
+
+\usetikzlibrary{arrows.meta}
+%\usetikzlibrary{arrows.new}
+\usetikzlibrary{patterns}
+\usetikzlibrary{decorations.markings}
+\usetikzlibrary{backgrounds}
+
+\usepackage{xcolor}
+
+\usetikzlibrary{fit}
+\makeatletter
+\tikzset{
+  fitting node/.style={
+    inner sep=0pt,
+    fill=none,
+    draw=none,
+    reset transform,
+    fit={(\pgf@pathminx,\pgf@pathminy) (\pgf@pathmaxx,\pgf@pathmaxy)}
+  },
+  reset transform/.code={\pgftransformreset}
+}
+\makeatother
+
+\begin{document}
+
+
+\definecolor{bgcolor}{HTML}{f7f6ee} % grayish
+\definecolor{bgcolor}{HTML}{ffffff}
+
+%\tikzset{every picture/.style={line cap=round, line width=0.75pt}}
+\tikzset{
+labeltitle/.style={font=\fontsize{13.25}{13.25}\selectfont},
+typelabel/.style={labeltitle, font=\bf, black},
+%grpbox/.style={fill=bgcolor!280,draw=bgcolor!360}, % ,draw=bgcolor!360
+grpbox/.style={fill=none},
+%
+mypicture/.style={scale=1,},
+}
+
+\gdef\insetpanel#1#2#3{
+	\node[inner sep=0em, anchor=south west] (p1) at (0,0) 
+		{\includegraphics[scale=1]{../Eij-lin-sachs--#1.pdf}};
+
+	\node[yshift=#3, xshift=1em, anchor=west] at (p1.north west) {#2};
+}
+
+\begin{tikzpicture}[mypicture]
+	\insetpanel{SS}{\fontsize{14}{0}\selectfont \textit{(a)}}{-0.3em}
+	\begin{scope}[xshift=21em]
+	\insetpanel{UC}{\fontsize{14}{0}\selectfont \textit{(b)}}{-0.3em}
+	\end{scope}
+\end{tikzpicture}
+
+\begin{tikzpicture}[mypicture]
+	\insetpanel{SS-SI}{\fontsize{14}{0}\selectfont \textit{(a)}}{+1em}
+	\begin{scope}[xshift=21em]
+	\insetpanel{UC-SI}{\fontsize{14}{0}\selectfont \textit{(b)}}{+1em}
+	\end{scope}
+\end{tikzpicture}
+
+\end{document}

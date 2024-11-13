@@ -89,7 +89,7 @@ def plotODF(nlm, lm, ax, \
         showcb=True, showgl=True, hidetruncerr=True, # options/flags \
         norm=True, latres=50, lonres=2*50, nchunk=5, # general \
         cmap='Greys', lvlset='iso-up', # colormap and lvls \ 
-        cbfraction=0.075, cbaspect=9, cborientation='horizontal', cbpad=0.1, cblabel='$n/N$ (ODF)', cbtickintvl=4, extend=None, # colorbar \
+        cbfraction=0.075, cbaspect=9, cborientation='horizontal', cbpad=0.1, cblabel='$n/N$ (ODF)', cblabelpad=None, cbtickintvl=4, extend=None, # colorbar \
         kwargs_gl=kwargs_gl_default, # grid lines \
     ):
     
@@ -138,7 +138,7 @@ def plotODF(nlm, lm, ax, \
     
     ### Adjust colorbar
     if showcb:
-        hcb.set_label(cblabel)
+        hcb.set_label(cblabel, labelpad=cblabelpad)
         cbax = hcb.ax.xaxis if cborientation == 'horizontal' else hcb.ax.yaxis
         cbax.set_ticks(lvls, minor=True)
         cbax.set_major_formatter(mticker.FuncFormatter(lvlfmt))
@@ -177,7 +177,7 @@ def plotcoordaxes(ax, geo, axislabels='xi', color=c_dred, fontsize=None, negaxes
         ax.text(dphi+90, 0, r'$-%s'%lbls[1][1:], **kwargs)
             
             
-def plotmi(ax, mi, geo, marker='.', ms=9, markeredgewidth=1.0, colors=(c_dred,), **kwargs):
+def plotmi(ax, mi, geo, marker='.', ms=9, markeredgewidth=1.0, colors=(c_dred,), markeredgecolor=(None,), **kwargs):
 
     """
     Plot symmetry axes m_i
@@ -185,8 +185,9 @@ def plotmi(ax, mi, geo, marker='.', ms=9, markeredgewidth=1.0, colors=(c_dred,),
 
     kwargs_default = dict(marker=marker, ms=ms, markeredgewidth=markeredgewidth, transform=geo)
     for kk in range(3):
-        c_ = colors[kk] if len(colors)>1 else colors[0]
-        kw_color = dict(markerfacecolor=c_, markeredgecolor=c_)
+        c_   = colors[kk] if len(colors)>1 else colors[0]
+        mec_ = markeredgecolor[kk] if len(markeredgecolor)>1 else markeredgecolor[0] 
+        kw_color = dict(markerfacecolor=c_, markeredgecolor=c_ if mec_ is None else mec_)
         plotS2point(ax, +mi[:,kk], **kwargs_default, **kw_color, **kwargs)
         plotS2point(ax, -mi[:,kk], **kwargs_default, **kw_color, **kwargs)
             

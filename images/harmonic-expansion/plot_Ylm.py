@@ -26,7 +26,7 @@ def plot_Ylm(F, lon, lat, ax=None, title='', cmap='RdGy', lvlmax=0.2*4):
     kwargs_gridlines = {'ylocs':np.arange(-90,90+30,30), 'xlocs':np.arange(0,360+45,45), 'linewidth':0.5, 'color':'black', 'alpha':0.25, 'linestyle':'-'}
     gl = ax.gridlines(crs=ccrs.PlateCarree(), **kwargs_gridlines)
     gl.xlocator = mticker.FixedLocator(np.array([-135, -90, -45, 0, 90, 45, 135, 180]))
-    ax.set_title(title, pad=10, fontsize=FS+2)
+    ax.set_title(title, pad=10, fontsize=FS+4)
 
 def discretize_fabric(nlm, lm, latres=60):
     theta = np.linspace(0,   np.pi,   latres) # CO-LAT 
@@ -63,7 +63,7 @@ lm, nlm_len = sf.init(2)
 a2 = np.diag([0.1, 0.3, 0.6])
 nlm = sf.a2_to_nlm(a2)
 #nlm = 1/np.sqrt(4*np.pi) * np.array([1,0.5,-0.325, 0,0,0])
-lvlset = (np.linspace(0,0.25,9), lambda x,p:'%.1f'%x) 
+lvlset = (np.linspace(0,0.30,9), lambda x,p:'%.1f'%x) 
 sfplt.plotODF(nlm, lm, ax, lvlset=lvlset, showcb=False)
 
 #cmap = cmr.get_sub_cmap('Greys', 0.08, 1) # don't include pure white to distinguish from white figure background
@@ -73,6 +73,15 @@ sfplt.plotODF(nlm, lm, ax, lvlset=lvlset, showcb=False)
 fout = 'nlm.png'
 print('Saving %s'%(fout))
 plt.savefig(fout, transparent=True, dpi=350)
+
+c = sfplt.c_dred
+sfplt.plotS2text(ax, [0,0,1], r'$\vb{m}_1$', transform=geo, color=c, fontsize=FS+1)
+sfplt.plotS2text(ax, [0,-1,0], r'$\vb{m}_2$', transform=geo, color=c, fontsize=FS+1)
+sfplt.plotS2text(ax, [-1,0,0], r'$\vb{m}_3$', transform=geo, color=c, fontsize=FS+1)
+fout = 'nlm-with-mi.png'
+print('Saving %s'%(fout))
+plt.savefig(fout, transparent=True, dpi=350)
+
 
 #-----------------
 # Decomposition
@@ -105,7 +114,8 @@ if 1:
             nlm = nlm_mag*np.exp(m*1j*phi)
             sign = (-1)**(m)
             (F,lon,lat) = discretize_fabric([sign*np.conj(nlm),nlm], np.array([[l,l],[m,-m]]))
-            title = r'$%s\big(n_{%i}^{%i}\big)^* Y_{%i}^{-%i} + n_{%i}^{%i}Y_{%i}^{%i}$' % ('' if sign>0 else '-', l,m, l,m, l,m, l,m)
+#            title = r'$%s\big(n_{%i}^{%i}\big)^* Y_{%i}^{-%i} + n_{%i}^{%i}Y_{%i}^{%i}$' % ('' if sign>0 else '-', l,m, l,m, l,m, l,m)
+            title = r'$n_{%i}^{%i}Y_{%i}^{%i} + \mathrm{c.c.}$' % (l,m, l,m)
             plot_Ylm(F, lon, lat, ax=ax, title=title)
 
         fout = 'Y%i%i.png'%(l,m)

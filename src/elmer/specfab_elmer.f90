@@ -53,12 +53,12 @@ function Cmat_inverse_orthotropic(eps, A, n, m1,m2,m3, Eij) result(C)
 
     viscosity = A**(-1/n) * sum(cvi*Ii**2)**powlawexp_rev(n)
     C = viscosity * ( &
-        + ci(1) * outerprod9(vectorize9(identity - 3*Mij(1,:,:)), vectorize9(Mij(1,:,:))) &
-        + ci(2) * outerprod9(vectorize9(identity - 3*Mij(2,:,:)), vectorize9(Mij(2,:,:))) &
-        + ci(3) * outerprod9(vectorize9(identity - 3*Mij(3,:,:)), vectorize9(Mij(3,:,:))) &
-        + ci(4) * outerprod9(vectorize9(symmetricpart(Mij(4,:,:))), vectorize9(Mij(4,:,:))) &
-        + ci(5) * outerprod9(vectorize9(symmetricpart(Mij(5,:,:))), vectorize9(Mij(5,:,:))) &
-        + ci(6) * outerprod9(vectorize9(symmetricpart(Mij(6,:,:))), vectorize9(Mij(6,:,:))) &
+        + ci(1) * outerprod99(vectorize9(identity - 3*Mij(1,:,:)), vectorize9(Mij(1,:,:))) &
+        + ci(2) * outerprod99(vectorize9(identity - 3*Mij(2,:,:)), vectorize9(Mij(2,:,:))) &
+        + ci(3) * outerprod99(vectorize9(identity - 3*Mij(3,:,:)), vectorize9(Mij(3,:,:))) &
+        + ci(4) * outerprod99(vectorize9(symmetricpart(Mij(4,:,:))), vectorize9(Mij(4,:,:))) &
+        + ci(5) * outerprod99(vectorize9(symmetricpart(Mij(5,:,:))), vectorize9(Mij(5,:,:))) &
+        + ci(6) * outerprod99(vectorize9(symmetricpart(Mij(6,:,:))), vectorize9(Mij(6,:,:))) &
     )
 end
 

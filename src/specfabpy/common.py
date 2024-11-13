@@ -6,39 +6,39 @@ Library of commonly used routines
 """
 
 import numpy as np
+import copy, sys, os, code # code.interact(local=locals())
 from .specfabpy import specfabpy as sf__ # sf private copy 
 lm__, nlm_len__ = sf__.init(20)
-
 
 def eigenframe(Z, modelplane=None, symframe=-1):
 
     """
     Principal fabric frame (typically a^(2) principal axes).
+    
+    if Z[nn,3,3] --> list of a2 matrices
+    if Z[3,3]    --> single  a2 matrix
+    if Z[nn,:]   --> list of nlm vectors
+    if Z[:]      --> single  nlm vector    
     """
     
-    if len(Z.shape) >= 1:
-        # if Z is multidimensional then assume nlm[nn,coefs] was passed
+    if Z.shape[-1] > 3: 
+        # nlm vector passed, or list thereof was passed
         nlm = np.array(Z, ndmin=2) # ensure nlm[nn,coef] format even if nlm[coef] was passed 
         Q = np.array([sf__.a2(nlm[nn,:]) if (symframe == -1) else sf__.a4_eigentensors(nlm[nn,:])[symframe] for nn in range(nlm.shape[0])])
-    else:                 
-        Z = np.array(Z, ndmin=2)
-        Q = Z # assume Z = a^(2) passed directly
-        
-    lami, ei = np.linalg.eig(Q)
+    else:     
+        # assume Z = a^(2) passed directly, or list thereof
+        Z = np.array(Z, ndmin=3)
+        Q = Z
 
-    if modelplane is None: 
-        I = np.flip(lami.argsort()) # largest eigenvalue pair is first entry
-        ei, lami = ei[:,:,I], lami[:,I]
-    else:
-        kk = 1 if modelplane=='xz' else 2 # xz else xy
-        for nn in range(lami.shape[0]):
-            lami_, ei_ = lami[nn,:], ei[nn,:,:] # node nn
-            I = abs(ei_[kk,:]).argsort() # last entry is ei with largest y-value (component out of xz modelplane), or z value for xy modelplane
-            II = np.flip(lami_[I[0:2]].argsort()) # largest eigenvalue sorting of *in-plane ei vectors*
-            I[0:2] = I[II] # rearrange in-plane eigenpairs so that largest eigenvalue pair is first
-            lami[nn,:], ei[nn,:,:] = lami_[I], ei_[:,I]
-        
-    return (ei[0], lami[0]) if Z.shape[0]==1 else (ei, lami) # [node], [, xyz comp], eigenpair
+    if modelplane is None: modelplane='ij'
+    ei, lami = sf__.eigframe_arr(Q, modelplane)
+    ei = np.moveaxis(ei, -1, -2) # ei[node,i,xyz] --> ei[node,xyz,i]
+
+    return (ei[0], lami[0]) if Z.shape[0]==1 else (ei, lami) # ei[node,xyz,i], lami[node,i]
+
+    
+def xi_tile(N):     return ei_tile(np.eye(3), N)
+def ei_tile(ei, N): return (np.tile(ei[0],(N,1)), np.tile(ei[1],(N,1)), np.tile(ei[2],(N,1)))
     
     
 def pfJ(nlm): 
@@ -46,10 +46,10 @@ def pfJ(nlm):
     """
     Pole figure J (pfJ) index
     """
-    # @TODO: nlm index ordering should be transposed to match [node, comp] ordering of other routines
+
     k = np.sqrt(4*np.pi)**2
-    if len(nlm.shape) == 2: J_i = [ k*np.sum(np.square(np.absolute(nlm[:,ii]))) for ii in range(nlm.shape[1]) ]
-    else:                   J_i =   k*np.sum(np.square(np.absolute(nlm[:,ii])))
+    if len(nlm.shape) == 2: J_i = [ k*np.sum(np.square(np.absolute(nlm[ii]))) for ii in range(nlm.shape[0]) ]
+    else:                   J_i =   k*np.sum(np.square(np.absolute(nlm)))
     return J_i
     
    
@@ -87,6 +87,17 @@ def mat2d(D3, modelplane):
         raise ValueError('invalid modelplane "%s"'%(modelplane))
         
     return D2
+    
+    
+def mat3d_arr(D2, modelplane, reshape=False):
+
+    """
+    Overloaded version of mat3d() that can take arrays of D2
+    """    
+    # 2D to 3D strain-rate/stress tensor assuming (i) tr=0 and (ii) out-of-modelplane shear components vanish
+    if len(D2.shape) == 1: D2 = np.array(D2, ndmin=2) # generalize so that this routine works for arrays of matrices, too
+    D3 = np.array([ mat3d(D2[nn], modelplane, reshape=reshape) for nn in range(D2.shape[0]) ])
+    return D3[0] if D3.shape[0]==1 else D3
     
     
 def mat3d(D2, modelplane, reshape=False): 

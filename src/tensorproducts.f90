@@ -85,44 +85,53 @@ contains
     ! OUTER PRODUCTS
     !------------------------
 
-    function outerprod(a,b) 
+    function outerprod(a,b) result(P)
         ! a_i b_j = rank-2 tensor
         implicit none
-        real(kind=dp), intent(in) :: a(3), b(3)
-        real(kind=dp) :: outerprod(3,3)
-        outerprod = reshape( [( [( a(ii)*b(jj), ii=1,3)], jj=1,3)] , [3,3])
+        real(kind=dp), intent(in) :: a(:), b(:)
+        real(kind=dp) :: P(size(a),size(b))
+!        P = spread(a,2,size(b)) * spread(b,1,size(a))
+        P = reshape( [( [( a(ii)*b(jj), ii=1,size(a))], jj=1,size(b))] , [size(a),size(b)])
     end
     
-    function outerprod4(a,b,c,d) 
+    function outerprod4(a,b,c,d) result(P)
         ! a_i b_j c_k d_l = rank-4 tensor
         implicit none
         real(kind=dp), intent(in) :: a(3), b(3), c(3), d(3)
-        real(kind=dp) :: outerprod4(3,3,3,3)
-        outerprod4 = reshape( [( [( [( [( a(ii)*b(jj)*c(kk)*d(ll), ii=1,3)], jj=1,3)], kk=1,3)], ll=1,3)] , [3,3,3,3])
+        real(kind=dp) :: P(3,3,3,3)
+        P = reshape( [( [( [( [( a(ii)*b(jj)*c(kk)*d(ll), ii=1,3)], jj=1,3)], kk=1,3)], ll=1,3)] , [3,3,3,3])
     end
     
-    function outerprod6(a,b) 
+    function outerprod6(a,b,c,d,e,f) result(P)
+        ! a_i b_j c_k d_l e_m f_n = rank-4 tensor
+        implicit none
+        real(kind=dp), intent(in) :: a(3), b(3), c(3), d(3), e(3), f(3)
+        real(kind=dp) :: P(3,3,3,3,3,3)
+        P = reshape( [( [( [( [( [( [( a(ii)*b(jj)*c(kk)*d(ll)*e(mm)*f(nn), ii=1,3)], jj=1,3)], kk=1,3)], ll=1,3)], mm=1,3)], nn=1,3)] , [3,3,3,3,3,3])
+    end
+    
+    function outerprod66(a,b) result(P)
         ! a_i b_j = rank-2 tensor
         implicit none
         real(kind=dp), intent(in) :: a(6), b(6)
-        real(kind=dp) :: outerprod6(6,6)
-        outerprod6 = reshape( [( [( a(ii)*b(jj), ii=1,6)], jj=1,6)] , [6,6])
+        real(kind=dp) :: P(6,6)
+        P = reshape( [( [( a(ii)*b(jj), ii=1,6)], jj=1,6)] , [6,6])
     end
     
-    function outerprod9(a,b) 
+    function outerprod99(a,b) result(P)
         ! a_i b_j = rank-2 tensor
         implicit none
         real(kind=dp), intent(in) :: a(9), b(9)
-        real(kind=dp) :: outerprod9(9,9)
-        outerprod9 = reshape( [( [( a(ii)*b(jj), ii=1,9)], jj=1,9)] , [9,9])
+        real(kind=dp) :: P(9,9)
+        P = reshape( [( [( a(ii)*b(jj), ii=1,9)], jj=1,9)] , [9,9])
     end
 
-    function outerprod22(A,B) result(C)
+    function outerprodmat2(A,B) result(P)
         ! A_ij B_kl = rank-4 tensor
         implicit none
         real(kind=dp), intent(in) :: A(3,3), B(3,3)
-        real(kind=dp) :: C(3,3,3,3)
-        C = reshape( [( [( [( [( A(ii,jj)*B(kk,ll), ii=1,3)], jj=1,3)], kk=1,3)], ll=1,3)] , [3,3,3,3])
+        real(kind=dp) :: P(3,3,3,3)
+        P = reshape( [( [( [( [( A(ii,jj)*B(kk,ll), ii=1,3)], jj=1,3)], kk=1,3)], ll=1,3)] , [3,3,3,3])
     end    
 
     !------------------------

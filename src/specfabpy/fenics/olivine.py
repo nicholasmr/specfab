@@ -82,8 +82,8 @@ class OlivineFabric():
             self.FSE.evolve(u, dt)
             
     def update_Eij(self):
-        self.mi, self.Eij, self.ai = self.enhancementfactor.Eij_orthotropic(self.SDM_b.w, self.SDM_n.w, *self.grain_params)
-        self.xi, self.Exij, _      = self.enhancementfactor.Eij_orthotropic(self.SDM_b.w, self.SDM_n.w, *self.grain_params, ei_arg=np.eye(3)) 
+        self.mi, self.Eij, self.ai = self.enhancementfactor.Eij_orthotropic(self.SDM_b.w, self.SDM_n.w, *self.grain_params, ei=())
+        self.xi, self.Exij, _      = self.enhancementfactor.Eij_orthotropic(self.SDM_b.w, self.SDM_n.w, *self.grain_params, ei=np.eye(3)) 
         # ... unpack
         self.m1, self.m2, self.m3 = self.mi # eigenvectors (presumed fabric and rheological symmetry directions)
         self.E11, self.E22, self.E33, self.E23, self.E31, self.E12 = self.Eij  # eigenenhancements

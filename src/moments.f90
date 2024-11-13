@@ -51,7 +51,6 @@ contains
     end
     
     function a2_to_nlm(a2) result(nlm)
-        ! Get n_2^m from a^(2)
         implicit none
         real(kind=dp), intent(in) :: a2(3,3)
         complex(kind=dp)          :: nlm(nlm_lenvec(2)) 
@@ -60,7 +59,6 @@ contains
     end
 
     function a4_to_nlm(a4) result(nlm)
-        ! Get n_2^m and n_4^m from a^(4)
         implicit none
         real(kind=dp), intent(in) :: a4(3,3,3,3)
         complex(kind=dp)          :: nlm(nlm_lenvec(4)) 
@@ -71,12 +69,50 @@ contains
     end
 
     function a6_to_nlm(a6) result(nlm)
-        ! Get n_2^m and n_4^m from a^(4)
         implicit none
         real(kind=dp), intent(in) :: a6(3,3,3,3,3,3)
         complex(kind=dp)          :: nlm(nlm_lenvec(6)) 
         nlm = 0.0d0 ! init
         include "include/a6_to_nlm__body.f90"
+    end
+
+    !---------------------------------
+    ! Conversion between ri and nlm
+    !---------------------------------
+
+    function ri_to_nlm(ri, L) result(nlm)
+    
+        implicit none
+        real(kind=dp), intent(in)     :: ri(:,:) ! axis no, xyz
+        integer, intent(in)           :: L ! truncation of resulting series
+        integer                       :: N
+        real(kind=dp)                 :: a2_(3,3), a4_(3,3,3,3), a6_(3,3,3,3,3,3)
+        complex(kind=dp)              :: nlm(nlm_lenvec(L)) 
+    
+        N = size(ri,1) ! number of axes (grains)
+    
+        if (L .eq. 2) then
+            a2_ = 0.0d0
+            do nn=1,N
+                a2_ = a2_ + outerprod(ri(nn,:),ri(nn,:))
+            end do
+            nlm(:) = a2_to_nlm(a2_/N)
+        elseif (L == 4) then
+            a4_ = 0.0d0
+            do nn=1,N
+                a4_ = a4_ + outerprod4(ri(nn,:),ri(nn,:),ri(nn,:),ri(nn,:))
+            end do
+            nlm(:) = a4_to_nlm(a4_/N)
+        elseif (L == 6) then
+            a6_ = 0.0d0
+            do nn=1,N
+                a6_ = a6_ + outerprod6(ri(nn,:),ri(nn,:),ri(nn,:),ri(nn,:),ri(nn,:),ri(nn,:))
+            end do
+            nlm(:) = a6_to_nlm(a6_/N)
+        else
+            print *, "ri_to_nlm(): bad value of L, returning zeroes"
+            nlm(:) = 0.0d0
+        end if
     end
 
     !---------------------------------
@@ -257,80 +293,6 @@ contains
         ev = 0.0
         include "include/ev_c2v2__body.f90"
         ev = ev * k/norm 
-    end
-    
-    !---------------------------------
-    ! Fabric eigen frames
-    !---------------------------------
-
-    subroutine frame(nlm, ftype, e1,e2,e3, eigvals)
-
-        implicit none
-        
-        complex(kind=dp), intent(in) :: nlm(:)
-        character*1, intent(in)      :: ftype ! 'x','e','p' (Cartesian frame, a2 eigenframe, 45deg rotated eigenframe)
-        integer, parameter           :: n = 3
-        real(kind=dp), intent(out)   :: e1(n),e2(n),e3(n), eigvals(3)
-        real(kind=dp)                :: p(n),q(n)
-        ! If eigen frame
-        integer            :: inf
-        integer, parameter :: l=3*3-1
-        real(kind=dp)      :: e_ij(n,n), work(l)
-        
-        eigvals = 0.0
-        
-        ! Cartesian frame
-        if (ftype == 'x') then
-            e1 = [1,0,0] 
-            e2 = [0,1,0] 
-            e3 = [0,0,1] 
-            
-        else
-            ! a2 eigen frame    
-            e_ij = a2(nlm)
-            call dsyev('V','U',n,e_ij,n,eigvals,work,l,inf)
-            e1 = e_ij(:,3)
-            e2 = e_ij(:,2)
-            e3 = e_ij(:,1)
-            eigvals = [eigvals(3),eigvals(2),eigvals(1)] ! Largest first
-            
-            ! Rotated a2 eigen frame
-            if (ftype == 'p') then
-                p = (e1+e2)/sqrt(2.0) 
-                q = (e1-e2)/sqrt(2.0) 
-                e1 = p
-                e2 = q
-                ! cross product
-                e3(1) = p(2) * q(3) - p(3) * q(2)
-                e3(2) = p(3) * q(1) - p(1) * q(3)
-                e3(3) = p(1) * q(2) - p(2) * q(1)
-            end if     
-               
-        end if
-    end
-
-    subroutine a4_eigentensors(nlm, Q1,Q2,Q3,Q4,Q5,Q6, eigvals6)  
-
-        implicit none
-        
-        complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp)                :: M(6,6)
-        real(kind=dp), intent(out)   :: Q1(3,3),Q2(3,3),Q3(3,3),Q4(3,3),Q5(3,3),Q6(3,3)
-        
-        integer, parameter :: n = 6
-        real(kind=dp), intent(out) :: eigvals6(n)
-        integer            :: inf
-        integer, parameter :: l6=n*n-1
-        real(kind=dp)      :: work6(l6)
-        
-        M = a4_to_mat(a4(nlm)) ! 6x6
-        call dsyev('V','U',n,M,n,eigvals6,work6,l6,inf)
-        Q1 = vec_to_mat(M(:,1)) 
-        Q2 = vec_to_mat(M(:,2)) 
-        Q3 = vec_to_mat(M(:,3)) 
-        Q4 = vec_to_mat(M(:,4))
-        Q5 = vec_to_mat(M(:,5))
-        Q6 = vec_to_mat(M(:,6))
     end
     
     !---------------------------------

@@ -167,7 +167,7 @@ contains
         L = anticommutator_Mandel(a2mat)
         
         ! Matrix "P" of the vectorized bulk Taylor rheology: vec(tau) = matmul(P, vec(eps))
-        P = identity6 - coefA*outerprod6(identity_vec6,a2v) + coefB*a4v + coefC*L 
+        P = identity6 - coefA*outerprod66(identity_vec6,a2v) + coefB*a4v + coefC*L 
         
         ! Solve inverse problem; we are seeking eps given tau.
         tau_vec(:,1) = mat_to_vec(tau)
@@ -322,8 +322,8 @@ contains
 !        ! Tensors
 !        call ai_orthotropic(nlm_1, nlm_2, nlm_3, a2_i, a4_ii, a4_jk)
 !        do ii=1,3
-!            P2(ii, :,:,:,:) = (outerprod22(identity,identity) -3*outerprod22(identity,a2_i(ii, :,:)) -3*outerprod22(a2_i(ii, :,:),identity) + 9*a4_ii(ii, :,:,:,:))/4
-!!            P2(ii, :,:,:,:) = (-3.0d0/2)*(outerprod22(identity,a2_i(ii, :,:))  - 3*a4_ii(ii, :,:,:,:))/2
+!            P2(ii, :,:,:,:) = (outerprodmat2(identity,identity) -3*outerprodmat2(identity,a2_i(ii, :,:)) -3*outerprodmat2(a2_i(ii, :,:),identity) + 9*a4_ii(ii, :,:,:,:))/4
+!!            P2(ii, :,:,:,:) = (-3.0d0/2)*(outerprodmat2(identity,a2_i(ii, :,:))  - 3*a4_ii(ii, :,:,:,:))/2
 !            H2(ii, :,:,:,:) =  a4_sym4(a4_jk(ii, :,:,:,:))
 !        end do
 
@@ -390,8 +390,8 @@ contains
         L = anticommutator_Mandel(a2mat)
         
         ! Matrix "P" of the vectorized bulk Reuss rheology: strain = matmul(P, stress)
-        P = k1*outerprod6(identity_vec6,identity_vec6) + k2*identity6 &
-            + k3*(outerprod6(identity_vec6,a2v) + outerprod6(a2v,identity_vec6)) + k4*a4v + k5*L 
+        P = k1*outerprod66(identity_vec6,identity_vec6) + k2*identity6 &
+            + k3*(outerprod66(identity_vec6,a2v) + outerprod66(a2v,identity_vec6)) + k4*a4v + k5*L 
 
         ! Solve *inverse* problem; we are seeking stress given strain in strain = matmul(P, stress).
         strain_vec(:,1) = mat_to_vec(strain)

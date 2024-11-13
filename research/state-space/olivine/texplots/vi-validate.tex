@@ -1,0 +1,75 @@
+\documentclass[tikz,11pt,border=0.0pt]{standalone}
+
+\usepackage{physics}
+\usepackage{siunitx}
+\usepackage{txfonts}
+
+\usepackage{pgfplots}
+
+\usetikzlibrary{arrows.meta}
+%\usetikzlibrary{arrows.new}
+\usetikzlibrary{patterns}
+\usetikzlibrary{decorations.markings}
+\usetikzlibrary{backgrounds}
+
+\usepackage{xcolor}
+
+\usetikzlibrary{fit}
+\makeatletter
+\tikzset{
+  fitting node/.style={
+    inner sep=0pt,
+    fill=none,
+    draw=none,
+    reset transform,
+    fit={(\pgf@pathminx,\pgf@pathminy) (\pgf@pathmaxx,\pgf@pathmaxy)}
+  },
+  reset transform/.code={\pgftransformreset}
+}
+\makeatother
+
+\begin{document}
+
+
+\definecolor{bgcolor}{HTML}{f7f6ee} % grayish
+%\definecolor{bgcolor}{HTML}{ffffff}
+
+\tikzset{every picture/.style={line cap=round, line width=0.75pt}}
+\tikzset{
+labeltitle/.style={font=\fontsize{12}{0}\selectfont},
+typelabel/.style={labeltitle, font=\bf, black},
+grpbox/.style={fill=bgcolor!280,draw=bgcolor!360}, % ,draw=bgcolor!360
+%
+mypicture/.style={scale=1,background rectangle/.style={fill=bgcolor}, inner frame xsep=2.0ex, inner frame ysep=2.0ex, show background rectangle},
+}
+
+\gdef\insetpanel#1#2#3#4{
+	\gdef\xpadbox{0.95em}
+
+	\fill[grpbox] (0em,#4-0.65em) rectangle ++({21.5em+\xpadbox},14.5em) node[fitting node] (R) {}; 
+	\node[inner sep=0pt, anchor=south west] (ss) at (\xpadbox,#4) {\includegraphics[scale=1]{#1}};
+	
+	\node[font=\fontsize{13}{0}\selectfont, yshift=+1.2em, anchor=west] at (R.north west) {#2};
+	\node[labeltitle, yshift=-1.8em, align=center] at (R.north) {#3};
+}
+
+\begin{tikzpicture}[mypicture]
+	
+\gdef\yposDDM{-15.5em}
+
+\gdef\titlediscrete{$\vu{Q}$ constructed from\\[0.2em] $\lbrace (\vb{b}_1,\vb{n}_1,\vb{v}_1), (\vb{b}_2,\vb{n}_2,\vb{v}_2), \cdots \rbrace$}
+
+\gdef\titlecont{$\vu{Q}$ constructed from\\[0.2em] $b(\vu{r})$ and $n(\vu{r})$}
+
+\insetpanel{DDM-simpleShear-Vi-15.pdf}{\textit{(a)}\; Simple shear $(\gamma_{xz} = 1.8)$}{\titlediscrete}{0}
+\insetpanel{SDM-simpleShear-Vi-15.pdf}{}{\titlecont}{\yposDDM}
+
+%\begin{scope}[yshift=-32em]
+\begin{scope}[xshift=25em]
+\insetpanel{DDM-axisymmetricCompression-Vi-15.pdf}{\textit{(b)}\; Uniaxial compression $(\epsilon_{zz} = -0.73)$}{\titlediscrete}{0}
+\insetpanel{SDM-axisymmetricCompression-Vi-15.pdf}{}{\titlecont}{\yposDDM}
+\end{scope}
+	
+\end{tikzpicture}
+
+\end{document}

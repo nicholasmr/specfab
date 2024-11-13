@@ -1,14 +1,15 @@
 #!/usr/bin/python3
-# Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2021-2024
+# Nicholas M. Rathmann <rathmann@nbi.ku.dk>
 
 """
-FEniCS interface for calculating bulk enhancement factors given CPO field
+FEniCS interface for calculating bulk enhancement factors given a CPO field
 """
 
 import numpy as np
+import code # code.interact(local=locals())
 from dolfin import *
 from ..specfabpy import specfabpy as sf__ # sf private copy 
-from ..common import *
+from .. import common as sfcom
 from .rheology import Orthotropic, Isotropic
 
 class EnhancementFactor():
@@ -27,150 +28,132 @@ class EnhancementFactor():
         self.lm, self.nlm_len_full = self.sf.init(self.L)
         self.nlm_len = self.sf.get_rnlm_len() if self.USE_REDUCED else self.nlm_len_full # use reduced or full form?
         
-        ### Function spaces
+        ### Derived quantities: viscous anisotropy, a2 eigenvalues, J index, ...
         
-        # Store CPO information element-wise: node located at element center, CPO constant over element
-        eletype, eleorder = 'DG', 0 
-        self.Rele = FiniteElement(eletype, self.mesh.ufl_cell(), eleorder)
-        self.R  = FunctionSpace(self.mesh, self.Rele) # for scalars 
-        self.R3 = VectorFunctionSpace(self.mesh, eletype, eleorder, dim=3) # for vectors
-        self.numdofs = Function(self.R).vector().local_size()
-        self.R3_assigner = FunctionAssigner(self.R3, [self.R, self.R, self.R]) # for constructing vectors from their components
-        self.G = TensorFunctionSpace(self.mesh, eletype, eleorder, shape=(2,2)) # strain-rate and spin function space 
-        self.T = TensorFunctionSpace(self.mesh, eletype, eleorder, shape=(3,3))        
+        ele = ('DG',1)
+#        self.Sd = VectorFunctionSpace(self.mesh, *ele, dim=self.nlm_len)
+        self.R = FunctionSpace(self.mesh, *ele)
+        self.V = VectorFunctionSpace(self.mesh, *ele, dim=3) # for vectors
+        self.V_assigner = FunctionAssigner(self.V, [self.R, self.R, self.R]) # for constructing vectors from their components
+        self.G = TensorFunctionSpace(self.mesh, *ele, shape=(2,2))
+        self.T = TensorFunctionSpace(self.mesh, *ele, shape=(3,3))
+        self.numdofs = self.R.dim()
         
+        ### Aux/shortcuts
+        
+        self.dofs0 = np.arange(self.numdofs)
+        self.srng  = np.arange(self.nlm_len)
 
-    def V2R(self, wV):
-        wV_sub = wV.split()
-        wR_sub = [project(wV_sub[ii], self.R) for ii in range(self.nlm_len)] 
-        return wR_sub
-        
-        
-    def wR(self, w):
-        if   self.modelplane=='xy': return self.V2R(w.sub(0)), self.V2R(w.sub(1)) # wr_R, wi_R
-        elif self.modelplane=='xz': return self.V2R(w), [project(Constant(0), self.R)]*self.nlm_len # wr_R, 0
-        
-       
-    def nlm_nodal(self, w):
-        wr_R, wi_R = self.wR(w)
-        rnlm = np.array([ wr_R[ii].vector()[:] + 1j*wi_R[ii].vector()[:] for ii in range(self.nlm_len) ])
-        nlm = np.array([ self.sf.rnlm_to_nlm(rnlm[:,nn], self.nlm_len_full) for nn in range(self.numdofs) ])
-        return nlm.T # nlm[coef,node]
 
- 
-    def get_nlm(self, w, x,y):
-        wr_R, wi_R = self.wR(w)
-        rnlm = np.array([ wr_R[ii].vector()[:] + 1j*wi_R[ii].vector()[:] for ii in range(self.nlm_len) ])
+    def get_nlm(self, s, x,y):
+        """
+        Get numpy nlm array at point (x,y) for state vector field s
+        """
+        sr_R, si_R = self._sR(s)
+        rnlm = np.array([ sr_R[ii].vector()[:] + 1j*si_R[ii].vector()[:] for ii in self.srng ])
         return self.sf.rnlm_to_nlm(rnlm, self.nlm_len_full)
-        
-        
-    def ei_tile(self, ei):
-        ei_tile  = np.zeros((3, 3, self.numdofs)) # (xyz component, i-th vector, node)
-        for ii in range(3): ei_tile[:,ii,:] = np.tile(ei[ii], (self.numdofs,1)).T
-        return ei_tile            
-        
-        
-    def np_to_func(self, ei, Eij, ai):
 
-        # CPO eigenvectors
-        ei_df  = [Function(self.R3) for _ in range(3)] # list of ei
-        eij_df = [Function(self.R)  for _ in range(3)] # list of z,y,z components of a given ei
+    def _nlm_nodal(self, s):
+        sr_R, si_R = self._sR(s)
+        rnlm = np.array([ sr_R[ii].vector()[:] + 1j*si_R[ii].vector()[:] for ii in self.srng ])
+        nlm  = np.array([ self.sf.rnlm_to_nlm(rnlm[:,nn], self.nlm_len_full) for nn in self.dofs0 ])
+        return nlm # nlm[node,component]
+
+    def _sR(self, s):
+        if   self.modelplane=='xy': return self._V2R(s.sub(0)), self._V2R(s.sub(1)) # sr_R, si_R
+        elif self.modelplane=='xz': return self._V2R(s), [project(Constant(0), self.R)]*self.nlm_len # sr_R, 0
+                
+    def _V2R(self, sV):
+        sV_sub = sV.split()
+        sR_sub = [project(sV_sub[ii], self.R) for ii in self.srng] 
+        return sR_sub
+
+    def _np2func(self, ei, Eij, ai):
+    
+        mi_df   = [Function(self.V) for _ in range(3)] # (m1,m2,m3) fabric principal directions
+        Eij_df  = [Function(self.R) for _ in range(6)] # Eij enhancement tensor
+        lami_df = [Function(self.R) for _ in range(3)] # a2 eigenvalues (lami)
+        eij_df  = [Function(self.R) for _ in range(3)] # list of z,y,z components of a given ei
+        ei = np.array(ei)
+                
         for ii in range(3): # loop over vectors (e1,e2,e3)
             for jj in range(3): # loop over vector components
-                eij_df[jj].vector()[:] = ei[jj,ii,:]
-            self.R3_assigner.assign(ei_df[ii], eij_df) # set vector field components
+                eij_df[jj].vector()[:] = ei[ii,:,jj] # [i,node,xyz]
+            self.V_assigner.assign(mi_df[ii], eij_df) # set vector field components
+        for kk in range(6): Eij_df[kk].vector()[:] = Eij[:,kk]
+        for ii in range(3): lami_df[ii].vector()[:] = ai[:,ii] 
         
-        # Enhancement factors
-        Eij_df = [Function(self.R) for _ in range(6)]
-        for kk in range(6): Eij_df[kk].vector()[:] = Eij[kk,:]
+        return (mi_df, Eij_df, lami_df)
         
-        # Eigenvalues
-        ai_df = [Function(self.R) for _ in range(3)]
-        for ii in range(3): ai_df[ii].vector()[:] = ai[ii,:]
+    def mat3d(self, D2, dn=4):
+        D2 = np.array([ D2[nn*dn:(nn+1)*dn] for nn in self.dofs0 ]) # to [node, D2 flat index 0 to 3]
+        return sfcom.mat3d_arr(D2, self.modelplane, reshape=True) # [node,3,3]
         
-        return ei_df, Eij_df, ai_df
-        
-        
-    def Eij_tranisotropic(self, w, Eij_grain, alpha, n_grain, ei_arg=()):
-   
+    def Eij_tranisotropic(self, sn, Eij_grain, alpha, n_grain, ei=()):
         """
-        Bulk enhancement factors w.r.t. ei=(e1,e2,e3) axes for *transversely isotropic* grains.
-        If ei=() then CPO eigenframe is used, ei=(m1,m2,m3), and Eij are the eigenenhancements.
+        Bulk enhancement factors wrt ei=(e1,e2,e3) axes for *transversely isotropic* grains
+
+        If ei=() then CPO eigenframe is used
+        
+        *args = (Eij_grain, alpha, n_grain)
         """
     
         if n_grain != 1: raise ValueError('only n_grain = 1 (linear viscous) is supported')
         if not(0 <= alpha <= 1): raise ValueError('alpha should be between 0 and 1')
        
-        ei  = np.zeros((3, 3, self.numdofs)) # (xyz component, i-th vector, node)
-        Eij = np.zeros((6, self.numdofs))    # (Eij component, node)
-        ai  = np.zeros((3, self.numdofs))    # (i-th a^(2) eigenvalue, node)
-
-        if len(ei_arg) == 3: ei[:,:,:] = self.ei_tile(ei_arg) # set prescribed ei frame
-        nlm = self.nlm_nodal(w) # (nlm component, node)
+        nlm = self._nlm_nodal(sn) # [node, component]
+        mi, lami = sfcom.eigenframe(nlm, symframe=self.symframe, modelplane=self.modelplane) # [node,xyz,i], [node,i]
+        if   len(ei) == 0:           ei = (mi[:,:,0], mi[:,:,1], mi[:,:,2])
+        elif len(ei[0].shape) == 1:  ei = sfcom.ei_tile(ei, self.numdofs) # ei = (e1[node,3], e2, e3)
+        Eij = self.sf.Eij_tranisotropic_arr(nlm, *ei, Eij_grain, alpha, n_grain) # [node, Voigt vector index 1--6]
         
-        for nn in np.arange(self.numdofs): 
-            eigvecs, ai[:,nn] = eigenframe(nlm[:,nn], symframe=self.symframe, modelplane=self.modelplane) # sfcom.eigenframe()
-            if len(ei_arg) == 0: ei[:,0,nn], ei[:,1,nn], ei[:,2,nn] = eigvecs.T # Eij directions
-            Eij[:,nn] = self.sf.Eij_tranisotropic(nlm[:,nn], ei[:,0,nn], ei[:,1,nn], ei[:,2,nn], Eij_grain,alpha,n_grain) # 3x3 enhancement-factor tensor
-        
-        """
-        The enhancement-factor model depends on effective (homogenized) grain parameters, calibrated against deformation tests.
-        For CPOs far from the calibration states, negative values may occur where Eij should tend to zero if truncation L is not large enough.
-        """
+        # The enhancement factor model depends on effective (homogenized) grain parameters, calibrated against deformation tests.
+        # For CPOs far from the calibration states, negative values *may* occur where Eij should tend to zero if truncation L is not large enough.
         Eij[Eij < 0] = 1e-2 # Set negative E_ij to a very small value (flow inhibiting)
         
-        return self.np_to_func(ei, Eij, ai) # return ei_df, Eij_df, ai_df
+        return self._np2func(ei, Eij, lami)
         
     
-    def Eij_orthotropic(self, wb, wn, Eij_grain, alpha, n_grain, ei_arg=()):
-   
+    def Eij_orthotropic(self, sb, sn, Eij_grain, alpha, n_grain, ei=()):
         """
-        Bulk enhancement factors w.r.t. ei=(e1,e2,e3) axes for *orthotropic* grains.
-        If ei=() then CPO eigenframe is used, ei=(m1,m2,m3), and Eij are the eigenenhancements.
+        Same as Eij_tranisotropic() but for *orthotropic* grains
         """
     
         if n_grain != 1: raise ValueError('only n_grain = 1 (linear viscous) is supported')
         if not(0 <= alpha <= 1): raise ValueError('alpha should be between 0 and 1')
        
-        ei  = np.zeros((3, 3, self.numdofs)) # (xyz component, i-th vector, node)
-        Eij = np.zeros((6, self.numdofs))    # (Eij component, node)
-        ai  = np.zeros((3, self.numdofs))    # (i-th a^(2) eigenvalue, node)
+        blm = self._nlm_nodal(sb) # [node, component]
+        nlm = self._nlm_nodal(sn)
+        vlm = 0*nlm # calculate from (blm,nlm) using joint ODF
+        mi, lami = sfcom.eigenframe(nlm, symframe=self.symframe, modelplane=self.modelplane) # [node,xyz,i], [node,i]
+        if   len(ei) == 0:           ei = (mi[:,:,0], mi[:,:,1], mi[:,:,2])
+        elif len(ei[0].shape) == 1:  ei = sfcom.ei_tile(ei, self.numdofs) # ei = (e1[node,3], e2, e3)
+        Eij = self.sf.Eij_orthotropic_arr(blm, nlm, vlm, *ei, Eij_grain, alpha, n_grain) # [node, Voigt vector index 1--6]
 
-        if len(ei_arg) == 3: ei[:,:,:] = self.ei_tile(ei_arg) # set prescribed ei frame
-        blm = self.nlm_nodal(wb) # (blm component, node)
-        nlm = self.nlm_nodal(wn) # (nlm component, node)
-        vlm = 0*nlm[:,0] # calculate from (blm,nlm) using joint ODF
-        
-        for nn in np.arange(self.numdofs): 
-            eigvecs, ai[:,nn] = eigenframe(nlm[:,nn], symframe=self.symframe, modelplane=self.modelplane) # sfcom.eigenframe()
-            if len(ei_arg) == 0: ei[:,0,nn], ei[:,1,nn], ei[:,2,nn] = eigvecs.T # Eij directions
-            Eij[:,nn] = self.sf.Eij_orthotropic(blm[:,nn], nlm[:,nn], vlm, ei[:,0,nn], ei[:,1,nn], ei[:,2,nn], Eij_grain,alpha,n_grain) # 3x3 enhancement-factor tensor
-        
-            if np.any(Eij[:,nn] < 0): 
-                print('[!!] Correction needed @ %03i :: Eij = '%(nn), Eij[:,nn])
-#                print('... m1 = ', ei[:,0,nn])
-#                print('... m2 = ', ei[:,1,nn])
-                print('... m3 = ', ei[:,2,nn])
-        
-        """
-        The enhancement-factor model depends on effective (homogenized) grain parameters, calibrated against deformation tests.
-        For CPOs far from the calibration states, negative values may occur where Eij should tend to zero if truncation L is not large enough.
-        """
         Eij[Eij < 0] = 1e-2 # Set negative E_ij to a very small value (flow inhibiting)
         
-        return self.np_to_func(ei, Eij, ai) # return ei_df, Eij_df, ai_df
+        return self._np2func(ei, Eij, lami)
         
-    
+
+    def E_CAFFE(self, sn, u, Emin=0.1, Emax=10):
+        """
+        CAFFE model (Placidi et al., 2010)
+        """
+        Df = project( sym(grad(u)), self.G).vector()[:] # flattened strain-rate tensor
+        E_CAFFE = Function(self.R)
+        E_CAFFE.vector()[:] = self.sf.E_CAFFE_arr(self._nlm_nodal(sn), self.mat3d(Df), Emin, Emax)[:]
+        return E_CAFFE
+        
+            
     def E_EIE(self, u, Eij, mi, n, q=None, dim=2):
-    
         """
         Equivalent isotropic enhancement factor (EIE) estimated from tensorial viscous structure.
         """
-        
+
         if q is None: q = -n-1 # ideal solution
         
         D = sym(grad(u))
-        if dim==2: D = as_tensor(mat3d(D, self.modelplane)) # 2x2 to 3x3 strain-rate tensor
+        if dim==2: D = as_tensor(sfcom.mat3d(D, self.modelplane)) # 2x2 to 3x3 strain-rate tensor
         
         ort = Orthotropic(n=Constant(n))
         iso = Isotropic(  n=Constant(n))
@@ -183,32 +166,18 @@ class EnhancementFactor():
         E = (epsE_ort/epsE_iso)**(q)
         
         return project(E, self.R) # E as function
-        
 
-    def E_CAFFE(self, u, w, Emin, Emax):
-    
+
+    def pfJ(self, s, *args, **kwargs):
         """
-        CAFFE model (Placidi et al., 2010)
-
-        Following Placidi, CAFFE assumes D(stress tensor) = D(strain-rate tensor), where D is the deformability
+        Pole figure J (pfJ) index
         """
-
-        Df = project( sym(grad(u)), self.G).vector()[:] # flattened strain-rate tensor
-        E = np.zeros((self.numdofs))
-        nlm = self.nlm_nodal(w) # (nlm component, node)
+        J = Function(self.R)
+        J.vector()[:] = sfcom.pfJ(self._nlm_nodal(s), *args, **kwargs)[:]
+        return J
         
-        for nn in np.arange(self.numdofs): 
-            D = mat3d(Df[nn*4:(nn+1)*4], self.modelplane, reshape=True) # strain-rate tensor of nn-th node
-            E[nn] = sf__.E_CAFFE(D, nlm[:,nn], Emin, Emax)
-        
-        E_df = Function(self.R)
-        E_df.vector()[:] = E[:]
-        
-        return E_df
-
 
     def shearfrac_SSA(self, u):
-        
         """
         Shear fraction for SSA flows (Graham et al., 2018)
         """
@@ -221,14 +190,14 @@ class EnhancementFactor():
         elif self.modelplane == 'xz':
             z = as_vector([0,1,0])
             u3 = as_vector([u[0],0,u[1]])
-        u3 = project(u3, self.R3)
+        u3 = project(u3, self.V)
             
         omghatD = z # if SSA
         q = cross(u3, omghatD)
-        n = project(q/sqrt(dot(q,q)), self.R3) # normalize
+        n = project(q/sqrt(dot(q,q)), self.V) # normalize
         
         D2 = sym(grad(u))
-        D = as_tensor(mat3d(D2, self.modelplane)) # 3x3 strain-rate tensor
+        D = as_tensor(sfcom.mat3d(D2, self.modelplane)) # 3x3 strain-rate tensor
         
         F = dot(D,n) - dot(n,dot(D,n))*n - dot(omghatD,dot(D,n))*omghatD 
         epsprime = sqrt(dot(F,F)) # eqn (7) 
@@ -238,7 +207,6 @@ class EnhancementFactor():
         
         
     def coaxiality(self, A, B):
-        
         """ 
         Measure of coaxiality between A and B
         """
@@ -249,8 +217,7 @@ class EnhancementFactor():
         return coaxiality
         
 
-    def chi(self, u2, w, verbose=False):
-    
+    def chi(self, u2, s, verbose=False):
         """
         Fabric compatibility measure \chi
         """
@@ -259,7 +226,7 @@ class EnhancementFactor():
         gam_np = gam.vector()[:]
 
         D2 = sym(grad(u2))
-        D = as_tensor(mat3d(D2, self.modelplane)) # 3x3 strain-rate tensor
+        D = as_tensor(sfcom.mat3d(D2, self.modelplane)) # 3x3 strain-rate tensor
         D_np = project(D/sqrt(inner(D,D)), self.T).vector()[:] # normalized, flattened entries for all nodes
                 
         N = outer(n,n) # shear plane normal
@@ -267,10 +234,10 @@ class EnhancementFactor():
 
         ### Construct chi nodal-wise
 
-        nlm = self.nlm_nodal(w) # (nlm component, node)
+        nlm = self._nlm_nodal(s)
         chi_np = np.zeros((self.numdofs))       
         
-        for nn in np.arange(self.numdofs): 
+        for nn in self.dofs0: 
             
             a2 = self.sf.a2(nlm[:,nn])
             a2 /= np.linalg.norm(a2) 
@@ -302,18 +269,3 @@ class EnhancementFactor():
         chi.vector()[:] = chi_np[:]
         return chi
         
-      
-    def pfJ(self, w, **kwargs):
-
-        """
-        Pole figure J (pfJ) index
-        
-        Should probably reside in CPO() class but conveniently uses nlm_nodal()
-        """
-   
-        nlm = self.nlm_nodal(w) # (nlm component, node)
-        J = pfJ(nlm, **kwargs) # sfcom.pfJ()
-        J_df = Function(self.R)
-        J_df.vector()[:] = J[:] # nonzero imaginary parts are numerical uncertainty, should be real-valued
-        return J_df
-

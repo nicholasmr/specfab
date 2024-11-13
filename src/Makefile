@@ -1,8 +1,6 @@
 # N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2024
 
-#-------------------
-# Compiler
-#-------------------
+### Compiler
 
 COMPILER=gfortran -ffree-line-length-none -m64 -Wall -fPIC -Wno-integer-division -Wno-unused-dummy-argument
 # -mcmodel=medium might be needed if support for L>20 truncation is requested
@@ -11,9 +9,7 @@ OPTSNETCDF=-lnetcdff -I/usr/include -L/usr/lib
 
 VERBOSE_F2PY=--quiet
 
-#-------------------
-# Core modules
-#-------------------
+### Core modules
 
 PATHSPECFABPY=specfabpy
 PATHDEMO=../demo
@@ -37,53 +33,39 @@ ROTATION=rotation
 REDUCED=reducedform
 DEFORMMODES=deformationmodes
 IDEALSTATE=idealstate
+FRAMES=frames
 LAMBDASOLVER=lambdasolver
 
-DEPLESS=$(HEADER).o $(TENPROD).o $(MANDEL).o $(REDUCED).o $(GAUNT).o
-WITHDEPS=$(RHEOLOGIES).o $(ELASTICITIES).o $(MOMENTS).o $(LAMBDASOLVER).o $(DYNAMICS).o $(HOMOGEN).o $(ENHFAC).o $(ROTATION).o $(WAVEPROP).o $(DEFORMMODES).o $(IDEALSTATE).o
+DEPLESS=$(HEADER).o $(TENPROD).o $(MANDEL).o $(REDUCED).o $(GAUNT).o 
+WITHDEPS=$(RHEOLOGIES).o $(ELASTICITIES).o $(MOMENTS).o $(LAMBDASOLVER).o $(DYNAMICS).o $(HOMOGEN).o $(ENHFAC).o $(ROTATION).o $(WAVEPROP).o $(DEFORMMODES).o $(IDEALSTATE).o $(FRAMES).o 
 
 OBJCORE=$(DEPLESS) $(WITHDEPS)
 SRCCORE=$(OBJCORE:.o=.f90)
 
-#-------------------
-# Math77 library
-#-------------------
+### Math77 library
 
 PATHM77=include/math77
 OBJM77=$(PATHM77)/amach.o $(PATHM77)/derv1.o $(PATHM77)/dnqsol.o $(PATHM77)/dnrm2.o $(PATHM77)/erfin.o $(PATHM77)/ermsg.o $(PATHM77)/ierm1.o $(PATHM77)/ierv1.o
 SRCM77=$(OBJM77:.o=.f)
 
-#-------------------
-# Elmer, JOSEF, ...
-#-------------------
+### Elmer, JOSEF, ...
 
 ELMERSRCS=$(wildcard elmer/specfab*.f90)
 ELMERS=$(ELMERSRCS:.f90=)
 
-#-------------------
-# Collect all
-#-------------------
+### Collect all
 
 OBJALL=$(SPECFAB).o $(OBJCORE) $(OBJM77)
 SRCALL=$(SPECFAB).f90 $(SRCCORE) $(SRCM77)
 
-#-------------------
-# specfabpy Python versions
-#-------------------
+### specfabpy Python versions
 
 #PYVERS=3.6 3.7 3.8 3.9 3.10 3.11
 PYVERS=3
 
 ########################################
 
-#-------------------
-# Make rules
-#-------------------
-
-fabric-evolution-demo: $(SPECFAB).o
-	$(COMPILER) $(PATHFABEVO)/run-fabric-evolution-latrot.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHFABEVO)/run-fabric-evolution-latrot 
-	$(COMPILER) $(PATHFABEVO)/run-fabric-evolution-ddrx.f90   $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHFABEVO)/run-fabric-evolution-ddrx
-	@mkdir -p $(PATHFABEVO)/solutions
+### Make rules
 
 specfabpy: $(SPECFAB).o
 	for pyver in $(PYVERS); do \
@@ -101,11 +83,14 @@ python: specfabpy
 # Build and install specfabpy for firedrake/icepack docker enviroment
 # @TODO: prepend all "pip install" dependencies (cartopy, ....)
 icepack: specfabpy
-	pip install cartopy cmasher setuptools==61
-	#pip install . # 
+#	pip install cartopy cmasher setuptools==61
+#	#pip install . # 
 	python3 setup.py install
 
-#-------------------
+#fabric-evolution-demo: $(SPECFAB).o
+#	$(COMPILER) $(PATHFABEVO)/run-fabric-evolution-latrot.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHFABEVO)/run-fabric-evolution-latrot 
+#	$(COMPILER) $(PATHFABEVO)/run-fabric-evolution-ddrx.f90   $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHFABEVO)/run-fabric-evolution-ddrx
+#	@mkdir -p $(PATHFABEVO)/solutions
 
 constitutive-tests: $(SPECFAB).o
 	$(COMPILER) $(PATHRHEOTEST)/rheology-test-orthotropic.f90             $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-orthotropic
@@ -114,8 +99,8 @@ constitutive-tests: $(SPECFAB).o
 	$(COMPILER) $(PATHRHEOTEST)/rheology-test-isotropic-porous.f90        $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-isotropic-porous
 
 aux-tests: $(SPECFAB).o
-	$(COMPILER) $(PATHTEST)/reduced-coef-test/reduced-coef-test.f90           $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHTEST)/reduced-coef-test/reduced-coef-test
-	$(COMPILER) $(PATHTEST)/wigner-d-rotation-test/discrete-rotation-test.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHTEST)/wigner-d-rotation-test/discrete-rotation-test
+	$(COMPILER) $(PATHTEST)/reduced-form/reduced-form.f90              $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHTEST)/reduced-form/reduced-form
+	$(COMPILER) $(PATHTEST)/rotate-Wigner-D/discrete-rotation-test.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHTEST)/rotate-Wigner-D/discrete-rotation-test
 
 #-------------------
 
@@ -148,6 +133,9 @@ $(ENHFAC).o: $(ENHFAC).f90 $(HEADER).o $(MOMENTS).o $(TENPROD).o $(HOMOGEN).o
 $(MOMENTS).o: $(MOMENTS).f90 $(HEADER).o $(MANDEL).o
 	$(COMPILER) $(OPTS) -c $(MOMENTS).f90
 
+$(FRAMES).o: $(FRAMES).f90 $(MOMENTS).o
+	$(COMPILER) $(OPTS) -c $<
+	
 $(WAVEPROP).o: $(WAVEPROP).f90 $(HEADER).o $(MOMENTS).o $(MANDEL).o $(TENPROD).o $(ELASTICITIES).o $(HOMOGEN).o
 	$(COMPILER) $(OPTS) -c $<
 
@@ -157,7 +145,7 @@ $(ROTATION).o: $(ROTATION).f90 $(HEADER).o $(MOMENTS).o
 $(DEFORMMODES).o: $(DEFORMMODES).f90 $(HEADER).o $(TENPROD).o 
 	$(COMPILER) $(OPTS) -c $<
 
-$(IDEALSTATE).o: $(IDEALSTATE).f90 $(HEADER).o $(ROTATION).o
+$(IDEALSTATE).o: $(IDEALSTATE).f90 $(HEADER).o $(ROTATION).o $(FRAMES).o
 	$(COMPILER) $(OPTS) -c $<
 
 $(LAMBDASOLVER).o:
@@ -172,16 +160,14 @@ clear:
 	rm -f $(PATHRHEOTEST)/rheology-test-orthotropic $(PATHRHEOTEST)/rheology-test-transverselyisotropic
 	rm -f $(PATHFABEVO)/run-fabric-evolution-latrot $(PATHFABEVO)/run-fabric-evolution-ddrx 
 	rm -f $(SPECFAB).o $(SPECFAB).mod *.so $(PATHSPECFABPY)/*.so
-	rm -f $(LAMBDASOLVER).o $(LAMBDASOLVER).mod $(OBJM77) $(PATHM77)/test
+	rm -f $(LAMBDASOLVER).o $(LAMBDASOLVER).mod $(OBJM77) $(PATHM77)/test $(FRAMES).o
 
 clean: clear
 	rm -f *.o *.mod *.so
 
 all: $(SPECFAB).o lib$(SPECFAB).so
 
-#-------------------
-# Elmer, JOSEF, ...
-#-------------------
+### Elmer, JOSEF, ...
 
 #elmer: $(ELMERS)
 

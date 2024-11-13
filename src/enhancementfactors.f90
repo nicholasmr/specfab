@@ -144,19 +144,59 @@ contains
         Evw = Evw_Sachs
     end
     
-    function Evw_orthotropic_discrete(v,w,tau, mi, Eij_grain,alpha,n_grain)  result(Evw)
+    function Eij_orthotropic_discrete(bi,ni,vi, e1,e2,e3, Eij_grain,alpha,n_grain)  result(Eij)
+
+        ! ... same as Eij_orthotropic() but for discrete grain orientations
+
+        implicit none
+
+        real(kind=dp), dimension(:,:), intent(in) :: bi,ni,vi ! grain no, xyz
+        
+        real(kind=dp), dimension(3)  :: e1,e2,e3
+        real(kind=dp), intent(in)    :: Eij_grain(6), alpha ! Eij_grain = (Ebb, Enn, Evv, Env, Ebv, Enb)
+        integer, intent(in)          :: n_grain
+        real(kind=dp)                :: v(3,6),w(3,6),tau(3,3,6)
+        real(kind=dp)                :: Eij(6)
+        
+        v(:,1) = e1
+        v(:,2) = e2
+        v(:,3) = e3
+        v(:,4) = e2
+        v(:,5) = e1
+        v(:,6) = e1
+
+        w(:,1) = e1
+        w(:,2) = e2
+        w(:,3) = e3
+        w(:,4) = e3
+        w(:,5) = e3
+        w(:,6) = e2
+        
+        tau(:,:,1) = tau_vv(e1)
+        tau(:,:,2) = tau_vv(e2)
+        tau(:,:,3) = tau_vv(e3)
+        tau(:,:,4) = tau_vw(e2,e3)
+        tau(:,:,5) = tau_vw(e1,e3)
+        tau(:,:,6) = tau_vw(e1,e2)
+
+        Eij = Evw_orthotropic_discrete(v,w,tau, bi,ni,vi, Eij_grain,alpha,n_grain) 
+    end
+    
+    function Evw_orthotropic_discrete(v,w,tau, bi,ni,vi, Eij_grain,alpha,n_grain)  result(Evw)
 
         ! ... same as Evw_orthotropic() but for discrete grain orientations
 
         implicit none
         
-        real(kind=dp), intent(in)    :: mi(:,:,:) ! (3,3,N) = (m'_i, xyz comp., grain no.) 
+        real(kind=dp), dimension(:,:), intent(in) :: bi,ni,vi ! grain no, xyz
+        
         real(kind=dp), intent(in)    :: Eij_grain(6), alpha, v(:,:),w(:,:), tau(:,:,:) 
         integer, intent(in)          :: n_grain
         real(kind=dp)                :: vw(3,3), Evw_sachs, Evw_taylor, Evw(size(v,dim=2))
         integer                      :: nn
         complex(kind=dp)             :: qlm_iso(L4len)
         
+        real(kind=dp)                :: mi(3,3,size(bi,1)) ! m'_i, xyz, grain no (different index ordering compared to inputs bi,ni,vi)
         real(kind=dp)                :: a2_i(3, 3,3), a4_ii(3, 3,3,3,3), a4_jk(3, 3,3,3,3) 
         real(kind=dp)                :: a2_i_iso(3, 3,3), a4_ii_iso(3, 3,3,3,3), a4_jk_iso(3, 3,3,3,3) 
     
@@ -165,7 +205,10 @@ contains
     
         qlm_iso(:) = 0.0d0
         qlm_iso(1) = 1.0d0/sqrt(4*Pi)
-    
+        
+        mi(1,:,:) = transpose(bi)
+        mi(2,:,:) = transpose(ni)
+        mi(3,:,:) = transpose(vi)
         call ai_orthotropic_discrete(mi, a2_i, a4_ii, a4_jk)
         call ai_orthotropic(qlm_iso,qlm_iso,qlm_iso, a2_i_iso, a4_ii_iso, a4_jk_iso)
     
@@ -212,14 +255,14 @@ contains
         E = (epsE_ort/epsE_iso)**q
     end
     
-    function E_CAFFE(eps, nlm, Emin, Emax)  result(E)
+    function E_CAFFE(nlm, eps, Emin, Emax)  result(E)
     
         ! Implements Placidi et al. (2010)
 
         implicit none
-        
-        real(kind=dp), intent(in)    :: eps(3,3), Emin, Emax
+
         complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: eps(3,3), Emin, Emax
         real(kind=dp)                :: E, Davg, p
 
         Davg = ev_D(nlm, eps) ! Average deformability, <D>

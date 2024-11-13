@@ -50,6 +50,10 @@ class FSE():
         
     def eigenframe(self, x, y, modelplane=None):
         F = np.reshape(self.F(x,y), (2,2))
-        return sfcom.eigenframe(sfcom.F2C(F), modelplane=modelplane)
+#        return sfcom.eigenframe(sfcom.F2C(F), modelplane=modelplane)
+        lami, ei = np.linalg.eig(sfcom.F2C(F))
+        I = np.flip(lami.argsort()) # largest eigenvalue pair is first entry
+        ei, lami = ei[:,I], lami[I]
+        return ei, lami
 #        sr = 1/np.sqrt(eigvals) # stretching ratios
 

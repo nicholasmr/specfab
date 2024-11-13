@@ -92,23 +92,29 @@ def idealstressstate(latres=40, lonres=80):
     return (vr,vt,vp, rr,rt,rp, tau_rr,tau_rt,tau_rp, vlon,vlat, mlon,mlat)
     
 
+
 def vi2nlm(vi, L=6):
 
     """
     Discrete array of crystallographic axes --> spectral CPO representation
+    
+    Note: Also implemented as a much faster version in Fortran module, ri_LROT() (dynamics.f90)
     """
 
     nlm_len = L2nlmlen(L)
     nlm = np.zeros((nlm_len), dtype=np.complex128) 
-
+    
+    vi = np.array(vi)
+    N = vi.shape[0] # vi(N,xyz)
+    
     if L==2:
-        a2 = np.array([ np.einsum('i,j',v,v) for v in vi]).mean(axis=0)
+        a2 = np.array([ np.einsum('i,j',vi[n],vi[n]) for n in range(N)]).mean(axis=0)
         nlm[:sf__.L2len] = sf__.a2_to_nlm(a2)    
     elif L==4:
-        a4 = np.array([ np.einsum('i,j,k,l',v,v,v,v) for v in vi]).mean(axis=0)
+        a4 = np.array([ np.einsum('i,j,k,l',vi[n],vi[n],vi[n],vi[n]) for n in range(N)]).mean(axis=0)
         nlm[:sf__.L4len] = sf__.a4_to_nlm(a4)
     elif L==6:
-        a6 = np.array([ np.einsum('i,j,k,l,m,n',v,v,v,v,v,v) for v in vi]).mean(axis=0)
+        a6 = np.array([ np.einsum('i,j,k,l,m,n',vi[n],vi[n],vi[n],vi[n],vi[n],vi[n]) for n in range(N)]).mean(axis=0)
         nlm[:sf__.L6len] = sf__.a6_to_nlm(a6)
     else:
         raise ValueError('sfdsc.vi2nlm(): only L <= 6 is supported')

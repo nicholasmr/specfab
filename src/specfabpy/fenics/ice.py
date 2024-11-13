@@ -1,8 +1,9 @@
 #!/usr/bin/python3
-# Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2022-2024
+# Nicholas M. Rathmann <rathmann@nbi.ku.dk>
 
 import copy, sys, time, code # code.interact(local=locals())
 import numpy as np
+import matplotlib.tri as tri
 
 from .. import constants as sfconst
 from .CPO import *
@@ -15,7 +16,7 @@ class IceFabric(CPO):
                         Cij=sfconst.ice['elastic']['Bennett1968'], rho=sfconst.ice['density'], **kwargs): 
 
         super().__init__(mesh, boundaries, L, nu_multiplier=nu_multiplier, nu_realspace=nu_realspace, modelplane=modelplane, ds=ds, nvec=nvec)
-        self.initialize(wr=None) # isotropic
+        self.initialize(sr=None) # isotropic
         self.set_BCs([], [], []) # no BCs
 
         self.grain_params = (Eij_grain, alpha, n_grain)
@@ -42,9 +43,9 @@ class IceFabric(CPO):
         self.update_Eij()
         
     def update_Eij(self):
-        self.mi, self.Eij, self.lami = self.enhancementfactor.Eij_tranisotropic(self.w, *self.grain_params, ei_arg=())
-        self.xi, self.Exij, _        = self.enhancementfactor.Eij_tranisotropic(self.w, *self.grain_params, ei_arg=np.eye(3))
-        self.pfJ = self.enhancementfactor.pfJ(self.w)
+        self.mi, self.Eij, self.lami = self.enhancementfactor.Eij_tranisotropic(self.s, *self.grain_params, ei=())
+        self.xi, self.Exij, _        = self.enhancementfactor.Eij_tranisotropic(self.s, *self.grain_params, ei=np.eye(3))
+        self.pfJ = self.enhancementfactor.pfJ(self.s)
         # ... unpack
         self.m1, self.m2, self.m3 = self.mi # rheological symmetry directions
         self.E11, self.E22, self.E33, self.E23, self.E31, self.E12 = self.Eij  # eigenenhancements
@@ -52,7 +53,7 @@ class IceFabric(CPO):
         self.lam1, self.lam2, self.lam3 = self.lami # fabric eigenvalues \lambda_i (not a2 eigenvalues unless symframe=-1)
             
     def E_CAFFE(self, u, *args, **kwargs):
-        return self.enhancementfactor.E_CAFFE(u, self.w, *args, **kwargs)
+        return self.enhancementfactor.E_CAFFE(self.s, u, *args, **kwargs)
             
     def E_EIE(self, u, *args, **kwargs):
         return self.enhancementfactor.E_EIE(u, self.Eij, self.mi, *args, **kwargs)
@@ -68,4 +69,11 @@ class IceFabric(CPO):
         D = sym(grad(u))
         epsE = sqrt(inner(D,D)/2)
         return project(epsE*Constant(A)*exp(-Constant(Q)/(R*T)), self.R)
+        
+    def df2np(self, F, withcoords=False):
+        coords = copy.deepcopy(self.mesh.coordinates().reshape((-1, 2)).T)
+        triang = tri.Triangulation(*coords, triangles=self.mesh.cells())    
+        Q = FunctionSpace(self.mesh, 'CG', 2)
+        F_np = project(F,Q).compute_vertex_values(self.mesh)
+        return (triang, F_np, coords) if withcoords else (triang, F_np)
         

@@ -51,6 +51,7 @@ contains
         ! Lattice rotation
         !------------------
 
+        ! Lattice rotation modelled using plastic spin theory.
         ! Returns matrix M such that d/dt (nlm)_i = M_ij (nlm)_j
 
         implicit none
@@ -88,6 +89,46 @@ contains
 
         do ii = 1, nlm_len
             M_LROT(ii,1:nlm_len) = -1*( matmul(GC(ii,1:nlm_len,1:SHI_LATROT),g0) + matmul(GCm(ii,1:nlm_len,1:SHI_LATROT),gz) + matmul(GC_m1(ii,1:nlm_len,1:SHI_LATROT),gn) + matmul(GC_p1(ii,1:nlm_len,1:SHI_LATROT),gp) )    
+        end do
+    end
+    
+    function nlm_LROT(nlm0, dt, Nt, D,W, iota) result(nlm)
+        ! Euler integrator of lattice rotation
+        implicit none
+        complex(kind=dp), intent(in) :: nlm0(nlm_len)
+        integer, intent(in)          :: Nt
+        real(kind=dp), intent(in)    :: dt, D(:,:,:), W(:,:,:), iota
+        complex(kind=dp)             :: nlm(Nt,nlm_len)
+        nlm(1,:) = nlm0 ! initial state
+        do jj = 1,Nt-1 ! time step
+            nlm(jj+1,:) = nlm(jj,:) + dt*matmul(M_LROT(D(jj,:,:), W(jj,:,:), iota, 0.0d0), nlm(jj,:)) ! Euler step
+        end do
+    end
+    
+    function dri_LROT(ri, D,W, iota) result(dri)
+        ! Discrete version of lattice rotation
+        implicit none
+        real(kind=dp), intent(in) :: ri(:,:) ! axis no, xyz
+        real(kind=dp), intent(in) :: D(3,3), W(3,3), iota
+        real(kind=dp)             :: mm(3,3), Wp(3,3), dri(size(ri,1),size(ri,2))
+        do jj = 1,size(ri,1) ! grain no
+            mm = outerprod(ri(jj,:), ri(jj,:))
+            Wp = iota*(matmul(mm,D) - matmul(D,mm))
+            dri(jj,:) = matmul(W+Wp, ri(jj,:))
+        end do
+    end
+    
+    function ri_LROT(ri0, dt, Nt, D,W, iota) result(ri)
+        ! Euler integrator of discrete version of lattice rotation
+        implicit none
+        real(kind=dp), intent(in) :: ri0(:,:) ! nn (crystallographic axis of nn'th grain), xyz
+        integer, intent(in)       :: Nt
+        real(kind=dp), intent(in) :: dt, D(:,:,:), W(:,:,:), iota
+        real(kind=dp)             :: ri(Nt,size(ri0,1),size(ri0,2)), ri_new(size(ri0,1),size(ri0,2))
+        ri(1,:,:) = ri0 ! initial state
+        do ii = 1,Nt-1 ! time step
+            ri_new = ri(ii,:,:) + dt*dri_LROT(ri(ii,:,:), D(ii,:,:), W(ii,:,:), iota) ! Euler step
+            ri(ii+1,:,:) = ri_new/spread(norm2(ri_new,2), 2, 3) ! renormalize
         end do
     end
 

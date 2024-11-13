@@ -1,4 +1,4 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk>, 2021-2023
+# N. M. Rathmann <rathmann@nbi.ku.dk>
 
 import sys, os, copy, code # code.interact(local=locals())
 
@@ -8,6 +8,7 @@ import scipy.special as sp
 from specfabpy import specfab as sf
 from specfabpy import integrator as sfint
 from specfabpy import discrete as sfdsc
+from specfabpy import common as sfcom
 from specfabpy import constants as sfconst
 from specfabpy import plotting as sfplt
 FS = sfplt.setfont_tex(fontsize=12)
@@ -30,7 +31,7 @@ T_EXP_SS = 2 # vertical shear
 
 # Select experiment
 T_EXP = T_EXP_CC
-#T_EXP = T_EXP_SS
+T_EXP = T_EXP_SS
 
 #----------------------
 # Experiment definitions
@@ -75,7 +76,7 @@ S = D/np.linalg.norm(D) # stress coaxial with strain-rate
 # Model DDRX from strain = strain_thres until strain_target
 # (this is done by splicing DDRX simulation results into array containing LROT simulation results)
 I = np.argmin(np.abs(strain-strain_thres)) # starting state
-kwargs_DDRX = dict(iota=None, Gamma0=50, nu=1)
+kwargs_DDRX = dict(iota=None, Gamma0=10, nu=1)
 nlm_, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, nlm0=nlm[I,:], **kwargs_DDRX)
 nlm[I:,:] = nlm_[:(Nt-I+1),:]
 
@@ -83,26 +84,20 @@ nlm[I:,:] = nlm_[:(Nt-I+1),:]
 # Determine eigenenhancements etc.
 #----------------------
 
-dims = (Nt+1,3)
-e1,e2,e3,eig = np.zeros(dims),np.zeros(dims),np.zeros(dims),np.zeros(dims)
-Eij = np.zeros((Nt+1,6))
-
 # G=Glen, R=Rathmann & Lilien, P=Pettit, M=Martin
 Y_G = sf.rheo_fwd_isotropic(S, Aglen,nglen)[i,j]
 dims = (Nt+1)
 Y_R, Y_P, Y_M = np.zeros(dims), np.zeros(dims), np.zeros(dims)
 
-(Eij_grain, alpha, n_grain) = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
-
+grain_params = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
+ei, eig = sfcom.eigenframe(nlm)
+e1,e2,e3 = ei[:,:,0], ei[:,:,1], ei[:,:,2]
+Eij = sf.Eij_tranisotropic_arr(nlm, e1,e2,e3, *grain_params) # eigenenhancements
+    
 # Euler integration 
 for tt in np.arange(0,Nt+1):
-
-    s = nlm[tt,:] # state vector for time step tt
-    e1[tt,:], e2[tt,:], e3[tt,:], eig[tt,:] = sf.frame(s, 'e') # eigenframe
-    Eij[tt,:] = sf.Eij_tranisotropic(s, e1[tt,:],e2[tt,:],e3[tt,:], Eij_grain, alpha, n_grain) # eigenenhancements
-    
-    ### Y for fabric at constant strain rate
-    args = (S,Aglen,nglen, e1[tt,:],e2[tt,:],e3[tt,:], Eij[tt,:])
+    # Y for fabric at constant strain rate
+    args = (S,Aglen,nglen, e1[tt],e2[tt],e3[tt], Eij[tt])
     Y_R[tt] = sf.rheo_fwd_orthotropic(*args)[i,j]
     Y_P[tt] = sf.rheo_fwd_orthotropic_Pettit(*args)[i,j]
     Y_M[tt] = sf.rheo_fwd_orthotropic_Martin(*args)[i,j]
@@ -202,10 +197,11 @@ for ii,nn in enumerate(ODF_tsteps):
     if ii==0: 
         sfplt.plotcoordaxes(ax, geo, axislabels='vuxi', color='k')        
     elif ii>0:    
-        kwargs = dict(marker='.', ms=7, markerfacecolor=sfplt.c_dred, markeredgecolor=sfplt.c_dred, markeredgewidth=1.0, transform=geo)
 #        w,v = np.linalg.eig(tau_RL[nn,:,:]) # debug: principal stress directions
 #        for ei in (v[:,0],v[:,1],v[:,2]): # debug: principal stress directions
-        for ei in (e1[nn,:],e2[nn,:],e3[nn,:]):
+        for kk, ei in enumerate((e1[nn,:],e2[nn,:],e3[nn,:])):
+            ck = [sfplt.c_dred, sfplt.c_dgreen, sfplt.c_dblue]
+            kwargs = dict(marker='.', ms=7, markerfacecolor=ck[kk], markeredgecolor=ck[kk], markeredgewidth=1.0, transform=geo)
             sfplt.plotS2point(ax, +ei, **kwargs)
             sfplt.plotS2point(ax, -ei, **kwargs)
 

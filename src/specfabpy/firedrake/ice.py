@@ -171,14 +171,14 @@ class IceFabric:
         Sf = project(S, self.G).vector()[:] # deviatoric stress
 
         # Same but in 3D for fabric problem
-        D3f = np.array([self.mat3d(Df[nn]) for nn in self.dofs])
-        W3f = np.array([self.mat3d(Wf[nn]) for nn in self.dofs])
-        S3f = np.array([self.mat3d(Sf[nn]) for nn in self.dofs])
+        D3 = self.mat3d(Df) # [node,3,3]
+        W3 = self.mat3d(Wf)
+        S3 = self.mat3d(Sf)
 
         # Dynamical matrices M_* at each node as np arrays (indexing is M[node,row,column])
-        M_LROT     = np.array([self._M_reduced(self.sf.M_LROT,     self.nlm_dummy, D3f[nn], W3f[nn], iota, zeta) for nn in self.dofs] ) if ENABLE_LROT else self.M_zero
-        M_DDRX_src = np.array([self._M_reduced(self.sf.M_DDRX_src, self.nlm_dummy, S3f[nn])                      for nn in self.dofs] ) if ENABLE_DDRX else self.M_zero
-        M_REG      = np.array([self._M_reduced(self.sf.M_REG,      self.nlm_dummy, D3f[nn])                      for nn in self.dofs] ) if ENABLE_REG  else self.M_zero
+        M_LROT     = np.array([self._M_reduced(self.sf.M_LROT,     self.nlm_dummy, D3[nn], W3[nn], iota, zeta) for nn in self.dofs] ) if ENABLE_LROT else self.M_zero
+        M_DDRX_src = np.array([self._M_reduced(self.sf.M_DDRX_src, self.nlm_dummy, S3[nn])                     for nn in self.dofs] ) if ENABLE_DDRX else self.M_zero
+        M_REG      = np.array([self._M_reduced(self.sf.M_REG,      self.nlm_dummy, D3[nn])                     for nn in self.dofs] ) if ENABLE_REG  else self.M_zero
 
         # Populate entries of dynamical matrices *row-wise* (row index is ii)
         for ii in self.srrng:
@@ -235,8 +235,8 @@ class IceFabric:
     def _M_reduced(self, Mfun, *args, **kwargs):
         return self.sf.reduce_M(Mfun(*args, **kwargs), self.rnlm_len)[0] # full form -> reduced form of M_*
 
-    def mat3d(self, mat2d):
-        return sfcom.mat3d(mat2d, self.modelplane, reshape=True) # 2D to 3D strain-rate/stress tensor assuming (i) tr=0 and (ii) out-of-modelplane shear components vanish
+    def mat3d(self, D2):
+        return sfcom.mat3d_arr(D2, self.modelplane, reshape=True) # can take array of D2
         
     def eigenframe(self, *p, **kwargs):
         """
@@ -256,7 +256,7 @@ class IceFabric:
         
         Returns: J
         """
-        self.J.vector()[:] = sfcom.pfJ(self.nlm.T, *args, **kwargs)[:]
+        self.J.vector()[:] = sfcom.pfJ(self.nlm, *args, **kwargs)[:]
         return self.J
  
     def get_E_CAFFE(self, u, Emin=0.1, Emax=10):
@@ -266,13 +266,13 @@ class IceFabric:
         Returns: E_CAFFE
         """
         Df = project(sym(grad(u)), self.Gd).vector()[:]
-        self.E_CAFFE.vector()[:] = np.array([sf__.E_CAFFE(self.mat3d(Df[nn]), self.nlm[nn], Emin, Emax) for nn in self.dofs0])
+        self.E_CAFFE.vector()[:] = self.sf.E_CAFFE_arr(self.nlm, self.mat3d(Df), Emin, Emax)
         return self.E_CAFFE
         
     def get_Eij(self, Eij_grain, alpha, n_grain, ei=()):   
         """
-        Bulk enhancement factors w.r.t. ei=(e1,e2,e3) axes for *transversely isotropic* grains.
-        If ei=() then CPO a2 eigenframe is used, ei=(m1,m2,m3) and returned Eij are the eigenenhancements.
+        Bulk enhancement factors wrt ei=(e1,e2,e3) axes for *transversely isotropic* grains.
+        If ei=() then CPO eigenframe is used.
 
         Returns: (mi, Eij, lami)
         """
@@ -285,11 +285,12 @@ class IceFabric:
 
         ### Calculate Eij etc. using specfabpy per node
         
-        mi, lami = sfcom.eigenframe(self.nlm, symframe=self.symframe, modelplane=self.modelplane) # (node,xyz,i), (node,i)
-        e1, e2, e3 = mi[:,:,0], mi[:,:,1], mi[:,:,2] if len(ei) == 0 else ei
-        Eij = np.array([self.sf.Eij_tranisotropic(self.nlm[nn,:], e1[nn,:],e2[nn,:],e3[nn,:], Eij_grain, alpha, n_grain) for nn in self.dofs0]) # (node, Voigt-form Eij 1--6)
+        mi, lami = sfcom.eigenframe(self.nlm, symframe=self.symframe, modelplane=self.modelplane) # [node,xyz,i], [node,i]
+        if   len(ei) == 0:           ei = (mi[:,:,0], mi[:,:,1], mi[:,:,2])
+        elif len(ei[0].shape) == 1:  ei = [np.tile(ei[ii], (self.numdofs0,1)) for ii in range(3)] # ei = (e1[node,3], e2, e3)
+        Eij = self.sf.Eij_tranisotropic_arr(self.nlm, *ei, Eij_grain, alpha, n_grain) # [node, Voigt vector index 1--6]
 
-        # The enhancement-factor model depends on effective (homogenized) grain parameters, calibrated against deformation tests.
+        # The enhancement factor model depends on effective (homogenized) grain parameters, calibrated against deformation tests.
         # For CPOs far from the calibration states, negative values *may* occur where Eij should tend to zero if truncation L is not large enough.
         Eij[Eij<0] = 1e-2 # Set negative E_ij to a very small value (flow inhibiting)
         
@@ -306,8 +307,11 @@ class IceFabric:
         return (self.mi, self.Eij, self.lami)
                 
     def Gamma0_Lilien(self, u, T, A=4.3e7, Q=3.36e4):
-        # DDRX rate factor from Dome C ice-core calibration experiment (Lilien et al., 2023, p. 7)
+        """
+        DDRX rate factor from Dome C ice-core calibration experiment (Lilien et al., 2023, p. 7)
+        """
         R = Constant(8.314) # gas constant (J/mol*K)
         D = sym(grad(u))
         epsE = sqrt(inner(D,D)/2)
         return project(epsE*Constant(A)*exp(-Constant(Q)/(R*T)), self.R)
+

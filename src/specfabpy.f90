@@ -18,7 +18,7 @@ module specfabpy
     use specfab, &
     
         ! Fabric processes
-        M_LROT__sf => M_LROT, &
+        M_LROT__sf => M_LROT, nlm_LROT__sf => nlm_LROT, ri_LROT__sf => ri_LROT, &
         M_DDRX__sf => M_DDRX, M_DDRX_src__sf => M_DDRX_src, & 
         M_CDRX__sf => M_CDRX, &
         M_REG__sf  => M_REG, &
@@ -31,6 +31,7 @@ module specfabpy
         a4_eigentensors__sf => a4_eigentensors, & ! 3x3 eigentensors of a4
         a4_IBOF__sf => a4_IBOF, & ! from Elmer
         a2_orth__sf => a2_orth, a4_orth__sf => a4_orth, &
+        ri_to_nlm__sf => ri_to_nlm, &
 
         ! Rheologies
         rheo_rev_isotropic__sf     => rheo_rev_isotropic, &
@@ -67,7 +68,7 @@ module specfabpy
         Evw_tranisotropic_HSP__sf => Evw_tranisotropic_HSP, &
         Evw_orthotropic__sf   => Evw_orthotropic, &
         Evw_orthotropic_discrete__sf => Evw_orthotropic_discrete, &
-        frame__sf => frame, &
+        frame__sf => frame, eigframe__sf => eigframe, eig3__sf => eig3, &
         E_EIE__sf => E_EIE, E_CAFFE__sf => E_CAFFE, E_ESTAR__sf => E_ESTAR, &
         
         ! nlm and rnlm representations
@@ -100,7 +101,8 @@ module specfabpy
         nlm_ideal__sf => nlm_ideal, &        
         nlm_isvalid__sf => nlm_isvalid, &
         Lame_olivine_A2X__sf => Lame_olivine_A2X, &
-        L2len__sf => L2len, L4len__sf => L4len, L6len__sf => L6len, L8len__sf => L8len
+        L2len__sf => L2len, L4len__sf => L4len, L6len__sf => L6len, L8len__sf => L8len, &
+        nlm_lenvec__sf => nlm_lenvec
         
     implicit none
     
@@ -205,12 +207,35 @@ contains
             Lmat(ii,ii) = Ldiag__sf(ii) ! Laplacian (diagonal) matrix
         end do
     end    
+
+    function nlm_LROT(nlm0, dt, Nt, D,W, iota) result(nlm)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm0(:)
+        integer, intent(in)          :: Nt
+        real(kind=dp), intent(in)    :: dt, D(:,:,:), W(:,:,:), iota
+        complex(kind=dp)             :: nlm(Nt,size(nlm0))
+        
+        nlm = nlm_LROT__sf(nlm0, dt, Nt, D,W, iota) 
+    end
+    
+    function ri_LROT(ri0, dt, Nt, eps,omg, iota) result(ri)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: ri0(:,:) ! nn (crystallographic axis of nn'th grain), xyz
+        integer, intent(in)       :: Nt
+        real(kind=dp), intent(in) :: dt, eps(:,:,:), omg(:,:,:), iota 
+        real(kind=dp)             :: ri(Nt,size(ri0,1),size(ri0,2))
+        
+        ri = ri_LROT__sf(ri0, dt, Nt, eps,omg, iota) 
+    end
     
     !---------------------------------
     ! FABRIC FRAME
     !---------------------------------
     
     subroutine frame(nlm, ftype, e1,e2,e3, eigvals)
+        ! legacy interface, use eigframe() instead
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:) 
@@ -218,6 +243,40 @@ contains
         real(kind=dp), intent(out)   :: e1(3),e2(3),e3(3), eigvals(3)
         
         call frame__sf(nlm, ftype, e1,e2,e3, eigvals)
+    end
+    
+    subroutine eigframe(M,plane, ei,lami)
+        use specfabpy_const
+        implicit none
+        integer, parameter         :: n = 3
+        real(kind=dp), intent(in)  :: M(n,n)
+        character*2, intent(in)    :: plane ! ['ij'|'xy'|'xz']
+        real(kind=dp), intent(out) :: ei(n,n), lami(n) ! (i,xyz), (i) for eigenpair i
+        
+        call eigframe__sf(M,plane, ei,lami)
+    end
+    
+    subroutine eigframe_arr(M,plane, ei,lami)
+        use specfabpy_const
+        implicit none
+        integer, parameter         :: n = 3
+        real(kind=dp), intent(in)  :: M(:,:,:) ! (node,3,3)
+        character*2, intent(in)    :: plane ! ['ij'|'xy'|'xz']
+        real(kind=dp), intent(out) :: ei(size(M,1),n,n), lami(size(M,1),n) ! (node,i,xyz), (node,i) for eigenpair i
+        
+        do nn = 1,size(M,1)
+            call eigframe__sf(M(nn,:,:),plane, ei(nn,:,:),lami(nn,:))
+        end do
+    end
+
+    subroutine eig3(M, e1,e2,e3, lami)
+        ! Eigenvalue pair of array of symmetric real-valued 3x3 matrices
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in)    :: M(3,3)
+        real(kind=dp), intent(out)   :: e1(3),e2(3),e3(3), lami(3)
+
+        call eig3__sf(M, e1,e2,e3,lami)
     end
     
     subroutine a4_eigentensors(nlm, Q1,Q2,Q3,Q4,Q5,Q6, eigvals)
@@ -279,17 +338,6 @@ contains
         Evw = Evw_orthotropic__sf(v,w, tau, nlm_r1,nlm_r2,nlm_r3, Eij_grain,alpha,n_grain)
     end
     
-    function Evw_orthotropic_discrete(mi, v,w,tau, Eij_grain, alpha, n_grain) result(Evw)
-        use specfabpy_const
-        implicit none
-        real(kind=dp), intent(in) :: mi(:,:,:) ! (3,3,N) = (m'_i, xyz comp., grain no.) 
-        real(kind=dp), intent(in) :: Eij_grain(6), alpha, v(:,:),w(:,:), tau(:,:,:)
-        integer, intent(in)       :: n_grain
-        real(kind=dp)             :: Evw(size(v)/3)
-        
-        Evw = Evw_orthotropic_discrete__sf(v,w, tau, mi, Eij_grain,alpha,n_grain)
-    end
-    
     function Eij_orthotropic(nlm_r1, nlm_r2, nlm_r3, e1,e2,e3, Eij_grain,alpha,n_grain) result(Eij)
         use specfabpy_const
         implicit none
@@ -315,25 +363,71 @@ contains
         E = E_EIE__sf(eps, nglen, nlm, m1,m2,m3, Eij_grain,alpha,n_grain)
     end
     
-    function E_CAFFE(eps, nlm, Emin, Emax)  result(E)
+    function E_CAFFE(nlm, eps, Emin, Emax)  result(E)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in)    :: eps(3,3), Emin, Emax
         complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: eps(3,3), Emin, Emax
         real(kind=dp)                :: E
         
-        E = E_CAFFE__sf(eps, nlm, Emin, Emax)
+        E = E_CAFFE__sf(nlm, eps, Emin, Emax)
     end
     
-!    function Eiso_ESTAR(eps, ...)  result(E)
-!        use specfabpy_const
-!        implicit none
-!        real(kind=dp), intent(in)    :: eps(3,3), Emin, Emax
-!        complex(kind=dp), intent(in) :: nlm(:)
-!        real(kind=dp)                :: E
-!        
-!        E = Eiso_ESTAR__sf(eps, ...)
-!    end
+    ! Overloaded versions acting on an array of CPO states
+
+    function Eij_tranisotropic_arr(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) result(Eij)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:,:)
+        real(kind=dp), intent(in)    :: e1(size(nlm,1),3),e2(size(nlm,1),3),e3(size(nlm,1),3)
+        real(kind=dp), intent(in)    :: Eij_grain(2), alpha
+        integer, intent(in)          :: n_grain
+        real(kind=dp)                :: Eij(size(nlm,1),6)
+        
+        do nn = 1,size(nlm,1)
+            Eij(nn,:) = Eij_tranisotropic__sf(nlm(nn,:), e1(nn,:),e2(nn,:),e3(nn,:), Eij_grain,alpha,n_grain)
+        end do
+    end
+    
+    function Eij_orthotropic_arr(nlm_r1, nlm_r2, nlm_r3, e1,e2,e3, Eij_grain,alpha,n_grain) result(Eij)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm_r1(:,:), nlm_r2(:,:), nlm_r3(:,:)
+        real(kind=dp), intent(in)    :: e1(size(nlm_r1,1),3),e2(size(nlm_r1,1),3),e3(size(nlm_r1,1),3)
+        real(kind=dp), intent(in)    :: Eij_grain(6), alpha
+        integer, intent(in)          :: n_grain
+        real(kind=dp)                :: Eij(size(nlm_r1,1),6)
+        
+        do nn = 1,size(nlm_r1,1)
+            Eij(nn,:) = Eij_orthotropic__sf(nlm_r1(nn,:),nlm_r2(nn,:),nlm_r3(nn,:), e1(nn,:),e2(nn,:),e3(nn,:), Eij_grain,alpha,n_grain)
+        end do
+    end
+
+    function Eij_orthotropic_discrete_arr(bi,ni,vi, e1,e2,e3, Eij_grain,alpha,n_grain) result(Eij)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), dimension(:,:,:), intent(in) :: bi, ni, vi ! step nn, grain no., xyz comp.
+        real(kind=dp), intent(in) :: e1(size(bi,1),3),e2(size(bi,1),3),e3(size(bi,1),3)
+        real(kind=dp), intent(in) :: Eij_grain(6), alpha
+        integer, intent(in)       :: n_grain
+        real(kind=dp)             :: Eij(size(bi,1),6)
+        
+        do nn = 1,size(bi,1)
+            Eij(nn,:) = Eij_orthotropic_discrete(bi(nn,:,:),ni(nn,:,:),vi(nn,:,:), e1(nn,:),e2(nn,:),e3(nn,:), Eij_grain,alpha,n_grain)
+        end do
+    end
+    
+    function E_CAFFE_arr(nlm, eps, Emin, Emax)  result(E)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:,:)
+        real(kind=dp), intent(in)    :: eps(size(nlm,1),3,3), Emin, Emax
+        real(kind=dp)                :: E(size(nlm,1))
+        
+        do nn = 1,size(nlm,1)
+            E(nn) = E_CAFFE__sf(nlm(nn,:), eps(nn,:,:), Emin, Emax)
+        end do
+    end
     
     !---------------------------------
     ! STRUCTURE TENSORS
@@ -430,6 +524,16 @@ contains
         real(kind=dp)                :: a4(3,3,3,3)
         
         a4 = a4_orth__sf(blm,nlm)
+    end
+       
+    function ri_to_nlm(ri, L) result(nlm)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: ri(:,:) ! axis no, xyz
+        integer, intent(in)       :: L ! truncation of resulting series
+        complex(kind=dp)          :: nlm((L+1)*(L+2)/2) 
+        
+        nlm = ri_to_nlm__sf(ri, L)
     end
         
     !---------------------------------

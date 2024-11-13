@@ -6,6 +6,7 @@ module idealstate
 
     use header
     use rotation
+    use frames
 
     implicit none 
     
