@@ -21,7 +21,7 @@ class CPO():
 
         ### Check args
         
-        if modelplane != 'xz':
+        if modelplane not in ['xz', 'xy']:
             raise ValueError('modelplane "%s" not supported, must be "xz"'%(modelplane))
 
         ### Setup
@@ -80,40 +80,41 @@ class CPO():
             self.wr = TestFunction(self.S)  # weight functions (real part of nlm coefs)
             self.sr_sub = split(self.sr)    # for easy access of each subelement
             self.wr_sub = split(self.wr)    # for easy access of each subelement
-            
+
         ### Solution containers
-        
+
         self.s  = Function(self.S) # Current solution
         self.s0 = Function(self.S) # Previous solution
-        
+
         ### Dynamical matrices
-        
+
         self.nlm_dummy = np.zeros((self.nlm_len_full))
         self.Mk_LROT     = [ [Function(self.V) for ii in self.srng] for ii in range(4) ] # rr, ri, ir, ii
         self.Mk_DDRX_src = [ [Function(self.V) for ii in self.srng] for ii in range(4) ]
         self.Mk_CDRX     = [ [Function(self.V) for ii in self.srng] for ii in range(4) ]
         self.Mk_REG      = [ [Function(self.V) for ii in self.srng] for ii in range(4) ]
-        
+
         ### Aux
-        
+
         # Idealized states
         self.nlm_iso   = [1/np.sqrt(4*np.pi)] + [0]*(self.nlm_len-1) # Isotropic and normalized state
         self.nlm_zero  = [0]*(self.nlm_len)
-                    
+        self.M_zero    = np.zeros((self.numdofs, self.nlm_len, self.nlm_len))
+        
 
     def initialize(self, sr=None, si=None):
         """
         Initialize uniform CPO field
         """
-        
-        if sr is None: sr, si = self.nlm_iso, self.nlm_zero
-        
+        if sr is None: 
+            sr, si = self.nlm_iso, self.nlm_zero
+        s = Function(self.S)
         if self.modelplane=='xy':
-            assign(self.s.sub(0), project(Constant(sr), self.V)) # real part
-            assign(self.s.sub(1), project(Constant(si), self.V)) # imag part
+            assign(s.sub(0), project(Constant(sr), self.V)) # real part
+            assign(s.sub(1), project(Constant(si), self.V)) # imag part
         elif self.modelplane=='xz':
-            assign(self.s, project(Constant(sr), self.V)) # real part            
-
+            assign(s, project(Constant(sr), self.V)) # real part
+        self.set_state(s)
 
     def set_state(self, s, interp=False):
         if interp:
@@ -121,16 +122,13 @@ class CPO():
         else:
             self.s.assign(s)
             self.s0.assign(s)
-                    
 
     def set_BCs(self, sr, si, domids, domain=None):
         """
         Set boundary conditions
-        """
-    
+        """    
         self.bcs = []
         if domain is None: domain = self.boundaries 
-
         for ii, did in enumerate(domids):
             if self.modelplane=='xy':
                 self.bcs += [DirichletBC(self.S.sub(0), sr[ii], domain, did)] # real part
@@ -138,29 +136,21 @@ class CPO():
             elif self.modelplane=='xz':
                 self.bcs += [DirichletBC(self.S, sr[ii], domain, did)] # real part
                 
-    
     def set_isotropic_BCs(self, domids, domain=None):
         """
         Easy setting of isotropic boundary conditions
         """
-
         sr = [Constant(self.nlm_iso)]  * len(domids)
         si = [Constant(self.nlm_zero)] * len(domids)
         self.set_BCs(sr, si, domids, domain=domain)
-    
 
     def evolve(self, u, S, dt, iota=+1, Gamma0=None, Lambda0=None, steadystate=False, disable_advection=False):
         """
         The fabric solver, called to step fabric field forward in time by amount dt
-        """
-    
-        if self.s is None:
-            raise ValueError('CPO state "w" not set. Did you forget to initialize the CPO field?')
-            
+        """    
         self.s0.assign(self.s) # current state self.s must be set
         F = self._weakform(u, S, dt, iota, Gamma0, Lambda0, steadystate=steadystate, disable_advection=disable_advection)
         solve(lhs(F)==rhs(F), self.s, self.bcs, solver_parameters={'linear_solver':'gmres', }) # fastest tested are: gmres, bicgstab, tfqmr --- note this is a non-symmetric system!
-
 
     def solvesteady(self, u, S, iota=+1, Gamma0=None, Lambda0=None, disable_advection=False, \
                                     dt=None, tol=1e-7, maxiter=400):
@@ -184,13 +174,13 @@ class CPO():
         else:
             self.evolve(u, S, 1, steadystate=True, **kwargs_dyn)
 
-
     def _weakform(self, u, S, dt, iota, Gamma0, Lambda0, zeta=0, steadystate=False, disable_advection=False):
         
         ENABLE_LROT = iota is not None
         ENABLE_DDRX = (Gamma0 is not None) and (S is not None)
         ENABLE_CDRX = Lambda0 is not None
-
+        ENABLE_REG  = True
+        
         # Flattened strain-rate and spin tensors for accessing them per node
         Df = project( sym(grad(u)), self.G).vector()[:] # strain rate 
         Wf = project(skew(grad(u)), self.G).vector()[:] # spin
@@ -201,25 +191,19 @@ class CPO():
         W3 = self.mat3d(Wf)
         S3 = self.mat3d(Sf)
         
-        # Dynamical matrices at each DOF
-        if ENABLE_LROT: M_LROT_nodal     = np.array([self.sf.reduce_M(self.sf.M_LROT(self.nlm_dummy, D3[nn], W3[nn], iota, zeta), self.nlm_len) for nn in self.dofs] )
-        if ENABLE_DDRX: M_DDRX_src_nodal = np.array([self.sf.reduce_M(self.sf.M_DDRX_src(self.nlm_dummy, S3[nn]), self.nlm_len) for nn in self.dofs] )
-        M_REG_nodal = np.array([self.sf.reduce_M(self.sf.M_REG(self.nlm_dummy, D3[nn]), self.nlm_len) for nn in self.dofs] )
- 
-# @TODO IMPLEMENT       
-#        # Dynamical matrices M_* at each node as np arrays (indexing is M[node,row,column])
-#        M_LROT     = np.array([self._M_reduced(self.sf.M_LROT,     self.nlm_dummy, D3[nn], W3[nn], iota, zeta) for nn in self.dofs] ) if ENABLE_LROT else self.M_zero
-#        M_DDRX_src = np.array([self._M_reduced(self.sf.M_DDRX_src, self.nlm_dummy, S3[nn])                     for nn in self.dofs] ) if ENABLE_DDRX else self.M_zero
-#        M_REG      = np.array([self._M_reduced(self.sf.M_REG,      self.nlm_dummy, D3[nn])                     for nn in self.dofs] ) if ENABLE_REG  else self.M_zero
+        # Dynamical matrices M_* at each node as np arrays (indexing is M[node,kk,row,column])
+        M_LROT     = np.array([self._M_reduced(self.sf.M_LROT,     self.nlm_dummy, D3[nn], W3[nn], iota, zeta) for nn in self.dofs] ) if ENABLE_LROT else self.M_zero
+        M_DDRX_src = np.array([self._M_reduced(self.sf.M_DDRX_src, self.nlm_dummy, S3[nn])                     for nn in self.dofs] ) if ENABLE_DDRX else self.M_zero
+        M_REG      = np.array([self._M_reduced(self.sf.M_REG,      self.nlm_dummy, D3[nn])                     for nn in self.dofs] ) if ENABLE_REG  else self.M_zero
         
         # Populate entries of dynamical matrices 
         if   self.modelplane=='xy': krng = range(4) # rr, ri, ir, ii
         elif self.modelplane=='xz': krng = range(1) # rr
         for ii in self.srng:
             for kk in krng: 
-                if ENABLE_LROT: self.Mk_LROT[kk][ii].vector()[:] = M_LROT_nodal[:,kk,ii,:].flatten()
-                if ENABLE_DDRX: self.Mk_DDRX_src[kk][ii].vector()[:] = M_DDRX_src_nodal[:,kk,ii,:].flatten()
-                self.Mk_REG[kk][ii].vector()[:] = M_REG_nodal[:,kk,ii,:].flatten()
+                if ENABLE_LROT: self.Mk_LROT[kk][ii].vector()[:]     = M_LROT[:,kk,ii,:].flatten()
+                if ENABLE_DDRX: self.Mk_DDRX_src[kk][ii].vector()[:] = M_DDRX_src[:,kk,ii,:].flatten()
+                if ENABLE_REG:  self.Mk_REG[kk][ii].vector()[:]      = M_REG[:,kk,ii,:].flatten()
 
         ### Construct weak form
         
@@ -252,15 +236,19 @@ class CPO():
                 raise ValueError('CPO(): DDRX evolution is not yet supported for modelplane="xy"')
             
             # Orientation space stabilization (hyper diffusion)
-            Mrr_REG,  Mri_REG,  Mir_REG,  Mii_REG  = self.Mk_REG  # unpack for readability 
-            F += -self.nu_multiplier * sum([ (dot(Mrr_REG[ii], self.sr) + dot(Mri_REG[ii], self.si))*self.wr_sub[ii]*dx for ii in self.srng]) # real part
-            F += -self.nu_multiplier * sum([ (dot(Mir_REG[ii], self.sr) + dot(Mii_REG[ii], self.si))*self.wi_sub[ii]*dx for ii in self.srng]) # imag part
+            if ENABLE_REG:
+                Mrr_REG,  Mri_REG,  Mir_REG,  Mii_REG  = self.Mk_REG  # unpack for readability 
+                F += -self.nu_multiplier * sum([ (dot(Mrr_REG[ii], self.sr) + dot(Mri_REG[ii], self.si))*self.wr_sub[ii]*dx for ii in self.srng]) # real part
+                F += -self.nu_multiplier * sum([ (dot(Mir_REG[ii], self.sr) + dot(Mii_REG[ii], self.si))*self.wi_sub[ii]*dx for ii in self.srng]) # imag part
 
         elif self.modelplane=='xz':
                 
-            # Real space stabilization (Laplacian diffusion)
-            F = self.nu_realspace * inner(grad(self.sr), grad(self.wr))*dx # real part
-                
+            # dummy zero term to make rhs(F) work when solving steady-state problem 
+            # this can probably be removed once the SSA source/sink terms are added
+            s_null = Function(self.S)
+            s_null.vector()[:] = 0.0
+            F = dot(s_null, self.wr)*dx
+
             # Time derivative
             if not steadystate:
                 F += dtinv * dot( (self.sr-self.s0), self.wr)*dx # real part
@@ -268,6 +256,9 @@ class CPO():
             # Real space advection
             if not disable_advection:
                 F += dot(dot(u, nabla_grad(self.sr)), self.wr)*dx # real part
+                
+            # Real space stabilization (Laplacian diffusion)
+            F += self.nu_realspace * inner(grad(self.sr), grad(self.wr))*dx # real part
     
             # Lattice rotation
             if ENABLE_LROT:
@@ -282,45 +273,39 @@ class CPO():
                 F += F_src - F_sink
             
             # Orientation space stabilization (hyper diffusion)
-            Mrr_REG,  *_ = self.Mk_REG  # unpack for readability 
-            F += -self.nu_multiplier * sum([ dot(Mrr_REG[ii], self.sr)*self.wr_sub[ii]*dx for ii in self.srng]) # real part
+            if ENABLE_REG:
+                Mrr_REG,  *_ = self.Mk_REG  # unpack for readability 
+                F += -self.nu_multiplier * sum([ dot(Mrr_REG[ii], self.sr)*self.wr_sub[ii]*dx for ii in self.srng]) # real part
 
         return F
         
-     
     def _M_reduced(self, Mfun, *args, **kwargs):
-        return self.sf.reduce_M(Mfun(*args, **kwargs), self.nlm_len)[0] # full form -> reduced form of M_*
+        return self.sf.reduce_M(Mfun(*args, **kwargs), self.nlm_len) # full form -> reduced form of M_*
 
-       
     def mat3d(self, D2, dn=4):
         D2 = np.array([ D2[nn*dn:(nn+1)*dn] for nn in self.dofs ]) # to [node, D2 flat index 0 to 3]
         return sfcom.mat3d_arr(D2, self.modelplane, reshape=True) # [node,3,3]
-
         
-    def get_nlm(self, x, y):
-    
-        """
-        Extract CPO state gridpoint-wise (full form of nlm)
-        """
-        
-        if   self.modelplane=='xy': nlm = self.s.sub(0)(x,y) + 1j * self.s.sub(1)(x,y)
-        elif self.modelplane=='xz': nlm = self.s(x,y) + 0j
-        return self.sf.rnlm_to_nlm(nlm, self.nlm_len_full) if self.USE_REDUCED else nlm
-        
-            
     def eigenframe(self, *p, **kwargs):
         """
         Extract a2 eigenvectors (mi) and eigenvalues (lami) at specified list of points p=([x1,x2,...], [y1,y2,...])
         Note that you can back-construct a2 = lam1*np.outer(m1,m1) + lam2*np.outer(m2,m2) + lam3*np.outer(m3,m3) 
         """
-        
         xf, yf = np.array(p[0], ndmin=1), np.array(p[1], ndmin=1) # (point num, x/y value)
         nlm = np.array([self.get_nlm(xf[pp],yf[pp], **kwargs) for pp in range(len(xf))]) # (point num, nlm coefs)
         mi, lami = sfcom.eigenframe(nlm, symframe=self.symframe, modelplane=self.modelplane)
         return (mi, lami)
-        
+
+    def get_nlm(self, *p, xz2xy=False):    
+        """
+        Extract CPO state gridpoint-wise (full form of nlm)
+        """
+        if   self.modelplane=='xy': nlm_ = self.s.sub(0)(*p) + 1j * self.s.sub(1)(*p)
+        elif self.modelplane=='xz': nlm_ = self.s(*p) + 0j
+        nlm = self.sf.rnlm_to_nlm(nlm_, self.nlm_len_full) if self.USE_REDUCED else nlm_
+        return self.sf.rotate_nlm_xz2xy(nlm) if xz2xy else nlm 
+                
     def apply_bounds(self):
-    
         """ 
         Renormalize power spectrum if it exceeds that of the delta function (numerical overshoot)
         """

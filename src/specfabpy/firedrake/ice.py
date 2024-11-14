@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 # Nicholas Rathmann and Daniel Shapero, 2024
 
-r"""
+"""
 Firedrake all-in-one interface for ice fabric dynamics, viscous anisotropy, etc.
 
-------
+-----------
 NOTICE
-------
+-----------
 The 2D ice-flow model plane is assumed to be xz. 
 This has the benifit of reducing the DOFs of the fabric evolution problem to involve only real numbers (real-valued state vector, s), considerably speeding up the solver.
 If your problem is in fact xy, nothing changes in the way this class is used; the (M)ODFs etc will simply reflect to assumption that flow is in xz rather than xy.
@@ -25,44 +25,65 @@ nu_multiplier   : multiplier of orientation-space regularization magnitude
 iota            : plastic spin free parameter; iota=1 => deck-of-cards behaviour
 Gamma0          : DDRX rate factor so that Gamma=Gamma0*(D-<D>), where D is the deformability
 Lambda0         : CDRX rate factor
-"""
 
-"""
-TODO:
+-----------
+TODO
+-----------
 - SSA fabric source/sinks and topo advection terms need to be included 
+- ...
 """
 
 import numpy as np
+import matplotlib.tri as tri
 #import code # code.interact(local=locals())
+
 from ..specfabpy import specfabpy as sf__
+from .. import constants as sfconst
 from .. import common as sfcom
+
 from firedrake import *
 
 class IceFabric:
     def __init__(
-        self, mesh, boundaries, L, nu_multiplier=1, nu_realspace=1e-3, modelplane='xz', symframe=-1, ds=None, nvec=None
+        self, mesh, boundaries, L, *args, 
+        nu_multiplier=1, nu_realspace=1e-3, modelplane='xz', symframe=-1, 
+        Eij_grain=(1,1), alpha=0, n_grain=1, CAFFE_params=(0.1, 10), n_EIE=3, 
+        ds=None, nvec=None, setextra=True, 
+        Cij=sfconst.ice['elastic']['Bennett1968'], rho=sfconst.ice['density'], **kwargs
     ):
         ### Check args
         
         if modelplane != 'xz':
             raise ValueError('modelplane "%s" not supported, must be "xz"'%(modelplane))
+            
+        if n_grain != 1:
+            raise ValueError('only n_grain = 1 (linear viscous) is supported')
+            
+        if not(0 <= alpha <= 1):
+            raise ValueError('alpha should be between 0 and 1')
 
         ### Setup
         
+        # Firedrake
         self.mesh, self.boundaries = mesh, boundaries
         self.ds = ds   if ds   is not None else Measure('ds', domain=self.mesh, subdomain_data=self.boundaries)
         self.n  = nvec if nvec is not None else FacetNormal(self.mesh)
-        self.L = int(L) # spectral truncation
-        self.symframe   = symframe
-        self.modelplane = modelplane
-        self.nu_realspace  = Constant(nu_realspace)
-        self.nu_multiplier = Constant(nu_multiplier)
+        self.setextra = setextra # set Eij, E_CAFFE, pfJ, etc. on every state update?
 
-        ### Initialize fortran module
-        
+        # specfab
+        self.L = int(L) # spectral truncation
         self.sf = sf__
         self.lm, self.nlm_len = self.sf.init(self.L)
         self.rnlm_len = self.sf.get_rnlm_len()
+        self.symframe   = symframe
+        self.modelplane = modelplane
+        self.nu_realspace  = nu_realspace
+        self.nu_multiplier = nu_multiplier
+        self.grain_params = (Eij_grain, alpha, n_grain)
+        self.CAFFE_params = CAFFE_params # (Emin, Emax)
+        self.n_EIE        = n_EIE
+        self.Lame_grain   = self.sf.Cij_to_Lame_tranisotropic(Cij) 
+        self.rho          = rho
 
         ### Fabric state and dyamics
         
@@ -71,13 +92,15 @@ class IceFabric:
         self.R = FunctionSpace(self.mesh, *ele)
         self.G = TensorFunctionSpace(self.mesh, *ele, shape=(2,2))
         self.numdofs = self.R.dim()
+        
         # Test, trial, solution container
         self.p = TrialFunction(self.S)
         self.w = TestFunction(self.S)
-#        self.ps = split(self.p)
+#        self.ps = split(self.p) # split done in _weakform() instead
         self.ws = split(self.w)
         self.s  = Function(self.S)
         self.s0 = Function(self.S)
+        
         # Dynamical matrices rows, e.g. M_LROT[i,:] (this account for the real-real coefficient interactions, sufficient for xz problems)
         self.Mrr_LROT     = [Function(self.S) for ii in range(self.rnlm_len)] # list of M matrix rows
         self.Mrr_DDRX_src = [Function(self.S) for ii in range(self.rnlm_len)]
@@ -92,11 +115,6 @@ class IceFabric:
         self.Gd = TensorFunctionSpace(self.mesh, *ele, shape=(2,2))
         self.Vd = VectorFunctionSpace(self.mesh, *ele, dim=3) # for vectors
         self.numdofs0 = self.Rd.dim()
-        self.mi   = [Function(self.Vd) for _ in range(3)] # (m1,m2,m3) fabric principal directions
-        self.Eij  = [Function(self.Rd) for _ in range(6)] # Eij enhancement tensor
-        self.lami = [Function(self.Rd) for _ in range(3)] # a2 eigenvalues (lami)
-        self.E_CAFFE = Function(self.Rd)
-        self.J = Function(self.Rd)
 
         ### Idealized states
 
@@ -117,40 +135,31 @@ class IceFabric:
 
 
     def initialize(self, s0=None):
-        s0_ = self.rnlm_iso if s0 is None else s0
-        self.s.assign(project(Constant(s0_), self.S))
-        self._nlm_nodal()
+        s0 = self.rnlm_iso if s0 is None else s0
+        self.set_state(project(Constant(s0), self.S))
 
     def set_state(self, s):
         self.s.assign(s)
         self.s0.assign(s)
-
+        self._setaux()
+        
     def set_BCs(self, si, domids):
         self.bcs = [DirichletBC(self.S, si[ii], did) for ii, did in enumerate(domids)]
 
     def set_isotropic_BCs(self, domids):
         self.set_BCs([Constant(self.rnlm_iso)]*len(domids), domids)
         
-    def get_nlm(self, *p, xz2xy=False):
-        nlm = self.sf.rnlm_to_nlm(self.s(p)+0j, self.nlm_len)
-        return self.sf.rotate_nlm_xz2xy(nlm) if xz2xy else nlm 
-       
-    def _nlm_nodal(self):
-        sp = project(self.s, self.Sd)
-        self.rnlm = np.array([sp.sub(ii).vector()[:] + 0j for ii in self.srrng]) # reduced form (rnlm) per node
-        self.nlm  = np.array([self.sf.rnlm_to_nlm(self.rnlm[:,nn], self.nlm_len) for nn in self.dofs0]) # full form (nlm) per node (nlm[node,coef])
-
-    def evolve(self, *args, DDRX_LINEARIZE=2, **kwargs):
+    def evolve(self, u, *args, DDRX_LINEARIZE=2, **kwargs):
         """
         The fabric solver, called to step fabric field forward in time by amount dt
         
         @TODO: this routine and _get_weakform() can surely be optimized by better choice of linear solver, preconditioning, and not assembling the weak form on every solve call
         """
         self.s0.assign(self.s)
-        F = self._get_weakform(*args, DDRX_LINEARIZE=DDRX_LINEARIZE, **kwargs)
+        F = self._get_weakform(u, *args, DDRX_LINEARIZE=DDRX_LINEARIZE, **kwargs)
         FORM = (F==0) if DDRX_LINEARIZE == 0 else (lhs(F)==rhs(F))
         solve(FORM, self.s, self.bcs, solver_parameters={'linear_solver':'gmres',}) # non-symmetric system (fastest tested are: gmres, bicgstab, tfqmr)
-        self._nlm_nodal()
+        self._setaux(u=u)
 
     def _get_weakform(self, u, S, dt, iota=None, Gamma0=None, Lambda0=None, zeta=0, steadystate=False, DDRX_LINEARIZE=2):
 
@@ -188,23 +197,22 @@ class IceFabric:
 
         ### Construct weak form
 
-        # Real space advection
-        F = dot(dot(u, nabla_grad(s)), self.w)*dx
+        # dummy zero term to make rhs(F) work when solving steady-state problem 
+        # this can probably be removed once the SSA source/sink terms are added
+        s_null = Function(self.S)
+        s_null.vector()[:] = 0.0
+        F = dot(s_null, self.w)*dx
 
         # Time derivative
         dtinv = Constant(1/dt)
         if not steadystate:
             F += dtinv * dot( (s-self.s0), self.w)*dx
 
-        # dummy zero term to make rhs(F) work when solving steady-state problem 
-        # this can probably be removed once the SSA source/sink terms are added
-        s_null = Function(self.S)
-        s_null.vector()[:] = 0.0
-        F += dot(s_null, self.w)*dx
+        # Real space advection
+        F += dot(dot(u, nabla_grad(s)), self.w)*dx
 
         # Real space stabilization (Laplacian diffusion)
-        if ENABLE_REG:
-            F += self.nu_realspace * inner(grad(s), grad(self.w))*dx
+        F += Constant(self.nu_realspace) * inner(grad(s), grad(self.w))*dx
 
         if ENABLE_LROT:
             F += -sum([ dot(self.Mrr_LROT[ii], s)*self.ws[ii]*dx for ii in self.srrng])
@@ -228,7 +236,8 @@ class IceFabric:
             F += F_src - F_snk
 
         # Orientation space stabilization (hyper diffusion)
-        F += -self.nu_multiplier*sum([dot(self.Mrr_REG[ii], s)*self.ws[ii]*dx for ii in self.srrng])
+        if ENABLE_REG:
+            F += -Constant(self.nu_multiplier)*sum([dot(self.Mrr_REG[ii], s)*self.ws[ii]*dx for ii in self.srrng])
 
         return F
         
@@ -250,45 +259,71 @@ class IceFabric:
         mi, lami = sfcom.eigenframe(nlm, symframe=self.symframe, modelplane=self.modelplane)
         return (mi, lami)
         
-    def pfJ(self, *args, **kwargs):
+    def get_nlm(self, *p, xz2xy=False):
+        nlm = self.sf.rnlm_to_nlm(self.s(p)+0j, self.nlm_len)
+        return self.sf.rotate_nlm_xz2xy(nlm) if xz2xy else nlm 
+       
+    def _setaux(self, u=None):
+        """
+        Set auxiliary fields
+        """
+        sp = project(self.s, self.Sd)
+        self.rnlm = np.array([sp.sub(ii).vector()[:] + 0j for ii in self.srrng]) # reduced form (rnlm) per node
+        self.nlm  = np.array([self.sf.rnlm_to_nlm(self.rnlm[:,nn], self.nlm_len) for nn in self.dofs0]) # full form (nlm) per node (nlm[node,coef])
+        
+        if self.setextra:
+            self.mi, self.Eij, self.lami = self.get_Eij(ei=())
+            self.xi, self.Exij, _        = self.get_Eij(ei=np.eye(3))
+            # unpack above eigenframe fields for convenience
+            self.m1, self.m2, self.m3 = self.mi # rheological symmetry directions
+            self.E11, self.E22, self.E33, self.E23, self.E31, self.E12 = self.Eij  # eigenenhancements
+            self.Exx, self.Eyy, self.Ezz, self.Eyz, self.Exz, self.Exy = self.Exij # Cartesian enhancements
+            self.lam1, self.lam2, self.lam3 = self.lami # fabric eigenvalues \lambda_i (not a2 eigenvalues unless symframe=-1)
+            # additional fields...
+            self.pfJ = self.get_pfJ()
+            if u is not None: 
+                self.E_CAFFE = self.get_E_CAFFE(u)
+                self.E_EIE   = self.get_E_EIE(u)
+        
+    def get_pfJ(self, *args, **kwargs):
         """
         Pole figure J (pfJ) index
-        
-        Returns: J
         """
-        self.J.vector()[:] = sfcom.pfJ(self.nlm, *args, **kwargs)[:]
-        return self.J
+        pfJ = Function(self.Rd)
+        pfJ.vector()[:] = sfcom.pfJ(self.nlm, *args, **kwargs)[:]
+        return pfJ
  
-    def get_E_CAFFE(self, u, Emin=0.1, Emax=10):
+    def get_E_CAFFE(self, u):
         """
         CAFFE model (Placidi et al., 2010)
-        
-        Returns: E_CAFFE
         """
         Df = project(sym(grad(u)), self.Gd).vector()[:]
-        self.E_CAFFE.vector()[:] = self.sf.E_CAFFE_arr(self.nlm, self.mat3d(Df), Emin, Emax)
-        return self.E_CAFFE
+        E_CAFFE = Function(self.Rd)
+        E_CAFFE.vector()[:] = self.sf.E_CAFFE_arr(self.nlm, self.mat3d(Df), *self.CAFFE_params)
+        return E_CAFFE
         
-    def get_Eij(self, Eij_grain, alpha, n_grain, ei=()):   
+    def get_E_EIE(self, u):
+        """
+        EIE model (Rathmann et al., in prep)
+        *** Not yet implemented ***
+        """
+#        Df = project(sym(grad(u)), self.Gd).vector()[:]
+        E_EIE = Function(self.Rd)
+#        E_EIE.vector()[:] = self.sf.E_EIE_arr(...)
+        return E_EIE
+        
+    def get_Eij(self, ei=()):   
         """
         Bulk enhancement factors wrt ei=(e1,e2,e3) axes for *transversely isotropic* grains.
         If ei=() then CPO eigenframe is used.
-
-        Returns: (mi, Eij, lami)
         """
-        ### Check args
-        
-        if n_grain != 1:
-            raise ValueError('only n_grain = 1 (linear viscous) is supported')
-        if not(0 <= alpha <= 1):
-            raise ValueError('alpha should be between 0 and 1')
 
         ### Calculate Eij etc. using specfabpy per node
         
         mi, lami = sfcom.eigenframe(self.nlm, symframe=self.symframe, modelplane=self.modelplane) # [node,xyz,i], [node,i]
         if   len(ei) == 0:           ei = (mi[:,:,0], mi[:,:,1], mi[:,:,2])
         elif len(ei[0].shape) == 1:  ei = [np.tile(ei[ii], (self.numdofs0,1)) for ii in range(3)] # ei = (e1[node,3], e2, e3)
-        Eij = self.sf.Eij_tranisotropic_arr(self.nlm, *ei, Eij_grain, alpha, n_grain) # [node, Voigt vector index 1--6]
+        Eij = self.sf.Eij_tranisotropic_arr(self.nlm, *ei, *self.grain_params) # [node, Voigt vector index 1--6]
 
         # The enhancement factor model depends on effective (homogenized) grain parameters, calibrated against deformation tests.
         # For CPOs far from the calibration states, negative values *may* occur where Eij should tend to zero if truncation L is not large enough.
@@ -296,15 +331,19 @@ class IceFabric:
         
         ### Populate functions
         
+        ei_fs   = [Function(self.Vd) for _ in range(3)] # a2 eigenvectors if ei=()
+        lami_fs = [Function(self.Rd) for _ in range(3)] # a2 eigenvalues (lami)
+        Eij_fs  = [Function(self.Rd) for _ in range(6)] # Eij enhancement tensor
+        
         for ii in range(3): # vec 1,2,3
-            self.lami[ii].vector()[:] = lami[:,ii]
+            lami_fs[ii].vector()[:] = lami[:,ii]
             for jj in range(3): # comp x,y,z
-                self.mi[ii].sub(jj).vector()[:] = mi[:,jj,ii]
+                ei_fs[ii].sub(jj).vector()[:] = mi[:,jj,ii]
                 
         for kk in range(6): 
-            self.Eij[kk].vector()[:] = Eij[:,kk]
+            Eij_fs[kk].vector()[:] = Eij[:,kk]
             
-        return (self.mi, self.Eij, self.lami)
+        return (ei_fs, Eij_fs, lami_fs)
                 
     def Gamma0_Lilien(self, u, T, A=4.3e7, Q=3.36e4):
         """

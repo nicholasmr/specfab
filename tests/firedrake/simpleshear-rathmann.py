@@ -30,14 +30,14 @@ Fabric problem setup
 ### Numerics and regularization
 
 Nt = 20 # number of time steps to take
-L  = 6  # spectral truncation *** set L=8 or L=10 unless debugging ***
+L  = 8  # spectral truncation *** set L=8 or L=10 unless debugging ***
 
-fabric_kwargs = dict(nu_multiplier=1, nu_realspace=1e-4, modelplane='xz') # nu_realspace must be adjusted when changing mesh/resolution (trial-and-error so that solution is stable and smooth)
+kwargs_num = dict(nu_multiplier=1, nu_realspace=1e-3, modelplane='xz') # nu_realspace must be adjusted when changing mesh/resolution (trial-and-error so that solution is stable and smooth)
 
 ### Fabric dynamics
 
-ENABLE_LROT = 1 # boolean flag
-ENABLE_DDRX = 0 # boolean flag
+ENABLE_LROT = True
+ENABLE_DDRX = False
 
 iota   = +1    # deck-of-cards behaviour for lattice rotatio 
 #Gamma0 = 1e-1 # uniform DDRX rate factor
@@ -45,9 +45,12 @@ Gamma0 = 'L23' # DDRX rate factor that depends on both temperature and strainrat
 
 ### Viscous anisotropy homogenization parameters
 
-alpha     = 0.455    # Taylor--Sachs homogenization weight
-Eij_grain = (1, 1e3) # (Ecc, Eca) grain enhancements
-n_grain   = 1        # grain power-law exponent (only n_grain=1 supported)
+alpha     = 0.455     # Taylor--Sachs homogenization weight
+Eij_grain = (1, 1e3)  # (Ecc, Eca) grain enhancements
+n_grain   = 1         # grain power-law exponent (only n_grain=1 supported)
+E_CAFFE   = (0.1, 10) # (Emin, Emax) of CAFFE
+
+kwargs_vaniso = dict(alpha=alpha, Eij_grain=Eij_grain, n_grain=n_grain, E_CAFFE=E_CAFFE)
 
 """
 Setup firedrake fabric class
@@ -56,11 +59,11 @@ Setup firedrake fabric class
 ### Mesh and function spaces
 
 nx = ny = 16
-mesh = fd.UnitSquareMesh(nx, ny) #, diagonal='crossed')
+mesh = fd.UnitSquareMesh(nx, ny, diagonal='right') #, diagonal='crossed')
 x = fd.SpatialCoordinate(mesh)
 V = fd.VectorFunctionSpace(mesh, "CG", 1)
 Q = fd.FunctionSpace(mesh, "CG", 1) # for projecting scalar fabric measures
-T = fd.TensorFunctionSpace(mesh, "CG", 1)
+T = fd.TensorFunctionSpace(mesh, "CG", 2)
 
 ### Velocity field
 
@@ -76,7 +79,7 @@ dt_CFL = 0.5*h_min/v_max
 ### Initialize fabric module
 
 boundaries = (1,2,3,4) 
-fabric = IceFabric(mesh, boundaries, L, **fabric_kwargs) # initializes as isotropic fabric field
+fabric = IceFabric(mesh, boundaries, L, **kwargs_num, **kwargs_vaniso) # initializes as isotropic fabric field
 fabric.set_isotropic_BCs((1,)) # isotropic ice incoming from left-hand boundary, remaining boundaries are free (no fabric fluxes)
 
 if not ENABLE_LROT: iota   = None
@@ -92,13 +95,13 @@ Solve for steady state
 
 if ENABLE_DDRX: fabric.evolve(u, tau, 30*dt_CFL, iota=iota, Gamma0=Gamma0, steadystate=False, DDRX_LINEARIZE=2) # solving directly for nonlinear steady-state not yet supported, so take a large time step intead to approximate steady-state in plot
 else:           fabric.evolve(u, tau, 1,         iota=iota, Gamma0=Gamma0, steadystate=True)
-pfJ_steady = fabric.pfJ().copy(deepcopy=True)
+pfJ_steady = fabric.get_pfJ().copy(deepcopy=True)
 
 """
 Time evolution
 """
 
-fabric.initialize() # reset to isotropic
+fabric.initialize() # reset to isotropic after solving for steady state
 
 nn = 0
 t  = 0.0
@@ -110,9 +113,7 @@ while nn < Nt:
     t  += dt
     
     print("*** Step %i :: dt=%.2e, t=%.2e" % (nn, dt, t))
-    fabric.evolve(u, tau, dt, iota=iota, Gamma0=Gamma0)
-    mi, Eij, lami = fabric.get_Eij(Eij_grain, alpha, n_grain)
-    E_CAFFE = fabric.get_E_CAFFE(u)        
+    fabric.evolve(u, tau, dt, iota=iota, Gamma0=Gamma0) # automatically updates derived properties (Eij, pfJ, etc.)
     
     ### Plot results
         
@@ -136,7 +137,7 @@ while nn < Nt:
         ### Plot J index
 
         ax = axr1[0]
-        h = fd.pyplot.tricontourf(fabric.pfJ(), axes=ax, levels=np.arange(1, 3+1e-3, 0.2), extend='max', cmap='YlGnBu')
+        h = fd.pyplot.tricontourf(fabric.pfJ, axes=ax, levels=np.arange(1, 3+1e-3, 0.2), extend='max', cmap='YlGnBu')
         cbar = plt.colorbar(h, ax=ax, **kwargs_cb)
         cbar.ax.set_xlabel(r'$J$ index')
         h = fd.pyplot.quiver(u, axes=ax, cmap='Reds', width=0.0075)
@@ -151,7 +152,7 @@ while nn < Nt:
         lvls_E = np.arange(0.6, 2+1e-3, 0.1)
         divnorm_E = colors.TwoSlopeNorm(vmin=np.amin(lvls_E), vcenter=1, vmax=np.amax(lvls_E))
         kwargs_E = dict(levels=lvls_E, norm=divnorm_E, extend='both', cmap='PuOr_r')
-        h = fd.pyplot.tricontourf(E_CAFFE, axes=ax, **kwargs_E)
+        h = fd.pyplot.tricontourf(fabric.E_CAFFE, axes=ax, **kwargs_E)
         cbar = plt.colorbar(h, ax=ax, **kwargs_cb)
         cbar.ax.set_xlabel(r'$E$ (CAFFE)')
         
@@ -163,7 +164,7 @@ while nn < Nt:
 
         idx = ['11','22','33','23','13','12'] # Voigt ordering
         for ii, ax in enumerate(axr2[:]):
-            h = fd.pyplot.tricontourf(Eij[ii], axes=ax, **kwargs_E)
+            h = fd.pyplot.tricontourf(fabric.Eij[ii], axes=ax, **kwargs_E)
             cbar = plt.colorbar(h, ax=ax, **kwargs_cb)
             cbar.ax.set_xlabel(r'$E_{%s}$'%(idx[ii]))
        
