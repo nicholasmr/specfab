@@ -320,8 +320,8 @@ class IceFabric:
 
         ### Calculate Eij etc. using specfabpy per node
         
-        mi, lami = sfcom.eigenframe(self.nlm, symframe=self.symframe, modelplane=self.modelplane) # [node,xyz,i], [node,i]
-        if   len(ei) == 0:           ei = (mi[:,:,0], mi[:,:,1], mi[:,:,2])
+        mi, lami = sfcom.eigenframe(self.nlm, symframe=self.symframe, modelplane=self.modelplane) # [node,i,xyz], [node,i]
+        if   len(ei) == 0:           ei = (mi[:,0], mi[:,1], mi[:,2])
         elif len(ei[0].shape) == 1:  ei = [np.tile(ei[ii], (self.numdofs0,1)) for ii in range(3)] # ei = (e1[node,3], e2, e3)
         Eij = self.sf.Eij_tranisotropic_arr(self.nlm, *ei, *self.grain_params) # [node, Voigt vector index 1--6]
 
@@ -345,12 +345,14 @@ class IceFabric:
             
         return (ei_fs, Eij_fs, lami_fs)
                 
-    def Gamma0_Lilien(self, u, T, A=4.3e7, Q=3.36e4):
-        """
-        DDRX rate factor from Dome C ice-core calibration experiment (Lilien et al., 2023, p. 7)
-        """
+    def Gamma0_Lilien23_EDC(self, u, T, A=4.3e7, Q=3.36e4):
+        # DDRX rate factor from Dome C ice-core calibration experiment (Lilien et al., 2023, p. 7)
         R = Constant(8.314) # gas constant (J/mol*K)
         D = sym(grad(u))
         epsE = sqrt(inner(D,D)/2)
         return project(epsE*Constant(A)*exp(-Constant(Q)/(R*T)), self.R)
+
+    def Gamma0_Lilien23_lab(self, u, T, A=1.91e7, Q=3.36e4):
+        # DDRX rate factor from lab calibration experiment (Lilien et al., 2023, p. 7)
+        return self.Gamma0_Lilien23_EDC(u, T, A=A, Q=Q)
 

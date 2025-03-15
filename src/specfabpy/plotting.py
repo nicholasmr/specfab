@@ -12,6 +12,7 @@ from matplotlib import rcParams, rc
 from matplotlib.offsetbox import AnchoredText
 import matplotlib.ticker as mticker
 import matplotlib.colors
+import cartopy.crs as ccrs
 
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -188,8 +189,8 @@ def plotmi(ax, mi, geo, marker='.', ms=9, markeredgewidth=1.0, colors=(c_dred,),
         c_   = colors[kk] if len(colors)>1 else colors[0]
         mec_ = markeredgecolor[kk] if len(markeredgecolor)>1 else markeredgecolor[0] 
         kw_color = dict(markerfacecolor=c_, markeredgecolor=c_ if mec_ is None else mec_)
-        plotS2point(ax, +mi[:,kk], **kwargs_default, **kw_color, **kwargs)
-        plotS2point(ax, -mi[:,kk], **kwargs_default, **kw_color, **kwargs)
+        plotS2point(ax, +mi[kk], **kwargs_default, **kw_color, **kwargs)
+        plotS2point(ax, -mi[kk], **kwargs_default, **kw_color, **kwargs)
             
 
 def discretize(nlm, lm, latres, lonres):
@@ -327,6 +328,7 @@ def plotFSE(ax, center, eigenvectors, eigenvalues, N=50, lw=0.5, ls='-', c='tab:
 
     theta = np.linspace(0, 2*np.pi, N)
     eigenvectors = eigenvectors.T
+#    eigenvectors = eigenvectors.T # ei[i,xyz] -> ei[xyz,i]
     a = scale*np.sqrt(1/eigenvalues[0])
     b = scale*np.sqrt(1/eigenvalues[1])
     ellipse_points = a * np.cos(theta)[:, np.newaxis] * eigenvectors[:, 0] + b * np.sin(theta)[:, np.newaxis] * eigenvectors[:, 1]
@@ -421,3 +423,121 @@ def _plotparcel_side(ax, pi, F, alpha, lw, ls, facecolor, edgecolor, zorder=5):
     coll.set_zorder(zorder)
     ax.add_collection3d(coll)
     
+    
+def sph_harm_P(l,m, colat,lon, degree=False):
+    
+    """
+    Vector Spherical Harmonic (VSH) mode \Psi_l^m, here denoted "P"
+    """
+    
+    P = np.array([0*colat, 0*lon], dtype=np.complex128) # ({theta,phi} components, colat, lon)
+    mabs = np.abs(m)
+    if l==2:
+        c, s = np.cos(colat), np.sin(colat)
+        if mabs==0: P = -3/2*np.sqrt(5/np.pi)  * np.exp(0j*lon) * np.array([s*c, 0*lon],            dtype=np.complex128)
+        if mabs==1: P = -np.sqrt(15/(8*np.pi)) * np.exp(1j*lon) * np.array([np.cos(2*colat), 1j*c], dtype=np.complex128)
+        if mabs==2: P = +np.sqrt(15/(8*np.pi)) * np.exp(2j*lon) * np.array([s*c, 1j*s],             dtype=np.complex128)
+    if m<0: P = (-1)**(mabs) * np.conjugate(P)
+    return P
+    
+    
+def sph_harm_Q(l,m, colat,lon, degree=False):
+    
+    """
+    Vector Spherical Harmonic (VSH) mode \Phi_l^m, here denoted "Q"
+    """
+    
+    P = np.array([0*colat, 0*lon], dtype=np.complex128) # ({theta,phi} components, colat, lon)
+    mabs = np.abs(m)
+    if l==1:
+        c, s = np.cos(colat), np.sin(colat)
+        if mabs==0: P = -np.sqrt(3/(4*np.pi)) * np.exp(0j*lon) * np.array([0*colat, s],     dtype=np.complex128)
+        if mabs==1: P = +np.sqrt(3/(8*np.pi)) * np.exp(1j*lon) * np.array([0*colat+1j, -c], dtype=np.complex128)
+    if m<0: P = (-1)**(mabs) * np.conjugate(P)
+    return P
+    
+   
+def plot_VSH(plm, qlm, ax, \
+        showcb=True, showgl=True, hidetruncerr=True, # options/flags \
+        norm=None, hresmul=10, lresmul=1, nchunk=None, # general \
+        cmap='YlOrBr', lvls=np.arange(0, 0.8+0.01, 0.2), # colormap and lvls \ 
+        cbfraction=0.075, cbaspect=9, cborientation='horizontal', cbpad=0.1, cblabel=r'$\norm{\vb{\dot{c}}}/\norm{\grad\vb{u}}$', cblabelpad=None, cbtickintvl=2, extend=None, # colorbar \
+        title=None, titlepad=10, \
+        kwargs_gl=kwargs_gl_default, # grid lines \
+        arrscale=7.5, arrwidth=0.016, arrcolor='k', \
+        transform=ccrs.PlateCarree() \
+    ):
+    
+    """
+    Plot Vector Spherical Harmonic (VSH) expansion series for lattice rotation velocity field
+
+    Assumes:
+    --------
+    plm = [p_2^{-2}, p_2^{-1}, p_2^{0}, p_2^{1}, p_2^{2}]
+    qlm = [          q_1^{-1}, q_1^{0}, p_1^{1}         ]
+    """
+    
+    ### Setup grid 
+    
+    # High-res
+    colat = np.linspace(0,   np.pi, 10*hresmul)   
+    lon   = np.linspace(0, 2*np.pi, 20*hresmul)
+    LON, COLAT = np.meshgrid(lon, colat)
+    LAT = np.pi/2-COLAT
+        
+    # Low-res
+    dlat0 = np.deg2rad(30)
+    colat2 = np.linspace(dlat0, np.pi-dlat0, 6*lresmul)
+    LON2, COLAT2 = [], []
+    for cl in colat2:
+        N_lon = int(20*lresmul*np.sin(cl))
+        LON2_new = [2*np.pi*ii/N_lon for ii in range(N_lon)]
+        LON2 += LON2_new
+        COLAT2 = COLAT2 + [cl,]*len(LON2_new)
+    LON2, COLAT2 = np.array(LON2), np.array(COLAT2)
+    LAT2 = np.pi/2-COLAT2
+
+    ### Sample field
+    
+    F_P = np.array([plm[2+m]*sph_harm_P(2, m, COLAT, LON) for m in np.arange(-2,2+1) ])
+    F_Q = np.array([qlm[1+m]*sph_harm_Q(1, m, COLAT, LON) for m in np.arange(-1,1+1) ])
+    F_high = np.real(np.sum(F_P, axis=0) + np.sum(F_Q, axis=0))
+
+    F_P = np.array([plm[2+m]*sph_harm_P(2, m, COLAT2, LON2) for m in np.arange(-2,2+1) ])
+    F_Q = np.array([qlm[1+m]*sph_harm_Q(1, m, COLAT2, LON2) for m in np.arange(-1,1+1) ])
+    F_low = np.real(np.sum(F_P, axis=0) + np.sum(F_Q, axis=0))
+
+    ### Plot magnitude 
+
+    mag = np.sqrt(F_high[0]*np.conjugate(F_high[0]) + F_high[1]*np.conjugate(F_high[1]))
+    mag = np.real(mag)
+
+    if norm is not None:
+        mag /= norm
+
+    kwargs_cf = dict(levels=lvls, cmap=cmap, nchunk=nchunk, extend=extend if (extend is not None) else ('max' if lvls[0]<1e-10 else 'both'))
+    kwargs_cb = dict(ticks=lvls[::cbtickintvl], fraction=cbfraction, aspect=cbaspect, orientation=cborientation, pad=cbpad)
+    hvsh, hcb = plotS2field(ax, mag, LON, LAT, \
+        kwargs_cf=kwargs_cf, showcb=showcb, kwargs_cb=kwargs_cb, showgl=showgl, kwargs_gl=kwargs_gl)
+
+    ### Plot vector arrows
+
+    x, y = np.rad2deg(LON2), np.rad2deg(LAT2)
+    F_low = np.real(F_low)
+    vx, vy = F_low[1], -F_low[0]
+    QV1 = ax.quiver(x,y , vx,vy, transform=transform, scale=arrscale, color=arrcolor, width=arrwidth)
+
+    ### Adjust colorbar
+    
+    if showcb:
+        hcb.set_label(cblabel, labelpad=cblabelpad)
+        cbax = hcb.ax.xaxis if cborientation == 'horizontal' else hcb.ax.yaxis
+        cbax.set_ticks(lvls, minor=True)
+#        cbax.set_major_formatter(mticker.FuncFormatter(lvlfmt))
+        
+    if title is not None: ax.set_title(title, pad=titlepad)
+        
+    ### Return handles
+    
+    return hvsh, hcb, QV1
+

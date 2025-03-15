@@ -78,7 +78,7 @@ class EnhancementFactor():
                 
         for ii in range(3): # loop over vectors (e1,e2,e3)
             for jj in range(3): # loop over vector components
-                eij_df[jj].vector()[:] = ei[ii,:,jj] # [i,node,xyz]
+                eij_df[jj].vector()[:] = ei[ii,:,jj] # [i,node,xyz] @TODO INCONSISTENT 1
             self.V_assigner.assign(mi_df[ii], eij_df) # set vector field components
         for kk in range(6): Eij_df[kk].vector()[:] = Eij[:,kk]
         for ii in range(3): lami_df[ii].vector()[:] = ai[:,ii] 
@@ -102,8 +102,8 @@ class EnhancementFactor():
         if not(0 <= alpha <= 1): raise ValueError('alpha should be between 0 and 1')
        
         nlm = self._nlm_nodal(sn) # [node, component]
-        mi, lami = sfcom.eigenframe(nlm, symframe=self.symframe, modelplane=self.modelplane) # [node,xyz,i], [node,i]
-        if   len(ei) == 0:           ei = (mi[:,:,0], mi[:,:,1], mi[:,:,2])
+        mi, lami = sfcom.eigenframe(nlm, symframe=self.symframe, modelplane=self.modelplane) # [node,i,xyz], [node,i]  @TODO INCONSISTENT 1
+        if   len(ei) == 0:           ei = (mi[:,0], mi[:,1], mi[:,2])
         elif len(ei[0].shape) == 1:  ei = sfcom.ei_tile(ei, self.numdofs) # ei = (e1[node,3], e2, e3)
         Eij = self.sf.Eij_tranisotropic_arr(nlm, *ei, Eij_grain, alpha, n_grain) # [node, Voigt vector index 1--6]
         
@@ -125,8 +125,8 @@ class EnhancementFactor():
         blm = self._nlm_nodal(sb) # [node, component]
         nlm = self._nlm_nodal(sn)
         vlm = 0*nlm # calculate from (blm,nlm) using joint ODF
-        mi, lami = sfcom.eigenframe(nlm, symframe=self.symframe, modelplane=self.modelplane) # [node,xyz,i], [node,i]
-        if   len(ei) == 0:           ei = (mi[:,:,0], mi[:,:,1], mi[:,:,2])
+        mi, lami = sfcom.eigenframe(nlm, symframe=self.symframe, modelplane=self.modelplane) # [node,i,xyz], [node,i]
+        if   len(ei) == 0:           ei = (mi[:,0], mi[:,1], mi[:,2])
         elif len(ei[0].shape) == 1:  ei = sfcom.ei_tile(ei, self.numdofs) # ei = (e1[node,3], e2, e3)
         Eij = self.sf.Eij_orthotropic_arr(blm, nlm, vlm, *ei, Eij_grain, alpha, n_grain) # [node, Voigt vector index 1--6]
 
@@ -177,33 +177,36 @@ class EnhancementFactor():
         return J
         
 
-    def shearfrac_SSA(self, u):
+    def shearfrac_SSA(self, u2):
         """
         Shear fraction for SSA flows (Graham et al., 2018)
         """
 
-        u.set_allow_extrapolation(True)   
+        Q = FunctionSpace(self.mesh, 'DG', 0)
 
         if self.modelplane == 'xy':
             z = as_vector([0,0,1])
-            u3 = as_vector([u[0],u[1],0])
+            u3 = as_vector([u2[0],u2[1],0])
+            
         elif self.modelplane == 'xz':
             z = as_vector([0,1,0])
-            u3 = as_vector([u[0],0,u[1]])
-        u3 = project(u3, self.V)
-            
+            u3 = as_vector([u2[0],0,u2[1]])
+        
         omghatD = z # if SSA
-        q = cross(u3, omghatD)
-        n = project(q/sqrt(dot(q,q)), self.V) # normalize
+        q = cross(u3, omghatD) # normal
+#        n = project(q/sqrt(dot(q,q)), Qv) # normalize
+        n = q/sqrt(dot(q,q)) # normalize
         
-        D2 = sym(grad(u))
-        D = as_tensor(sfcom.mat3d(D2, self.modelplane)) # 3x3 strain-rate tensor
+        D2 = sym(grad(u2))
+        D3 = as_tensor(sfcom.mat3d(D2, self.modelplane)) # 3x3 strain-rate tensor
         
-        F = dot(D,n) - dot(n,dot(D,n))*n - dot(omghatD,dot(D,n))*omghatD 
-        epsprime = sqrt(dot(F,F)) # eqn (7) 
+        F = dot(D3,n) - dot(n,dot(D3,n))*n - dot(omghatD,dot(D3,n))*omghatD 
+        eps_prime = sqrt(dot(F,F)) # eqn (7) 
         
-        gamma = project(epsprime/sqrt(inner(D,D)/2), self.R) # normalize by effective strain rate
-        return gamma, u3, n # shear fraction, velocity normal
+        eps_E = sqrt(inner(D3,D3)/2)
+        gamma = project(eps_prime/eps_E, Q) # shear fraction; normalized by effective strain rate
+        
+        return (gamma, u3, D3, n, Q)
         
         
     def coaxiality(self, A, B):
@@ -222,12 +225,10 @@ class EnhancementFactor():
         Fabric compatibility measure \chi
         """
 
-        gam, u, n = self.shearfrac_SSA(u2)
-        gam_np = gam.vector()[:]
+        gam, u3, D3, n, Q = self.shearfrac_SSA(u2)
+        gam = project(gam, self.R)
 
-        D2 = sym(grad(u2))
-        D = as_tensor(sfcom.mat3d(D2, self.modelplane)) # 3x3 strain-rate tensor
-        D_np = project(D/sqrt(inner(D,D)), self.T).vector()[:] # normalized, flattened entries for all nodes
+        D_np = project(D3/sqrt(inner(D3,D3)), self.T).vector()[:] # normalized, flattened entries for all nodes
                 
         N = outer(n,n) # shear plane normal
         N_np = project(N/sqrt(inner(N,N)), self.T).vector()[:] # normalize, flattened entries for all nodes
@@ -235,11 +236,12 @@ class EnhancementFactor():
         ### Construct chi nodal-wise
 
         nlm = self._nlm_nodal(s)
-        chi_np = np.zeros((self.numdofs))       
+        chi_np = np.zeros((self.numdofs))
+        gam_np = gam.vector()[:]
         
         for nn in self.dofs0: 
             
-            a2 = self.sf.a2(nlm[:,nn])
+            a2 = self.sf.a2(nlm[nn,:])
             a2 /= np.linalg.norm(a2) 
 
             I3 = np.arange(nn*9,(nn+1)*9) # flattened entries for tensor at node nn
@@ -267,5 +269,7 @@ class EnhancementFactor():
 
         chi = Function(self.R)
         chi.vector()[:] = chi_np[:]
+        chi = project(chi, Q) # element-based field
+        
         return chi
         

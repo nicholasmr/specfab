@@ -20,6 +20,9 @@ module dynamics
     ! Static (constant) matrices used for spectral dynamics
     real(kind=dp), parameter :: Ldiag(nlm_lenmax) = [( (-ll*(ll+1),mm=-ll,ll), ll=0,  Lcap__max,2)] ! Diagonal entries of Laplacian diffusion operator.
     
+    integer, parameter :: SHI_LATROT=1+5
+!    integer, parameter :: SHI_DDRX=1+5+9
+    
 contains      
 
     !---------------------------------
@@ -131,6 +134,118 @@ contains
             ri(ii+1,:,:) = ri_new/spread(norm2(ri_new,2), 2, 3) ! renormalize
         end do
     end
+    
+    !---- DEBUG NEW LATROT FORMULATION ----
+    
+    function plm_LROT(D,W, iota) result(plm)
+        implicit none
+        complex(kind=dp) :: plm(-2:2) ! entries correspond to lm pairs {(2,-2),(2,-1),(2,0),(2,1),(2,2)}
+        real(kind=dp)    :: D(3,3),W(3,3), iota
+        complex(kind=dp) :: WD(3,3), V(3,3)
+        integer          :: ism(-2:2)
+        real(kind=dp), parameter :: sr = sqrt(2.0d0/3)
+        
+        plm(:) = 0.0d0
+        WD = W-iota*D
+        
+        do mm = -2,2 ! loop over m index
+            ism(:) = 0
+            if (mm == -2) ism(-2) = 1
+            if (mm == -1) ism(-1) = 1
+            if (mm == 0)  ism(0)  = 1
+            if (mm == 1)  ism(1)  = 1
+            if (mm == 2)  ism(2)  = 1
+            
+            V(1,1) =   -sr*ism(0) +ism(-2)+ism(2) ! xx
+            V(2,2) =   -sr*ism(0) -ism(-2)-ism(2) ! yy
+            V(3,3) = +2*sr*ism(0) ! zz
+            V(2,3) = i*(ism(-1)+ism(1)) ! yz
+            V(1,3) =   (ism(-1)-ism(1)) ! xz
+            V(1,2) = i*(ism(-2)-ism(2)) ! xy
+            V(3,2) = V(2,3)
+            V(3,1) = V(1,3)
+            V(2,1) = V(1,2)
+            
+            plm(mm) = sqrt(Pi/30.0d0) * doubleinner22complex(WD, V)
+        end do
+    end
+
+    function qlm_LROT(D,W, iota) result(qlm)
+        implicit none
+        complex(kind=dp) :: qlm(-1:1) ! entries correspond to lm pairs {(1,-1), (1,0), (1,1)}
+        real(kind=dp)    :: D(3,3),W(3,3), iota
+        complex(kind=dp) :: WD(3,3), V(3,3)
+        integer          :: ism(-1:1)
+        
+        qlm(:) = 0.0d0
+        WD = W-iota*D
+        
+        do mm = -1,1 ! loop over m index
+            ism(:) = 0
+            if (mm == -1) ism(-1) = 1
+            if (mm == 0)  ism(0)  = 1
+            if (mm == 1)  ism(1)  = 1
+            
+            V(:,:) = 0.0d0
+            V(2,3) =    -ism(-1)+ism(1)  ! yz
+            V(1,3) = i*(+ism(-1)+ism(1)) ! xz
+            V(1,2) = -sqrt(2.0d0)*ism(0) ! xy
+            V(3,2) = -V(2,3)
+            V(3,1) = -V(1,3)
+            V(2,1) = -V(1,2)
+
+            qlm(mm) = sqrt(Pi/6.0d0) * doubleinner22complex(WD, V)
+        end do
+    end
+    
+    function M_LROT_new(D, W, iota) result(M_LROT)
+        implicit none
+        real(kind=dp), intent(in) :: D(3,3), W(3,3), iota
+        complex(kind=dp)          :: M_LROT(nlm_len,nlm_len)
+        integer,parameter         :: SHI_A(5) = [4,5,6,7,8]
+        integer,parameter         :: SHI_B(3) = [1,2,3]
+        do ii = 1, nlm_len
+!            M_LROT(ii,1:nlm_len) = matmul(GC_LROT_A(ii,1:nlm_len,1:5), plm_LROT(D,W,iota)) - i * matmul(GC_LROT_B(ii,1:nlm_len,1:3), qlm_LROT(D,W,iota))
+            M_LROT(ii,1:nlm_len) = matmul(GC_LROT_A(ii,1:nlm_len,SHI_A), plm_LROT(D,W,iota)) - i * matmul(GC_LROT_B(ii,1:nlm_len,SHI_B), qlm_LROT(D,W,iota))
+        end do
+    end
+    
+    !---------------
+    
+    function plm_DDRX_C23(c0) result(plm)
+        implicit none
+        complex(kind=dp) :: plm(-1:1) ! entries correspond to lm pairs {(1,-1),(1,0),(1,1), (2,-2),(2,-1),(2,0),(2,1),(2,2)}
+        real(kind=dp)    :: c0(3)
+        complex(kind=dp) :: V(3)
+        integer          :: ism(-1:1)
+        
+        plm(:) = 0.0d0
+        
+        do mm = -1,1 ! loop over m index
+            ism(:) = 0
+            if (mm == -1) ism(-1) = 1
+            if (mm == 0)  ism(0)  = 1
+            if (mm == 1)  ism(1)  = 1
+            
+            V(1) =    ism(-1) - ism(1)
+            V(2) = i*(ism(-1) + ism(1))
+            V(3) = sqrt(2.0d0)*ism(0)
+            
+            plm(mm) = sqrt(Pi*2.0d0/3) * dot_product(c0,V)
+!            print *, plm
+        end do
+    end
+    
+    function M_DDRX_C23(c0) result(M_DDRX)
+        implicit none
+        real(kind=dp), intent(in) :: c0(3)
+        complex(kind=dp)          :: M_DDRX(nlm_len,nlm_len)
+        do ii = 1, nlm_len
+            M_DDRX(ii,1:nlm_len) = matmul(GC_LROT_A(ii,1:nlm_len,1:3), plm_DDRX_C23(c0))  ! - i * matmul(GC_LROT_B(ii,1:nlm_len,1:3), qlm_LROT(D,W,iota))
+        end do
+    end
+    
+    !-----------------------------------------------
 
     function M_DDRX(nlm, tau)
 

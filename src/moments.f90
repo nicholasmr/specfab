@@ -296,6 +296,30 @@ contains
     end
     
     !---------------------------------
+    ! Irreducible parts
+    !---------------------------------
+    
+    function a2_irpart(a2_)
+        ! Irreducible part of a2 (Zheng and Zou, 2001)
+        implicit none
+        real(kind=dp), intent(in) :: a2_(3,3)
+        real(kind=dp)             :: a2_irpart(3,3)
+        
+        a2_irpart = a2_ - a2_iso ! a2 - I/3
+    end
+    
+    function a4_irpart(a2_,a4_)
+        ! Irreducible part of a4 (Zheng and Zou, 2001)
+        implicit none
+        real(kind=dp), intent(in) :: a2_(3,3), a4_(3,3,3,3)
+        real(kind=dp)             :: a4_irpart(3,3,3,3), a2I(3,3,3,3)
+        
+        a2I = reshape([ ( ( ( ( identity(ii,jj)*a2_(kk,ll) + identity(ii,kk)*a2_(jj,ll) + identity(ii,ll)*a2_(jj,kk) &
+                              + identity(jj,kk)*a2_(ii,ll) + identity(jj,ll)*a2_(ii,kk) + identity(kk,ll)*a2_(ii,jj) , ii=1,3), jj=1,3), kk=1,3), ll=1,3) ], [3,3,3,3]) 
+        a4_irpart = a4_ - 1.0d0/7*a2I + 15.0d0/35*a4_iso 
+    end
+    
+    !---------------------------------
     ! AUX
     !---------------------------------
     

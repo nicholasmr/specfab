@@ -118,11 +118,10 @@ for T_EXP in (T_EXP_UC, T_EXP_SS):
     print('Grain params: ', grain_params)
 
     ei, lami = sfcom.eigenframe(nlm, modelplane='xz')
-    e1,e2,e3 = ei[:,:,0], ei[:,:,1], ei[:,:,2] # nn, xyz, mi
+    e1,e2,e3 = ei[:,0], ei[:,1], ei[:,2] # nn, i, xyz
     Eij   = sf.Eij_orthotropic_arr(nlm,blm,0*nlm, e1,e2,e3, *grain_params)
 
-    x1,x2,x3 = np.eye(3)
-    x1,x2,x3 = np.array([x1]*N), np.array([x2]*N), np.array([x3]*N)
+    x1,x2,x3 = sfcom.xi_tile(N)
     Exixj = sf.Eij_orthotropic_arr(nlm,blm,0*nlm, x1,x2,x3, *grain_params)
     
     if ENABLE_DDM:

@@ -24,19 +24,18 @@ def evaluate(a2, expname):
     nlm = np.zeros((nlm_len), dtype=np.complex64)
     nlm[:sf.L2len] = sf.a2_to_nlm(a2)
     mi, _ = sfcom.eigenframe(nlm) 
-    m1,m2,m3 = mi[:,0], mi[:,1], mi[:,2]
-    Eij = sf.Eij_tranisotropic(nlm, m1,m2,m3, *grain_params) # 3x3 enhancement-factor tensor
+    Eij = sf.Eij_tranisotropic(nlm, *mi, *grain_params) # 3x3 enhancement-factor tensor
 
     # stress state
     e1, e2 = x, y # coord axes
 #    e1, e2 = m2, m3 # eigenframe
     if 0:  tau0 = np.eye(3)/3 - np.einsum('i,j->ij', e1, e1) # compression along e1
     else:  tau0 = np.einsum('i,j->ij', e1, e2) + np.einsum('i,j->ij', e2, e1) # e1-e2 shear
-    eps = sf.rheo_fwd_orthotropic(tau0,A,n, m1,m2,m3, Eij)
-    tau = sf.rheo_rev_orthotropic(eps,A,n, m1,m2,m3, Eij)
+    eps = sf.rheo_fwd_orthotropic(tau0,A,n, *mi, Eij)
+    tau = sf.rheo_rev_orthotropic(eps,A,n, *mi, Eij)
 
     print('\n=== %s ==='%(expname))
-    print('\nmi:\n',m1,m2,m3)
+    print('\nmi:\n',mi)
     print('\ntau0:\n', tau0)
     print('\neps(tau0):\n', eps)
     print('\ntau(eps(tau0)):\n', tau)

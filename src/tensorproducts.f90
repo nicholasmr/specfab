@@ -158,6 +158,14 @@ contains
         doubleinner22 = sum([( sum([(A(ii,jj)*B(jj,ii),jj=1,3)]) ,ii=1,3)])
     end
 
+    function doubleinner22complex(A,B) 
+        ! A_ij B_ji = scalar
+        implicit none
+        complex(kind=dp), intent(in) :: A(3,3), B(3,3)
+        complex(kind=dp) :: doubleinner22complex
+        doubleinner22complex = sum([( sum([(A(ii,jj)*B(jj,ii),jj=1,3)]) ,ii=1,3)])
+    end
+
     function doubleinner42(A,B) 
         ! A_lkij B_ji = rank-2 tensor
         implicit none

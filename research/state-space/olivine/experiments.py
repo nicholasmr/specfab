@@ -90,7 +90,7 @@ expr_Miyazaki2013_uc = {\
 #    'coords':'vector', \
     'coords':'spherical', 'I_azi':1, 'I_lat':0, 'isdeg':False, 'iscolat':True,
     'flist': ['FoDi20_com1250_KF-157.ctf.csv', 'FoDi20_com1350_KF-191.ctf.csv'], \
-    'Fzz': [0.6, 0.6], \
+    'Fzz': [0.6, 0.6], # or should these be =exp(-0.6) like Yabe et al.? \
     'T': [1250, 1350], # deg. C \
     'skiprows': 0, \
     'sep': ',', \

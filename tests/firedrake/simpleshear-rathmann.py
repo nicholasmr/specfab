@@ -87,7 +87,7 @@ if not ENABLE_DDRX: Gamma0 = None
 
 if Gamma0 == 'L23': 
     T = -20 + 273 # deg. K
-    Gamma0 = fabric.Gamma0_Lilien(u,T)
+    Gamma0 = fabric.Gamma0_Lilien23_EDC(u,T)
 
 """
 Solve for steady state 

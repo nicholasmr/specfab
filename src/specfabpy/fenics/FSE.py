@@ -54,6 +54,6 @@ class FSE():
         lami, ei = np.linalg.eig(sfcom.F2C(F))
         I = np.flip(lami.argsort()) # largest eigenvalue pair is first entry
         ei, lami = ei[:,I], lami[I]
-        return ei, lami
+        return ei.T, lami
 #        sr = 1/np.sqrt(eigvals) # stretching ratios
 

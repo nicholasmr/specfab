@@ -27,14 +27,14 @@ def eigenframe(Z, modelplane=None, symframe=-1):
         Q = np.array([sf__.a2(nlm[nn,:]) if (symframe == -1) else sf__.a4_eigentensors(nlm[nn,:])[symframe] for nn in range(nlm.shape[0])])
     else:     
         # assume Z = a^(2) passed directly, or list thereof
-        Z = np.array(Z, ndmin=3)
+        Z = np.array(Z, ndmin=3) # ensure Z[nn,3,3] format even if Z[3,3] matrix was passed
         Q = Z
 
     if modelplane is None: modelplane='ij'
     ei, lami = sf__.eigframe_arr(Q, modelplane)
-    ei = np.moveaxis(ei, -1, -2) # ei[node,i,xyz] --> ei[node,xyz,i]
+#    ei = np.moveaxis(ei, -1, -2) # ei[node,i,xyz] --> ei[node,xyz,i]
 
-    return (ei[0], lami[0]) if Z.shape[0]==1 else (ei, lami) # ei[node,xyz,i], lami[node,i]
+    return (ei[0], lami[0]) if Q.shape[0]==1 else (ei, lami) # ei[node,i,xyz], lami[node,i]
 
     
 def xi_tile(N):     return ei_tile(np.eye(3), N)

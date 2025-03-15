@@ -97,8 +97,6 @@ def vi2nlm(vi, L=6):
 
     """
     Discrete array of crystallographic axes --> spectral CPO representation
-    
-    Note: Also implemented as a much faster version in Fortran module, ri_LROT() (dynamics.f90)
     """
 
     nlm_len = L2nlmlen(L)
@@ -175,6 +173,8 @@ class DDM():
 
     """
     Discrete Directors Method (DDM) for initially isotropic vector bundle of crystallographic axes
+    
+    Note: Also implemented as a much faster version in Fortran module, ri_LROT() (dynamics.f90)
     """
 
     def __init__(self, iota=+1, N=1000, v0=None):
@@ -221,6 +221,5 @@ class DDM():
         return np.mean(np.einsum('ni,nj->nij', self.v, self.v), axis=0)
 
     def eigenframe(self, modelplane=None):
-        return sfcom.eigenframe(self.a2(), modelplane=modelplane) # (eigvals, eigvecs)
-        
+        return sfcom.eigenframe(self.a2(), modelplane=modelplane)
 

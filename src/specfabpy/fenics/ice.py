@@ -85,20 +85,24 @@ class IceFabric(CPO):
     def get_E_EIE(self, u, Eij, mi, *args, **kwargs):
         return self.enhancementfactor.E_EIE(u, Eij, mi, self.n_EIE)
 
-    def get_Eij(self, ei=()):
-        return self.enhancementfactor.Eij_tranisotropic(self.s, *self.grain_params, ei=())        
+    def get_Eij(self, ei=(), **kwargs):
+        return self.enhancementfactor.Eij_tranisotropic(self.s, *self.grain_params, ei=ei, **kwargs)
 
     def get_elastic_velocities(self, x,y, theta,phi, alpha=1):
         nlm = self.get_state(x,y)
         vS1, vS2, vP = sf__.Vi_elastic_tranisotropic(nlm, alpha,self.Lame_grain,self.rho, theta,phi) # calculate elastic phase velocities using specfab
         return (vP, vS1, vS2)
         
-    def Gamma0_Lilien(self, u, T, A=4.3e7, Q=3.36e4):
+    def Gamma0_Lilien23_EDC(self, u, T, A=4.3e7, Q=3.36e4):
         # DDRX rate factor from Dome C ice-core calibration experiment (Lilien et al., 2023, p. 7)
         R = Constant(8.314) # gas constant (J/mol*K)
         D = sym(grad(u))
         epsE = sqrt(inner(D,D)/2)
         return project(epsE*Constant(A)*exp(-Constant(Q)/(R*T)), self.R)
+
+    def Gamma0_Lilien23_lab(self, u, T, A=1.91e7, Q=3.36e4):
+        # DDRX rate factor from lab calibration experiment (Lilien et al., 2023, p. 7)
+        return self.Gamma0_Lilien23_EDC(u, T, A=A, Q=Q)
         
     def df2np(self, F, withcoords=False):
         coords = copy.deepcopy(self.mesh.coordinates().reshape((-1, 2)).T)

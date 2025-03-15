@@ -91,7 +91,7 @@ Y_R, Y_P, Y_M = np.zeros(dims), np.zeros(dims), np.zeros(dims)
 
 grain_params = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
 ei, eig = sfcom.eigenframe(nlm)
-e1,e2,e3 = ei[:,:,0], ei[:,:,1], ei[:,:,2]
+e1,e2,e3 = ei[:,0], ei[:,1], ei[:,2]
 Eij = sf.Eij_tranisotropic_arr(nlm, e1,e2,e3, *grain_params) # eigenenhancements
     
 # Euler integration 

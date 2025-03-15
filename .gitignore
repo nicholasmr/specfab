@@ -200,3 +200,19 @@ cython_debug/
 *.exe
 *.out
 *.app
+
+#-------------
+# My additions
+#-------------
+mathematica/
+litterature-pdfs/
+lapack-3.10.0/
+BLAS-3.10.0
+*.aux
+*.synctex.gz
+*_old*
+*-old*
+*_bck*
+*-bck*
+*(copy)*
+*(another copy)*

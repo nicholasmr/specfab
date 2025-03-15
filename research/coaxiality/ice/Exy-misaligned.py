@@ -36,7 +36,7 @@ lm, nlm_len = sf.init(L)
 # Uniaxial compression fabric as reference fabric state
 Nt = 200
 kwargs_LROT = dict(iota=1, Gamma0=None, nu=1) #      
-mod = dict(type='ps', r=+0, T=+1, axis=0)
+mod = dict(type='ps', r=+0, T=+1, axis=1)
 strain_target = -0.95 # simulate parcel deformation until this target strain
 nlm_uc, F_uc, time_uc, ugrad_uc = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, **kwargs_LROT)
 nlm0 = nlm_uc[-1,:] # reference fabric
@@ -64,12 +64,11 @@ for kk, ang in enumerate(anglesrad):
     nlm[kk,:] = sf.rotate_nlm(nlm0, 0, ang)
     nlm_ = nlm[kk,:].copy()
     mi[kk,:,:], _ = sfcom.eigenframe(sf.a2(nlm_), modelplane='xy') # are nothing but x,y,z vectors
-    m1, m2, m3 = mi[kk,:,0], mi[kk,:,1], mi[kk,:,2]
-    Eij = sf.Eij_tranisotropic(nlm_, m1,m2,m3, *grain_params)
-    #print(ang, m1,m2,m3, Eij)
-    epsij_orth[kk,:,:] = sf.rheo_fwd_orthotropic(tau, Aglen, nglen, m1,m2,m3, Eij)
+    Eij = sf.Eij_tranisotropic(nlm_, *mi[kk], *grain_params)
+    #print(ang, mi[kk], Eij)
+    epsij_orth[kk,:,:] = sf.rheo_fwd_orthotropic(tau, Aglen, nglen, *mi[kk], Eij)
     E_CAFFE[kk] = sf.E_CAFFE(nlm_, tau, *sfconst.ice['viscoplastic']['CAFFE'])
-    E_EIE[kk]   = sf.E_EIE(epsij_orth[kk,:,:], nglen, nlm_, m1,m2,m3, *grain_params)
+    E_EIE[kk]   = sf.E_EIE(epsij_orth[kk,:,:], nglen, nlm_, *mi[kk], *grain_params)
 
 #----------------------
 # Plot
@@ -105,8 +104,8 @@ ax.plot(X[[0,-1]], [Eij[0]]*2, c=c, lw=lw, ls=':')
 
 kwargs = dict(c=c, ha='center', va='center', \
     bbox=dict(facecolor='white', edgecolor='none', boxstyle='square,pad=.21'), clip_on=True, zorder=2)
-ax.text(35,   Eij[5], r'$E_{12}$', **kwargs)
-ax.text(12.5, Eij[0]+0.125, r'$E_{11}$', **kwargs)
+ax.text(16,   Eij[5], r'$E_{12}$', **kwargs)
+ax.text(16, Eij[0]+0.125, r'$E_{11}$', **kwargs)
 
 cpurp  = '#6a3d9a'
 cgreen = 'tab:green'
@@ -118,7 +117,12 @@ ax.plot(X, E_EIE, '-',  lw=lw, color=cgreen, label=r"$\dot{\epsilon}_{xy}$ Glen 
 
 ### Remaining axis setup
 
-ax.text(33.5, 6.4, 'fixed $x$--$y$ shear stress\n($\\vb*{\\tau}\\propto\\vu{x}\\otimes\\vu{y}+\\vu{y}\\otimes\\vu{x}$)', fontsize=FS-0.6, ma='center', ha='center', va='center')
+ax.text(32, 7.3, 'constant $x$--$y$ shear stress', fontsize=FSSMALL, ma='center', ha='center', va='center')
+
+kwargs = dict(fontsize=FSSMALL, va='bottom')
+y0 = 9.42
+ax.text(0, y0, '$\\leftarrow$ compatible', ha='left', **kwargs)
+ax.text(45, y0, 'incompatible $\\rightarrow$', ha='right', **kwargs)
 
 ax.annotate('noncoaxial\n behaviour', xy=(12, 2.1), xytext=(7, 4.2), \
     arrowprops=dict(arrowstyle='-|>, head_width=0.25', facecolor='black'), fontsize=FS-0.6, ha='center', va='center', ma='center')
@@ -133,7 +137,7 @@ yticks = np.arange(-5,15,1)
 ax.set_yticks(yticks[::1])  
 ax.set_yticks(yticks, minor=True)  
 ax.set_xlim([0,X[-1]])
-ax.set_ylim([-0.01,10])
+ax.set_ylim([-0.01,9.3])
 
 reorder=lambda hl,nc:(sum((lis[i::nc]for i in range(nc)),[])for lis in hl)
 h_l = ax.get_legend_handles_labels()
@@ -150,9 +154,9 @@ I = [np.argmin(np.abs(a-anglesdeg)) for a in angles_plot]
 for kk in I:
     
     ang = anglesdeg[kk]
-    geo, prj = sfplt.getprojection(rotation=+35, inclination=55)
+    geo, prj = sfplt.getprojection(rotation=+35-90, inclination=55)
     W = H = 0.23
-    axpos0 = ang, 11
+    axpos0 = ang, 11.9
     trans = ax.transData.transform(axpos0)
     trans = fig.transFigure.inverted().transform(trans)
     axpos = [trans[0]-W/2, trans[1]-H/2, W,H]
@@ -164,18 +168,18 @@ for kk in I:
     cmap = cmr.get_sub_cmap('Greys', 0.25, 1) # don't include pure white.
     cmap.set_under('w')
     sfplt.plotODF(nlm[kk,:], lm, axin, lvlset=lvlset, cmap=cmap, showcb=False, nchunk=None)
-    sfplt.plotcoordaxes(axin, geo, axislabels='vuxi', negaxes=False, color='k', fontsize=FS) # sfplt.c_dred
+    sfplt.plotcoordaxes(axin, geo, axislabels='vuxi', negaxes=True, color='k', fontsize=FS) # sfplt.c_dred
 
     kwargs_default = dict(marker='.', ms=6, markeredgewidth=1.0, transform=geo)
     ll = 0
-    sfplt.plotS2point(axin, +mi[kk,:,ll], markerfacecolor=sfplt.c_dred, markeredgecolor=sfplt.c_dred, **kwargs_default)
-    sfplt.plotS2point(axin, -mi[kk,:,ll], markerfacecolor=sfplt.c_dred, markeredgecolor=sfplt.c_dred, **kwargs_default)
+    sfplt.plotS2point(axin, +mi[kk,ll], markerfacecolor=sfplt.c_dred, markeredgecolor=sfplt.c_dred, **kwargs_default)
+    sfplt.plotS2point(axin, -mi[kk,ll], markerfacecolor=sfplt.c_dred, markeredgecolor=sfplt.c_dred, **kwargs_default)
     ll = 1
-    sfplt.plotS2point(axin, +mi[kk,:,ll], markerfacecolor=sfplt.c_dblue, markeredgecolor=sfplt.c_dblue, **kwargs_default)
-    sfplt.plotS2point(axin, -mi[kk,:,ll], markerfacecolor=sfplt.c_dblue, markeredgecolor=sfplt.c_dblue, **kwargs_default)
+    sfplt.plotS2point(axin, +mi[kk,ll], markerfacecolor=sfplt.c_dblue, markeredgecolor=sfplt.c_dblue, **kwargs_default)
+    sfplt.plotS2point(axin, -mi[kk,ll], markerfacecolor=sfplt.c_dblue, markeredgecolor=sfplt.c_dblue, **kwargs_default)
     
 kwargs = dict(marker='o', s=8.5, clip_on=False)
-X0, Y0, dy = 7.5, 11.6, 0.75
+X0, Y0, dy = 7.5, 12.6, 0.75
 ax.scatter([X0-1.4,],[Y0,],    c=sfplt.c_dred, **kwargs)
 ax.scatter([X0-1.4,],[Y0-dy,], c=sfplt.c_dblue, **kwargs)
 ax.text(X0, Y0,    r'$\vb{m}_1$', ha='left', va='center')

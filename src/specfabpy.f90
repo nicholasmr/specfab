@@ -19,7 +19,9 @@ module specfabpy
     
         ! Fabric processes
         M_LROT__sf => M_LROT, nlm_LROT__sf => nlm_LROT, ri_LROT__sf => ri_LROT, &
+        M_LROT_new__sf => M_LROT_new, plm_LROT__sf => plm_LROT, qlm_LROT__sf => qlm_LROT, &
         M_DDRX__sf => M_DDRX, M_DDRX_src__sf => M_DDRX_src, & 
+        M_DDRX_C23__sf => M_DDRX_C23, &
         M_CDRX__sf => M_CDRX, &
         M_REG__sf  => M_REG, &
 
@@ -31,6 +33,7 @@ module specfabpy
         a4_eigentensors__sf => a4_eigentensors, & ! 3x3 eigentensors of a4
         a4_IBOF__sf => a4_IBOF, & ! from Elmer
         a2_orth__sf => a2_orth, a4_orth__sf => a4_orth, &
+        a2_irpart__sf => a2_irpart, a4_irpart__sf => a4_irpart, &
         ri_to_nlm__sf => ri_to_nlm, &
 
         ! Rheologies
@@ -176,6 +179,16 @@ contains
         M_DDRX_src = M_DDRX_src__sf(tau)
     end
     
+    function M_DDRX_C23(nlm, c0) result(M_DDRX)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: c0(3)
+        complex(kind=dp)             :: M_DDRX(size(nlm),size(nlm))
+        
+        M_DDRX = M_DDRX_C23__sf(c0)
+    end
+    
     function M_CDRX(nlm)
         use specfabpy_const
         implicit none
@@ -228,6 +241,32 @@ contains
         real(kind=dp)             :: ri(Nt,size(ri0,1),size(ri0,2))
         
         ri = ri_LROT__sf(ri0, dt, Nt, eps,omg, iota) 
+    end
+    
+    function plm_LROT(D,W, iota) result(plm)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in)    :: D(3,3), W(3,3), iota
+        complex(kind=dp)             :: plm(-2:2)
+        plm = plm_LROT__sf(D,W, iota) 
+    end
+    
+    function qlm_LROT(D,W, iota) result(qlm)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in)    :: D(3,3), W(3,3), iota
+        complex(kind=dp)             :: qlm(-1:1)
+        qlm = qlm_LROT__sf(D,W, iota) 
+    end
+    
+    function M_LROT_new(nlm, eps, omg, iota) 
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: eps(3,3), omg(3,3), iota
+        complex(kind=dp)             :: M_LROT_new(size(nlm),size(nlm))
+        
+        M_LROT_new = M_LROT_new__sf(eps, omg, iota)
     end
     
     !---------------------------------
@@ -534,6 +573,24 @@ contains
         complex(kind=dp)          :: nlm((L+1)*(L+2)/2) 
         
         nlm = ri_to_nlm__sf(ri, L)
+    end
+    
+    function a2_irpart(a2_)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: a2_(3,3)
+        real(kind=dp)             :: a2_irpart(3,3)
+        
+        a2_irpart = a2_irpart__sf(a2_)
+    end
+    
+    function a4_irpart(a2_,a4_)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: a2_(3,3), a4_(3,3,3,3)
+        real(kind=dp)             :: a4_irpart(3,3,3,3)
+        
+        a4_irpart = a4_irpart__sf(a2_, a4_)
     end
         
     !---------------------------------

@@ -163,6 +163,11 @@ class CPO():
         iter = 0 # iteration counter
 
         if nlin: 
+            if iota != 0:
+                print('Setting LROT solution as initial guess.')
+                kwargs_init = dict(iota=iota, Gamma0=None, Lambda0=Lambda0, disable_advection=disable_advection)
+                self.evolve(u, S, 1, steadystate=True, **kwargs_init) # set LROT solution as initial guess and literate from threreon
+                
             while err/err0 > tol and iter < maxiter:
                 tstart=datetime.now()
                 iter += 1

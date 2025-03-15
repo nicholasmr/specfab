@@ -37,7 +37,7 @@ class OlivineFabric():
 
         for key in ['SDM_n', 'SDM_b']:
             SDM = fenics_CPO(self.mesh, self.boundaries, self.L, modelplane=modelplane, nu_multiplier=nu_multiplier, nu_realspace=nu_realspace)
-            SDM.initialize(wr=None) # isotropic
+            SDM.initialize(sr=None) # isotropic
             SDM.set_BCs([], [], []) # no BCs
             setattr(self, key, SDM)
         
@@ -62,10 +62,10 @@ class OlivineFabric():
         if interp:
             raise ValueError('OlivineFabric.set_state() supports only setting function space vars, not interpolating expressions or constants.')
         else:
-            self.SDM_b.w.assign(sb)
-            self.SDM_n.w.assign(sn)
-            self.SDM_b.w_prev.assign(sb)
-            self.SDM_n.w_prev.assign(sn)
+            self.SDM_b.s.assign(sb)
+            self.SDM_n.s.assign(sn)
+            self.SDM_b.s_prev.assign(sb)
+            self.SDM_n.s_prev.assign(sn)
 
     def get_state(self, x, y):
         return (self.SDM_n.get_nlm(x,y), self.SDM_b.get_nlm(x,y))
@@ -82,8 +82,8 @@ class OlivineFabric():
             self.FSE.evolve(u, dt)
             
     def update_Eij(self):
-        self.mi, self.Eij, self.ai = self.enhancementfactor.Eij_orthotropic(self.SDM_b.w, self.SDM_n.w, *self.grain_params, ei=())
-        self.xi, self.Exij, _      = self.enhancementfactor.Eij_orthotropic(self.SDM_b.w, self.SDM_n.w, *self.grain_params, ei=np.eye(3)) 
+        self.mi, self.Eij, self.ai = self.enhancementfactor.Eij_orthotropic(self.SDM_b.s, self.SDM_n.s, *self.grain_params, ei=())
+        self.xi, self.Exij, _      = self.enhancementfactor.Eij_orthotropic(self.SDM_b.s, self.SDM_n.s, *self.grain_params, ei=np.eye(3)) 
         # ... unpack
         self.m1, self.m2, self.m3 = self.mi # eigenvectors (presumed fabric and rheological symmetry directions)
         self.E11, self.E22, self.E33, self.E23, self.E31, self.E12 = self.Eij  # eigenenhancements
