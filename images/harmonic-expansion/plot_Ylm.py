@@ -10,7 +10,7 @@ from specfabpy import specfab as sf
 from specfabpy import common as sfcom
 from specfabpy import discrete as sfdsc
 from specfabpy import plotting as sfplt
-FS = sfplt.setfont_tex(fontsize=13)
+FS = sfplt.setfont_tex(fontsize=15)
 FSLEG = FS-2
 
 import matplotlib.pyplot as plt

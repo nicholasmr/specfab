@@ -1,4 +1,4 @@
-# Nicholas Rathmann <rathmann@nbi.ku.dk>
+# Nicholas Rathmann <rathmann@nbi.ku.dk>, 2023
 
 """
 Test wave velocities predicted for a single olivine crystal

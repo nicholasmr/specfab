@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # Nicholas M. Rathmann <rathmann@nbi.ku.dk>
 
-import copy, sys, time, code # code.interact(local=locals())
+import copy, code # code.interact(local=locals())
 import numpy as np
 import matplotlib.tri as tri
 
@@ -63,7 +63,7 @@ class IceFabric(CPO):
         
     def _setaux(self, u=None):
         if self.setextra:
-            self.mi, self.Eij, self.lami = self.get_Eij(ei=())
+            self.mi, self.Eij, self.lami = self.get_Eij()
             self.xi, self.Exij, _        = self.get_Eij(ei=np.eye(3))
             # unpack above eigenframe fields for convenience
             self.m1, self.m2, self.m3 = self.mi # rheological symmetry directions
@@ -104,10 +104,10 @@ class IceFabric(CPO):
         # DDRX rate factor from lab calibration experiment (Lilien et al., 2023, p. 7)
         return self.Gamma0_Lilien23_EDC(u, T, A=A, Q=Q)
         
-    def df2np(self, F, withcoords=False):
+    def df2np(self, F, ele=('CG',2), withcoords=False):
         coords = copy.deepcopy(self.mesh.coordinates().reshape((-1, 2)).T)
         triang = tri.Triangulation(*coords, triangles=self.mesh.cells())    
-        Q = FunctionSpace(self.mesh, 'CG', 2)
+        Q = FunctionSpace(self.mesh, *ele)
         F_np = project(F,Q).compute_vertex_values(self.mesh)
         return (triang, F_np, coords) if withcoords else (triang, F_np)
         

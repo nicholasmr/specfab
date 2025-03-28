@@ -1,7 +1,7 @@
 #!/usr/bin/python3
-# Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2022-2023
+# Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2022-
 
-import code # code.interact(local=locals())
+#import code # code.interact(local=locals())
 import numpy as np
 from dolfin import *
 from ..common import *

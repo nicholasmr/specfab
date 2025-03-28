@@ -143,6 +143,8 @@ sfplt.plotcoordaxes(ax2, geo, axislabels='vuxi', fontsize=FSAX, color='k')
 
 #### Plot 3
 ugrad = np.einsum('i,j',[0,1,0],[0,0,1]) # y-z shear
+#ugrad = ugrad + ugrad.T # plm part
+#ugrad = ugrad - ugrad.T
 plot(ugrad, ax3, titlestr=r'%s Simple shear'%(r'{\Large \textit{(c)}}\,\,'))
 sfplt.plotcoordaxes(ax3, geo, axislabels='vuxi', fontsize=FSAX, color='k')
 

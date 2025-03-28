@@ -96,7 +96,7 @@ class IceFabric:
         # Test, trial, solution container
         self.p = TrialFunction(self.S)
         self.w = TestFunction(self.S)
-#        self.ps = split(self.p) # split done in _weakform() instead
+        self.ps = split(self.p)
         self.ws = split(self.w)
         self.s  = Function(self.S)
         self.s0 = Function(self.S)
@@ -109,7 +109,7 @@ class IceFabric:
 
         ### Derived quantities: viscous anisotropy, a2 eigenvalues, J index, ...
         
-        ele = ('DG',1)
+        ele = ('DG',0) # safe for forward modeling of coupled fabric--flow problems
         self.Sd = VectorFunctionSpace(self.mesh, *ele, dim=self.rnlm_len)
         self.Rd = FunctionSpace(self.mesh, *ele)
         self.Gd = TensorFunctionSpace(self.mesh, *ele, shape=(2,2))
@@ -149,19 +149,36 @@ class IceFabric:
     def set_isotropic_BCs(self, domids):
         self.set_BCs([Constant(self.rnlm_iso)]*len(domids), domids)
         
-    def evolve(self, u, *args, DDRX_LINEARIZE=2, **kwargs):
+    def evolve(self, u, S, dt, iota=+1, Gamma0=None, Lambda0=None):
         """
         The fabric solver, called to step fabric field forward in time by amount dt
-        
-        @TODO: this routine and _get_weakform() can surely be optimized by better choice of linear solver, preconditioning, and not assembling the weak form on every solve call
         """
         self.s0.assign(self.s)
-        F = self._get_weakform(u, *args, DDRX_LINEARIZE=DDRX_LINEARIZE, **kwargs)
-        FORM = (F==0) if DDRX_LINEARIZE == 0 else (lhs(F)==rhs(F))
-        solve(FORM, self.s, self.bcs, solver_parameters={'linear_solver':'gmres',}) # non-symmetric system (fastest tested are: gmres, bicgstab, tfqmr)
+        F = self._weakform(self.p, u,S, dt, iota,Gamma0,Lambda0)
+        solve(lhs(F)==rhs(F), self.s, self.bcs, solver_parameters={'linear_solver':'gmres',}) # non-symmetric system (fastest tested are: gmres, bicgstab, tfqmr)
+        self._setaux(u=u)
+        
+    def solvesteady(self, u, S, iota=+1, Gamma0=None, Lambda0=None, LROT_guess=False, **kwargs):
+
+        dt = None # select steady weak form
+
+        # LROT solution (+CDRX+REG) *or* used as init guess for nonlinear problem
+        if Gamma0 is None or LROT_guess:
+            print('*** Linear solve for LROT-only problem %s'%('(used as initial guess)' if (LROT_guess and (Gamma0 is not None)) else ''))
+            self.evolve(u, S, dt, iota=iota, Gamma0=None, Lambda0=Lambda0, **kwargs) # solution stored in self.s 
+
+        # LROT + DDRX solution (+CDRX+REG)
+        if Gamma0 is not None: # nonlinear problem?
+            print('*** Nonlinear solve for DDRX-activated problem')
+            if not isinstance(Gamma0, list): Gamma0 = [Gamma0,]
+            for ii, gam0 in enumerate(Gamma0):
+                print('...approaching solution using DDRX rate factor %i of %i'%(ii, len(Gamma0)))
+                F = self._weakform(self.s, u, S, dt, iota,gam0,Lambda0, **kwargs)
+                solve(F==0, self.s, self.bcs, solver_parameters={'newton_solver':{'linear_solver':'gmres', 'preconditioner':'none'}})
+
         self._setaux(u=u)
 
-    def _get_weakform(self, u, S, dt, iota=None, Gamma0=None, Lambda0=None, zeta=0, steadystate=False, DDRX_LINEARIZE=2):
+    def _weakform(self, s, u,S, dt, iota=None, Gamma0=None, Lambda0=None, zeta=0):
 
         # Crystal processes to include
         ENABLE_LROT = iota is not None
@@ -169,11 +186,6 @@ class IceFabric:
         ENABLE_CDRX = Lambda0 is not None
         ENABLE_REG  = True
         
-        if DDRX_LINEARIZE not in [0,1,2]:
-            raise ValueError('DDRX_LINEARIZE must be 1 or 2 (0=nonlinear, 1=Naive Picard, 2=Taylor linearized)')
-        
-        s, ss = (self.s, split(self.s)) if DDRX_LINEARIZE == 0 else (self.p, split(self.p))
-
         # Flattened strain-rate and spin tensors for accessing them per node
         Df = project( sym(grad(u)), self.G).vector()[:] # strain rate
         Wf = project(skew(grad(u)), self.G).vector()[:] # spin
@@ -204,9 +216,8 @@ class IceFabric:
         F = dot(s_null, self.w)*dx
 
         # Time derivative
-        dtinv = Constant(1/dt)
-        if not steadystate:
-            F += dtinv * dot( (s-self.s0), self.w)*dx
+        if dt is not None:
+            F += Constant(1/dt) * dot( (s-self.s0), self.w)*dx
 
         # Real space advection
         F += dot(dot(u, nabla_grad(s)), self.w)*dx
@@ -219,20 +230,16 @@ class IceFabric:
 
         if ENABLE_DDRX:
             F_src  = -sum([Gamma0*dot(self.Mrr_DDRX_src[ii], s)*self.ws[ii]*dx for ii in self.srrng]) 
-            D0 = dot(self.Mrr_DDRX_src[0], self.s0)/self.s0.sub(0) # <D> for s=s0 
-            if DDRX_LINEARIZE==1:
-                # nonlinear sink linearized by using previous solution (self.s0) to calculate <D> (Rathmann and Lilien, 2021)
-                F_snk = -sum([Gamma0*D0*ss[ii]*self.ws[ii]*dx for ii in self.srrng]) 
-            elif DDRX_LINEARIZE==2:
-                # nonlinear sink linearized around previous solution, s=s0
-                f0 = -sum([Gamma0*D0*self.s0.sub(ii)*self.ws[ii]*dx for ii in self.srrng])
-                dD0 = lambda ii: self.Mrr_DDRX_src[0].sub(ii)*self.s0.sub(ii)/self.s0.sub(0) # d<D>/dnlm at s=s0
-                df = -sum([Gamma0*(D0+dD0(ii))*(ss[ii]-self.s0.sub(ii))*self.ws[ii]*dx for ii in self.srrng])
-                F_snk = f0 + df
-            elif DDRX_LINEARIZE==0:
-                # @TODO does not converge from isotropy... needs more work
-                D = dot(self.Mrr_DDRX_src[0], s)/ss[0] # <D>
-                F_snk = -sum([Gamma0*D*ss[ii]*self.ws[ii]*dx for ii in self.srrng])
+            
+            s_sub = split(s) if dt is None else self.ps
+            if dt is None: 
+                # Steady state solver? Use nonlinear iteration for DDRX-activated problem
+                D = dot(self.Mrr_DDRX_src[0], s)/s_sub[0] # <D> (Rathmann et al., 2025)                    
+            else: 
+                # Time-dependent probem? Linearized problem by linearizing <D>
+                D = dot(self.Mrr_DDRX_src[0], self.s0)/self.s0.sub(0) # <D> estimated using previous solution (Rathmann and Lilien, 2021)
+            F_snk = -sum([Gamma0*D*s_sub[ii]*self.ws[ii]*dx for ii in self.srrng])
+            
             F += F_src - F_snk
 
         # Orientation space stabilization (hyper diffusion)
@@ -272,7 +279,7 @@ class IceFabric:
         self.nlm  = np.array([self.sf.rnlm_to_nlm(self.rnlm[:,nn], self.nlm_len) for nn in self.dofs0]) # full form (nlm) per node (nlm[node,coef])
         
         if self.setextra:
-            self.mi, self.Eij, self.lami = self.get_Eij(ei=())
+            self.mi, self.Eij, self.lami = self.get_Eij()
             self.xi, self.Exij, _        = self.get_Eij(ei=np.eye(3))
             # unpack above eigenframe fields for convenience
             self.m1, self.m2, self.m3 = self.mi # rheological symmetry directions
@@ -322,8 +329,8 @@ class IceFabric:
         
         mi, lami = sfcom.eigenframe(self.nlm, symframe=self.symframe, modelplane=self.modelplane) # [node,i,xyz], [node,i]
         if   len(ei) == 0:           ei = (mi[:,0], mi[:,1], mi[:,2])
-        elif len(ei[0].shape) == 1:  ei = [np.tile(ei[ii], (self.numdofs0,1)) for ii in range(3)] # ei = (e1[node,3], e2, e3)
-        Eij = self.sf.Eij_tranisotropic_arr(self.nlm, *ei, *self.grain_params) # [node, Voigt vector index 1--6]
+        elif len(ei[0].shape) == 1:  ei = sfcom.ei_tile(ei, self.numdofs0) # ei[i][node,xyz] = (e1[node,xyz], e2, e3)
+        Eij = self.sf.Eij_tranisotropic_arr(self.nlm, *ei, *self.grain_params) # [node, Voigt index 1--6]
 
         # The enhancement factor model depends on effective (homogenized) grain parameters, calibrated against deformation tests.
         # For CPOs far from the calibration states, negative values *may* occur where Eij should tend to zero if truncation L is not large enough.
@@ -335,10 +342,10 @@ class IceFabric:
         lami_fs = [Function(self.Rd) for _ in range(3)] # a2 eigenvalues (lami)
         Eij_fs  = [Function(self.Rd) for _ in range(6)] # Eij enhancement tensor
         
-        for ii in range(3): # vec 1,2,3
+        for ii in range(3): # mi=m1,m2,m3
             lami_fs[ii].vector()[:] = lami[:,ii]
-            for jj in range(3): # comp x,y,z
-                ei_fs[ii].sub(jj).vector()[:] = mi[:,jj,ii]
+            for jj in range(3): # j=x,y,z
+                ei_fs[ii].sub(jj).vector()[:] = ei[ii][:,jj]
                 
         for kk in range(6): 
             Eij_fs[kk].vector()[:] = Eij[:,kk]

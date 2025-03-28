@@ -5,6 +5,7 @@
 FEniCS interface for CPO dynamics using specfab
 """
 
+import code # code.interact(local=locals())
 import numpy as np
 from datetime import datetime
 from dolfin import *
@@ -144,42 +145,35 @@ class CPO():
         si = [Constant(self.nlm_zero)] * len(domids)
         self.set_BCs(sr, si, domids, domain=domain)
 
-    def evolve(self, u, S, dt, iota=+1, Gamma0=None, Lambda0=None, steadystate=False, disable_advection=False):
+    def evolve(self, u, S, dt, iota=+1, Gamma0=None, Lambda0=None, disable_advection=False):
         """
         The fabric solver, called to step fabric field forward in time by amount dt
         """    
         self.s0.assign(self.s) # current state self.s must be set
-        F = self._weakform(u, S, dt, iota, Gamma0, Lambda0, steadystate=steadystate, disable_advection=disable_advection)
-        solve(lhs(F)==rhs(F), self.s, self.bcs, solver_parameters={'linear_solver':'gmres', }) # fastest tested are: gmres, bicgstab, tfqmr --- note this is a non-symmetric system!
+        s = (self.sr,None) if self.modelplane=='xz' else (self.sr,self.si) # (sr, si)
+        F = self._weakform(*s, u,S, dt, iota,Gamma0,Lambda0, disable_advection=disable_advection)
+        solve(lhs(F)==rhs(F), self.s, self.bcs, solver_parameters={'linear_solver':'gmres'}) # fastest tested are: gmres, bicgstab, tfqmr --- note this is a non-symmetric system!
 
-    def solvesteady(self, u, S, iota=+1, Gamma0=None, Lambda0=None, disable_advection=False, \
-                                    dt=None, tol=1e-7, maxiter=400):
+    def solvesteady(self, u, S, iota=+1, Gamma0=None, Lambda0=None, LROT_guess=False, **kwargs):
 
-        nlin = (Gamma0 is not None) or (dt is not None)
-        kwargs_dyn = dict(iota=iota, Gamma0=Gamma0, Lambda0=Lambda0, disable_advection=disable_advection)
+        dt = None # select steady weak form
 
-        err  = 1 # error measure ||w-w0||
-        err0 = 1 # at t=0
-        iter = 0 # iteration counter
+        # LROT solution (+CDRX+REG) *or* used as init guess for nonlinear problem
+        if Gamma0 is None or LROT_guess:
+            print('*** Linear solve for LROT-only problem %s'%('(used as initial guess)' if (LROT_guess and (Gamma0 is not None)) else ''))
+            self.evolve(u,S, dt, iota=iota, Gamma0=None, Lambda0=Lambda0, **kwargs) # solution stored in self.s 
 
-        if nlin: 
-            if iota != 0:
-                print('Setting LROT solution as initial guess.')
-                kwargs_init = dict(iota=iota, Gamma0=None, Lambda0=Lambda0, disable_advection=disable_advection)
-                self.evolve(u, S, 1, steadystate=True, **kwargs_init) # set LROT solution as initial guess and literate from threreon
-                
-            while err/err0 > tol and iter < maxiter:
-                tstart=datetime.now()
-                iter += 1
-                self.evolve(u, S, dt, steadystate=False, **kwargs_dyn)
-                diff = self.s.vector()[:] - self.s0.vector()[:]
-                err = np.linalg.norm(diff, ord=np.Inf)/self.numdofs
-                if iter==1: err0 = err
-                print('  Iteration %d of %d (%is): soldiff/soldiff_prev = %.2e (tol = %.3e)'%(iter, maxiter, (datetime.now()-tstart).total_seconds(), err/err0, tol))
-        else:
-            self.evolve(u, S, 1, steadystate=True, **kwargs_dyn)
+        # LROT + DDRX solution (+CDRX+REG)
+        if Gamma0 is not None: # nonlinear problem?
+            print('*** Nonlinear solve for DDRX-activated problem')
+            if not isinstance(Gamma0, list): Gamma0 = [Gamma0,]
+            for ii, gam0 in enumerate(Gamma0):
+                print('...approaching solution using DDRX rate factor %i of %i'%(ii, len(Gamma0)))
+                s = (self.s, None) if self.modelplane=='xz' else (self.s.sub(0), self.s.sub(1)) # (sr, si)
+                F = self._weakform(*s, u,S, dt, iota,gam0,Lambda0, **kwargs)
+                solve(F==0, self.s, self.bcs, solver_parameters={'newton_solver':{'linear_solver':'gmres', 'preconditioner':'none'}})
 
-    def _weakform(self, u, S, dt, iota, Gamma0, Lambda0, zeta=0, steadystate=False, disable_advection=False):
+    def _weakform(self, sr,si, u,S, dt, iota, Gamma0, Lambda0, zeta=0, disable_advection=False):
         
         ENABLE_LROT = iota is not None
         ENABLE_DDRX = (Gamma0 is not None) and (S is not None)
@@ -212,29 +206,27 @@ class CPO():
 
         ### Construct weak form
         
-        dtinv = Constant(1/dt)    
-       
         if self.modelplane=='xy':
-
+            
             # Real space stabilization (Laplacian diffusion)
-            F  = self.nu_realspace * inner(grad(self.sr), grad(self.wr))*dx # real part
-            F += self.nu_realspace * inner(grad(self.si), grad(self.wi))*dx # imag part
+            F  = self.nu_realspace * inner(grad(sr), grad(self.wr))*dx # real part
+            F += self.nu_realspace * inner(grad(si), grad(self.wi))*dx # imag part
 
             # Time derivative
-            if not steadystate:
-                F += dtinv * dot( (self.sr-self.s0.sub(0)), self.wr)*dx # real part
-                F += dtinv * dot( (self.si-self.s0.sub(1)), self.wi)*dx # imag part
+            if dt is not None:
+                F += Constant(1/dt) * dot( (sr-self.s0.sub(0)), self.wr)*dx # real part
+                F += Constant(1/dt) * dot( (si-self.s0.sub(1)), self.wi)*dx # imag part
 
             # Real space advection
             if not disable_advection:
-                F += dot(dot(u, nabla_grad(self.sr)), self.wr)*dx # real part
-                F += dot(dot(u, nabla_grad(self.si)), self.wi)*dx # imag part
+                F += dot(dot(u, nabla_grad(sr)), self.wr)*dx # real part
+                F += dot(dot(u, nabla_grad(si)), self.wi)*dx # imag part
      
             # Lattice rotation
             if ENABLE_LROT:
                 Mrr_LROT, Mri_LROT, Mir_LROT, Mii_LROT = self.Mk_LROT # unpack for readability 
-                F += -sum([ (dot(Mrr_LROT[ii], self.sr) + dot(Mri_LROT[ii], self.si))*self.wr_sub[ii]*dx for ii in self.srng]) # real part
-                F += -sum([ (dot(Mir_LROT[ii], self.sr) + dot(Mii_LROT[ii], self.si))*self.wi_sub[ii]*dx for ii in self.srng]) # imag part
+                F += -sum([ (dot(Mrr_LROT[ii], sr) + dot(Mri_LROT[ii], si))*self.wr_sub[ii]*dx for ii in self.srng]) # real part
+                F += -sum([ (dot(Mir_LROT[ii], sr) + dot(Mii_LROT[ii], si))*self.wi_sub[ii]*dx for ii in self.srng]) # imag part
             
             # DDRX 
             if ENABLE_DDRX:
@@ -243,8 +235,8 @@ class CPO():
             # Orientation space stabilization (hyper diffusion)
             if ENABLE_REG:
                 Mrr_REG,  Mri_REG,  Mir_REG,  Mii_REG  = self.Mk_REG  # unpack for readability 
-                F += -self.nu_multiplier * sum([ (dot(Mrr_REG[ii], self.sr) + dot(Mri_REG[ii], self.si))*self.wr_sub[ii]*dx for ii in self.srng]) # real part
-                F += -self.nu_multiplier * sum([ (dot(Mir_REG[ii], self.sr) + dot(Mii_REG[ii], self.si))*self.wi_sub[ii]*dx for ii in self.srng]) # imag part
+                F += -self.nu_multiplier * sum([ (dot(Mrr_REG[ii], sr) + dot(Mri_REG[ii], si))*self.wr_sub[ii]*dx for ii in self.srng]) # real part
+                F += -self.nu_multiplier * sum([ (dot(Mir_REG[ii], sr) + dot(Mii_REG[ii], si))*self.wi_sub[ii]*dx for ii in self.srng]) # imag part
 
         elif self.modelplane=='xz':
                 
@@ -255,32 +247,41 @@ class CPO():
             F = dot(s_null, self.wr)*dx
 
             # Time derivative
-            if not steadystate:
-                F += dtinv * dot( (self.sr-self.s0), self.wr)*dx # real part
+            if dt is not None:
+                F += Constant(1/dt) * dot( (sr-self.s0), self.wr)*dx # real part
 
             # Real space advection
             if not disable_advection:
-                F += dot(dot(u, nabla_grad(self.sr)), self.wr)*dx # real part
+                F += dot(dot(u, nabla_grad(sr)), self.wr)*dx # real part
                 
             # Real space stabilization (Laplacian diffusion)
-            F += self.nu_realspace * inner(grad(self.sr), grad(self.wr))*dx # real part
+            F += self.nu_realspace * inner(grad(sr), grad(self.wr))*dx # real part
     
             # Lattice rotation
             if ENABLE_LROT:
                 Mrr_LROT, *_ = self.Mk_LROT # unpack for readability 
-                F += -sum([ dot(Mrr_LROT[ii], self.sr)*self.wr_sub[ii]*dx for ii in self.srng]) # real part
+                F += -sum([ dot(Mrr_LROT[ii], sr)*self.wr_sub[ii]*dx for ii in self.srng]) # real part
             
             # DDRX 
             if ENABLE_DDRX:
                 Mrr_DDRX_src, *_ = self.Mk_DDRX_src # unpack for readability 
-                F_src  = sum([ -Gamma0*dot(Mrr_DDRX_src[ii], self.sr)*self.wr_sub[ii]*dx for ii in self.srng]) 
-                F_sink = sum([ -Gamma0*dot(Mrr_DDRX_src[0],self.s0)/self.s0[0]*self.sr_sub[ii] * self.wr_sub[ii]*dx for ii in self.srng]) # nonlinear sink term is linearized around previous solution (self.s0) following Rathmann and Lilien (2021)
-                F += F_src - F_sink
+                F_src = -sum([Gamma0*dot(Mrr_DDRX_src[ii], sr)*self.wr_sub[ii]*dx for ii in self.srng]) 
+                
+                sr_sub = split(sr) if dt is None else self.sr_sub
+                if dt is None: 
+                    # Steady state solver? Use nonlinear iteration for DDRX-activated problem
+                    D = dot(Mrr_DDRX_src[0], sr)/sr_sub[0] # <D> (Rathmann et al., 2025)
+                else: 
+                    # Time-dependent probem? Linearized problem by linearizing <D>
+                    D = dot(Mrr_DDRX_src[0], self.s0)/self.s0[0] # <D> estimated using previous solution (Rathmann and Lilien, 2021)
+                F_snk = -sum([Gamma0*D*sr_sub[ii]*self.wr_sub[ii]*dx for ii in self.srng])
+                
+                F += F_src - F_snk
             
             # Orientation space stabilization (hyper diffusion)
             if ENABLE_REG:
                 Mrr_REG,  *_ = self.Mk_REG  # unpack for readability 
-                F += -self.nu_multiplier * sum([ dot(Mrr_REG[ii], self.sr)*self.wr_sub[ii]*dx for ii in self.srng]) # real part
+                F += -self.nu_multiplier * sum([ dot(Mrr_REG[ii], sr)*self.wr_sub[ii]*dx for ii in self.srng]) # real part
 
         return F
         
@@ -291,7 +292,7 @@ class CPO():
         D2 = np.array([ D2[nn*dn:(nn+1)*dn] for nn in self.dofs ]) # to [node, D2 flat index 0 to 3]
         return sfcom.mat3d_arr(D2, self.modelplane, reshape=True) # [node,3,3]
         
-    def eigenframe(self, *p, **kwargs):
+    def eigenframe(self, *p, reduce2D=False, **kwargs):
         """
         Extract a2 eigenvectors (mi) and eigenvalues (lami) at specified list of points p=([x1,x2,...], [y1,y2,...])
         Note that you can back-construct a2 = lam1*np.outer(m1,m1) + lam2*np.outer(m2,m2) + lam3*np.outer(m3,m3) 
@@ -299,6 +300,15 @@ class CPO():
         xf, yf = np.array(p[0], ndmin=1), np.array(p[1], ndmin=1) # (point num, x/y value)
         nlm = np.array([self.get_nlm(xf[pp],yf[pp], **kwargs) for pp in range(len(xf))]) # (point num, nlm coefs)
         mi, lami = sfcom.eigenframe(nlm, symframe=self.symframe, modelplane=self.modelplane)
+        
+        if reduce2D:
+            if nlm.shape[0] > 1:
+                if self.modelplane == 'xz': mi, lami = mi[:,:,[0,2]], lami[:,[0,2]]
+                if self.modelplane == 'xy': mi, lami = mi[:,:,[0,1]], lami[:,[0,1]]
+            else:
+                if self.modelplane == 'xz': mi, lami = mi[:,[0,2]], lami[[0,2]]
+                if self.modelplane == 'xy': mi, lami = mi[:,[0,1]], lami[[0,1]]
+                
         return (mi, lami)
 
     def get_nlm(self, *p, xz2xy=False):    

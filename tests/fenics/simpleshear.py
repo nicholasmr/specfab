@@ -2,7 +2,7 @@
 # Nicholas Rathmann and Daniel Shapero, 2024
 
 r"""
-Test firedrake interface for specfab.
+Test fenics interface for specfab.
 
 Assumes a time-constant, non-uniform shear flow in vertical cross-section (xz) domain.
 """
@@ -19,8 +19,8 @@ import matplotlib.tri as tri
 from matplotlib import rc
 rc('font',**{'family':'serif', 'sans-serif':['Times'], 'size':15})
 
-import firedrake as fd
-from specfabpy.firedrake.ice import IceFabric
+import dolfin as df
+from specfabpy.fenics.ice import IceFabric
 from specfabpy import plotting as sfplt
 
 """
@@ -32,16 +32,16 @@ Fabric problem setup
 Nt = 20 # number of time steps to take
 L  = 8  # spectral truncation *** set L=8 or L=10 unless debugging ***
 
-kwargs_num = dict(nu_multiplier=1, nu_realspace=1e-3, modelplane='xz') # nu_realspace must be adjusted when changing mesh/resolution (trial-and-error so that solution is stable and smooth)
+kw_num = dict(nu_multiplier=1, nu_realspace=1e-3, modelplane='xz') # nu_realspace must be adjusted when changing mesh/resolution (trial-and-error so that solution is stable and smooth)
+
+DEBUG__STEADYSTATE = False # Do not solve time-dependent problem but show steady state solution
 
 ### Fabric dynamics
 
-ENABLE_LROT = True
-ENABLE_DDRX = False
+iota = +1  # deck-of-cards behaviour for lattice rotation
+Tice = -15 # Ice temperature (deg. C) for DDRX rate factor
 
-iota   = +1    # deck-of-cards behaviour for lattice rotatio 
-#Gamma0 = 1e-1 # uniform DDRX rate factor
-Gamma0 = 'L23' # DDRX rate factor that depends on both temperature and strainrate (Lilen et al, 2023)
+ENABLE_DDRX = True
 
 ### Viscous anisotropy homogenization parameters
 
@@ -50,7 +50,7 @@ Eij_grain = (1, 1e3)  # (Ecc, Eca) grain enhancements
 n_grain   = 1         # grain power-law exponent (only n_grain=1 supported)
 E_CAFFE   = (0.1, 10) # (Emin, Emax) of CAFFE
 
-kwargs_vaniso = dict(alpha=alpha, Eij_grain=Eij_grain, n_grain=n_grain, E_CAFFE=E_CAFFE)
+kw_VA = dict(alpha=alpha, Eij_grain=Eij_grain, n_grain=n_grain, E_CAFFE=E_CAFFE)
 
 """
 Setup firedrake fabric class
@@ -59,61 +59,65 @@ Setup firedrake fabric class
 ### Mesh and function spaces
 
 nx = ny = 16
-mesh = fd.UnitSquareMesh(nx, ny, diagonal='right') #, diagonal='crossed')
-x = fd.SpatialCoordinate(mesh)
-V = fd.VectorFunctionSpace(mesh, "CG", 1)
-Q = fd.FunctionSpace(mesh, "CG", 1) # for projecting scalar fabric measures
-T = fd.TensorFunctionSpace(mesh, "CG", 2)
+mesh = df.UnitSquareMesh(nx, ny, diagonal='right')
+V = df.VectorFunctionSpace(mesh, "CG", 1)
+T = df.TensorFunctionSpace(mesh, "CG", 2)
+Qele = ('CG', 1) # for projecting scalar fabric measures
+
+boundaries = df.MeshFunction("size_t", mesh, mesh.topology().dim()-1)
+boundaries.set_all(0)
+df.CompiledSubDomain('near(x[0],0)').mark(boundaries, 1)
+df.CompiledSubDomain('near(x[0],1)').mark(boundaries, 2)
+df.CompiledSubDomain('near(x[1],0)').mark(boundaries, 3)
+df.CompiledSubDomain('near(x[1],1)').mark(boundaries, 4)
 
 ### Velocity field
 
 u0, H = 1, 1
-expr = fd.as_vector(( u0*(x[1]/H)**2, 0 )) # non-uniform horizontal shear
-u = fd.Function(V).interpolate(expr)
-tau = fd.project(fd.sym(fd.grad(u)), T) # assume driving stress is coaxial to strain-rate (in two-way coupling this should be modelled tau) 
+expr = df.Expression(("u0*pow(x[1]/H,2)", "0"), u0=u0, H=H, degree=1) # non-uniform horizontal shear
+u = df.project(expr, V)
+tau = df.project(df.sym(df.grad(u)), T) # assume driving stress is coaxial to strain-rate (in two-way coupling this should be modelled tau) 
 
 h_min = 1/nx
 v_max = abs(u.vector()[:]).max()
 dt_CFL = 0.5*h_min/v_max
+dt = 2*dt_CFL # more aggresive time-stepping than CFL
 
 ### Initialize fabric module
 
-boundaries = (1,2,3,4) 
-fabric = IceFabric(mesh, boundaries, L, **kwargs_num, **kwargs_vaniso) # initializes as isotropic fabric field
+fabric = IceFabric(mesh, boundaries, L, **kw_num, **kw_VA) # initializes as isotropic fabric field
 fabric.set_isotropic_BCs((1,)) # isotropic ice incoming from left-hand boundary, remaining boundaries are free (no fabric fluxes)
 
-if not ENABLE_LROT: iota   = None
-if not ENABLE_DDRX: Gamma0 = None
-
-if Gamma0 == 'L23': 
-    T = -20 + 273 # deg. K
-    Gamma0 = fabric.Gamma0_Lilien23_EDC(u,T)
+Gamma0 = None
+if ENABLE_DDRX:
+    Gamma0      = fabric.Gamma0_Lilien23_EDC(u,Tice+273.15)
+    Gamma0_list = [fabric.Gamma0_Lilien23_EDC(u,_+273.15) for _ in np.linspace(-40,Tice,3)] # list of DDRX rate factors used to gradually approach solution 
 
 """
 Solve for steady state 
 """
 
-if ENABLE_DDRX: fabric.evolve(u, tau, 30*dt_CFL, iota=iota, Gamma0=Gamma0, steadystate=False, DDRX_LINEARIZE=2) # solving directly for nonlinear steady-state not yet supported, so take a large time step intead to approximate steady-state in plot
-else:           fabric.evolve(u, tau, 1,         iota=iota, Gamma0=Gamma0, steadystate=True)
+fabric.solvesteady(u, tau, iota=iota, Gamma0=Gamma0_list, LROT_guess=True)
 pfJ_steady = fabric.get_pfJ().copy(deepcopy=True)
 
 """
 Time evolution
 """
 
-fabric.initialize() # reset to isotropic after solving for steady state
+if not DEBUG__STEADYSTATE: 
+    fabric.initialize() # reset to isotropic after solving for steady state
 
 nn = 0
 t  = 0.0
-dt = 4*dt_CFL # more aggresive time-stepping than CFL
 
 while nn < Nt:
 
     nn += 1
     t  += dt
     
-    print("*** Step %i :: dt=%.2e, t=%.2e" % (nn, dt, t))
-    fabric.evolve(u, tau, dt, iota=iota, Gamma0=Gamma0) # automatically updates derived properties (Eij, pfJ, etc.)
+    if not DEBUG__STEADYSTATE:
+        print("*** Step %i :: dt=%.2e, t=%.2e" % (nn, dt, t))
+        fabric.evolve(u, tau, dt, iota=iota, Gamma0=Gamma0) # automatically updates derived properties (Eij, pfJ, etc.)
     
     ### Plot results
         
@@ -137,44 +141,46 @@ while nn < Nt:
         ### Plot J index
 
         ax = axr1[0]
-        h = fd.pyplot.tricontourf(fabric.pfJ, axes=ax, levels=np.arange(1, 3+1e-3, 0.2), extend='max', cmap='YlGnBu')
+        h = ax.tricontourf(*fabric.df2np(fabric.pfJ,ele=Qele), levels=np.arange(1, 3+1e-3, 0.2), extend='max', cmap='YlGnBu')
         cbar = plt.colorbar(h, ax=ax, **kwargs_cb)
         cbar.ax.set_xlabel(r'$J$ index')
-        h = fd.pyplot.quiver(u, axes=ax, cmap='Reds', width=0.0075)
+#        h = fd.pyplot.quiver(u, axes=ax, cmap='Reds', width=0.0075)
         
         ax = axr1[1]
-        h = fd.pyplot.tricontourf(pfJ_steady, axes=ax, levels=np.arange(1, 3+1e-3, 0.2), extend='max', cmap='YlGnBu')
+        h = ax.tricontourf(*fabric.df2np(pfJ_steady,ele=Qele), levels=np.arange(1, 3+1e-3, 0.2), extend='max', cmap='YlGnBu')
         cbar = plt.colorbar(h, ax=ax, **kwargs_cb)
         cbar.ax.set_xlabel(r'$J$ index (steady-state)')
-        h = fd.pyplot.quiver(u, axes=ax, cmap='Reds', width=0.0075)
+#        h = fd.pyplot.quiver(u, axes=ax, cmap='Reds', width=0.0075)
 
         ax = axr1[2]
         lvls_E = np.arange(0.6, 2+1e-3, 0.1)
         divnorm_E = colors.TwoSlopeNorm(vmin=np.amin(lvls_E), vcenter=1, vmax=np.amax(lvls_E))
         kwargs_E = dict(levels=lvls_E, norm=divnorm_E, extend='both', cmap='PuOr_r')
-        h = fd.pyplot.tricontourf(fabric.E_CAFFE, axes=ax, **kwargs_E)
+        h = ax.tricontourf(*fabric.df2np(fabric.E_CAFFE,ele=Qele), **kwargs_E)
         cbar = plt.colorbar(h, ax=ax, **kwargs_cb)
         cbar.ax.set_xlabel(r'$E$ (CAFFE)')
         
         c = ['Reds', 'Greens', 'Blues']
         for ii, ax in enumerate(axr1[3:]):
-            h = fd.pyplot.tricontourf(fabric.lami[ii], axes=ax, levels=np.arange(0.0, 1+1e-3, 0.1), extend='neither', cmap=c[ii])
+            h = ax.tricontourf(*fabric.df2np(fabric.lami[ii],ele=Qele), levels=np.arange(0.0, 1+1e-3, 0.1), extend='neither', cmap=c[ii])
             cbar = plt.colorbar(h, ax=ax, **kwargs_cb)
             cbar.ax.set_xlabel(r'$\lambda_%i$'%(ii+1))
 
         idx = ['11','22','33','23','13','12'] # Voigt ordering
         for ii, ax in enumerate(axr2[:]):
-            h = fd.pyplot.tricontourf(fabric.Eij[ii], axes=ax, **kwargs_E)
+            h = ax.tricontourf(*fabric.df2np(fabric.Eij[ii],ele=Qele), **kwargs_E)
             cbar = plt.colorbar(h, ax=ax, **kwargs_cb)
             cbar.ax.set_xlabel(r'$E_{%s}$'%(idx[ii]))
        
         # plot grids 
         for ax in axes:
+            ax.set_aspect('equal')
             ax.set_xlabel('$x$')
             ax.set_ylabel('$z$')
             ax.set_xlim([0,1])
             ax.set_ylim([0,1])
-            fd.pyplot.triplot(mesh, axes=ax, interior_kw=dict(lw=0.1), boundary_kw=dict(lw=5, clip_on=False))
+            plt.sca(ax)
+            df.plot(mesh, lw=0.35)
 
         ### ODF insets
         
@@ -195,11 +201,13 @@ while nn < Nt:
         plot_ODF((0.5,0.4), (0.4,0.07), 'X')
         plot_ODF((0.9,0.6), (0.5,0.07), 's')
             
-        axr2[4].text(-0.6, -1.2, '${\\bf m}_1$ is red\n${\\bf m}_2$ is green\n${\\bf m}_3$ is blue', ha='left', ma='left')
+        axr2[4].text(-0.7, -1.2, '${\\bf m}_1$ is red\n${\\bf m}_2$ is green\n${\\bf m}_3$ is blue', ha='left', ma='left')
             
         ### Save plot
         
         plt.savefig(fname, dpi=100)
         plt.close()
         print('... step complete')
+
+        if DEBUG__STEADYSTATE: break
         

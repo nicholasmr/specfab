@@ -6,7 +6,7 @@ FEniCS interface for calculating bulk enhancement factors given a CPO field
 """
 
 import numpy as np
-import code # code.interact(local=locals())
+#import code # code.interact(local=locals())
 from dolfin import *
 from ..specfabpy import specfabpy as sf__ # sf private copy 
 from .. import common as sfcom
@@ -14,7 +14,7 @@ from .rheology import Orthotropic, Isotropic
 
 class EnhancementFactor():
 
-    def __init__(self, mesh, L, symframe=-1, modelplane='xz'):
+    def __init__(self, mesh, L, symframe=-1, modelplane='xz', ele=()):
 
         ### Setup
 
@@ -28,10 +28,10 @@ class EnhancementFactor():
         self.lm, self.nlm_len_full = self.sf.init(self.L)
         self.nlm_len = self.sf.get_rnlm_len() if self.USE_REDUCED else self.nlm_len_full # use reduced or full form?
         
-        ### Derived quantities: viscous anisotropy, a2 eigenvalues, J index, ...
+        ### FE spaces for viscous anisotropy, a2 eigenvalues, J index, ...
         
-        ele = ('DG',1)
-#        self.Sd = VectorFunctionSpace(self.mesh, *ele, dim=self.nlm_len)
+        if len(ele)==0: ele = ('DG',0) # WARNING: DG0 is the only tested safe element type for forward modeling of flow problems
+
         self.R = FunctionSpace(self.mesh, *ele)
         self.V = VectorFunctionSpace(self.mesh, *ele, dim=3) # for vectors
         self.V_assigner = FunctionAssigner(self.V, [self.R, self.R, self.R]) # for constructing vectors from their components
@@ -73,15 +73,18 @@ class EnhancementFactor():
         mi_df   = [Function(self.V) for _ in range(3)] # (m1,m2,m3) fabric principal directions
         Eij_df  = [Function(self.R) for _ in range(6)] # Eij enhancement tensor
         lami_df = [Function(self.R) for _ in range(3)] # a2 eigenvalues (lami)
-        eij_df  = [Function(self.R) for _ in range(3)] # list of z,y,z components of a given ei
-        ei = np.array(ei)
+        eij_df  = [Function(self.R) for _ in range(3)] # j-th component of ei
                 
         for ii in range(3): # loop over vectors (e1,e2,e3)
-            for jj in range(3): # loop over vector components
-                eij_df[jj].vector()[:] = ei[ii,:,jj] # [i,node,xyz] @TODO INCONSISTENT 1
+            for jj in range(3): # loop over vector components of ei
+                eij_df[jj].vector()[:] = ei[ii][:,jj] # [i,node,xyz]
             self.V_assigner.assign(mi_df[ii], eij_df) # set vector field components
-        for kk in range(6): Eij_df[kk].vector()[:] = Eij[:,kk]
-        for ii in range(3): lami_df[ii].vector()[:] = ai[:,ii] 
+            
+        for kk in range(6): 
+            Eij_df[kk].vector()[:] = Eij[:,kk]
+        
+        for ii in range(3): 
+            lami_df[ii].vector()[:] = ai[:,ii] 
         
         return (mi_df, Eij_df, lami_df)
         
@@ -102,10 +105,10 @@ class EnhancementFactor():
         if not(0 <= alpha <= 1): raise ValueError('alpha should be between 0 and 1')
        
         nlm = self._nlm_nodal(sn) # [node, component]
-        mi, lami = sfcom.eigenframe(nlm, symframe=self.symframe, modelplane=self.modelplane) # [node,i,xyz], [node,i]  @TODO INCONSISTENT 1
+        mi, lami = sfcom.eigenframe(nlm, symframe=self.symframe, modelplane=self.modelplane) # [node,i,xyz], [node,i]
         if   len(ei) == 0:           ei = (mi[:,0], mi[:,1], mi[:,2])
-        elif len(ei[0].shape) == 1:  ei = sfcom.ei_tile(ei, self.numdofs) # ei = (e1[node,3], e2, e3)
-        Eij = self.sf.Eij_tranisotropic_arr(nlm, *ei, Eij_grain, alpha, n_grain) # [node, Voigt vector index 1--6]
+        elif len(ei[0].shape) == 1:  ei = sfcom.ei_tile(ei, self.numdofs) # ei[i][node,xyz] = (e1[node,xyz], e2, e3)
+        Eij = self.sf.Eij_tranisotropic_arr(nlm, *ei, Eij_grain, alpha, n_grain) # [node, Voigt index 1--6]
         
         # The enhancement factor model depends on effective (homogenized) grain parameters, calibrated against deformation tests.
         # For CPOs far from the calibration states, negative values *may* occur where Eij should tend to zero if truncation L is not large enough.
@@ -127,8 +130,8 @@ class EnhancementFactor():
         vlm = 0*nlm # calculate from (blm,nlm) using joint ODF
         mi, lami = sfcom.eigenframe(nlm, symframe=self.symframe, modelplane=self.modelplane) # [node,i,xyz], [node,i]
         if   len(ei) == 0:           ei = (mi[:,0], mi[:,1], mi[:,2])
-        elif len(ei[0].shape) == 1:  ei = sfcom.ei_tile(ei, self.numdofs) # ei = (e1[node,3], e2, e3)
-        Eij = self.sf.Eij_orthotropic_arr(blm, nlm, vlm, *ei, Eij_grain, alpha, n_grain) # [node, Voigt vector index 1--6]
+        elif len(ei[0].shape) == 1:  ei = sfcom.ei_tile(ei, self.numdofs) # ei[i][node,xyz] = (e1[node,xyz], e2, e3)
+        Eij = self.sf.Eij_orthotropic_arr(blm, nlm, vlm, *ei, Eij_grain, alpha, n_grain) # [node, Voigt index 1--6]
 
         Eij[Eij < 0] = 1e-2 # Set negative E_ij to a very small value (flow inhibiting)
         
@@ -226,7 +229,8 @@ class EnhancementFactor():
         """
 
         gam, u3, D3, n, Q = self.shearfrac_SSA(u2)
-        gam = project(gam, self.R)
+        G = FunctionSpace(self.mesh, 'DG', 0)
+        gam = project(gam, G)
 
         D_np = project(D3/sqrt(inner(D3,D3)), self.T).vector()[:] # normalized, flattened entries for all nodes
                 
@@ -267,7 +271,7 @@ class EnhancementFactor():
                 print('---- N ----');  print(N)
                 print('chi = %.2f -- coax(a2,D) = %.2f --  coax(a2,N) = %.2f -- gamma = %.2f'%(chi_np[nn], Dc, Nc, gam_np[nn]))
 
-        chi = Function(self.R)
+        chi = Function(G)
         chi.vector()[:] = chi_np[:]
         chi = project(chi, Q) # element-based field
         

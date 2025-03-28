@@ -84,15 +84,9 @@ for tt in tsteps:
 
     # a4 eigentensors
     Wi = [sfcom.eigenframe4(c[tt,:], i=i, modelplane='xy')[0] for i in range(6)]
-    code.interact(local=locals())
-#    Q1,Q2,Q3,Q4,Q5,Q6, eigvals6 = sf.a4_eigentensors(c[tt,:])
-#    _, W1 = np.linalg.eig(Q6)
-
-    ms = 7
-    kwargs = dict(ms=ms, markerfacecolor='none', markeredgewidth=1.0, transform=geo)
+    kwargs = dict(ms=7, markerfacecolor='none', markeredgewidth=1.0, transform=geo)
     ci = ['r','b','g','m','c','y']
     mrk = ['o','s','d','^','v','>']
-    
     for ii in range(6):
         wi = Wi[ii]
         for kk in range(3):

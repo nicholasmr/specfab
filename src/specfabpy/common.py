@@ -93,7 +93,8 @@ def mat3d_arr(D2, modelplane, reshape=False):
 
     """
     Overloaded version of mat3d() that can take arrays of D2
-    """    
+    """   
+     
     # 2D to 3D strain-rate/stress tensor assuming (i) tr=0 and (ii) out-of-modelplane shear components vanish
     if len(D2.shape) == 1: D2 = np.array(D2, ndmin=2) # generalize so that this routine works for arrays of matrices, too
     D3 = np.array([ mat3d(D2[nn], modelplane, reshape=reshape) for nn in range(D2.shape[0]) ])

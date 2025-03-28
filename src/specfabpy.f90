@@ -772,7 +772,7 @@ contains
     function Vi_elastic_orthotropic__discrete(mi, alpha,lame_grain,rho, theta,phi) result(Vi)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in) :: mi(:,:,:)
+        real(kind=dp), intent(in) :: mi(:,:,:) ! (3,3,N) = (m'_i, xyz comp., grain no.) 
         real(kind=dp), intent(in) :: alpha, lame_grain(9), rho
         real(kind=dp), intent(in) :: theta(:), phi(:) ! arrays of theta and phi values to calculate phase velocities along
         real(kind=dp)             :: Vi(3,size(theta)) ! qS1, qS2, qP phase velocities

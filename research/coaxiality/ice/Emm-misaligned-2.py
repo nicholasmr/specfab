@@ -139,7 +139,8 @@ ax.semilogy(SL_1944m[0,:], SL_1944m[1,:], 's', fillstyle=fc, markersize=ms, colo
 ax.semilogy(SL_2006m[0,:], SL_2006m[1,:], 'o', fillstyle=fc, markersize=ms, color=colors[0],  label=r'Dye 3, 2006m', clip_on=False)
 
 ax.set_xlabel(r'stress--fabric misalignment $\vartheta$ ($\SI{}{\degree}$)')
-ax.set_ylabel(r'$E_{zz}$')
+#ax.set_ylabel(r'$E_{zz}$')
+ax.set_ylabel(r'$\dot{\epsilon}_{zz}/\dot{\epsilon}_{zz}^{(\mathrm{iso})}$')
 
 xticks = np.arange(0,90+1e-5,5)
 ax.set_xticks(xticks[::3])  
@@ -177,9 +178,9 @@ for ang in angles:
     sfplt.plotODF(nlm_, lm, axin, lvlset=lvlset, cmap=cmap, showcb=False, nchunk=None)
     
     (e1,e2,e3, _) = sf.frame(nlm_, 'e') 
-    kwargs = dict(c=sfplt.c_dred, fontsize=FSSMALL+1.2, transform=geo)
-    sfplt.plotS2text(axin, e1, r'$\vb{m}_1$', **kwargs)
-    sfplt.plotS2text(axin, [0,0,1], r'$\vu{z}$', **kwargs)
+    kwargs = dict(fontsize=FSSMALL+1.2, transform=geo)
+    sfplt.plotS2text(axin, e1, r'$\vb{m}_1$', c=sfplt.c_green, **kwargs)
+    sfplt.plotS2text(axin, [0,0,1], r'$\vu{z}$', c='k', **kwargs)
         
 ### Save figure
 

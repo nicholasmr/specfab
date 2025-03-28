@@ -24,7 +24,7 @@ from specfabpy import plotting as sfplt
 FS = sfplt.setfont_tex(fontsize=12)
 FSANNO = FS
 FSAX   = FS + 1
-FSLBL  = FS + 4
+FSLBL  = FS + 2.5
 
 norm = 1/np.sqrt(4*np.pi)
 

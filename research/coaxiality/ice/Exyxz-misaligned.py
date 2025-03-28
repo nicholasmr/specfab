@@ -15,8 +15,8 @@ from specfabpy import common as sfcom
 from specfabpy import plotting as sfplt
 from specfabpy import integrator as sfint
 
-FS = sfplt.setfont_tex(fontsize=10)
-FSSMALL = FS-0.5
+FS = sfplt.setfont_tex(fontsize=9.5)
+FSSMALL = FS
 
 #----------------------
 # Parameters
@@ -92,7 +92,7 @@ D_glen, D_orth, D_CAFFE, D_EIE = normalize(D_glen), normalize(D_orth), normalize
 ### Setup figure
 
 scale = 0.69
-fig = plt.figure(figsize=(4.5*scale,3.0*scale))
+fig = plt.figure(figsize=(4.8*scale,3.0*scale))
 gs = gridspec.GridSpec(1, 1)
 ax = fig.add_subplot(gs[:, :])
 
@@ -139,7 +139,7 @@ ax.annotate('overpredicted \n $y$-extension rate', xy=(0.2, 2.3), xytext=(0.19, 
     arrowprops=dict(arrowstyle='-|>, head_width=0.25', facecolor='black'), fontsize=FSSMALL, ha='center', va='center', ma='left')
 
 ax.set_xlabel(r'shear--tension weight', fontsize=FS)
-ax.set_ylabel(r'$\dot{\epsilon}_{ij}/\dot{\epsilon}_{\mathrm{iso}}$', fontsize=FS+1)
+ax.set_ylabel(r'$\dot{\epsilon}_{ij}/\dot{\epsilon}_{\mathrm{iso}}$', fontsize=FS+0.5)
 
 xticks = np.arange(0,1+1e-5,0.1)
 ax.set_xticks(xticks[::2])  
@@ -152,7 +152,7 @@ ax.set_ylim([-0,9.3])
 
 reorder=lambda hl,nc:(sum((lis[i::nc]for i in range(nc)),[])for lis in hl)
 h_l = ax.get_legend_handles_labels()
-kwargs_leg = dict(loc=3, bbox_to_anchor=(-0.17,-0.80), frameon=False, fancybox=False, edgecolor='k', framealpha=1, ncol=2, columnspacing=0.8, handlelength=1.1, handletextpad=0.5, labelspacing=0.18, fontsize=FS)
+kwargs_leg = dict(loc=3, bbox_to_anchor=(-0.05,-0.78), frameon=False, fancybox=False, edgecolor='k', framealpha=1, ncol=2, columnspacing=0.8, handlelength=1.1, handletextpad=0.5, labelspacing=0.18, fontsize=FS)
 leg = ax.legend(*reorder(h_l, 2), **kwargs_leg)
 #leg = ax.legend(**kwargs_leg)
 
