@@ -1,6 +1,7 @@
 \documentclass[tikz,margin=0.0mm]{standalone}
 
-% pdftocairo -singlefile -transp -r 125 -png harmonic-expansion.pdf harmonic-expansion
+% pdftocairo -singlefile -transp -r 125 -f 1 -l 1 -png harmonic-expansion.pdf harmonic-expansion;
+% pdftocairo -singlefile -transp -r 125 -f 2 -l 2 -png harmonic-expansion.pdf harmonic-expansion-onerow;
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -48,6 +49,36 @@
 }
 
 \node[] at ({(4+0.2)*\dx+\jj},-0.6-1*\dy) {\fontsize{25}{25}\selectfont $\bf\cdots$};
+
+\end{tikzpicture}
+
+
+\begin{tikzpicture}[scale=1]
+
+\gdef\dx{3.8}
+
+\node[] at ({-1*\dx},0*\dy) {\includegraphics[scale=1]{nlm.png}};
+\node[] at ({-0.5*\dx},-0.5) {\fontsize{\fs}{\fs}\selectfont $\bf =$};
+
+\node[] at ({0*\dx},0) {\includegraphics[scale=1]{Y00.png}};
+
+\node[] at ({1*\dx},0) {\includegraphics[scale=1]{Y20.png}};
+\node[] at ({2*\dx},0) {\includegraphics[scale=1]{Y21.png}};
+\node[] at ({3*\dx},0) {\includegraphics[scale=1]{Y22.png}};
+
+\gdef\jj{-0.0}
+\node[] at ({(\jj+4)*\dx},-0*\dy) {\includegraphics[scale=1]{Y40.png}};
+\node[] at ({(\jj+5)*\dx},-0*\dy) {\includegraphics[scale=1]{Y41.png}};
+\node[] at ({(\jj+6)*\dx},-0*\dy) {\includegraphics[scale=1]{Y42.png}};
+\node[] at ({(\jj+7)*\dx},-0*\dy) {\includegraphics[scale=1]{Y43.png}};
+\node[] at ({(\jj+8)*\dx},-0*\dy) {\includegraphics[scale=1]{Y44.png}};
+
+\foreach \i in {0,...,8}
+{
+	\node[] at ({(\i+0.5)*\dx},-0.5) {\fontsize{\fs}{\fs}\selectfont $\bf +$};
+}
+
+\node[] at ({(9 -0.2)*\dx+\jj},-0.6-0*\dy) {\fontsize{25}{25}\selectfont $\bf\cdots$};
 
 \end{tikzpicture}
 

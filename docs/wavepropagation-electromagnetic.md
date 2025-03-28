@@ -5,10 +5,11 @@
 We seek plane wave solutions to Maxwell's equations in a non-conducting, source-free, anisotropic linear dielectric medium
 
 $$
-\nabla^2 {\bf E} = \mu {\boldsymbol \epsilon} \frac{\partial^2 {\bf E}}{\partial t^2},
+\nabla \times \nabla \times {\bf E} = -\mu {\boldsymbol \epsilon} \frac{\partial^2 {\bf E}}{\partial t^2},
 $$
 
 where ${\bf E}$ is the electric field, ${\boldsymbol \epsilon}$ is the bulk dielectric permittivity tensor, and $\mu$ the bulk isotropic permeability of the medium.
+Note this can also be written as $\nabla^2 {\bf E} = \mu {\boldsymbol \epsilon} {\partial^2 {\bf E}}/{\partial t^2}$.
 
 Substituting ${\bf E}$ for a plane wave solution, ${\bf E} = {\bf E}_0 \exp[i({\bf k}\cdot {\bf x} - \omega t)]$, the problem reduces to
 

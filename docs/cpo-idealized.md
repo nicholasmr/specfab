@@ -22,7 +22,7 @@ $$
 
 In the figure below, the resulting unidirectional distribution is shown (rightmost inset), where the white area represents the subspace of possible CPOs when expressed in terms of the normalized coefficients of lowest order: $\hat{n}_2^0 = n_2^0/n_0^0$ and $\hat{n}_4^0 = n_4^0/n_0^0$.
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/state-space-validation/ice/state-space-ideal.png#center){: style="width:570px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/research/state-space/ice/state-space-ideal.png#center){: style="width:570px"}
 
 The code below demonstrates how to generate the distribution with specfab.
 

@@ -160,7 +160,7 @@ Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # Eij=(E11,E2
 
     The effect of choosing alternative $E_{ca}'$ and $\alpha$ (left plot) on eigenenhancements for different CPO states (right plot) is here shown for combinations of $E_{ca}'$ and $\alpha$ that fulfill $E_{mt}=10$ for a unidirectional CPO:
 
-    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/enhancement-factor/ice/Eij-state-space/Eij-state-space.gif){: style="width:750px"}
+    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/research/calibrate-Eij/ice/Eij-state-space/Eij-state-space.gif){: style="width:750px"}
 
     Clearly, there is a tradeoff between how shear enhanced ($E_{mt}$) and how hard for axial compression ($E_{mm}$) the model allows a unidirectional CPO to be.
     

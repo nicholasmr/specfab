@@ -4,7 +4,7 @@
 
 The coupled evolution of flow and CPO can be solved by joining different components of specfab together with a Stokes flow solver (purple piece):
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/jigsaw/jigsaw01.png#center){: style="width:360px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/jigsaw/jigsaw1.png#center){: style="width:360px"}
 
 That is, specfab can model/provides
 

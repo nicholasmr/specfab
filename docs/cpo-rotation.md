@@ -23,4 +23,4 @@ nlm_rot3 = sf.rotate_nlm(nlm_rot2, -theta, -phi) # rotate back
 # See "plotting" pages on how to plot the resulting ODFs
 ```
 
-![](https://github.com/nicholasmr/specfab/raw/main/tests/wigner-d-rotation-test/wigner-d-rotation-test.png){: style="width:650px"}
+![](https://github.com/nicholasmr/specfab/raw/main/tests/rotate-Wigner-D/wigner-d-rotation-test.png){: style="width:650px"}
