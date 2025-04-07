@@ -5,6 +5,7 @@
 \include{../../../images/tranisotropic/parcel-animation/header-parcel.tex} 
 
 \usetikzlibrary{backgrounds}
+\usetikzlibrary{shapes}
 \usepackage{txfonts}
 \usepackage{times}
 %\usepackage{siunitx}
@@ -13,6 +14,41 @@
 	debugbox/.style={},
 	title/.style={font=\bf\fontsize{13.5pt}{0pt}\selectfont},
 }
+
+%%%%%%%%%%%%
+
+\usepackage[export]{adjustbox} % also load graphicx
+
+\tikzset{
+	path image/.style={path picture={ \node at (path picture bounding box.center) { \includegraphics[scale=0.475,page=2,rotate=#1]{../../../images/tranisotropic/monocrystal-small.pdf}};} }
+}
+
+\tikzset{declare function = { 
+	rotang(\anginit,\t,\Te) = atan( 1/( cot(\anginit)*exp(-1.5 * (-1/\Te) *\t) )); 
+}}
+	  	
+\gdef\drawpolycloud#1#2#3{
+	% ARGS: time step (n), strain_zz target, e-folding time scale (T)
+
+	\pgfmathsetmacro{\dt}{fdt(#2,#3)}  % time step
+	\pgfmathsetmacro\t{#1*\dt} % total time	
+	
+	\node[cloud, draw, cloud puffs=7,cloud puff arc=130, aspect=1.3, inner ysep=1em,scale=2.0] {};
+	\begin{scope}[]
+	  	\pgfmathsetmacro{\angA}{rotang(+80,\t,#3)}
+	  	\pgfmathsetmacro{\angB}{rotang(-60,\t,#3)}		
+	  	\pgfmathsetmacro{\angC}{rotang(-12,\t,#3)}
+	  	\pgfmathsetmacro{\angD}{rotang(+35,\t,#3)}
+		\pgfmathsetmacro{\rR}{0.14em}
+%		\node at (0,0) {\bf X}; % debug -- show center coordinate
+		\tikzset{debugcrys/.style={draw=none},} % outcomment to show bounding circle for crystal images
+		\path[debugcrys,tdplot_screen_coords,path image=\angB] (85:1.8em) circle (\rR); % top
+		\path[debugcrys,tdplot_screen_coords,path image=\angA] (-15:1.8em) circle (\rR); % right
+		\path[debugcrys,tdplot_screen_coords,path image=\angC] (195:1.6em) circle (\rR); % left
+	\end{scope}
+}
+
+%%%%%%%%%%%%
 
 \gdef\drawframe#1#2#3#4{
 
@@ -23,6 +59,11 @@
 	%%% Deformed parcel
 	\begin{scope}[scale=1.9, yshift=-1em]
 		\drawparcel{#1}{#2}{#3}
+	\end{scope}
+	
+	%%% Polycrystal cloud
+	\begin{scope}[shift={(7.5em,-5em)}]
+		\drawpolycloud{#1}{#2}{#3}
 	\end{scope}
 			
 	%%% Include statespace fig
@@ -38,12 +79,12 @@
 	%%% Labels
 	\begin{scope}[shift={(-10.2em,-7.4em)}]
 %		\node[anchor=west] (x) at (0,0.0em) {\bf specfab demo};
-		\node[anchor=west] (x) at (0,2.5em) {\includegraphics[scale=0.9]{../../../images/logo/logo.png}};
-		\node[anchor=west] (x) at (0,-1.15em) {github.com/nicholasmr/specfab};
+		\node[anchor=west] (x) at (0,3.2em) {\includegraphics[scale=0.85]{../../../images/logo/logo.png}};
+		\node[anchor=west,align=left] (x) at (0,-0.8em) {\textit{Lattice rotation demo}\\github.com/nicholasmr/specfab};
 	\end{scope}
 	\begin{scope}[yshift=12.6em]
 		\node[title] at (0em,0) {Uniaxial deformation};
-		\node[title] at (25em,0) {CPO state space and enhancement factors};
+		\node[title] at (25em,0) {CPO state space and viscous anisotropy};
 	\end{scope}
 	
 	\end{tikzpicture}
