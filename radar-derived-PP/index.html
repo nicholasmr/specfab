@@ -104,7 +104,7 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#cpo-rightarrow-enhancement-factors">CPO \(\rightarrow\) Enhancement factors</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#correlation-between-langle-c_i-c_j-c_k-c_l-rangle-and-langle-c_i-c_jrangle">Correlation between \(\langle c_i c_j c_k c_l \rangle\) and \(\langle c_i c_j\rangle\)</a>
+    <li class="toctree-l3"><a class="reference internal" href="#emperical-correlation-between-langle-c_i-c_j-c_k-c_l-rangle-and-langle-c_i-c_jrangle">Emperical correlation between \(\langle c_i c_j c_k c_l \rangle\) and \(\langle c_i c_j\rangle\)</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#code-example">Code example</a>
     </li>
@@ -199,8 +199,24 @@ In this case, <span class="arithmatex">\(\Delta \lambda = 0\)</span> represents 
 <h2 id="cpo-rightarrow-enhancement-factors">CPO <span class="arithmatex">\(\rightarrow\)</span> Enhancement factors</h2>
 <p>If <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> can be inferred from radar sounding following the above method, so can the bulk strain-rate enhancement factors, <span class="arithmatex">\(E_{ij}\)</span>, in the same eigenframe (i.e. <a href="../enhancements-strainrate/">eigenenhancements</a>).</p>
 <p>The eigenenhancements depend, however, also on the fourth-order structure tensor, <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span>, but the bulk permittivity <span class="arithmatex">\(\epsilon_{ij}\)</span> is insensitive to <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span>.
-To overcome this, a simple empirical correlation is adopted that allows determining <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span> given <span class="arithmatex">\(\langle c_i c_j\rangle\)</span> if the CPO is approximately rotationally symmetric.</p>
-<h3 id="correlation-between-langle-c_i-c_j-c_k-c_l-rangle-and-langle-c_i-c_jrangle">Correlation between <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span> and <span class="arithmatex">\(\langle c_i c_j\rangle\)</span></h3>
+To overcome this, two approaches can be taken:</p>
+<ul>
+<li>Use the <a href="https://doi.org/10.1016/j.jnnfm.2005.11.005">IBOF closure approximation of Elmer/Ice</a>:</li>
+</ul>
+<pre><code class="language-python">import numpy as np
+from specfabpy import specfab as sf
+lm, nlm_len = sf.init(4) # L=4 is sufficient here
+
+### Determine &lt;c_i c_j&gt; from radar-derived Delta lambda
+l1 = 0   # lambda_1 = 0 (Gerber's approximation)
+dl = 0.5 # Delta lambda = lambda_2 - lambda_1
+a2 = np.diag([l1, l1+dl, 1-dl-2*l1]) # second-order structure tensor, &lt;c_i c_j&gt;, in eigenframe
+a4 = sf.a4_IBOF(a2) # Elmer/Ice IBOF closure approximation
+</code></pre>
+<ul>
+<li>Use an empirical correlation for determining <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span> given <span class="arithmatex">\(\langle c_i c_j\rangle\)</span> if the CPO is approximately rotationally symmetric.</li>
+</ul>
+<h3 id="emperical-correlation-between-langle-c_i-c_j-c_k-c_l-rangle-and-langle-c_i-c_jrangle">Emperical correlation between <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span> and <span class="arithmatex">\(\langle c_i c_j\rangle\)</span></h3>
 <p>If the CPO symmetry axis is rotated into the vertical direction, <span class="arithmatex">\(\langle c_i c_j\rangle\)</span> depends only on the normalized <a href="../cpo-representation/">spectral component</a> <span class="arithmatex">\(\hat{n}_2^0 = n_2^0/n_0^0:\)</span></p>
 <div class="arithmatex">\[
 \langle c_i c_j\rangle = \frac{\delta_{ij}}{3} +  \frac{2\sqrt{5}}{15} \hat{n}_2^0

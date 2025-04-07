@@ -48,9 +48,7 @@
               <ul class="current">
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Representation</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#odf">ODF</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#normalization">Normalization</a>
+    <li class="toctree-l2"><a class="reference internal" href="#definitions">Definitions</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#harmonic-expansion">Harmonic expansion</a>
         <ul>
@@ -136,8 +134,8 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="cpo-representation">CPO representation</h1>
-<p>CPOs are represented by their distributions of crystallographic axes in orientation space (<span class="arithmatex">\(S^2\)</span>), neglecting grain sizes/mass and other topological information.</p>
-<p>Supported grain symmetry groups are:</p>
+<p>CPOs are represented by their distributions of crystallographic axes in orientation space (<span class="arithmatex">\(S^2\)</span>). 
+Supported grain symmetry groups are:</p>
 <table>
 <thead>
 <tr>
@@ -197,16 +195,50 @@
 </table>
 <p>Note that <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span> represent the distributions of particular crystallographic axes (<span class="arithmatex">\({\bf m}'_i\)</span>) depending on fabric type (A&mdash;E type).</p>
 </div>
-<h2 id="odf">ODF</h2>
-<p>The orientation distribution function (ODF) of a given slip-system axis (crystallographic axis) <span class="arithmatex">\(f\in \lbrace n,b\rbrace\)</span> is defined as the normalized distribution</p>
-<div class="arithmatex">\[ 
+<h2 id="definitions">Definitions</h2>
+<p>CPOs of ice and olivine are here defined as the size and orientation distribution of grains, without any reference to grain topology, grain shape, or the spatial arrangement of grains. 
+In the general-most case, this means statistically describing the directions in which grain slip-plane normal and slip direction (<span class="arithmatex">\(n\)</span>- and <span class="arithmatex">\(b\)</span>-axes) are pointing while also taking into account how massive each grain is. </p>
+<p>The <em>mass-density orientation distribution function</em> <span class="arithmatex">\(\rho^{*}({\bf n},{\bf b})\)</span> describes how grain mass is distributed in the space of possible grain orientations, where <span class="arithmatex">\({\bf n}\)</span> and <span class="arithmatex">\({\bf b}\)</span> are arbitrary <span class="arithmatex">\(n\)</span>- and <span class="arithmatex">\(b\)</span>-axes (unit vectors). Since <span class="arithmatex">\(\rho^{*}\)</span> is taken to be normalized by the polycrystal volume, integrating <span class="arithmatex">\(\rho^{*}\)</span> over all possible grain orientations recovers the mass density of the polycrystal (e.g. <span class="arithmatex">\(\rho=917\)</span> kg/m<span class="arithmatex">\(^3\)</span> for ice):
+$$ 
+\rho = \int_{S^2} \int_{S^2} \rho^{*}({\bf n},{\bf b}) \,\mathrm{d}^2{\bf b}\, \mathrm{d}^2{\bf n} ,
+$$ 
+where integration is restricted to the surface of the unit sphere <span class="arithmatex">\(S^2\)</span>, and <span class="arithmatex">\(\mathrm{d}^2{\bf n}=\sin(\theta)\,\mathrm{d}{\theta}\,\mathrm{d}{\phi}\)</span> is the infinitesimal solid angle in spherical coordinates (defined similarly for <span class="arithmatex">\({\bf a}\)</span>).</p>
+<div class="admonition warning">
+<p class="admonition-title">Ambiguity</p>
+<p>Notice that defining CPOs in this way introduces some ambiguity. The contribution to <span class="arithmatex">\(\rho^{*}({\bf n},{\bf b})\)</span> from two grains with identical mass <span class="arithmatex">\(m\)</span> and orientation is indistinguishable from a single grain with the same orientation but twice the mass, <span class="arithmatex">\(2m\)</span>. Nonetheless, how well <span class="arithmatex">\(\rho^{*}({\bf n},{\bf b})\)</span> can represent CPOs should ultimately be judged by whether it contains the information necessary to calculate CPO-induced properties to some desired accuracy (say, bulk mechanical anisotropy); not by how simplified it is to disregard spatial (topological) grain information etc. </p>
+</div>
+<p><strong>Glacier ice</strong><br>
+In the case of ice, specfab treats for simplicity approximate all monocrystal properties as isotropic in the basal plane (transverse isotropy). 
+This popular approach simplifies the problem significantly: since it does not matter in which directions <span class="arithmatex">\(b\)</span>-axes (crystal <span class="arithmatex">\(a\)</span>-axes) point, it is not needed to keep track of how they are distributed.
+Let therefore <span class="arithmatex">\(n(\theta,\phi)\)</span> be the corresponding distribution function of grain mass density in the space of possible <span class="arithmatex">\(n\)</span>-axis (crystal <span class="arithmatex">\(c\)</span>-axis) orientations:
+$$ 
+n(\theta,\phi) = \frac{\int_{S^2} \rho^{*}({\bf n},{\bf b})\,\mathrm{d}^2{\bf b}}{\rho} ,
+$$
+which is nothing but the normalized marginal distribution of <span class="arithmatex">\({\bf n}\)</span>.</p>
+<p><strong>Olivine</strong><br>
+Specfab represents more complicated minerals like olivine by, in addition, also tracking the marginal distribution of slip directions:
+$$ 
+b(\theta,\phi) = \frac{\int_{S^2} \rho^{*}({\bf n},{\bf b})\,\mathrm{d}^2{\bf n}}{\rho} .
+$$
+When needed, the joint distribution function <span class="arithmatex">\(\rho^{*}({\bf n},{\bf b})\)</span> is the back-constructed from its marginal distributions following the identity for conditional probability density functions <a href="https://doi.org/10.1029/2024GC011831">and some assumptions</a>. </p>
+<!--
+
+The orientation distribution function (ODF) of a given slip-system axis (crystallographic axis) $f\in \lbrace n,b\rbrace$ is defined as the normalized distribution
+
+$$ 
 \mathrm{ODF} = \frac{f(\theta,\phi)}{N} \quad\text{where}\quad N=\int_{S^2} f(\theta,\phi) \,\mathrm{d}\Omega .
-\]</div>
-<h2 id="normalization">Normalization</h2>
-<p><span class="arithmatex">\(n(\theta,\phi)\)</span> may be understood either as the number density of grains with a given slip-plane normal orientation, or as the mass density fraction (<a href="https://royalsocietypublishing.org/doi/abs/10.1098/rspa.2005.1610">Faria, 2006</a>; <a href="https://www.sciencedirect.com/science/article/abs/pii/S0012821X20306622">Richards et al., 2021</a>) of grains with a given slip-plane normal orientation; <span class="arithmatex">\(\varrho^*(\theta,\phi)\)</span> in literature.
-The same goes for <span class="arithmatex">\(b(\theta,\phi)\)</span>.</p>
-<p>From specfab's point-of-view, the difference is a matter of normalization: since the models of <a href="../cpo-dynamics-tranisotropic/">CPO evolution</a> (lattice rotation, DDRX, CDRX) conserve the normalization, the two views are effectively the same, not least because CPO-derived quantities depend on the normalized distributions (which are identical).
-The mass-density-fraction interpretation rests, however, on stronger physical grounds as mass is conserved but grain numbers are not.</p>
+$$
+
+## Normalization
+
+$n(\theta,\phi)$ may be understood either as the number density of grains with a given slip-plane normal orientation, or as the mass density fraction ([Faria, 2006](https://royalsocietypublishing.org/doi/abs/10.1098/rspa.2005.1610); [Richards et al., 2021](https://www.sciencedirect.com/science/article/abs/pii/S0012821X20306622)) of grains with a given slip-plane normal orientation; $\varrho^*(\theta,\phi)$ in literature.
+The same goes for $b(\theta,\phi)$.
+
+From specfab's point-of-view, the difference is a matter of normalization: since the models of [CPO evolution](cpo-dynamics-tranisotropic.md) (lattice rotation, DDRX, CDRX) conserve the normalization, the two views are effectively the same, not least because CPO-derived quantities depend on the normalized distributions (which are identical).
+The mass-density-fraction interpretation rests, however, on stronger physical grounds as mass is conserved but grain numbers are not.
+
+-->
+
 <h2 id="harmonic-expansion">Harmonic expansion</h2>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/harmonic-expansion/harmonic-expansion.png#center" style="width:750px" /></p>
 <p>The distributions <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span> are represented as spherical harmonic expansion series:</p>

@@ -160,7 +160,7 @@ E_{ij} = \frac{
 <div class="arithmatex">\[
 {\bf S}({\bf e}_i, {\bf e}_j) = \tau_0
 \begin{cases}
-    {\bf I} - 3{\bf e}_i \otimes {\bf e}_i \;\;\quad\quad\text{if}\quad i=j \\
+    {\bf I}/3 - {\bf e}_i \otimes {\bf e}_i \;\;\quad\quad\text{if}\quad i=j \\
     {\bf e}_i \otimes {\bf e}_j + {\bf e}_j \otimes {\bf e}_i \quad\text{if}\quad i\neq j \\
 \end{cases}
 .
@@ -296,12 +296,19 @@ This reduces the problem to that of picking <span class="arithmatex">\(E_{ca}'\)
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/research/calibrate-Eij/ice/Eij-state-space/Eij-state-space.gif" style="width:750px" /></p>
 <p>Clearly, there is a tradeoff between how shear enhanced (<span class="arithmatex">\(E_{mt}\)</span>) and how hard for axial compression (<span class="arithmatex">\(E_{mm}\)</span>) the model allows a unidirectional CPO to be.</p>
 </div>
-<div class="admonition tip">
-<p class="admonition-title">Evolving CPO</p>
-<p>The below animation shows the directional enhancement factors for a CPO evolving under <a href="../deformation-modes/">uniaxial compression</a> along <span class="arithmatex">\({\hat {\bf z}}\)</span> when subject to <a href="../cpo-dynamics-tranisotropic/">lattice rotation</a>.
-Enhancement factors are calculated w.r.t. the spherical coordinate basis vectors <span class="arithmatex">\(({\bf e}_1, {\bf e}_2, {\bf e}_3) = ({\hat{\bf r}},{\hat{\boldsymbol \theta}},{\hat{\boldsymbol \phi}})\)</span>.</p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/S2-maps/S2-Eij.gif" style="width:660px" /></p>
-</div>
+<!--
+!!! tip "Evolving CPO"
+
+    The below animation shows the directional enhancement factors for a CPO evolving under [uniaxial compression](deformation-modes.md) along ${\hat {\bf z}}$ when subject to [lattice rotation](cpo-dynamics-tranisotropic.md).
+    Enhancement factors are calculated w.r.t. the spherical coordinate basis vectors $({\bf e}_1, {\bf e}_2, {\bf e}_3) = ({\hat{\bf r}},{\hat{\boldsymbol \theta}},{\hat{\boldsymbol \phi}})$.
+
+    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/S2-maps/S2-Eij.gif){: style="width:660px"}
+-->
+
+<!--
+### Azuma&mdash;Placidi method (CAFFE) 
+-->
+
 <h3 id="orthotropic-grains">Orthotropic grains</h3>
 <table>
 <thead>
