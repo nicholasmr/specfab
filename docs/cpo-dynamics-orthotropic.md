@@ -54,7 +54,7 @@ The tutorial shows how to model the CPO evolution of a Lagrangian material parce
 
 ## Lattice rotation
 
-To be published before documented here.
+See [Rathmann et al. (2025)](https://doi.org/10.1029/2024GC011831).
 
 <!--
 ### Example

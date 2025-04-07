@@ -1,4 +1,4 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk>, 2023
+# N. M. Rathmann <rathmann@nbi.ku.dk>, 2023-
 
 import sys, os, copy, code # code.interact(local=locals())
 
@@ -9,12 +9,10 @@ import matplotlib.gridspec as gridspec
 import matplotlib.colors
 import cmasher as cmr
 
-sys.path.append('../../')
-import demolib as dl
-
 from specfabpy import specfab as sf
 from specfabpy import integrator as sfint
 from specfabpy import discrete as sfdsc
+from specfabpy import statespace as sfss
 from specfabpy import constants as sfconst
 from specfabpy import plotting as sfplt
 
@@ -61,8 +59,8 @@ ylims = [-1.7,3.5]
 # Determine enhancements
 #--------------------
 
-grain_params = sfconst.ice['viscoplastic']['linear']
-(Ezz, Exz, x, y, isvalid) = dl.Eij_statemap_ice(grain_params, xlims, ylims, resx=RESX, resy=RESY)
+grain_params = sfconst.ice['viscoplastic']['linearL10']
+(Ezz, Exz, x, y, isvalid) = sfss.Eij_statemap_ice(grain_params, xlims, ylims, resx=RESX, resy=RESY)
 
 imdat = np.ones((RESY, RESX, 4), dtype=float) # color (0,1,2) and alpha (3)
 for ii in range(RESY):
@@ -116,7 +114,7 @@ for tt in np.arange(0,len(strainzz),dn):
     cbar = plt.colorbar(CS, cax=cax)
     cbar.ax.set_title('$E_{xz}$', fontsize=FSAX)
 
-    lvls = np.arange(0.2,1.6,0.4)
+    lvls = np.arange(0.6,1.6,0.4)
     CS = plt.contour(x,y,Ezz, levels=lvls, linewidths=0.75, linestyles='-', colors=sfplt.c_vdgray, zorder=10)
     manual_locations = [(0.51, y_) for y_ in np.linspace(-0.5, 1.5, len(lvls))]
     ax.clabel(CS, CS.levels, inline=True, fmt=r'$E_{zz}=%.1f$', fontsize=FSAX, manual=manual_locations)
@@ -132,7 +130,7 @@ for tt in np.arange(0,len(strainzz),dn):
 
     ### Misc
     
-    dl.plot_nlm_cases(ax, FSANNO, isolbl_above=False)
+    sfss.plot_nlm_cases(ax, FSANNO, isolbl_above=False)
     
     Eij_grain, alpha, n_grain = grain_params
     plt.text(-1.3, 2.3, r'$(E_{cc}^\prime, E_{ca}^\prime, \alpha) = (%i, 10^{%i}, %.4f)$'%(Eij_grain[0], np.log10(Eij_grain[1]), alpha), color='k', va='center', ha='left', fontsize=FSANNO)

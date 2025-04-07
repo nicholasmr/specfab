@@ -1,7 +1,6 @@
 # CPO representation
 
-CPOs are represented by their distributions of crystallographic axes in orientation space ($S^2$), neglecting grain sizes/mass and other topological information.
-
+CPOs are represented by their distributions of crystallographic axes in orientation space ($S^2$). 
 Supported grain symmetry groups are:
 
 | Grain symmetry | CPO components | Definition |
@@ -30,7 +29,40 @@ Thus, depending on which crystallographic slip system is preferentially activate
     Note that $n(\theta,\phi)$ and $b(\theta,\phi)$ represent the distributions of particular crystallographic axes (${\bf m}'_i$) depending on fabric type (A&mdash;E type).
     
    
-## ODF
+## Definitions
+
+
+CPOs of ice and olivine are here defined as the size and orientation distribution of grains, without any reference to grain topology, grain shape, or the spatial arrangement of grains. 
+In the general-most case, this means statistically describing the directions in which grain slip-plane normal and slip direction ($n$- and $b$-axes) are pointing while also taking into account how massive each grain is. 
+
+
+The *mass-density orientation distribution function* $\rho^{*}({\bf n},{\bf b})$ describes how grain mass is distributed in the space of possible grain orientations, where ${\bf n}$ and ${\bf b}$ are arbitrary $n$- and $b$-axes (unit vectors). Since $\rho^{*}$ is taken to be normalized by the polycrystal volume, integrating $\rho^{*}$ over all possible grain orientations recovers the mass density of the polycrystal (e.g. $\rho=917$ kg/m$^3$ for ice):
+$$ 
+\rho = \int_{S^2} \int_{S^2} \rho^{*}({\bf n},{\bf b}) \,\mathrm{d}^2{\bf b}\, \mathrm{d}^2{\bf n} ,
+$$ 
+where integration is restricted to the surface of the unit sphere $S^2$, and $\mathrm{d}^2{\bf n}=\sin(\theta)\,\mathrm{d}{\theta}\,\mathrm{d}{\phi}$ is the infinitesimal solid angle in spherical coordinates (defined similarly for ${\bf a}$).
+
+!!! warning "Ambiguity"
+
+    Notice that defining CPOs in this way introduces some ambiguity. The contribution to $\rho^{*}({\bf n},{\bf b})$ from two grains with identical mass $m$ and orientation is indistinguishable from a single grain with the same orientation but twice the mass, $2m$. Nonetheless, how well $\rho^{*}({\bf n},{\bf b})$ can represent CPOs should ultimately be judged by whether it contains the information necessary to calculate CPO-induced properties to some desired accuracy (say, bulk mechanical anisotropy); not by how simplified it is to disregard spatial (topological) grain information etc. 
+
+**Glacier ice**<br>
+In the case of ice, specfab treats for simplicity approximate all monocrystal properties as isotropic in the basal plane (transverse isotropy). 
+This popular approach simplifies the problem significantly: since it does not matter in which directions $b$-axes (crystal $a$-axes) point, it is not needed to keep track of how they are distributed.
+Let therefore $n(\theta,\phi)$ be the corresponding distribution function of grain mass density in the space of possible $n$-axis (crystal $c$-axis) orientations:
+$$ 
+n(\theta,\phi) = \frac{\int_{S^2} \rho^{*}({\bf n},{\bf b})\,\mathrm{d}^2{\bf b}}{\rho} ,
+$$
+which is nothing but the normalized marginal distribution of ${\bf n}$.
+
+**Olivine**<br>
+Specfab represents more complicated minerals like olivine by, in addition, also tracking the marginal distribution of slip directions:
+$$ 
+b(\theta,\phi) = \frac{\int_{S^2} \rho^{*}({\bf n},{\bf b})\,\mathrm{d}^2{\bf n}}{\rho} .
+$$
+When needed, the joint distribution function $\rho^{*}({\bf n},{\bf b})$ is the back-constructed from its marginal distributions following the identity for conditional probability density functions [and some assumptions](https://doi.org/10.1029/2024GC011831). 
+
+<!--
 
 The orientation distribution function (ODF) of a given slip-system axis (crystallographic axis) $f\in \lbrace n,b\rbrace$ is defined as the normalized distribution
 
@@ -45,6 +77,8 @@ The same goes for $b(\theta,\phi)$.
 
 From specfab's point-of-view, the difference is a matter of normalization: since the models of [CPO evolution](cpo-dynamics-tranisotropic.md) (lattice rotation, DDRX, CDRX) conserve the normalization, the two views are effectively the same, not least because CPO-derived quantities depend on the normalized distributions (which are identical).
 The mass-density-fraction interpretation rests, however, on stronger physical grounds as mass is conserved but grain numbers are not.
+
+-->
 
 
 ## Harmonic expansion

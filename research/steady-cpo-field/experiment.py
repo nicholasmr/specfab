@@ -18,6 +18,9 @@ import matplotlib.tri as tri
 import specfabpy.fenics.tools as sffenicstools
 from specfabpy.fenics.ice import IceFabric
 
+from specfabpy import plotting as sfplt
+FS = sfplt.setfont_tex(fontsize=11)
+
 from tabulate import tabulate
 
 

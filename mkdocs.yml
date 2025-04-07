@@ -24,7 +24,6 @@ nav:
         - Deformation modes: deformation-modes.md
     - 'Application gallery': 
         - Radar-derived physical properties: radar-derived-PP.md
-        - Steady-state CPO field: steady-cpo-solver.md
         - Lagrangian parcel integrator: Lagrangian-parcel-integrator.md
         - FEM integration: FEM-integration.md
 

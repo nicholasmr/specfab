@@ -3,11 +3,12 @@
 
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/plastic-spin.png){: style="width:380px"}
 
-In bulk simple shear, the dominant slip-system orientation of grains tends to align with the bulk shear-plane system. 
-Thus, if the two are perfectly aligned, the slip-system orientation should be unaffected by continued shearing (i.e. be in steady state).
+When subject to simple shear, the orientation of easy slip systems in polycrystalline materials like ice or olivine tend towards aligning with the bulk shear-plane system. 
+That is, the $n$-axis ($c$-axis in ice) tends towards to bulk shear plane normal, and the $b$-axis ($a$-axis in ice) towards to bulk shear direction.
+Thus, if grains are perfectly aligned with the bulk shear system, their orientation should be unaffected by any further shearing, but be in steady state.
 Clearly, slip systems do therefore not simply co-rotate with the bulk continuum spin ($\bf W$) like passive material line elements embedded in a flow field, i.e. 
 ${\bf \dot{n}} \neq {\bf W} \cdot {\bf n}$.
-Rather, slip systems must be subject to an additional contribution &mdash; a plastic spin ${\bf W}_\mathrm{p}$ &mdash; such that the bulk spin is exactly counteracted to achieve steady state:
+Rather, slip systems must be subject to an additional contribution &mdash; a plastic spin ${\bf W}_\mathrm{p}$ &mdash; such that the bulk spin is exactly counteracted to achieve steady state if favourably aligned:
 
 $$
 {\bf \dot{n}} = ({\bf W} + {\bf W}_{\mathrm{p}}) \cdot {\bf n} = {\bf 0} \quad\text{for ${\bf b}$&ndash;${\bf n}$ shear}.

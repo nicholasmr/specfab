@@ -19,7 +19,7 @@ for a stress state aligned with $({\bf e}_i, {\bf e}_j)$:
 $$
 {\bf S}({\bf e}_i, {\bf e}_j) = \tau_0
 \begin{cases}
-    {\bf I} - 3{\bf e}_i \otimes {\bf e}_i \;\;\quad\quad\text{if}\quad i=j \\
+    {\bf I}/3 - {\bf e}_i \otimes {\bf e}_i \;\;\quad\quad\text{if}\quad i=j \\
     {\bf e}_i \otimes {\bf e}_j + {\bf e}_j \otimes {\bf e}_i \quad\text{if}\quad i\neq j \\
 \end{cases}
 .
@@ -165,12 +165,19 @@ Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # Eij=(E11,E2
     Clearly, there is a tradeoff between how shear enhanced ($E_{mt}$) and how hard for axial compression ($E_{mm}$) the model allows a unidirectional CPO to be.
     
 
+<!--
 !!! tip "Evolving CPO"
 
     The below animation shows the directional enhancement factors for a CPO evolving under [uniaxial compression](deformation-modes.md) along ${\hat {\bf z}}$ when subject to [lattice rotation](cpo-dynamics-tranisotropic.md).
     Enhancement factors are calculated w.r.t. the spherical coordinate basis vectors $({\bf e}_1, {\bf e}_2, {\bf e}_3) = ({\hat{\bf r}},{\hat{\boldsymbol \theta}},{\hat{\boldsymbol \phi}})$.
 
     ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/S2-maps/S2-Eij.gif){: style="width:660px"}
+-->
+
+<!--
+### Azuma&mdash;Placidi method (CAFFE) 
+-->
+
 
 ### Orthotropic grains
 

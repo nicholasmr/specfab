@@ -78,9 +78,24 @@ In this case, $\Delta \lambda = 0$ represents a perfect single-maximum along ${\
 If $\langle c_i c_j \rangle$ can be inferred from radar sounding following the above method, so can the bulk strain-rate enhancement factors, $E_{ij}$, in the same eigenframe (i.e. [eigenenhancements](enhancements-strainrate.md)).
 
 The eigenenhancements depend, however, also on the fourth-order structure tensor, $\langle c_i c_j c_k c_l \rangle$, but the bulk permittivity $\epsilon_{ij}$ is insensitive to $\langle c_i c_j c_k c_l \rangle$.
-To overcome this, a simple empirical correlation is adopted that allows determining $\langle c_i c_j c_k c_l \rangle$ given $\langle c_i c_j\rangle$ if the CPO is approximately rotationally symmetric.
+To overcome this, two approaches can be taken:
 
-### Correlation between $\langle c_i c_j c_k c_l \rangle$ and $\langle c_i c_j\rangle$
+* Use the [IBOF closure approximation of Elmer/Ice](https://doi.org/10.1016/j.jnnfm.2005.11.005):
+```python
+import numpy as np
+from specfabpy import specfab as sf
+lm, nlm_len = sf.init(4) # L=4 is sufficient here
+
+### Determine <c_i c_j> from radar-derived Delta lambda
+l1 = 0   # lambda_1 = 0 (Gerber's approximation)
+dl = 0.5 # Delta lambda = lambda_2 - lambda_1
+a2 = np.diag([l1, l1+dl, 1-dl-2*l1]) # second-order structure tensor, <c_i c_j>, in eigenframe
+a4 = sf.a4_IBOF(a2) # Elmer/Ice IBOF closure approximation
+```
+
+* Use an empirical correlation for determining $\langle c_i c_j c_k c_l \rangle$ given $\langle c_i c_j\rangle$ if the CPO is approximately rotationally symmetric.
+
+### Emperical correlation between $\langle c_i c_j c_k c_l \rangle$ and $\langle c_i c_j\rangle$
 
 If the CPO symmetry axis is rotated into the vertical direction, $\langle c_i c_j\rangle$ depends only on the normalized [spectral component](cpo-representation.md) $\hat{n}_2^0 = n_2^0/n_0^0:$
 

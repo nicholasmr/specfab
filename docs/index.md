@@ -1,6 +1,6 @@
 # specfab documentation
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/logo-square.jpg){: style="width:300px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/logo/logo.png){: style="width:220px"}
 
 Spectral CPO model of polycrystalline materials that can:
 

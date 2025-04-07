@@ -99,7 +99,7 @@ print('a6 is: ', a6)
 ## Construct from measurements
 
 The spectral expansion coefficients of any CPO may be determined from discrete measurements of crystallographic axes.
-This requires constructing the corresponding structure tensors (for each crystallographic axis), from which the expansion coefficients may be derived.
+This requires constructing the corresponding structure tensors (of each crystallographic axis), from which the expansion coefficients may be derived:
 
 ```python
 import numpy as np
