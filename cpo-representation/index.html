@@ -48,7 +48,11 @@
               <ul class="current">
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Representation</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#definitions">Definitions</a>
+    <li class="toctree-l2"><a class="reference internal" href="#background">Background</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#mass-or-number-density-distributions">Mass or number density distributions?</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#harmonic-expansion">Harmonic expansion</a>
         <ul>
@@ -195,10 +199,10 @@ Supported grain symmetry groups are:</p>
 </table>
 <p>Note that <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span> represent the distributions of particular crystallographic axes (<span class="arithmatex">\({\bf m}'_i\)</span>) depending on fabric type (A&mdash;E type).</p>
 </div>
-<h2 id="definitions">Definitions</h2>
+<h2 id="background">Background</h2>
 <p>CPOs of ice and olivine are here defined as the size and orientation distribution of grains, without any reference to grain topology, grain shape, or the spatial arrangement of grains. 
 In the general-most case, this means statistically describing the directions in which grain slip-plane normal and slip direction (<span class="arithmatex">\(n\)</span>- and <span class="arithmatex">\(b\)</span>-axes) are pointing while also taking into account how massive each grain is. </p>
-<p>The <em>mass-density orientation distribution function</em> <span class="arithmatex">\(\rho^{*}({\bf n},{\bf b})\)</span> describes how grain mass is distributed in the space of possible grain orientations, where <span class="arithmatex">\({\bf n}\)</span> and <span class="arithmatex">\({\bf b}\)</span> are arbitrary <span class="arithmatex">\(n\)</span>- and <span class="arithmatex">\(b\)</span>-axes (unit vectors). Since <span class="arithmatex">\(\rho^{*}\)</span> is taken to be normalized by the polycrystal volume, integrating <span class="arithmatex">\(\rho^{*}\)</span> over all possible grain orientations recovers the mass density of the polycrystal (e.g. <span class="arithmatex">\(\rho=917\)</span> kg/m<span class="arithmatex">\(^3\)</span> for ice):
+<p>The <em>mass-density orientation distribution function</em> <span class="arithmatex">\(\rho^{*}({\bf n},{\bf b})\)</span> describes how grain mass is distributed in the space of possible grain orientations (<a href="https://royalsocietypublishing.org/doi/abs/10.1098/rspa.2005.1610">Faria, 2006</a>), where <span class="arithmatex">\({\bf n}\)</span> and <span class="arithmatex">\({\bf b}\)</span> are arbitrary <span class="arithmatex">\(n\)</span>- and <span class="arithmatex">\(b\)</span>-axes (unit vectors). Since <span class="arithmatex">\(\rho^{*}\)</span> is taken to be normalized by the polycrystal volume, integrating <span class="arithmatex">\(\rho^{*}\)</span> over all possible grain orientations recovers the mass density of the polycrystal (e.g. <span class="arithmatex">\(\rho=917\)</span> kg/m<span class="arithmatex">\(^3\)</span> for ice):
 $$ 
 \rho = \int_{S^2} \int_{S^2} \rho^{*}({\bf n},{\bf b}) \,\mathrm{d}^2{\bf b}\, \mathrm{d}^2{\bf n} ,
 $$ 
@@ -221,6 +225,12 @@ $$
 b(\theta,\phi) = \frac{\int_{S^2} \rho^{*}({\bf n},{\bf b})\,\mathrm{d}^2{\bf n}}{\rho} .
 $$
 When needed, the joint distribution function <span class="arithmatex">\(\rho^{*}({\bf n},{\bf b})\)</span> is the back-constructed from its marginal distributions following the identity for conditional probability density functions <a href="https://doi.org/10.1029/2024GC011831">and some assumptions</a>. </p>
+<h3 id="mass-or-number-density-distributions">Mass or number density distributions?</h3>
+<p>The normalized distributions <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span> are typically referred to as the Mass Orientation Distribution Functions (<strong>MODFs</strong>) or the Orientation Mass Distributions (<strong>OMD</strong>).</p>
+<p>In the literature, number density distributions, rather than mass density, frequently appear. 
+In this case, <span class="arithmatex">\(n(\theta,\phi)/N\)</span> and <span class="arithmatex">\(b(\theta,\phi)/N\)</span> are understood as the normalized distributions of slip-plane normals and slip directions, respectively, where <span class="arithmatex">\(N = \int_{S^2} n(\theta,\phi) \,\mathrm{d}^2{\bf n}\)</span> is the total number of grains. 
+In specfab's representation of <a href="../cpo-dynamics-tranisotropic/">crystal processes</a> (lattice rotation, DDRX, CDRX) the normalization is conserved and the two views give, in effect, the same result (not least because CPO-derived quantities depend on the normalized distributions, which are identical). 
+The mass-density-fraction interpretation rests, however, on stronger physical grounds as mass is conserved whereas grain numbers are not.</p>
 <!--
 
 The orientation distribution function (ODF) of a given slip-system axis (crystallographic axis) $f\in \lbrace n,b\rbrace$ is defined as the normalized distribution
