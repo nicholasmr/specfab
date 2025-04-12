@@ -13,6 +13,7 @@ else:
           author_email="rathmann@nbi.ku.dk",
           description="specfab Python module",
           url="https://github.com/nicholasmr/specfab",
+          install_requires=["scipy","cmasher","cartopy"],
           packages=['.'],
           package_data={
                 '': [

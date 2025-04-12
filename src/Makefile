@@ -1,4 +1,4 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2024
+# N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-
 
 ### Compiler
 
@@ -58,39 +58,49 @@ ELMERS=$(ELMERSRCS:.f90=)
 OBJALL=$(SPECFAB).o $(OBJCORE) $(OBJM77)
 SRCALL=$(SPECFAB).f90 $(SRCCORE) $(SRCM77)
 
-### specfabpy Python versions
+### Python versions supported
 
 #PYVERS=3.6 3.7 3.8 3.9 3.10 3.11
 PYVERS=3
 
-########################################
+#---------------------------
 
-### Make rules
+all: specfabpy
 
+# Linux and Mac
+install: specfabpy
+	python3 setup.py install --user
+	# alternative on mac, run: pip3 install .
+
+# Firedrake/icepack docker enviroment
+icepack: specfabpy
+	pip3 install cartopy cmasher setuptools==61
+	#pip3 install . 
+	python3 setup.py install
+	
 specfabpy: $(SPECFAB).o
 	for pyver in $(PYVERS); do \
 		echo "*** Making specfabpy for python$$pyver"; \
 		rm -f specfabpy.pyf; \
 		python$$pyver -m numpy.f2py --no-lower -m specfabpy -h specfabpy.pyf specfabpy.f90 $(VERBOSE_F2PY); \
-		python$$pyver -m numpy.f2py -lm -llapack -lblas -I. $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=medium" $(VERBOSE_F2PY); \
+		python$$pyver -m numpy.f2py -lm -llapack -lblas -I. $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=small" $(VERBOSE_F2PY); \
 	done
 	@echo "\n*** Moving python *.so modules to src/$(PATHSPECFABPY)"
 	@mv -f specfabpy.cpython* $(PATHSPECFABPY)/
+	
+clear:
+	rm -f $(PATHRHEOTEST)/rheology-test-orthotropic $(PATHRHEOTEST)/rheology-test-transverselyisotropic
+	rm -f $(PATHFABEVO)/run-fabric-evolution-latrot $(PATHFABEVO)/run-fabric-evolution-ddrx 
+	rm -f $(SPECFAB).o $(SPECFAB).mod *.so $(PATHSPECFABPY)/*.so
+	rm -f $(LAMBDASOLVER).o $(LAMBDASOLVER).mod $(OBJM77) $(PATHM77)/test $(FRAMES).o
 
-python: specfabpy
-	python3 setup.py install --user
+clean: clear
+	rm -f *.o *.mod *.so
 
-# Build and install specfabpy for firedrake/icepack docker enviroment
-# @TODO: prepend all "pip install" dependencies (cartopy, ....)
-icepack: specfabpy
-#	pip install cartopy cmasher setuptools==61
-#	#pip install . # 
-	python3 setup.py install
-
-#fabric-evolution-demo: $(SPECFAB).o
-#	$(COMPILER) $(PATHFABEVO)/run-fabric-evolution-latrot.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHFABEVO)/run-fabric-evolution-latrot 
-#	$(COMPILER) $(PATHFABEVO)/run-fabric-evolution-ddrx.f90   $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHFABEVO)/run-fabric-evolution-ddrx
-#	@mkdir -p $(PATHFABEVO)/solutions
+# old, not used
+#all: $(SPECFAB).o lib$(SPECFAB).so
+	
+#---------------------------
 
 constitutive-tests: $(SPECFAB).o
 	$(COMPILER) $(PATHRHEOTEST)/rheology-test-orthotropic.f90             $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHRHEOTEST)/rheology-test-orthotropic
@@ -102,7 +112,7 @@ aux-tests: $(SPECFAB).o
 	$(COMPILER) $(PATHTEST)/reduced-form/reduced-form.f90              $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHTEST)/reduced-form/reduced-form
 	$(COMPILER) $(PATHTEST)/rotate-Wigner-D/discrete-rotation-test.f90 $(OBJALL) $(OPTS) $(OPTSNETCDF) -o $(PATHTEST)/rotate-Wigner-D/discrete-rotation-test
 
-#-------------------
+#---------------------------
 
 lib$(SPECFAB).so: $(SRCALL) $(OBJALL)
 	$(COMPILER) $(OPTS) -shared $(SRCALL) -o $@
@@ -113,7 +123,7 @@ $(SPECFAB).o: $(SPECFAB).f90 $(OBJCORE) elmer/specfab_elmer.f90 josef/specfab_jo
 $(DEPLESS): %.o: %.f90
 	$(COMPILER) $(OPTS) -c $<
 	
-#-------------------
+#---------------------------
 
 $(RHEOLOGIES).o: $(RHEOLOGIES).f90 $(HEADER).o $(TENPROD).o $(LAMBDASOLVER).o
 	$(COMPILER) $(OPTS) -c $<
@@ -154,18 +164,7 @@ $(LAMBDASOLVER).o:
 	$(COMPILER) $(OPTS) -c $(LAMBDASOLVER).f90
 	$(COMPILER) $(OPTS) $(PATHM77)/test.f90 $(LAMBDASOLVER).o $(OBJM77) -o $(PATHM77)/test
 
-#-------------------
-
-clear:
-	rm -f $(PATHRHEOTEST)/rheology-test-orthotropic $(PATHRHEOTEST)/rheology-test-transverselyisotropic
-	rm -f $(PATHFABEVO)/run-fabric-evolution-latrot $(PATHFABEVO)/run-fabric-evolution-ddrx 
-	rm -f $(SPECFAB).o $(SPECFAB).mod *.so $(PATHSPECFABPY)/*.so
-	rm -f $(LAMBDASOLVER).o $(LAMBDASOLVER).mod $(OBJM77) $(PATHM77)/test $(FRAMES).o
-
-clean: clear
-	rm -f *.o *.mod *.so
-
-all: $(SPECFAB).o lib$(SPECFAB).so
+#---------------------------
 
 ### Elmer, JOSEF, ...
 
