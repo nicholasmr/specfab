@@ -5,14 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Plotting - specfab documentation</title>
+    <title>Plotting CPOs - specfab documentation</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Plotting";
+        var mkdocs_page_name = "Plotting CPOs";
         var mkdocs_page_input_path = "plotting.md";
         var mkdocs_page_url = null;
       </script>
@@ -56,8 +56,6 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-idealized/">Idealized states</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotation</a>
-                  </li>
               </ul>
               <p class="caption"><span class="caption-text">🌀 CPO Dynamics</span></p>
               <ul>
@@ -87,19 +85,6 @@
                   <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Wave propagation</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🧩 Miscellaneous</span></p>
-              <ul class="current">
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Plotting</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#cpo">CPO</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#parcel-deformation">Parcel deformation</a>
-    </li>
-    </ul>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../deformation-modes/">Deformation modes</a>
-                  </li>
-              </ul>
               <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
@@ -107,6 +92,21 @@
                   <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel-integrator/">Lagrangian parcel integrator</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">FEM integration</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">🧩 Miscellaneous</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../deformation-modes/">Deformation kinematics</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Plotting CPOs</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#cpo">CPO</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#parcel-deformation">Parcel deformation</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotating CPOs</a>
                   </li>
               </ul>
       </div>
@@ -124,7 +124,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
           <li>🧩 Miscellaneous &raquo;</li>
-      <li>Plotting</li>
+      <li>Plotting CPOs</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -199,8 +199,8 @@ plt.savefig('deformed-parcel.png', dpi=175, pad_inches=0.1, bbox_inches='tight')
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../wavepropagation-electromagnetic/" class="btn btn-neutral float-left" title="Wave propagation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../deformation-modes/" class="btn btn-neutral float-right" title="Deformation modes">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../deformation-modes/" class="btn btn-neutral float-left" title="Deformation kinematics"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../cpo-rotation/" class="btn btn-neutral float-right" title="Rotating CPOs">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -223,10 +223,10 @@ plt.savefig('deformed-parcel.png', dpi=175, pad_inches=0.1, bbox_inches='tight')
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../wavepropagation-electromagnetic/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../deformation-modes/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../deformation-modes/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../cpo-rotation/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
