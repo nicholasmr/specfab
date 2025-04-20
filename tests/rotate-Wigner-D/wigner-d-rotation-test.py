@@ -5,7 +5,7 @@ import numpy as np
 
 from specfabpy import specfab as sf
 from specfabpy import plotting as sfplt
-FS = sfplt.setfont_tex()
+FS = sfplt.setfont_tex(fontsize=12)
 
 ### Rotate ODF for L<=12
 
@@ -44,7 +44,7 @@ print('Im(nlm[2,:I]) = ', np.imag(nlm[2,:I]))
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-dpi, scale = 125, 2.0
+dpi, scale = 125, 1.5
 fig = plt.figure(figsize=(4*scale,1.4*scale))
 gs = gridspec.GridSpec(1,4)
 a = 0.03
@@ -60,25 +60,27 @@ ax1.set_global(); ax2.set_global(); ax3.set_global(); ax4.set_global()
 
 ### Plot
 
-sfplt.plotODF(nlm[0,:], lm, ax1)
+kw = dict(cblabel='ODF', lvlset=(np.linspace(0,0.4,9), lambda x,p:'%.1f'%x))
+
+sfplt.plotODF(nlm[0,:], lm, ax1, **kw)
 sfplt.plotcoordaxes(ax1, geo, axislabels='vuxi')
 ax1.set_title(r'\texttt{nlm}', fontsize=FS)
 
-sfplt.plotODF(nlm[1,:], lm, ax2)
+sfplt.plotODF(nlm[1,:], lm, ax2, **kw)
 sfplt.plotcoordaxes(ax2, geo, axislabels='vuxi')
 ax2.set_title(r'\texttt{nlm\_rot1}', fontsize=FS)
 
-sfplt.plotODF(nlm[2,:], lm, ax3)
+sfplt.plotODF(nlm[2,:], lm, ax3, **kw)
 sfplt.plotcoordaxes(ax3, geo, axislabels='vuxi')
 ax3.set_title(r'\texttt{nlm\_rot2}', fontsize=FS)
 
-sfplt.plotODF(nlm[3,:], lm, ax4)
+sfplt.plotODF(nlm[3,:], lm, ax4, **kw)
 sfplt.plotcoordaxes(ax4, geo, axislabels='vuxi')
 ax4.set_title(r'\texttt{nlm\_rot3}', fontsize=FS)
 
 # Save figure
 fout = 'wigner-d-rotation-test.png'
 print('Saving %s'%(fout))
-plt.savefig(fout, dpi=dpi)
+plt.savefig(fout, dpi=dpi, pad_inches=0.05, bbox_inches='tight', transparent=True)
 plt.close()
 
