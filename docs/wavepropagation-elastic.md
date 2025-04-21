@@ -1,15 +1,12 @@
 # Elastic wave propagation
 
-## Problem
-
-We seek plane wave solutions of the Cauchy-Navier equation of motion
+Plane waves are a well-known solution to the Cauchy-Navier equation of motion
 
 $$
 \nabla\cdot {\boldsymbol \sigma} = \rho \frac{\partial^2 {\bf d}}{\partial t^2},
 $$
 
 where ${\boldsymbol \sigma}$ is the bulk stress tensor, ${\bf d}$ is the displacement field, and $\rho$ the mass density.
-
 Substituting ${\bf d}$ for a plane wave solution, ${\bf d} = {\bf d}_0 \exp[i({\bf k}\cdot {\bf x} - \omega t)]$, the problem reduces to
 
 $$
@@ -17,7 +14,6 @@ $$
 $$
 
 where $\hat{{\bf Q}}(\hat{{\bf k}})$ is the normalized [acoustic tensor](https://www.brown.edu/Departments/Engineering/Courses/En221/Notes/Elasticity/Elasticity.htm) that varies depending on the bulk [constitutive equation](constitutive-elastic.md) substituted for ${\boldsymbol \sigma}({\bf d})$.
-
 The above equation requires 
 
 $$

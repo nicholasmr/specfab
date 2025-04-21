@@ -84,7 +84,7 @@ The mass-density-fraction interpretation rests, however, on stronger physical gr
 
 ## Harmonic expansion
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/harmonic-expansion/harmonic-expansion.png#center){: style="width:750px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/harmonic-expansion/harmonic-expansion.png#center){: style="width:630px"}
 
 The distributions $n(\theta,\phi)$ and $b(\theta,\phi)$ are represented as spherical harmonic expansion series:
 
