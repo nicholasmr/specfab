@@ -5,14 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Wave propagation - specfab documentation</title>
+    <title>Electromagnetic - specfab documentation</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Wave propagation";
+        var mkdocs_page_name = "Electromagnetic";
         var mkdocs_page_input_path = "wavepropagation-electromagnetic.md";
         var mkdocs_page_url = null;
       </script>
@@ -41,47 +41,50 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="..">About</a>
+                <li class="toctree-l1"><a class="reference internal" href="..">📖 About</a>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../install/">Install</a>
+                <li class="toctree-l1"><a class="reference internal" href="../install/">📦 Install</a>
                 </li>
               </ul>
-              <p class="caption"><span class="caption-text">🧊 CPO representation</span></p>
+              <p class="caption"><span class="caption-text">💎 CPO representation</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-representation/">Representation</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-structuretensors/">Structure tensors</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-idealized/">Idealized states</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-idealized/">Idealized CPO states</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🌀 CPO Dynamics</span></p>
+              <p class="caption"><span class="caption-text">⚙️ CPO Dynamics</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-tranisotropic/">Transversely isotropic grains</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-matrix-model/">Matrix model</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-orthotropic/">Orthotropic grains</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../lattice-rotation/">Lattice rotation</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../plastic-spin/">Plastic spin</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../recrystallization-DDRX/">Discontinous DRX</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../recrystallization-CDRX/">Continous DRX</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-regularization/">Regularization</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🌊 Viscous Anisotropy</span></p>
+              <p class="caption"><span class="caption-text">🌀 Viscous Anisotropy</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain-rate enhancements</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain rate enhancement</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-ice/">Glacier ice</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-olivine/">Olivine</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🧱 Elastic Anisotropy</span></p>
-              <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-elastic/">Wave propagation</a>
-                  </li>
-              </ul>
-              <p class="caption"><span class="caption-text">📡 Electromagnetic Anisotropy</span></p>
+              <p class="caption"><span class="caption-text">🌊 Wave propagation</span></p>
               <ul class="current">
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Wave propagation</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-elastic/">Elastic</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Electromagnetic</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#problem">Problem</a>
-    </li>
     <li class="toctree-l2"><a class="reference internal" href="#transversely-isotropic-grains">Transversely isotropic grains</a>
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#example-for-glacier-ice">Example for glacier ice</a>
@@ -95,18 +98,16 @@
               </ul>
               <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
               <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel/">Lagrangian parcel model</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel-integrator/">Lagrangian parcel integrator</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">FEM integration</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">Finite element integration</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🧩 Miscellaneous</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../deformation-modes/">Deformation kinematics</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../plotting/">Plotting CPOs</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../deformation-kinematics/">Deformation kinematics</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotating CPOs</a>
                   </li>
@@ -129,8 +130,8 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
-          <li>📡 Electromagnetic Anisotropy &raquo;</li>
-      <li>Wave propagation</li>
+          <li>🌊 Wave propagation &raquo;</li>
+      <li>Electromagnetic</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -140,19 +141,18 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="electromagnetic-wave-propagation">Electromagnetic wave propagation</h1>
-<h2 id="problem">Problem</h2>
-<p>We seek plane wave solutions to Maxwell's equations in a non-conducting, source-free, anisotropic linear dielectric medium</p>
+<p>Plane waves are a well-known solution to Maxwell's equations in a non-conducting, source-free, anisotropic linear dielectric medium</p>
 <div class="arithmatex">\[
 \nabla \times \nabla \times {\bf E} = -\mu {\boldsymbol \epsilon} \frac{\partial^2 {\bf E}}{\partial t^2},
 \]</div>
 <p>where <span class="arithmatex">\({\bf E}\)</span> is the electric field, <span class="arithmatex">\({\boldsymbol \epsilon}\)</span> is the bulk dielectric permittivity tensor, and <span class="arithmatex">\(\mu\)</span> the bulk isotropic permeability of the medium.
-Note this can also be written as <span class="arithmatex">\(\nabla^2 {\bf E} = \mu {\boldsymbol \epsilon} {\partial^2 {\bf E}}/{\partial t^2}\)</span>.</p>
-<p>Substituting <span class="arithmatex">\({\bf E}\)</span> for a plane wave solution, <span class="arithmatex">\({\bf E} = {\bf E}_0 \exp[i({\bf k}\cdot {\bf x} - \omega t)]\)</span>, the problem reduces to</p>
+Note this can also be written as <span class="arithmatex">\(\nabla^2 {\bf E} = \mu {\boldsymbol \epsilon} {\partial^2 {\bf E}}/{\partial t^2}\)</span>.
+Substituting <span class="arithmatex">\({\bf E}\)</span> for a plane wave solution, <span class="arithmatex">\({\bf E} = {\bf E}_0 \exp[i({\bf k}\cdot {\bf x} - \omega t)]\)</span>, the problem reduces to</p>
 <div class="arithmatex">\[
 ({\bf K} + \omega^2 \mu {\boldsymbol \epsilon}) {\bf E} = {\bf 0},
 \]</div>
-<p>where <span class="arithmatex">\({\bf K} = {\bf k}\times{\bf k} \times\)</span> is the <a href="https://en.wikipedia.org/wiki/Cross_product#Alternative_ways_to_compute">matrix representation</a> of the twice-applied cross product.</p>
-<p>The above equation requires </p>
+<p>where <span class="arithmatex">\({\bf K} = {\bf k}\times{\bf k} \times\)</span> is the <a href="https://en.wikipedia.org/wiki/Cross_product#Alternative_ways_to_compute">matrix representation</a> of the twice-applied cross product.
+The above equation requires </p>
 <div class="arithmatex">\[
 \det( {\bf K} + \omega^2 \mu {\boldsymbol \epsilon} ) = 0
 .
@@ -223,17 +223,17 @@ Vi = sf.Vi_electromagnetic_tranisotropic(nlm, epsr_m, epsr_t, mur, theta,phi) # 
 </code></pre>
 <div class="admonition tip">
 <p class="admonition-title">Evolving CPO</p>
-<p>The below animation shows directional S-wave velocities for a CPO evolving under <a href="../deformation-modes/"><span class="arithmatex">\({\hat {\bf x}}\)</span>&mdash;<span class="arithmatex">\({\hat {\bf z}}\)</span> confined compression</a>, relative to an isotropic CPO, when subject to <a href="../cpo-dynamics-tranisotropic/">lattice rotation</a>.</p>
+<p>The below animation shows directional S-wave velocities for a CPO evolving under <a href="../deformation-kinematics/"><span class="arithmatex">\({\hat {\bf x}}\)</span>&mdash;<span class="arithmatex">\({\hat {\bf z}}\)</span> confined compression</a>, relative to an isotropic CPO, when subject to <a href="../lattice-rotation/">lattice rotation</a>.</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/S2-maps/S2-vi-EM.gif" style="width:460px" /></p>
 </div>
 <h2 id="orthotropic-grains">Orthotropic grains</h2>
-<p>Not yet supported.</p>
+<p>🚧 <em>Not yet supported.</em></p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../wavepropagation-elastic/" class="btn btn-neutral float-left" title="Wave propagation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../radar-derived-PP/" class="btn btn-neutral float-right" title="Radar-derived physical properties">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../wavepropagation-elastic/" class="btn btn-neutral float-left" title="Elastic"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../Lagrangian-parcel/" class="btn btn-neutral float-right" title="Lagrangian parcel model">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -259,7 +259,7 @@ Vi = sf.Vi_electromagnetic_tranisotropic(nlm, epsr_m, epsr_t, mur, theta,phi) # 
       <span><a href="../wavepropagation-elastic/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../radar-derived-PP/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../Lagrangian-parcel/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

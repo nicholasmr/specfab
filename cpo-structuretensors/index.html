@@ -41,14 +41,14 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="..">About</a>
+                <li class="toctree-l1"><a class="reference internal" href="..">📖 About</a>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../install/">Install</a>
+                <li class="toctree-l1"><a class="reference internal" href="../install/">📦 Install</a>
                 </li>
               </ul>
-              <p class="caption"><span class="caption-text">🧊 CPO representation</span></p>
+              <p class="caption"><span class="caption-text">💎 CPO representation</span></p>
               <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-representation/">Representation</a>
                   </li>
@@ -62,47 +62,50 @@
     </li>
     </ul>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-idealized/">Idealized states</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-idealized/">Idealized CPO states</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🌀 CPO Dynamics</span></p>
+              <p class="caption"><span class="caption-text">⚙️ CPO Dynamics</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-tranisotropic/">Transversely isotropic grains</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-matrix-model/">Matrix model</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-orthotropic/">Orthotropic grains</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../lattice-rotation/">Lattice rotation</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../plastic-spin/">Plastic spin</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../recrystallization-DDRX/">Discontinous DRX</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../recrystallization-CDRX/">Continous DRX</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-regularization/">Regularization</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🌊 Viscous Anisotropy</span></p>
+              <p class="caption"><span class="caption-text">🌀 Viscous Anisotropy</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain-rate enhancements</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain rate enhancement</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-ice/">Glacier ice</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-olivine/">Olivine</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🧱 Elastic Anisotropy</span></p>
+              <p class="caption"><span class="caption-text">🌊 Wave propagation</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-elastic/">Wave propagation</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-elastic/">Elastic</a>
                   </li>
-              </ul>
-              <p class="caption"><span class="caption-text">📡 Electromagnetic Anisotropy</span></p>
-              <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Wave propagation</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Electromagnetic</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
               <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel/">Lagrangian parcel model</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel-integrator/">Lagrangian parcel integrator</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">FEM integration</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">Finite element integration</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🧩 Miscellaneous</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../deformation-modes/">Deformation kinematics</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../plotting/">Plotting CPOs</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../deformation-kinematics/">Deformation kinematics</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotating CPOs</a>
                   </li>
@@ -125,7 +128,7 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
-          <li>🧊 CPO representation &raquo;</li>
+          <li>💎 CPO representation &raquo;</li>
       <li>Structure tensors</li>
     <li class="wy-breadcrumbs-aside">
     </li>
@@ -160,7 +163,7 @@ Posing <span class="arithmatex">\({\bf a}^{(2)}\)</span> in its principal frame<
 \]</div>
 <p>therefore has a similar interpretation as in PCA:
 the first principal component (eigenvector <span class="arithmatex">\({\bf m}_1\)</span>) is the direction that maximizes the variance (eigenvalue <span class="arithmatex">\(\lambda_1\)</span>) of the projected data (red curve), the second component is the direction orthogonal to the first component that maximizes the variance of the projected data, and so on with the third component. </p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/harmonic-expansion/a2.png#center" style="width:750px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/harmonic-expansion/a2.png#center" style="width:600px" /></p>
 <h2 id="convert-to-spectral">Convert to spectral</h2>
 <p>Converting between spectral and tensorial representations is a linear problem in the sense that </p>
 <div class="arithmatex">\[
@@ -238,7 +241,7 @@ that is, <span class="arithmatex">\(l\leq 6\)</span> expansion coefficients as o
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
         <a href="../cpo-representation/" class="btn btn-neutral float-left" title="Representation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../cpo-idealized/" class="btn btn-neutral float-right" title="Idealized states">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../cpo-idealized/" class="btn btn-neutral float-right" title="Idealized CPO states">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>

@@ -41,52 +41,57 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="..">About</a>
+                <li class="toctree-l1"><a class="reference internal" href="..">📖 About</a>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../install/">Install</a>
+                <li class="toctree-l1"><a class="reference internal" href="../install/">📦 Install</a>
                 </li>
               </ul>
-              <p class="caption"><span class="caption-text">🧊 CPO representation</span></p>
+              <p class="caption"><span class="caption-text">💎 CPO representation</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-representation/">Representation</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-structuretensors/">Structure tensors</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-idealized/">Idealized states</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-idealized/">Idealized CPO states</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🌀 CPO Dynamics</span></p>
+              <p class="caption"><span class="caption-text">⚙️ CPO Dynamics</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-tranisotropic/">Transversely isotropic grains</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-matrix-model/">Matrix model</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-orthotropic/">Orthotropic grains</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../lattice-rotation/">Lattice rotation</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../plastic-spin/">Plastic spin</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../recrystallization-DDRX/">Discontinous DRX</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../recrystallization-CDRX/">Continous DRX</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-regularization/">Regularization</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🌊 Viscous Anisotropy</span></p>
+              <p class="caption"><span class="caption-text">🌀 Viscous Anisotropy</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain-rate enhancements</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain rate enhancement</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-ice/">Glacier ice</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-olivine/">Olivine</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🧱 Elastic Anisotropy</span></p>
+              <p class="caption"><span class="caption-text">🌊 Wave propagation</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-elastic/">Wave propagation</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-elastic/">Elastic</a>
                   </li>
-              </ul>
-              <p class="caption"><span class="caption-text">📡 Electromagnetic Anisotropy</span></p>
-              <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Wave propagation</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Electromagnetic</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
               <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel/">Lagrangian parcel model</a>
+                  </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Radar-derived physical properties</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a>
-    </li>
     <li class="toctree-l2"><a class="reference internal" href="#radar-measurements-rightarrow-cpo">Radar measurements \(\rightarrow\) CPO</a>
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#gerbers-approximation">Gerber's approximation</a>
@@ -95,24 +100,20 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#cpo-rightarrow-enhancement-factors">CPO \(\rightarrow\) Enhancement factors</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#emperical-correlation-between-langle-c_i-c_j-c_k-c_l-rangle-and-langle-c_i-c_jrangle">Emperical correlation between \(\langle c_i c_j c_k c_l \rangle\) and \(\langle c_i c_j\rangle\)</a>
+    <li class="toctree-l3"><a class="reference internal" href="#method-1">Method 1:</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#code-example">Code example</a>
+    <li class="toctree-l3"><a class="reference internal" href="#method-2">Method 2</a>
     </li>
         </ul>
     </li>
     </ul>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel-integrator/">Lagrangian parcel integrator</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">FEM integration</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">Finite element integration</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🧩 Miscellaneous</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../deformation-modes/">Deformation kinematics</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../plotting/">Plotting CPOs</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../deformation-kinematics/">Deformation kinematics</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotating CPOs</a>
                   </li>
@@ -146,7 +147,6 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="radar-derived-physical-properties-of-glacier-ice">Radar-derived physical properties of glacier ice</h1>
-<h2 id="introduction">Introduction</h2>
 <p>The dielectric permittivity tensor of a single ice crystal is approximately transversely isotropic w.r.t. the crystal <span class="arithmatex">\(c\)</span>-axis:
 $$
 \epsilon_{ij}' = (2\epsilon_{\perp}' + \epsilon_{\parallel}') \frac{\delta_{ij}}{3}
@@ -199,14 +199,13 @@ It follows that the structure tensor, posed in its eigenframe (<span class="arit
 <p>Since <span class="arithmatex">\(\lambda_1\)</span> is unknown, the problem can be closed by making different assumptions about <span class="arithmatex">\(\lambda_1\)</span> given the local/upstream flow regime, such as proposed by <a href="https://www.nature.com/articles/s41467-023-38139-8">Gerber et al. (2023)</a>.</p>
 <p>Suppose <span class="arithmatex">\(\Delta\lambda\)</span> is measured in region where <span class="arithmatex">\(c\)</span>-axes are, to a good approximation, suspected to be distributed on the <span class="arithmatex">\({\bf m}_2\)</span>&mdash;<span class="arithmatex">\({\bf z}\)</span> plane because the smallest eigenvalue is vanishing, <span class="arithmatex">\(\lambda_1 \rightarrow 0\)</span>.
 In this case, <span class="arithmatex">\(\Delta \lambda = 0\)</span> represents a perfect single-maximum along <span class="arithmatex">\({\bf z}\)</span>, <span class="arithmatex">\(\Delta \lambda = 0.5\)</span> a perfect girdle in the <span class="arithmatex">\({\bf m}_2\)</span>&mdash;<span class="arithmatex">\({\bf z}\)</span> plane, and <span class="arithmatex">\(\Delta \lambda = 1\)</span> a perfect single-maximum along <span class="arithmatex">\({\bf m}_2\)</span>, respectively:</p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/plane-CPOs.png" style="width:650px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/plane-CPOs.png" style="width:600px" /></p>
 <h2 id="cpo-rightarrow-enhancement-factors">CPO <span class="arithmatex">\(\rightarrow\)</span> Enhancement factors</h2>
 <p>If <span class="arithmatex">\(\langle c_i c_j \rangle\)</span> can be inferred from radar sounding following the above method, so can the bulk strain-rate enhancement factors, <span class="arithmatex">\(E_{ij}\)</span>, in the same eigenframe (i.e. <a href="../enhancements-strainrate/">eigenenhancements</a>).</p>
 <p>The eigenenhancements depend, however, also on the fourth-order structure tensor, <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span>, but the bulk permittivity <span class="arithmatex">\(\epsilon_{ij}\)</span> is insensitive to <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span>.
-To overcome this, two approaches can be taken:</p>
-<ul>
-<li>Use the <a href="https://doi.org/10.1016/j.jnnfm.2005.11.005">IBOF closure approximation of Elmer/Ice</a>:</li>
-</ul>
+To overcome this, two approaches can be taken.</p>
+<h3 id="method-1">Method 1:</h3>
+<p>Use the <a href="https://doi.org/10.1016/j.jnnfm.2005.11.005">IBOF closure approximation of Elmer/Ice</a>:</p>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfab as sf
 lm, nlm_len = sf.init(4) # L=4 is sufficient here
@@ -217,10 +216,8 @@ dl = 0.5 # Delta lambda = lambda_2 - lambda_1
 a2 = np.diag([l1, l1+dl, 1-dl-2*l1]) # second-order structure tensor, &lt;c_i c_j&gt;, in eigenframe
 a4 = sf.a4_IBOF(a2) # Elmer/Ice IBOF closure approximation
 </code></pre>
-<ul>
-<li>Use an empirical correlation for determining <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span> given <span class="arithmatex">\(\langle c_i c_j\rangle\)</span> if the CPO is approximately rotationally symmetric.</li>
-</ul>
-<h3 id="emperical-correlation-between-langle-c_i-c_j-c_k-c_l-rangle-and-langle-c_i-c_jrangle">Emperical correlation between <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span> and <span class="arithmatex">\(\langle c_i c_j\rangle\)</span></h3>
+<h3 id="method-2">Method 2</h3>
+<p>Use an empirical correlation for determining <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span> given <span class="arithmatex">\(\langle c_i c_j\rangle\)</span> if the CPO is approximately rotationally symmetric.</p>
 <p>If the CPO symmetry axis is rotated into the vertical direction, <span class="arithmatex">\(\langle c_i c_j\rangle\)</span> depends only on the normalized <a href="../cpo-representation/">spectral component</a> <span class="arithmatex">\(\hat{n}_2^0 = n_2^0/n_0^0:\)</span></p>
 <div class="arithmatex">\[
 \langle c_i c_j\rangle = \frac{\delta_{ij}}{3} +  \frac{2\sqrt{5}}{15} \hat{n}_2^0
@@ -233,10 +230,9 @@ a4 = sf.a4_IBOF(a2) # Elmer/Ice IBOF closure approximation
 \]</div>
 <p>and <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span> only on <span class="arithmatex">\(\hat{n}_2^0\)</span> and <span class="arithmatex">\(\hat{n}_4^0 = n_4^0/n_0^0\)</span> (not shown).
 The figure below shows the empirical correlation between these two components based on ice-core samples.</p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/research/state-space/ice/state-space-empcorr.png" style="width:570px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/research/state-space/ice/state-space-empcorr.png" style="width:540px" /></p>
 <p>Thus, if <span class="arithmatex">\(\hat{n}_2^0\)</span> is extracted from <span class="arithmatex">\(\langle c_i c_j\rangle\)</span> in this frame, <span class="arithmatex">\(\hat{n}_4^0\)</span> can be derived and hence <span class="arithmatex">\(\langle c_i c_j c_k c_l \rangle\)</span> constructed.
 To pose the CPO in the original, unrotated eigenframe (<span class="arithmatex">\({\bf m}_1, {\bf m}_2, {\bf z}\)</span>), the resulting expansion series is finally rotated back, allowing eigenenhancements to easily be calculated using specfab.</p>
-<h3 id="code-example">Code example</h3>
 <p>The following code demonstrates how to take each step with specfab:</p>
 <pre><code class="language-python">import numpy as np
 from scipy.spatial.transform import Rotation
@@ -282,21 +278,15 @@ e1, e2, e3 = m1, m2, z
 Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # (E_{m1,m1},E_{m2,m2},E_{zz},E_{m2,z),E_{m1,z},E_{m1,m2})
 # To calculate bulk enhancement factors w.r.t. other axes of deformation/stress, change (e1,e2,e3) accordingly.
 </code></pre>
-<p>For reference, the below plots show the different CPOs at each step for <span class="arithmatex">\(\Delta\lambda=0.5\)</span> and <span class="arithmatex">\(\Delta\lambda=1\)</span>.</p>
-<div class="admonition info">
-<p class="admonition-title"><span class="arithmatex">\(\Delta\lambda = 0.5\)</span></p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/code-example-output-dl0.5.png" style="width:650px" /></p>
-</div>
-<div class="admonition info">
-<p class="admonition-title"><span class="arithmatex">\(\Delta\lambda = 1.0\)</span></p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/code-example-output-dl1.0.png" style="width:650px" /></p>
-</div>
+<p>For reference, the following plots show the different CPOs at each step for <span class="arithmatex">\(\Delta\lambda=0.5\)</span> and <span class="arithmatex">\(\Delta\lambda=1\)</span>, respectively:</p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/code-example-output-dl0.5.png" style="width:600px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/code-example-output-dl1.0.png" style="width:600px" /></p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../wavepropagation-electromagnetic/" class="btn btn-neutral float-left" title="Wave propagation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../Lagrangian-parcel-integrator/" class="btn btn-neutral float-right" title="Lagrangian parcel integrator">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../Lagrangian-parcel/" class="btn btn-neutral float-left" title="Lagrangian parcel model"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../FEM-integration/" class="btn btn-neutral float-right" title="Finite element integration">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -319,10 +309,10 @@ Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # (E_{m1,m1},
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../wavepropagation-electromagnetic/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../Lagrangian-parcel/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../Lagrangian-parcel-integrator/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../FEM-integration/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

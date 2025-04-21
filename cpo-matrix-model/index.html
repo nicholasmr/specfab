@@ -5,15 +5,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Strain rate enhancement - specfab documentation</title>
+    <title>Matrix model - specfab documentation</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Strain rate enhancement";
-        var mkdocs_page_input_path = "enhancements-strainrate.md";
+        var mkdocs_page_name = "Matrix model";
+        var mkdocs_page_input_path = "cpo-matrix-model.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -58,8 +58,22 @@
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">⚙️ CPO Dynamics</span></p>
-              <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-matrix-model/">Matrix model</a>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Matrix model</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#glacier-ice">Glacier ice</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#validation">Validation</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#olivine">Olivine</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#validation_1">Validation</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../lattice-rotation/">Lattice rotation</a>
                   </li>
@@ -71,20 +85,8 @@
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🌀 Viscous Anisotropy</span></p>
-              <ul class="current">
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Strain rate enhancement</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#eigenenhancements">Eigenenhancements</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#grain-homogenization">Grain homogenization</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#taylorsachs">Taylor&mdash;Sachs</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#azumaplacidi">Azuma&mdash;Placidi</a>
-    </li>
-        </ul>
-    </li>
-    </ul>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain rate enhancement</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-ice/">Glacier ice</a>
                   </li>
@@ -132,8 +134,8 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
-          <li>🌀 Viscous Anisotropy &raquo;</li>
-      <li>Strain rate enhancement</li>
+          <li>⚙️ CPO Dynamics &raquo;</li>
+      <li>Matrix model</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -142,114 +144,101 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="strain-rate-enhancement">Strain rate enhancement</h1>
-<p>Given a bulk anisotropic rheology <span class="arithmatex">\({\bf D}({\bf S})\)</span>, where <span class="arithmatex">\({\bf D}\)</span> and <span class="arithmatex">\({\bf S}\)</span> are the 
-bulk strain-rate and deviatoric stress tensors, respectively, 
-the <em>directional strain-rate enhancement factors</em> <span class="arithmatex">\(E_{ij}\)</span> are defined as the <span class="arithmatex">\(({\bf e}_i, {\bf e}_j)\)</span>-components of <span class="arithmatex">\({\bf D}\)</span> relative to that of the rheology in the limit of an isotropic CPO:</p>
-<div class="arithmatex">\[ 
-E_{ij} = \frac{
-{\bf e}_i \cdot {\bf D}({\bf S}) \cdot {\bf e}_j 
-}{
-{\bf e}_i \cdot {\bf D}_{\mathrm{iso}}({\bf S}) \cdot {\bf e}_j 
-}
-,
- \qquad(1)
-\]</div>
-<p>for a stress state aligned with <span class="arithmatex">\(({\bf e}_i, {\bf e}_j)\)</span>:</p>
-<div class="arithmatex">\[
-{\bf S}({\bf e}_i, {\bf e}_j) = \tau_0
-\begin{cases}
-    {\bf I}/3 - {\bf e}_i \otimes {\bf e}_i \;\;\quad\quad\text{if}\quad i=j \\
-    {\bf e}_i \otimes {\bf e}_j + {\bf e}_j \otimes {\bf e}_i \quad\text{if}\quad i\neq j \\
-\end{cases}
-.
-\]</div>
-<p>In this way:</p>
-<ul>
-<li>
-<p><span class="arithmatex">\({E_{11}}\)</span> is the longitudinal strain-rate enhancement along <span class="arithmatex">\({\bf e}_{1}\)</span> when subject to compression along <span class="arithmatex">\({\bf e}_{1}\)</span></p>
-</li>
-<li>
-<p><span class="arithmatex">\({E_{12}}\)</span> is the <span class="arithmatex">\({\bf e}_{1}\)</span>&mdash;<span class="arithmatex">\({\bf e}_{2}\)</span> shear strain-rate enhancement when subject to shear in the <span class="arithmatex">\({\bf e}_{1}\)</span>&mdash;<span class="arithmatex">\({\bf e}_{2}\)</span> plane</p>
-</li>
-</ul>
-<p>and so on.</p>
-<div class="admonition note">
-<p class="admonition-title">Hard or soft</p>
-<p><span class="arithmatex">\(E_{ij}&gt;1\)</span> implies the material response is <em>softened</em> due to fabric (compared to an isotropic CPO), whereas <span class="arithmatex">\(E_{ij}&lt;1\)</span> implies <em>hardening</em>.</p>
+                <h1 id="matrix-model-of-cpo-dynamics">Matrix model of CPO dynamics</h1>
+<p>In specfab, CPO evolution is modelled as a matrix problem involving the <a href="../cpo-representation/">spectral state vectors</a> of <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span>. </p>
+<div class="admonition warning">
+<p class="admonition-title">Mass or number density distributions?</p>
+<p>Recall that <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span> may equally be understood as the <a href="../cpo-representation/">mass density fraction</a> of grains with a given slip-plane normal and slip direction, respectively.</p>
 </div>
-<h2 id="eigenenhancements">Eigenenhancements</h2>
-<p><em>Eigenenhancements</em> are defined as the enhancement factors w.r.t. the CPO symmetry axes (<span class="arithmatex">\({\bf m}_i\)</span>): </p>
-<div class="arithmatex">\[{\bf e}_i = {\bf m}_i .\]</div>
-<p>These are the enhancements factors needed to specify the viscous anisotropy in <a href="../constitutive-viscoplastic/">bulk rheologies</a>:</p>
+<hr />
+<h2 id="glacier-ice">Glacier ice</h2>
 <table>
 <thead>
 <tr>
-<th align="center">Transversely isotropic</th>
-<th align="center">Orthotropic</th>
+<th align="left"><center>Polycrystalline ice</center></th>
+<th align="left"><center>Ensemble of slip elements</center></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous.png" style="width:260px" /></td>
-<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous.png" style="width:350px" /></td>
+<td align="left"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png" style="width:180px" /></td>
+<td align="left"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/polycrystal-disk.png" style="width:180px" /></td>
 </tr>
 </tbody>
 </table>
-<h2 id="grain-homogenization">Grain homogenization</h2>
-<h3 id="taylorsachs">Taylor&mdash;Sachs</h3>
-<p>Calculating <span class="arithmatex">\(E_{ij}\)</span> using (1) for a given CPO requires an <em>effective</em> rheology that takes the microstructure into account.</p>
-<p>In the simplest case, polycrystals may be regarded as an ensemble of interactionless grains (monocrystals), subject to either a homogeneous stress field over the polycrystal scale:</p>
+<p>For polycrystalline glacier ice, <span class="arithmatex">\(n(\theta,\phi)\)</span> is simply the distribution of (easy) slip-plane normals (<span class="arithmatex">\({\bf n}={\bf c}\)</span>).
+Given the expansion</p>
 <div class="arithmatex">\[
-{\bf S}' = {\bf S}
-,
-\qquad\qquad \text{(Sachs's hypothesis)}
+n({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}({\bf x},t) Y_{l}^{m}(\theta,\phi) \quad\text{(distribution of slip-plane normals)}, 
 \]</div>
-<p>or a homogeneous stain-rate field:</p>
+<p>CPO evolution can be written as a matrix problem involving the state vector</p>
 <div class="arithmatex">\[
-{\bf D}' = {\bf D} 
-,
-\qquad\qquad \text{(Taylor's hypothesis)}
+{\bf s} = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}]^{\mathrm{T}} \quad\text{(state vector)},
 \]</div>
-<p>where <span class="arithmatex">\({\bf S}'\)</span> and <span class="arithmatex">\({\bf D}'\)</span> are the <em>microscopic</em> (grain-scale) stress and strain-rate tensors, respectively.</p>
-<p>The effective rheology can then be approximated as the ensemble-averaged monocrystal rheology for either case:</p>
+<p>such that </p>
 <div class="arithmatex">\[
-{\bf D}^{\mathrm{Sachs}} = \langle {\bf D}'({\bf S}') \rangle = \langle {\bf D}'({\bf S}) \rangle
-,
-\qquad\qquad \text{(Sachs homogenization)}
+\frac{\mathrm{D}{\bf s}}{\mathrm{D} t} = {\bf M} \cdot {\bf s} \quad\text{(state evolution)},
 \]</div>
+<p>where the operator (matrix) <span class="arithmatex">\({\bf M}\)</span> represents the effect of a given CPO process, which may depend on stress, strain-rate, temperature, etc.</p>
+<p>The total effect of multiple processes acting simultaneously is simply</p>
 <div class="arithmatex">\[
-\qquad
-{\bf D}^{\mathrm{Taylor}} = \langle {\bf S}'({\bf D}') \rangle^{-1} = \langle {\bf S}'({\bf D}) \rangle^{-1}
-,
-\qquad \text{(Taylor homogenization)}
+{\bf M} = {\bf M_{\mathrm{LROT}}} + {\bf M_{\mathrm{DDRX}}} + {\bf M_{\mathrm{CDRX}}} + \cdots \quad\text{(operator)}. 
 \]</div>
-<p>where <span class="arithmatex">\(\langle \cdot \rangle^{-1}\)</span> inverts the tensorial relationship.</p>
-<p>If a linear combination of the two homogenizations is considered, equation (1) can be approximated as </p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/crystal-processes-combined.png" style="width:600px" /></p>
+<h3 id="validation">Validation</h3>
+<p>If the CPO is rotated into an approximately <a href="../cpo-idealized/">rotationally-symmetric frame</a> about the <span class="arithmatex">\(z\)</span>-axis, then only <span class="arithmatex">\(n_l^0\)</span> components are nonzero.
+This conveniently allows validating modelled CPO processes by comparing modelled to observed correlations between, e.g., the lowest-order normalized components <span class="arithmatex">\(\hat{n}_2^0 = n_2^0/n_0^0\)</span> and <span class="arithmatex">\(\hat{n}_4^0 = n_4^0/n_0^0\)</span>.
+The below plot from <a href="https://doi.org/10.1017/jog.2023.78">Lilien et al. (2023)</a> shows the observed correlation structure (markers) compared to the above CPO model(s) for different modes of deformation, suggesting that modelled CPO processes capture observations reasonably well.</p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/research/state-space/ice/state-space-validation.png" style="width:700px" /></p>
+<hr />
+<h2 id="olivine">Olivine</h2>
+<table>
+<thead>
+<tr>
+<th align="center"><center>Polycrystalline olivine</center></th>
+<th align="center"><center>Ensemble of slip elements</center></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png" style="width:190px" /></td>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/polycrystal-plane.png" style="width:190px" /></td>
+</tr>
+</tbody>
+</table>
+<p>For polycrystalline olivine, the distributions <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span> refer to certain crystallographic axes (<span class="arithmatex">\({\bf m}'_i\)</span>) depending on the fabric type; i.e. thermodynamic conditions, water content, and stress magnitude that control which of the crystallographic slip systems is activated.
+<br>
+Given the expansions</p>
 <div class="arithmatex">\[
-E_{ij} = (1-\alpha) \frac{{\bf e}_i \cdot {\bf D}^{\mathrm{Sachs}}({\bf S}) \cdot {\bf e}_j}
-{{\bf e}_i \cdot {\bf D}^{\mathrm{Sachs}}_{\mathrm{iso}}({\bf S}) \cdot {\bf e}_j }
-+ {\alpha} \frac{ {\bf e}_i \cdot {\bf D}^{\mathrm{Taylor}}({\bf S}) \cdot {\bf e}_j }
-{ {\bf e}_i \cdot {\bf D}^{\mathrm{Taylor}}_{\mathrm{iso}}({\bf S}) \cdot {\bf e}_j }
-,
+n({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}({\bf x},t) Y_{l}^{m}(\theta,\phi) \quad\text{(distribution of slip-plane normals)}, 
+\\
+b({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}b_{l}^{m}({\bf x},t) Y_{l}^{m}(\theta,\phi) \quad\text{(distribution of slip directions)}, 
 \]</div>
-<p>or simply</p>
+<p>CPO evolution can be written as two independent matrix problems involving the CPO state vector fields</p>
 <div class="arithmatex">\[
-E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}} ,
+{\bf s}_n = [n_0^0,n_2^{-2},n_2^{-1},n_2^{0},n_2^{1},n_2^{2},n_4^{-4},\cdots,n_4^{4},\cdots,n_L^{-L},\cdots,n_L^{L}]^{\mathrm{T}} \quad\text{($n$ state vector)},
+\\
+{\bf s}_b = [b_0^0,b_2^{-2},b_2^{-1},b_2^{0},b_2^{1},b_2^{2},b_4^{-4},\cdots,b_4^{4},\cdots,b_L^{-L},\cdots,b_L^{L}]^{\mathrm{T}} \quad\text{($b$ state vector)},
 \]</div>
-<p>where <span class="arithmatex">\(\alpha\)</span> is a free parameter.</p>
+<p>such that </p>
+<div class="arithmatex">\[
+\frac{\mathrm{D}{\bf s}_n}{\mathrm{D} t} = {\bf M}_n \cdot {\bf s}_n \quad\text{($n$ state evolution)},
+\\
+\frac{\mathrm{D}{\bf s}_b}{\mathrm{D} t} = {\bf M}_b \cdot {\bf s}_b \quad\text{($b$ state evolution)},
+\]</div>
+<p>where the operators (matrices) <span class="arithmatex">\({\bf M}_n\)</span> and <span class="arithmatex">\({\bf M}_b\)</span> represents the net effect of CPO processes, similar to the above example for glacier ice.</p>
 <div class="admonition warning">
-<p class="admonition-title">Grain parameters</p>
-<p>The grain viscous parameters used for homogenization should be understood as the <em>effective</em> values needed to reproduce deformation experiments on polycrystals; they are not the values derived from experiments on single crystals.</p>
+<p class="admonition-title">Supported crystal processes</p>
+<p>So far, only lattice rotation is supported for olivine. </p>
 </div>
-<h3 id="azumaplacidi">Azuma&mdash;Placidi</h3>
-<p>🚧 <em>Not yet documented.</em></p>
+<h3 id="validation_1">Validation</h3>
+<p>Validation is provided in <a href="https://doi.org/10.1029/2024GC011831">Rathmann et al. (2024)</a> similar to that above for glacier ice.</p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../cpo-regularization/" class="btn btn-neutral float-left" title="Regularization"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../enhancements-strainrate-ice/" class="btn btn-neutral float-right" title="Glacier ice">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../cpo-idealized/" class="btn btn-neutral float-left" title="Idealized CPO states"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../lattice-rotation/" class="btn btn-neutral float-right" title="Lattice rotation">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -272,10 +261,10 @@ E_{ij} = (1-\alpha)E_{ij}^{\mathrm{Sachs}} + {\alpha}E_{ij}^{\mathrm{Taylor}} ,
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../cpo-regularization/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../cpo-idealized/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../enhancements-strainrate-ice/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../lattice-rotation/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

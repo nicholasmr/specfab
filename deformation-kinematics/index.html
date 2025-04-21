@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Deformation kinematics - specfab documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Deformation kinematics";
+        var mkdocs_page_input_path = "deformation-kinematics.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> specfab documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">📖 About</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../install/">📦 Install</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">💎 CPO representation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-representation/">Representation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-structuretensors/">Structure tensors</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-idealized/">Idealized CPO states</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">⚙️ CPO Dynamics</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-matrix-model/">Matrix model</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../lattice-rotation/">Lattice rotation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../recrystallization-DDRX/">Discontinous DRX</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../recrystallization-CDRX/">Continous DRX</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-regularization/">Regularization</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">🌀 Viscous Anisotropy</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain rate enhancement</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-ice/">Glacier ice</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-olivine/">Olivine</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">🌊 Wave propagation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-elastic/">Elastic</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Electromagnetic</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel/">Lagrangian parcel model</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">Finite element integration</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">🧩 Miscellaneous</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Deformation kinematics</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#small-strain-tensor">Small strain tensor</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#kinematic-modes">Kinematic modes</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#pure-shear">Pure shear</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#simple-shear">Simple shear</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#plotting-deformed-parcels">Plotting deformed parcels</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotating CPOs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-viscoplastic/">Viscoplastic constitutive equations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Elastic constitutive equations</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">specfab documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>🧩 Miscellaneous &raquo;</li>
+      <li>Deformation kinematics</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="deformation-kinematics">Deformation kinematics</h1>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/displacement-field.png#center" style="width:630px" /></p>
+<p>The <a href="https://www.continuummechanics.org/deformationgradient.html">deformation gradient tensor</a> <span class="arithmatex">\({\bf F}\)</span> quantifies how infinitesimal material elements (line, area, or volume) are deformed relative to some original reference configuration.
+The strain tensor <span class="arithmatex">\({\boldsymbol \epsilon}\)</span> is derived from <span class="arithmatex">\({\bf F}\)</span> and is a measure of how a material deforms, excluding rigid body motions like rotation and translation.
+In continuum mechanics, it is useful to isolate such pure deformation (stretching) from rigid body motion, since the viscous and elastic response of a material when subject external forces is concerned with how easy or hard it is to stretch a material.</p>
+<h2 id="small-strain-tensor">Small strain tensor</h2>
+<p>The symmetric and antisymmetric parts of <span class="arithmatex">\({\bf F}\)</span> describe the degree of stretching and the rotation of material elements, respectively, useful for isolating pure deformation (stretching) from rigid body rotations. 
+For small deformations, the strain tensor (formally <em>small</em> strain tensor) is therefore defined as the symmetric part of <span class="arithmatex">\({\bf F}\)</span>, minus the identity:
+$$
+{\boldsymbol \epsilon} = \frac{1}{2}\left( {\bf F}+{\bf F}^\top \right) - {\bf I}.
+$$
+The strain tensor <span class="arithmatex">\({\boldsymbol \epsilon}\)</span> characterizes how a material stretches, compresses, or shears: positive components indicate extension along certain directions, negative components indicate compression, and off-diagonal components correspond to shear deformation.</p>
+<p>The antisymmetric part of <span class="arithmatex">\({\bf F}\)</span> is related to the component of deformation that describes rigid body rotation (so-called rotation tensor), defined as
+$$
+{\bf w} = \frac{1}{2}\left( {\bf F}-{\bf F}^\top \right) + {\bf I}.
+$$
+Notice that <span class="arithmatex">\({\bf F}= {\boldsymbol \epsilon} + {\bf w}\)</span> by definition.</p>
+<p>While the strain tensor is the kinematic field of interest for elastic deformation (elastic problems are concerned with displacement), the strain-rate and spin tensors are more relevant for viscous deformation (viscous problems are concerned with velocity, <span class="arithmatex">\({\bf u}\)</span>). 
+The strain-rate and spin tensors are simply the rate-of-change of <span class="arithmatex">\({\boldsymbol \epsilon}\)</span> and <span class="arithmatex">\({\bf w}\)</span>, respectively:
+$$
+{\bf D} = \frac{1}{2}\left(\nabla {\bf u} + \nabla {\bf u}^\top\right) ,
+$$
+$$
+{\bf W} = \frac{1}{2}\left( \nabla {\bf u} - \nabla {\bf u}^\top \right) ,
+$$
+where the <a href="https://www.continuummechanics.org/velocitygradient.html">velocity gradient tensor</a> is
+$$
+\nabla {\bf u} = \dot{{\bf F}}  \cdot {\bf F}^{-1} .
+$$</p>
+<h2 id="kinematic-modes">Kinematic modes</h2>
+<p>Let us now turn to the two common kinematic modes of deformation, pure shear and simple shear, that we will encounter many times throughout this book.
+Introducing these kinematic modes in terms of their deformation gradient <span class="arithmatex">\({\bf F}\)</span> provides a powerful way to describe e.g. how ice deforms below ice divides and domes of ice sheets.</p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/kinematic-modes.png#center" style="width:560px" /></p>
+<div class="admonition tip">
+<p class="admonition-title">Example of strain tensors</p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/strain-tensors.png#center" style="width:570px" /></p>
+</div>
+<h3 id="pure-shear">Pure shear</h3>
+<p>Pure shear (stretching) aligned with the Cartesian coordinate axes renders <span class="arithmatex">\({\bf F}\)</span> diagonal, a convenient frame to consider. 
+Suppose shortening takes places along the vertical <span class="arithmatex">\(z\)</span>-axis and lengthening in the horizontal <span class="arithmatex">\(xy\)</span> plane so that volume is conserved (<span class="arithmatex">\(\det({\bf F})=1\)</span>; incompressible material). The deformation gradient can then be written as </p>
+<div class="arithmatex">\[
+{\bf F} = 
+\begin{bmatrix}
+r^{-(1+q)/2} &amp; 0 &amp; 0\\
+0 &amp; r^{-(1-q)/2} &amp; 0\\
+0&amp; 0&amp; r
+\end{bmatrix}
+,
+\]</div>
+<p>where <span class="arithmatex">\(r\)</span> is a scaling parameter that controls the relative vertical shortening of material lines, and <span class="arithmatex">\(q\in[-1;1]\)</span> determines the horizontal direction of lengthening:</p>
+<ul>
+<li>For <span class="arithmatex">\(q=0\)</span> lengthening is equal in the <span class="arithmatex">\(x\)</span> and <span class="arithmatex">\(y\)</span> directions. </li>
+<li>For <span class="arithmatex">\(q=+1\)</span> lengthening occurs only in the <span class="arithmatex">\(x\)</span> direction. </li>
+<li>For <span class="arithmatex">\(q=-1\)</span> lengthening occurs only in the <span class="arithmatex">\(y\)</span> direction.</li>
+</ul>
+<p>The corresponding vertical strain with time follows immediately as 
+\begin{align}
+\epsilon_{zz}(t) = r(t) - 1,
+\end{align}
+where <span class="arithmatex">\(\epsilon_{zz} = 0\)</span> (or <span class="arithmatex">\(F_{zz}=1\)</span>) corresponds to the undeformed configuration and <span class="arithmatex">\(\epsilon_{zz} = -1\)</span> (or <span class="arithmatex">\(F_{zz}=0\)</span>) corresponds to the limit of a vanishing material (parcel) height.
+Conversely, if lengthening takes place along the vertical axis with shortening in the horizontal plane then <span class="arithmatex">\({\bf F}\rightarrow {\bf F}^{-1}\)</span> above, implying <span class="arithmatex">\(r\rightarrow r^{-1}\)</span>.</p>
+<p><strong>Constant strain rate</strong><br>
+For pure shear of the above form, it can be shown that the velocity gradient tensor reduces to </p>
+<div class="arithmatex">\[
+\nabla {\bf u} = 
+\frac{\dot{r}}{r}
+\begin{bmatrix}
+-(1+q)/2 &amp; 0 &amp; 0\\
+0 &amp; -(1-q)/2 &amp; 0\\
+0&amp; 0&amp; 1
+\end{bmatrix}
+.
+\]</div>
+<p>Clearly, if <span class="arithmatex">\(r\)</span> is written in terms of the <span class="arithmatex">\(e\)</span>-folding time <span class="arithmatex">\(\tau\)</span>, </p>
+<div class="arithmatex">\[
+r(t) = \exp(-t/\tau) ,
+\]</div>
+<p>the strain-rate tensor becomes constant. Specifically, the vertical component becomes</p>
+<div class="arithmatex">\[
+\epsilon_{zz} = -\frac{1}{\tau} .
+\]</div>
+<p><strong>Code example</strong><br>
+The above expressions are accessible in specfab as follows</p>
+<pre><code class="language-python">import numpy as np
+from specfabpy import specfab as sf
+lm, nlm_len = sf.init(4) 
+
+axis = 2 # axis of shortening (tauc&gt;0) or lengthening (tauc&lt;0): 0=x, 1=y, 2=z
+tauc = 1 # time taken in seconds for parcel to reduce to half (50%) height if tauc&gt;0, or abs(time) taken for parcel to double in height (200%) if tauc&lt;0.
+q    = 0 # asymmetry parameter for shortening (if tauc&gt;0) or lengthening (if tauc&lt;0)
+
+tau = tauc/np.log(2)                     # corresponding e-folding time
+ugrad = sf.pureshear_ugrad(axis, q, tau) # velocity gradient
+D, W = sf.ugrad_to_D_and_W(ugrad)        # strain-rate and spin tensor
+
+t = 1 # some specific time of interest
+r   = sf.pureshear_r(tau, t)          # scaling parameter &quot;r&quot; at time t
+F   = sf.pureshear_F(axis, q, tau, t) # deformation gradient tensor at time t
+eps = sf.F_to_strain(F)               # strain tensor at time t
+</code></pre>
+<h3 id="simple-shear">Simple shear</h3>
+<p>Simple shear may be characterized by the shear angle <span class="arithmatex">\(\gamma\)</span> of the resulting rhombus.
+In the case of vertical shear in the <span class="arithmatex">\(xz\)</span> plane, the deformation gradient tensor is given by</p>
+<div class="arithmatex">\[
+{\bf F} =
+\begin{bmatrix}
+1 &amp; 0 &amp; \tan(\gamma) \\
+0 &amp; 1 &amp; 0\\
+0&amp; 0&amp; 1
+\end{bmatrix}
+,
+\]</div>
+<p>and velocity-gradient tensor becomes</p>
+<div class="arithmatex">\[
+\nabla {\bf u} = 
+\frac{\dot{\gamma}}{\cos^2(\gamma)}
+\begin{bmatrix}
+0 &amp; 0 &amp; 1\\
+0 &amp; 0 &amp; 0\\
+0&amp; 0&amp; 0
+\end{bmatrix}
+.
+\]</div>
+<p><strong>Constant strain rate</strong><br>
+For a constant rate of shear <span class="arithmatex">\(1/\tau\)</span>, where <span class="arithmatex">\(\tau\)</span> is a characteristic time, the prefactor is  </p>
+<div class="arithmatex">\[\begin{align}
+\frac{\dot{\gamma}}{\cos^2(\gamma)} = \frac{1}{\tau} .
+\end{align}\]</div>
+<p>Solving for the time-dependent shear angle function can be shown to give</p>
+<div class="arithmatex">\[
+\gamma(t) = \tan^{-1}(t/\tau) .
+\]</div>
+<p>Thus, <span class="arithmatex">\(\tau\)</span> is the time it takes to reach a shear angle of <span class="arithmatex">\(\gamma=45^\circ\)</span> from the undeformed configuration, corresponding to <span class="arithmatex">\(\epsilon_{xz}=\tan(45^\circ)/2=0.5\)</span>.</p>
+<p><strong>Code example</strong><br>
+The above expressions are accessible in specfab as follows</p>
+<pre><code class="language-python">import numpy as np
+from specfabpy import specfab as sf
+lm, nlm_len = sf.init(4) 
+
+plane = 1 # plane of shear: 0=yz, 1=xz, 2=xy
+tau   = 1 # time taken in seconds for parcel to a reach shear strain of 1 (45 deg shear angle)
+
+ugrad = sf.simpleshear_ugrad(plane, tau) # velocity gradient
+D, W = sf.ugrad_to_D_and_W(ugrad)        # strain-rate and spin tensor
+
+t = 1 # some specific time of interest
+gamma = sf.simpleshear_gamma(tau, t)    # shear angle at time t
+F     = sf.simpleshear_F(plane, tau, t) # deformation gradient tensor at time t
+eps   = sf.F_to_strain(F)               # strain tensor at time t
+</code></pre>
+<hr />
+<h2 id="plotting-deformed-parcels">Plotting deformed parcels</h2>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/parcel-trajectory.png#center" style="width:440px" /> </p>
+<p>Given a deformation gradient <span class="arithmatex">\({\bf F}\)</span>, the resulting deformed parcel shape can be plotting as follows: </p>
+<pre><code class="language-python">import numpy as np
+import matplotlib.pyplot as plt
+from specfabpy import specfab as sf
+from specfabpy import plotting as sfplt
+lm, nlm_len = sf.init(4)
+
+### Determine deformation gradient F
+
+# Pure shear 
+axis   = 2 # axis of compression/extension (0=x, 1=y, 2=z)
+q      = 0 # deformation asymmetry
+tau_ps = 1/np.log(2) # e-folding time scale
+t_ps   = 1 # time at which deformed parcel is sought
+F_ps   = sf.pureshear_F(axis, q, tau_ps, t_ps) # deformation gradient tensor 
+
+# Simple shear
+plane   = 1 # shear plane (0=yz, 1=xz, 2=xy)
+tau_ss  = 1 # characteristic time taken to reach shear strain 45 deg.
+t_ss    = 1 # time at which deformed parcel is sought
+F_ss    = sf.simpleshear_F(plane, tau_ss, t_ss) # deformation gradient tensor
+
+### Plot
+fig = plt.figure(figsize=(6,6))
+ax1 = plt.subplot(121, projection='3d')
+ax2 = plt.subplot(122, projection='3d')
+sfplt.plotparcel(ax1, F_ps, azim=35, axscale=1.7, axislabels=True, drawinit=True)
+sfplt.plotparcel(ax2, F_ss, azim=35, axscale=1.7, axislabels=True, drawinit=True)
+ax1.set_title(r'$\epsilon_{zz}=%.2f$'%(sf.F_to_strain(F_ps)[2,2]))
+ax2.set_title(r'$\gamma=%.0f$ deg.'%(np.rad2deg(sf.simpleshear_gamma(tau_ss, t_ss))))
+plt.savefig('deformed-parcel.png', dpi=175, pad_inches=0.1, bbox_inches='tight')
+</code></pre>
+<p><br>
+<img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/tests/deformation-kinematics/deformed-parcel.png" style="width:450px" /></p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../FEM-integration/" class="btn btn-neutral float-left" title="Finite element integration"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../cpo-rotation/" class="btn btn-neutral float-right" title="Rotating CPOs">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../FEM-integration/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../cpo-rotation/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

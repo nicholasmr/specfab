@@ -5,7 +5,7 @@ lm, nlm_len = sf.init(4) # L=4 is sufficient here
 
 ### Determine <c_i c_j> from radar-derived Delta lambda
 l1 = 0   # lambda_1 = 0 (Gerber's approximation)
-dl = 1.0 # Delta lambda = lambda_2 - lambda_1
+dl = 0.5 # Delta lambda = lambda_2 - lambda_1
 a2 = np.diag([l1, l1+dl, 1-dl-2*l1]) # second-order structure tensor, <c_i c_j>, in eigenframe
 m1, m2, z = np.array([1,0,0]), np.array([0,1,0]), np.array([0,0,1]) # eigenvectors
 
@@ -70,10 +70,11 @@ isgirdle = 0.4 <= dl <= 0.6
 #lvlset = 'iso-up'
 lvlset = [np.linspace(0.15,0.25,7) if isgirdle else np.linspace(0.15,0.65,7), lambda x,p:'%.2f'%x]
 cbtickintvl = 3 if isgirdle else 3
-sfplt.plotODF(sf.a2_to_nlm(a2),lm, ax1, lvlset=lvlset, cbtickintvl=cbtickintvl)
-sfplt.plotODF(sf.a2_to_nlm(a2_vs),lm, ax2, lvlset=lvlset, cbtickintvl=cbtickintvl)
-sfplt.plotODF(nlm_vs,lm, ax3, lvlset=lvlset, cbtickintvl=cbtickintvl)
-sfplt.plotODF(nlm,lm, ax4, lvlset=lvlset, cbtickintvl=cbtickintvl)
+kw = dict(lvlset=lvlset, cbtickintvl=cbtickintvl, cblabel='ODF')
+sfplt.plotODF(sf.a2_to_nlm(a2),lm,    ax1, **kw)
+sfplt.plotODF(sf.a2_to_nlm(a2_vs),lm, ax2, **kw)
+sfplt.plotODF(nlm_vs,lm,              ax3, **kw)
+sfplt.plotODF(nlm,lm,                 ax4, **kw)
 for axi in [ax1,ax2,ax3,ax4]: sfplt.plotcoordaxes(axi, geo, axislabels=[r'$\vb{m}_1$',r'$\vb{m}_2$',r'$\vb{z}$'])
 
 ax1.set_title(r'\texttt{sf.a2\_to\_nlm(a2)}', fontsize=FS)
@@ -82,5 +83,5 @@ ax3.set_title(r'\texttt{nlm\_vs}', fontsize=FS)
 ax4.set_title(r'\texttt{nlm}', fontsize=FS)
 
 print('Eij = ',Eij)
-plt.savefig('code-example-output-dl%.1f.png'%(dl), transparent=True, dpi=120)
+plt.savefig('code-example-output-dl%.1f.png'%(dl), transparent=True, dpi=140)
 

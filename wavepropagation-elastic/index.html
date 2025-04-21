@@ -5,14 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Wave propagation - specfab documentation</title>
+    <title>Elastic - specfab documentation</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Wave propagation";
+        var mkdocs_page_name = "Elastic";
         var mkdocs_page_input_path = "wavepropagation-elastic.md";
         var mkdocs_page_url = null;
       </script>
@@ -41,42 +41,48 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="..">About</a>
+                <li class="toctree-l1"><a class="reference internal" href="..">📖 About</a>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../install/">Install</a>
+                <li class="toctree-l1"><a class="reference internal" href="../install/">📦 Install</a>
                 </li>
               </ul>
-              <p class="caption"><span class="caption-text">🧊 CPO representation</span></p>
+              <p class="caption"><span class="caption-text">💎 CPO representation</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-representation/">Representation</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-structuretensors/">Structure tensors</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-idealized/">Idealized states</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-idealized/">Idealized CPO states</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🌀 CPO Dynamics</span></p>
+              <p class="caption"><span class="caption-text">⚙️ CPO Dynamics</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-tranisotropic/">Transversely isotropic grains</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-matrix-model/">Matrix model</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-orthotropic/">Orthotropic grains</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../lattice-rotation/">Lattice rotation</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../plastic-spin/">Plastic spin</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../recrystallization-DDRX/">Discontinous DRX</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../recrystallization-CDRX/">Continous DRX</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-regularization/">Regularization</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🌊 Viscous Anisotropy</span></p>
+              <p class="caption"><span class="caption-text">🌀 Viscous Anisotropy</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain-rate enhancements</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain rate enhancement</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-ice/">Glacier ice</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-olivine/">Olivine</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🧱 Elastic Anisotropy</span></p>
+              <p class="caption"><span class="caption-text">🌊 Wave propagation</span></p>
               <ul class="current">
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Wave propagation</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Elastic</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#problem">Problem</a>
-    </li>
     <li class="toctree-l2"><a class="reference internal" href="#transversely-isotropic-grains">Transversely isotropic grains</a>
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#example-for-glacier-ice">Example for glacier ice</a>
@@ -91,26 +97,21 @@
     </li>
     </ul>
                   </li>
-              </ul>
-              <p class="caption"><span class="caption-text">📡 Electromagnetic Anisotropy</span></p>
-              <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Wave propagation</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Electromagnetic</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
               <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel/">Lagrangian parcel model</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel-integrator/">Lagrangian parcel integrator</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">FEM integration</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">Finite element integration</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🧩 Miscellaneous</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../deformation-modes/">Deformation kinematics</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../plotting/">Plotting CPOs</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../deformation-kinematics/">Deformation kinematics</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotating CPOs</a>
                   </li>
@@ -133,8 +134,8 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
-          <li>🧱 Elastic Anisotropy &raquo;</li>
-      <li>Wave propagation</li>
+          <li>🌊 Wave propagation &raquo;</li>
+      <li>Elastic</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -144,18 +145,17 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="elastic-wave-propagation">Elastic wave propagation</h1>
-<h2 id="problem">Problem</h2>
-<p>We seek plane wave solutions of the Cauchy-Navier equation of motion</p>
+<p>Plane waves are a well-known solution to the Cauchy-Navier equation of motion</p>
 <div class="arithmatex">\[
 \nabla\cdot {\boldsymbol \sigma} = \rho \frac{\partial^2 {\bf d}}{\partial t^2},
 \]</div>
-<p>where <span class="arithmatex">\({\boldsymbol \sigma}\)</span> is the bulk stress tensor, <span class="arithmatex">\({\bf d}\)</span> is the displacement field, and <span class="arithmatex">\(\rho\)</span> the mass density.</p>
-<p>Substituting <span class="arithmatex">\({\bf d}\)</span> for a plane wave solution, <span class="arithmatex">\({\bf d} = {\bf d}_0 \exp[i({\bf k}\cdot {\bf x} - \omega t)]\)</span>, the problem reduces to</p>
+<p>where <span class="arithmatex">\({\boldsymbol \sigma}\)</span> is the bulk stress tensor, <span class="arithmatex">\({\bf d}\)</span> is the displacement field, and <span class="arithmatex">\(\rho\)</span> the mass density.
+Substituting <span class="arithmatex">\({\bf d}\)</span> for a plane wave solution, <span class="arithmatex">\({\bf d} = {\bf d}_0 \exp[i({\bf k}\cdot {\bf x} - \omega t)]\)</span>, the problem reduces to</p>
 <div class="arithmatex">\[
 (k^2\hat{{\bf Q}} - \omega^2 \rho {\bf I}) {\bf d} = {\bf 0},
 \]</div>
-<p>where <span class="arithmatex">\(\hat{{\bf Q}}(\hat{{\bf k}})\)</span> is the normalized <a href="https://www.brown.edu/Departments/Engineering/Courses/En221/Notes/Elasticity/Elasticity.htm">acoustic tensor</a> that varies depending on the bulk <a href="../constitutive-elastic/">constitutive equation</a> substituted for <span class="arithmatex">\({\boldsymbol \sigma}({\bf d})\)</span>.</p>
-<p>The above equation requires </p>
+<p>where <span class="arithmatex">\(\hat{{\bf Q}}(\hat{{\bf k}})\)</span> is the normalized <a href="https://www.brown.edu/Departments/Engineering/Courses/En221/Notes/Elasticity/Elasticity.htm">acoustic tensor</a> that varies depending on the bulk <a href="../constitutive-elastic/">constitutive equation</a> substituted for <span class="arithmatex">\({\boldsymbol \sigma}({\bf d})\)</span>.
+The above equation requires </p>
 <div class="arithmatex">\[
 \det( k^2\hat{{\bf Q}} - \omega^2 \rho {\bf I} ) = 0
 .
@@ -223,7 +223,7 @@ Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, Lame_grain, rho, theta,phi) # phase
 </code></pre>
 <div class="admonition tip">
 <p class="admonition-title">Evolving CPO</p>
-<p>The below animation shows directional P- and S-wave velocities for a CPO evolving under <a href="../deformation-modes/">uniaxial compression</a> along <span class="arithmatex">\({\hat {\bf z}}\)</span>, relative to an isotropic CPO, when subject to <a href="../cpo-dynamics-tranisotropic/">lattice rotation</a>.</p>
+<p>The below animation shows directional P- and S-wave velocities for a CPO evolving under <a href="../deformation-kinematics/">uniaxial compression</a> along <span class="arithmatex">\({\hat {\bf z}}\)</span>, relative to an isotropic CPO, when subject to <a href="../lattice-rotation/">lattice rotation</a>.</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/S2-maps/S2-vi.gif" style="width:660px" /></p>
 </div>
 <h2 id="orthotropic-grains">Orthotropic grains</h2>
@@ -279,8 +279,8 @@ Vi = sf.Vi_elastic_orthotropic(blm,nlm,vlm, alpha, Lame_grain, rho, theta,phi) #
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../enhancements-strainrate/" class="btn btn-neutral float-left" title="Strain-rate enhancements"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../wavepropagation-electromagnetic/" class="btn btn-neutral float-right" title="Wave propagation">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../enhancements-strainrate-olivine/" class="btn btn-neutral float-left" title="Olivine"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../wavepropagation-electromagnetic/" class="btn btn-neutral float-right" title="Electromagnetic">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -303,7 +303,7 @@ Vi = sf.Vi_elastic_orthotropic(blm,nlm,vlm, alpha, Lame_grain, rho, theta,phi) #
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../enhancements-strainrate/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../enhancements-strainrate-olivine/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
       <span><a href="../wavepropagation-electromagnetic/" style="color: #fcfcfc">Next &raquo;</a></span>

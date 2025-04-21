@@ -5,14 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>FEM integration - specfab documentation</title>
+    <title>Finite element integration - specfab documentation</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "FEM integration";
+        var mkdocs_page_name = "Finite element integration";
         var mkdocs_page_input_path = "FEM-integration.md";
         var mkdocs_page_url = null;
       </script>
@@ -41,53 +41,58 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="..">About</a>
+                <li class="toctree-l1"><a class="reference internal" href="..">📖 About</a>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../install/">Install</a>
+                <li class="toctree-l1"><a class="reference internal" href="../install/">📦 Install</a>
                 </li>
               </ul>
-              <p class="caption"><span class="caption-text">🧊 CPO representation</span></p>
+              <p class="caption"><span class="caption-text">💎 CPO representation</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-representation/">Representation</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-structuretensors/">Structure tensors</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-idealized/">Idealized states</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-idealized/">Idealized CPO states</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🌀 CPO Dynamics</span></p>
+              <p class="caption"><span class="caption-text">⚙️ CPO Dynamics</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-tranisotropic/">Transversely isotropic grains</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-matrix-model/">Matrix model</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-dynamics-orthotropic/">Orthotropic grains</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../lattice-rotation/">Lattice rotation</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../plastic-spin/">Plastic spin</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../recrystallization-DDRX/">Discontinous DRX</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../recrystallization-CDRX/">Continous DRX</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-regularization/">Regularization</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🌊 Viscous Anisotropy</span></p>
+              <p class="caption"><span class="caption-text">🌀 Viscous Anisotropy</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain-rate enhancements</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain rate enhancement</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-ice/">Glacier ice</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-olivine/">Olivine</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🧱 Elastic Anisotropy</span></p>
+              <p class="caption"><span class="caption-text">🌊 Wave propagation</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-elastic/">Wave propagation</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-elastic/">Elastic</a>
                   </li>
-              </ul>
-              <p class="caption"><span class="caption-text">📡 Electromagnetic Anisotropy</span></p>
-              <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Wave propagation</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Electromagnetic</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
               <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel/">Lagrangian parcel model</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel-integrator/">Lagrangian parcel integrator</a>
-                  </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">FEM integration</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Finite element integration</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#the-coupled-problem">The coupled problem</a>
     </li>
@@ -100,9 +105,7 @@
               </ul>
               <p class="caption"><span class="caption-text">🧩 Miscellaneous</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../deformation-modes/">Deformation kinematics</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../plotting/">Plotting CPOs</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../deformation-kinematics/">Deformation kinematics</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotating CPOs</a>
                   </li>
@@ -126,7 +129,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
           <li>🖼️ Application Gallery &raquo;</li>
-      <li>FEM integration</li>
+      <li>Finite element integration</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -141,14 +144,14 @@
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/jigsaw/jigsaw2.png#center" style="width:360px" /></p>
 <p>Hence, specfab can model/provides</p>
 <ul>
-<li><a href="../cpo-dynamics-tranisotropic/">CPO evolution</a> given bulk stress, strain-rate and temperature fields (green piece)</li>
+<li><a href="../cpo-matrix-model/">CPO evolution</a> given bulk stress, strain-rate and temperature fields (green piece)</li>
 <li><a href="../enhancements-strainrate/">Viscous anisotropy</a> induced by the CPO (orange piece)</li>
 <li><a href="../constitutive-viscoplastic/">Bulk anisotropic rheologies</a> given the local viscous anisotropy (blue piece)</li>
 </ul>
 <h2 id="elmerice">Elmer/Ice</h2>
-<p>See <a href="https://doi.org/10.1017/jog.2023.78">Lilien et al. (2023)</a> for ice-flow modelling.</p>
+<p>See <a href="https://doi.org/10.1017/jog.2023.78">Lilien et al. (2023)</a> for ice flow modelling.</p>
 <h2 id="fenics">FEniCS</h2>
-<p>See <a href="https://doi.org/10.1029/2024GC011831">Rathmann et al. (2025)</a> for olivine modelling.</p>
+<p>See <a href="https://doi.org/10.1029/2024GC011831">Rathmann et al. (2024)</a> for olivine modelling.</p>
 <!--
 ## Icepack
 
@@ -163,8 +166,8 @@ To be updated.
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../Lagrangian-parcel-integrator/" class="btn btn-neutral float-left" title="Lagrangian parcel integrator"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../deformation-modes/" class="btn btn-neutral float-right" title="Deformation kinematics">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../radar-derived-PP/" class="btn btn-neutral float-left" title="Radar-derived physical properties"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../deformation-kinematics/" class="btn btn-neutral float-right" title="Deformation kinematics">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -187,10 +190,10 @@ To be updated.
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../Lagrangian-parcel-integrator/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../radar-derived-PP/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../deformation-modes/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../deformation-kinematics/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
