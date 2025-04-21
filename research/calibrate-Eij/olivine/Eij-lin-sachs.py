@@ -46,7 +46,7 @@ for T_EXP in (T_EXP_UC, T_EXP_SS):
 
     if T_EXP==T_EXP_SS:
         i,j = 0,2 # Fij components of interest
-        mod = dict(type='ss', plane=1)
+        DK = dict(type='ss', plane=1)
         strain_target = np.deg2rad(81) # simulate  parcel deformation until this target strain
         ODF_strains = [4, 4] if ENABLE_DDM else [1, 4] # show ODFs at these strains
         xlims = [0, 5.5]
@@ -55,7 +55,7 @@ for T_EXP in (T_EXP_UC, T_EXP_SS):
                     
     if T_EXP==T_EXP_UC:
         i = j = 2 # Fij components of interest
-        mod = dict(type='ps', r=0, axis=i)
+        DK = dict(type='ps', q=0, axis=i)
         strain_target = -0.99 # simulate  parcel deformation until this target strain
         ODF_strains = [0.2, 0.2] if ENABLE_DDM else [0.2, 0.5] # show ODFs at these strains
         xlims = [-1, 0]
@@ -78,11 +78,11 @@ for T_EXP in (T_EXP_UC, T_EXP_SS):
 
     # Slip plane normal distribution
     kwargs_LROT = dict(iota=+1, Gamma0=None, nu=1)
-    nlm[:,:], F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, **kwargs_LROT)
+    nlm[:,:], F, time, ugrad = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, **kwargs_LROT)
 
     # Slip direction distribution
     kwargs_LROT = dict(iota=-1, Gamma0=None, nu=1)
-    blm[:,:], F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, **kwargs_LROT)
+    blm[:,:], F, time, ugrad = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, **kwargs_LROT)
 
     ### DDM
                 
@@ -302,5 +302,6 @@ for T_EXP in (T_EXP_UC, T_EXP_SS):
     T_EXP_STR = {T_EXP_UC:'UC', T_EXP_SS:'SS'}
     fname = 'Eij-lin-sachs--%s%s.pdf'%(T_EXP_STR[T_EXP], '-SI' if ENABLE_DDM else '')
     print('Saving output to %s'%(fname))
+    fig.patch.set_alpha(0.0)
     plt.savefig(fname, dpi=175)
 

@@ -9,7 +9,7 @@ import scipy.special as sp
 
 from specfabpy import specfab as sf
 from specfabpy import integrator as sfint
-from specfabpy import discrete as sfdsc
+from specfabpy import common as sfcom
 from specfabpy import constants as sfconst
 from specfabpy import plotting as sfplt
 FS = sfplt.setfont_tex(fontsize=12)
@@ -44,23 +44,13 @@ strain_ue = np.array([sf.F_to_strain(F_ue[tt,:,:])[0,0] for tt in range(Nt_uc+1)
 
 ### Determine enhancement factors and eigenvalues
 
-Eij_uc = np.zeros((Nt_uc+1,6))
-Eij_ue = np.zeros((Nt_ue+1,6))
-eigvals_uc = np.zeros((Nt_uc+1,3))
-eigvals_ue = np.zeros((Nt_ue+1,3))
+grain_params = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
 
-e1,e2,e3 = np.eye(3)
-(Eij_grain, alpha, n_grain) = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
-args = (e1,e2,e3, Eij_grain,alpha,n_grain)
-    
-for tt in range(Nt_ue+1):
-    Eij_ue[tt,:] = sf.Eij_tranisotropic(nlm_ue[tt,:], *args) 
-    _,_,_, eigvals_ue[tt,:] = sf.frame(nlm_ue[tt,:], 'e')
+Eij_ue = sf.Eij_tranisotropic_arr(nlm_ue, *sfcom.xi_tile(Nt_ue+1), *grain_params) 
+_, eigvals_ue = sfcom.eigenframe(nlm_ue)
 
-for tt in range(Nt_uc+1):
-    Eij_uc[tt,:] = sf.Eij_tranisotropic(nlm_uc[tt,:], *args) 
-    _,_,_, eigvals_uc[tt,:] = sf.frame(nlm_uc[tt,:], 'e')
-
+Eij_uc = sf.Eij_tranisotropic_arr(nlm_uc, *sfcom.xi_tile(Nt_uc+1), *grain_params) 
+_, eigvals_uc = sfcom.eigenframe(nlm_uc)
 
 ### Plot
 

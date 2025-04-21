@@ -33,7 +33,7 @@ $$
 therefore has a similar interpretation as in PCA:
 the first principal component (eigenvector ${\bf m}_1$) is the direction that maximizes the variance (eigenvalue $\lambda_1$) of the projected data (red curve), the second component is the direction orthogonal to the first component that maximizes the variance of the projected data, and so on with the third component. 
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/harmonic-expansion/a2.png#center){: style="width:750px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/harmonic-expansion/a2.png#center){: style="width:600px"}
 
 ## Convert to spectral 
 

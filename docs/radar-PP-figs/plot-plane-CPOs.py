@@ -45,11 +45,11 @@ def a2planar(lam1, dlam):
 axlist, fig, fraction, aspect = setup_fig()
 
 lm, nlm_len = sf.init(2)
-lvlset='iso-up'
+#lvlset = 'iso-up'
 lvlset = [np.linspace(0.0,0.4,9), lambda x,p:'%.1f'%x]
 
 for ii, dlam in enumerate([0, 0.25, 0.50, 0.75, 1]):
-    sfplt.plotODF(sf.a2_to_nlm(a2planar(0,dlam)), lm, axlist[ii], lvlset=lvlset, cbaspect=aspect, cbfraction=fraction)
+    sfplt.plotODF(sf.a2_to_nlm(a2planar(0,dlam)), lm, axlist[ii], cblabel='ODF', lvlset=lvlset, cbaspect=aspect, cbfraction=fraction)
     sfplt.plotcoordaxes(axlist[ii], geo, axislabels=[r'$\vb{m}_1$',r'$\vb{m}_2$',r'$\vb{z}$'])
     axlist[ii].set_title(r'$\Delta\lambdaup=%.2f$'%(dlam), fontsize=FS)
 

@@ -64,8 +64,8 @@ class OlivineFabric():
         else:
             self.SDM_b.s.assign(sb)
             self.SDM_n.s.assign(sn)
-            self.SDM_b.s_prev.assign(sb)
-            self.SDM_n.s_prev.assign(sn)
+            self.SDM_b.s0.assign(sb)
+            self.SDM_n.s0.assign(sn)
 
     def get_state(self, x, y):
         return (self.SDM_n.get_nlm(x,y), self.SDM_b.get_nlm(x,y))

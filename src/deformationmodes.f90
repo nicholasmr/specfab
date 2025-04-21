@@ -1,6 +1,6 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk>, 2023
+! N. M. Rathmann <rathmann@nbi.ku.dk>, 2023-
 
-! Idealized modes of deformation
+! Idealized kinematic modes of deformation 
 
 !----------
 ! Notation:
@@ -36,81 +36,85 @@ contains
     
     ! Pure shear
 
-    function pureshear_b(T, time) result (b)
+    function pureshear_r(tau, time) result (r)
         implicit none
-        real(kind=dp), intent(in) :: T, time
-        real(kind=dp)             :: b
-        b = exp(time/T) ! scaling parameter
+        real(kind=dp), intent(in) :: tau, time
+        real(kind=dp)             :: r
+        r = exp(-time/tau) ! scaling parameter
     end
     
-    function pureshear_strainii_to_t(strainii, T) result (time)
+    function pureshear_strainii_to_t(strainii, tau) result (time)
         ! Time taken to reach strainii strain for ax=i:
-        !   strainii = Fii - 1 = b^(-1) - 1 = exp(-t/T) - 1 => exp(-t/T) = strainii + 1
+        !   strainii = Fii - 1 = r - 1 = exp(-t/tau) - 1 => exp(-t/tau) = strainii + 1
         implicit none
-        real(kind=dp), intent(in) :: strainii,T
+        real(kind=dp), intent(in) :: strainii,tau
         real(kind=dp)             :: time
-        time = -T*log(strainii+1.0d0)
+        time = -tau*log(strainii+1.0d0)
     end
     
-    function pureshear_F(ax,r,T, time) result (F)
+    function pureshear_F(ax,q,tau, time) result (F)
         implicit none
         integer, intent(in) :: ax
-        real(kind=dp), intent(in) :: r,T,time
-        real(kind=dp)             :: b, F(3,3)
-        b = pureshear_b(T,time)
-        if (ax == 0) F = diag([b**(-1), b**((1+r)/2), b**((1-r)/2)]) ! compression along x
-        if (ax == 1) F = diag([b**((1-r)/2), b**(-1), b**((1+r)/2)]) ! compression along y
-        if (ax == 2) F = diag([b**((1+r)/2), b**((1-r)/2), b**(-1)]) ! compression along z
+        real(kind=dp), intent(in) :: q,tau,time
+        real(kind=dp)             :: r, F(3,3), qp,qm
+        r = pureshear_r(tau,time)
+        qp = -(1+q)/2.0d0
+        qm = -(1-q)/2.0d0
+        if (ax == 0) F = diag([r,     r**qp, r**qm]) ! compression along x
+        if (ax == 1) F = diag([r**qm, r,     r**qp]) ! compression along y
+        if (ax == 2) F = diag([r**qp, r**qm, r])     ! compression along z
     end
        
-    function pureshear_ugrad(ax,r,T) result(ugrad)
+    function pureshear_ugrad(ax,q,tau) result(ugrad)
         implicit none
         integer, intent(in)       :: ax
-        real(kind=dp), intent(in) :: r,T
-        real(kind=dp)             :: ugrad(3,3)
-        if (ax == 0) ugrad = 1/T*diag([-1.0d0, (1+r)/2, (1-r)/2]) ! compression along x
-        if (ax == 1) ugrad = 1/T*diag([(1-r)/2, -1.0d0, (1+r)/2]) ! compression along y
-        if (ax == 2) ugrad = 1/T*diag([(1+r)/2, (1-r)/2, -1.0d0]) ! compression along z
+        real(kind=dp), intent(in) :: q,tau
+        real(kind=dp)             :: ugrad(3,3), qp,qm
+        qp = -(1+q)/2.0d0
+        qm = -(1-q)/2.0d0
+        if (ax == 0) ugrad = -1/tau * diag([1.0d0, qp,    qm])    ! compression along x
+        if (ax == 1) ugrad = -1/tau * diag([qm,    1.0d0, qp])    ! compression along y
+        if (ax == 2) ugrad = -1/tau * diag([qp,    qm,    1.0d0]) ! compression along z
     end
 
     ! Simple shear
 
-    function simpleshear_gamma(T, time) result (gam)
+    function simpleshear_gamma(tau, time) result (gam)
         implicit none
-        real(kind=dp), intent(in) :: T, time
+        real(kind=dp), intent(in) :: tau, time
         real(kind=dp)             :: gam
-        gam = atan(time/T) ! shear angle
+        gam = atan(time/tau) ! shear angle
     end
     
-    function simpleshear_gamma_to_t(gam, T) result (time)
+    function simpleshear_gamma_to_t(gam, tau) result (time)
         ! Time taken to reach shear angle gam
         implicit none
-        real(kind=dp), intent(in) :: gam,T
+        real(kind=dp), intent(in) :: gam,tau
         real(kind=dp)             :: time
-        time = T*tan(gam)
+        time = tau*tan(gam)
     end
     
-    function simpleshear_F(plane,T, time) result (F)
+    function simpleshear_F(plane,tau, time) result (F)
         implicit none
         integer, intent(in)       :: plane
-        real(kind=dp), intent(in) :: T,time
+        real(kind=dp), intent(in) :: tau,time
         real(kind=dp)             :: gam, F(3,3)
-        gam = simpleshear_gamma(T, time)
+        gam = simpleshear_gamma(tau, time)
         F = identity
-        if (plane == 0) F(2,3) = tan(gam) ! y--z shear (du_y/dz)
-        if (plane == 1) F(1,3) = tan(gam) ! x--z shear (du_x/dz)
-        if (plane == 2) F(1,2) = tan(gam) ! x--y shear (du_x/dy)
+        if (plane == 0) F(2,3) = tan(gam) ! yz shear (du_y/dz)
+        if (plane == 1) F(1,3) = tan(gam) ! xz shear (du_x/dz)
+        if (plane == 2) F(1,2) = tan(gam) ! xy shear (du_x/dy)
     end
        
-    function simpleshear_ugrad(plane,T) result(ugrad)
+    function simpleshear_ugrad(plane,tau) result(ugrad)
         implicit none
         integer, intent(in)       :: plane
-        real(kind=dp), intent(in) :: T
+        real(kind=dp), intent(in) :: tau
         real(kind=dp)             :: ugrad(3,3)
         ugrad = 0.0d0
-        if (plane == 0) ugrad(2,3) = 1/T ! y--z shear
-        if (plane == 1) ugrad(1,3) = 1/T ! x--z shear
-        if (plane == 2) ugrad(1,2) = 1/T ! x--y shear
+        if (plane == 0) ugrad(2,3) = 1/tau ! yz shear
+        if (plane == 1) ugrad(1,3) = 1/tau ! xz shear
+        if (plane == 2) ugrad(1,2) = 1/tau ! xy shear
     end
 
 end module deformationmodes

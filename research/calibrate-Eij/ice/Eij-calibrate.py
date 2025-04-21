@@ -55,13 +55,13 @@ print('DYE 3 tests done on ice from z/H=%.2f to %.2f'%(1890/2037, 2006/2037))
 Nt = 200 # time steps for Lagragian parcel integration
 
 kwargs_LROT = dict(iota=1, Gamma0=None, nu=1) #      
-mod = dict(type='ps', r=+0, T=+1, axis=2)
+DK = dict(type='ps', q=+0, tau=+1, axis=2)
 strain_target = -0.95 # simulate parcel deformation until this target strain
-nlm_uc, F_uc, time_uc, ugrad_uc = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, **kwargs_LROT)
+nlm_uc, F_uc, time_uc, ugrad_uc = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, **kwargs_LROT)
 
-mod = dict(type='ps', r=+0, T=-1, axis=2)
+DK = dict(type='ps', q=+0, tau=-1, axis=2)
 strain_target = +6 # simulate parcel deformation until this target strain
-nlm_ue, F_ue, time_ue, ugrad_ue = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, **kwargs_LROT)
+nlm_ue, F_ue, time_ue, ugrad_ue = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, **kwargs_LROT)
 
 #--------------------
 # Determine maps

@@ -1,6 +1,6 @@
 \documentclass[tikz,12pt,border=3pt]{standalone}
 
-% pdfcrop a2.pdf a2_crop.pdf; pdftocairo -singlefile -r 250 -png a2_crop.pdf a2;
+% pdfcrop a2.pdf a2_crop.pdf; pdftocairo -transp -singlefile -r 250 -png a2_crop.pdf a2;
 
 \usepackage{pgfplots}
 \usepackage{physics}
@@ -99,7 +99,9 @@ declare function={
 	\gdef\dxzero{8.0em}
 	\gdef\dyzero{21em}
 	
-	\draw[-] (3.5em,14.25em) --++(36.5em,0) node[inner sep=0.75em,midway,fill=white] { ODFs projected onto principal directions $\vb{m}_i$};
+	\node[anchor=center, inner sep=0.8em] (ANNO) at (22em,14.25em) { ODFs projected onto principal directions $\vb{m}_i$};
+	\draw[-] (4em,14.25em) -- (ANNO.west);
+	\draw[-] (40em,14.25em) -- (ANNO.east);
 
 	\node[] (ISO) at (0*\DX+\dxzero,\dyzero) {\includegraphics[scale=\figscale]{is-z\isalt.pdf}};	
 	\node[yshift=0.6em] at (ISO.north) { \bf Isotropic};

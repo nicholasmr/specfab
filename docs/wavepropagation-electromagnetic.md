@@ -96,7 +96,7 @@ Vi = sf.Vi_electromagnetic_tranisotropic(nlm, epsr_m, epsr_t, mur, theta,phi) # 
 
 !!! tip "Evolving CPO"
 
-    The below animation shows directional S-wave velocities for a CPO evolving under [${\hat {\bf x}}$&mdash;${\hat {\bf z}}$ confined compression](deformation-modes.md), relative to an isotropic CPO, when subject to [lattice rotation](cpo-dynamics-tranisotropic.md).
+    The below animation shows directional S-wave velocities for a CPO evolving under [${\hat {\bf x}}$&mdash;${\hat {\bf z}}$ confined compression](deformation-kinematics.md), relative to an isotropic CPO, when subject to [lattice rotation](lattice-rotation.md).
 
     ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/S2-maps/S2-vi-EM.gif){: style="width:460px"}
 

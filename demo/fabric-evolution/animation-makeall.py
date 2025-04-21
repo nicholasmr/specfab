@@ -49,19 +49,19 @@ for ii, Mtype in enumerate(Mtypes):
         
         # Mode of deformation
         if exptype == 'uc_zz': # Uniaxial compression
-            mod = dict(type='ps', r=0,  axis=2)
+            DK = dict(type='ps', r=0,  axis=2)
             strain_target = -0.90
 
         if exptype == 'cc_zy': # Confined compression
-            mod = dict(type='ps', r=-1, axis=2)
+            DK = dict(type='ps', r=-1, axis=2)
             strain_target = -0.90
 
         if exptype == 'ss_yz': # Simple shear
-            mod = dict(type='ss', plane=0)
+            DK = dict(type='ss', plane=0)
             strain_target = np.deg2rad(75) if Mtype == 'LROT' else np.deg2rad(66.5) # => dt as uc/cc if not LROT
         
         # Integrate 
-        nlm[Mtype][jj,:,:], *_ = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, nlm0=nlm0, **kwargs)
+        nlm[Mtype][jj,:,:], *_ = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, nlm0=nlm0, **kwargs)
 
 #Mtypes = ['CDRX',]
 print('Model integrations finished...')

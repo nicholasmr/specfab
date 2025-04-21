@@ -201,6 +201,14 @@ contains
             end do
         end do
     end
+    
+    function doubleinner44(A,B) 
+        ! A_lkij B_jikl = scalar
+        implicit none
+        real(kind=dp), intent(in) :: A(3,3,3,3), B(3,3,3,3)
+        real(kind=dp) :: doubleinner44
+        doubleinner44 = sum([( sum([( sum([( sum([(A(ll,kk,ii,jj)*B(jj,ii,kk,ll),jj=1,3)]) ,ii=1,3)]) ,kk=1,3)]) ,ll=1,3)])
+    end
 
     function doubleinner62(A,B) 
         ! A_nmlkij B_ji = rank-4 tensor
@@ -232,6 +240,22 @@ contains
                                 doubleinner82(pp,oo,nn,mm,ll,kk) = doubleinner22(A(pp,oo,nn,mm,ll,kk,:,:),B) 
                             end do
                         end do
+                    end do
+                end do
+            end do
+        end do
+    end
+    
+    function doubleinner84(A,B) 
+        ! A_ponmlkij B_jikl = rank-4 tensor
+        implicit none
+        real(kind=dp), intent(in) :: A(3,3,3,3, 3,3,3,3), B(3,3,3,3)
+        real(kind=dp) :: doubleinner84(3,3,3,3)
+        do pp=1,3
+            do oo=1,3
+                do nn=1,3
+                    do mm=1,3
+                        doubleinner84(pp,oo,nn,mm) = doubleinner44(A(pp,oo,nn,mm,:,:,:,:),B) 
                     end do
                 end do
             end do

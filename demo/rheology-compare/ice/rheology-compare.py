@@ -31,7 +31,7 @@ T_EXP_SS = 2 # vertical shear
 
 # Select experiment
 T_EXP = T_EXP_CC
-T_EXP = T_EXP_SS
+#T_EXP = T_EXP_SS
 
 #----------------------
 # Experiment definitions
@@ -42,7 +42,7 @@ L  = 18
 
 if T_EXP==T_EXP_SS:
     i,j = 0,2 # components of interest
-    mod = dict(type='ss', plane=1)
+    DK = dict(type='ss', plane=1)
     strain_target = np.deg2rad(80.5) # simulate  parcel deformation until this target strain
     strain_thres = 2.5 # assume DDRX dominates when reached this strain threshold
     ODF_strains = [0, 1, 2, 3] # show ODFs at these strains
@@ -51,7 +51,7 @@ if T_EXP==T_EXP_SS:
                 
 if T_EXP==T_EXP_CC:
     i = j = 2 # components of interest
-    mod = dict(type='ps', r=+1, axis=i)
+    DK = dict(type='ps', q=+1, axis=i)
     strain_target = -0.97 # simulate  parcel deformation until this target strain
     strain_thres = -0.7 # assume DDRX dominates when reached this strain threshold
     ODF_strains = [0, -0.3, -0.5, -0.9] # show ODFs at these strains
@@ -66,7 +66,7 @@ lm, nlm_len = sf.init(L)
 nlm = np.zeros((Nt+1,nlm_len), dtype=np.complex64) # The expansion coefficients
 
 kwargs_LROT = dict(iota=1, Gamma0=None, nu=1) #      
-nlm[:,:], F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, **kwargs_LROT)
+nlm[:,:], F, time, ugrad = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, **kwargs_LROT)
 
 # Strain history
 strain = np.array([sf.F_to_strain(F[tt,:,:])[i,j] for tt in range(Nt+1)])
@@ -77,7 +77,7 @@ S = D/np.linalg.norm(D) # stress coaxial with strain-rate
 # (this is done by splicing DDRX simulation results into array containing LROT simulation results)
 I = np.argmin(np.abs(strain-strain_thres)) # starting state
 kwargs_DDRX = dict(iota=None, Gamma0=10, nu=1)
-nlm_, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, nlm0=nlm[I,:], **kwargs_DDRX)
+nlm_, F, time, ugrad = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, nlm0=nlm[I,:], **kwargs_DDRX)
 nlm[I:,:] = nlm_[:(Nt-I+1),:]
 
 #----------------------

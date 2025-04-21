@@ -91,7 +91,7 @@ Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, Lame_grain, rho, theta,phi) # phase
 
 !!! tip "Evolving CPO"
 
-    The below animation shows directional P- and S-wave velocities for a CPO evolving under [uniaxial compression](deformation-modes.md) along ${\hat {\bf z}}$, relative to an isotropic CPO, when subject to [lattice rotation](cpo-dynamics-tranisotropic.md).
+    The below animation shows directional P- and S-wave velocities for a CPO evolving under [uniaxial compression](deformation-kinematics.md) along ${\hat {\bf z}}$, relative to an isotropic CPO, when subject to [lattice rotation](lattice-rotation.md).
 
     ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/S2-maps/S2-vi.gif){: style="width:660px"}
 

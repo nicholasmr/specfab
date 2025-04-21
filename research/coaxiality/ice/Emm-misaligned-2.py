@@ -44,9 +44,9 @@ nlm_unidir = sf.nlm_ideal(m, 0, 4) # delta(r-m)
 ### Uniaxial compression state for L=10 (F_zz = 0.95)
 Nt = 200
 kwargs_LROT = dict(iota=1, Gamma0=None, nu=1) #      
-mod = dict(type='ps', r=+0, T=+1, axis=2)
+DK = dict(type='ps', q=+0, tau=+1, axis=2)
 strain_target = -0.95 # simulate parcel deformation until this target strain
-nlm_uc, F_uc, time_uc, ugrad_uc = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, **kwargs_LROT)
+nlm_uc, F_uc, time_uc, ugrad_uc = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, **kwargs_LROT)
 nlm_uc = nlm_uc[-1,:] # pick steady state
 
 #----------------------

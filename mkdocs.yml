@@ -1,31 +1,34 @@
 site_name: specfab documentation
 
 nav:
-    - About: index.md
-    - 'CPO representation':
+    - 📖 About: index.md
+    - 📦 Install: install.md
+    - '💎 CPO representation':
         - Representation: cpo-representation.md
         - Structure tensors: cpo-structuretensors.md
-        - Idealized states: cpo-idealized.md
-        - Rotation: cpo-rotation.md
-    - 'CPO dynamics':
-        - Transversely isotropic grains: cpo-dynamics-tranisotropic.md
-        - Orthotropic grains: cpo-dynamics-orthotropic.md
-        - Plastic spin: plastic-spin.md
-    - 'Viscous anisotropy':
-        - Strain-rate enhancements: enhancements-strainrate.md
-        - Constitutive equations: constitutive-viscoplastic.md
-    - 'Elastic anisotropy':
-        - Wave propagation: wavepropagation-elastic.md
-        - Constitutive equations: constitutive-elastic.md
-    - 'Electromagnetic anisotropy':
-        - Wave propagation: wavepropagation-electromagnetic.md
-    - 'Miscellaneous': 
-        - Plotting: plotting.md
-        - Deformation modes: deformation-modes.md
-    - 'Application gallery': 
+        - Idealized CPO states: cpo-idealized.md
+    - '⚙️ CPO Dynamics':
+        - Matrix model: cpo-matrix-model.md
+        - Lattice rotation: lattice-rotation.md
+        - Discontinous DRX: recrystallization-DDRX.md
+        - Continous DRX: recrystallization-CDRX.md
+        - Regularization: cpo-regularization.md
+    - '🌀 Viscous Anisotropy':
+        - Strain rate enhancement: enhancements-strainrate.md
+        - Glacier ice: enhancements-strainrate-ice.md
+        - Olivine: enhancements-strainrate-olivine.md
+    - '🌊 Wave propagation':
+        - Elastic: wavepropagation-elastic.md
+        - Electromagnetic: wavepropagation-electromagnetic.md
+    - '🖼️ Application Gallery': 
+        - Lagrangian parcel model: Lagrangian-parcel.md
         - Radar-derived physical properties: radar-derived-PP.md
-        - Lagrangian parcel integrator: Lagrangian-parcel-integrator.md
-        - FEM integration: FEM-integration.md
+        - Finite element integration: FEM-integration.md
+    - '🧩 Miscellaneous': 
+        - Deformation kinematics: deformation-kinematics.md
+        - Rotating CPOs: cpo-rotation.md
+        - Viscoplastic constitutive equations: constitutive-viscoplastic.md
+        - Elastic constitutive equations: constitutive-elastic.md
 
 theme: 
     name: 'readthedocs'

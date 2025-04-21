@@ -48,10 +48,10 @@ else:
 # Setup
 #---------------------
 
-mod = dict(type='ps', axis=2, T=+1, r=0) # Mode of deformation
+DK = dict(type='ps', axis=2, tau=+1, q=0) # Mode of deformation
 strain_target = -0.99 # calibration target
 
-D, W = sf.ugrad_to_D_and_W(sf.pureshear_ugrad(mod['axis'],mod['r'],mod['T']))
+D, W = sf.ugrad_to_D_and_W(sf.pureshear_ugrad(DK['axis'],DK['r'],DK['T']))
 
 Nt = 50 # calibration is target state this number of integration steps (should be relatively low, pushing it a bit!)
 
@@ -123,7 +123,7 @@ for Lii, L in enumerate(L_list):
     
     def J(x, *args):
         nu = x[0]*nu0 
-        nlm, *_ = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, iota=iota, nu=nu, regexpo=expo, apply_bounds=apply_bounds, verbose=verboseint) 
+        nlm, *_ = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, iota=iota, nu=nu, regexpo=expo, apply_bounds=apply_bounds, verbose=verboseint) 
         nlm_end = nlm[-1,:]
         err = np.real(nlm_dirac - nlm_end)[I] 
         abserr = np.abs(err)
@@ -152,10 +152,10 @@ for Lii, L in enumerate(L_list):
     # Sample solution
     #---------------------
         
-    nlm, F, time, *_ = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, iota=iota, nu=nu, regexpo=expo, apply_bounds=apply_bounds, verbose=verboseint) 
+    nlm, F, time, *_ = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, iota=iota, nu=nu, regexpo=expo, apply_bounds=apply_bounds, verbose=verboseint) 
     dt = time[1]-time[0]
     tsteps = range(Nt+1)    
-    strain_t = np.array([ sf.F_to_strain(sf.pureshear_F(mod['axis'],mod['r'],mod['T'], nn*dt))[2,2] for nn in tsteps])
+    strain_t = np.array([ sf.F_to_strain(sf.pureshear_F(DK['axis'],DK['r'],DK['T'], nn*dt))[2,2] for nn in tsteps])
     
     #---------------------
     # Plot results

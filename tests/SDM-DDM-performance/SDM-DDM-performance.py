@@ -28,7 +28,7 @@ Ngrains_list = np.int64(np.logspace(2, np.log10(3000), NN))
 t_SDM = np.zeros(len(L_list))
 t_DDM = np.zeros(len(Ngrains_list))
 
-### MOD
+### Deformation kinematics
 
 Nparcels = 13500
 Nt = 2000 
@@ -37,12 +37,12 @@ axis  = 2 # axis of shortening (T>0) or lengthening (T<0): 0=x, 1=y, 2=z
 Tc    = 1 # time taken in seconds for parcel to reduce to half (50%) height if T>0, or abs(time) taken for parcel to double in height (200%) if T<0.
 r     = 0 # asymmetry parameter for shortening (if T>0) or lengthening (if T<0)
 
-T = Tc/np.log(2) # corresponding e-folding time
+T = Tc/np.log(2) # corresponding e-folding time (tau)
 ugrad = sf.pureshear_ugrad(axis, r, T) # velocity gradient
 D, W = sf.ugrad_to_D_and_W(ugrad)      # strain-rate and spin tensor
 
 t = 4 # some specific time of interest
-b   = sf.pureshear_b(T, t)          # scaling parameter at time t
+b   = sf.pureshear_r(T, t)          # scaling parameter at time t
 F   = sf.pureshear_F(axis, r, T, t) # deformation gradient tensor at time t
 eps = sf.F_to_strain(F)             # strain tensor at time t
 

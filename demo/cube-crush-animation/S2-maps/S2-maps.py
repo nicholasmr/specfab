@@ -39,7 +39,7 @@ transparent = True
 
 ### Mode of deformation
 
-mod = dict(type='ps', axis=2, T=1, r=1) # uniaxial compression along z
+DK = dict(type='ps', axis=2, tau=1, q=1) # uniaxial compression along z
 strain_target = -0.98
 Nt = 100
 
@@ -230,7 +230,7 @@ if MAKE_FRAME_Eij or MAKE_FRAME_vi or MAKE_FRAME_vi_EM:
 
     ### Determine fabric evolution
     
-    nlm, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, iota=+1, nu=1) # latrot only
+    nlm, F, time, ugrad = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, iota=+1, nu=1) # latrot only
     strain = np.array([sf.F_to_strain(F[tt,:,:])[2,2] for tt in range(Nt+1)])
 
     ### Init vars    

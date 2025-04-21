@@ -68,21 +68,44 @@ contains
         Evw = (1-alpha)*Evw_Sachs + alpha*Evw_taylor
     end
 
-    function Evw_tranisotropic_HSP(v,w,tau, nlm, Eij_grain,beta,n_grain) result(Evw)
+!    function Evw_tranisotropic_HSP(v,w,tau, nlm, Eij_grain,beta,n_grain) result(Evw)
 
-        ! Generalized enhancement factor for transversely isotropic grains with the heterogeneous stress parametrization (HSP)
+!        ! Generalized enhancement factor for transversely isotropic grains with the heterogeneous stress parametrization (HSP)
+
+!        implicit none
+!        
+!        complex(kind=dp), intent(in) :: nlm(:)
+!        real(kind=dp), intent(in)    :: Eij_grain(2), beta, v(3),w(3), tau(3,3)
+!        integer, intent(in)          :: n_grain
+!        real(kind=dp)                :: vw(3,3), Evw
+
+!        vw = outerprod(v,w)    
+!    
+!        Evw = doubleinner22(rheo_fwd_tranisotropic_HSPhomo(tau, nlm,     Eij_grain,beta,n_grain), vw) / &
+!              doubleinner22(rheo_fwd_tranisotropic_HSPhomo(tau, nlm_iso, Eij_grain,beta,n_grain), vw)
+!    end
+
+    function Eij_tranisotropic_APEX(nlm, e1,e2,e3, Emin,Emax) result (Eij)
+
+        ! Enhancement factors w.r.t. (e1,e2,e3) axes.
+        ! Note: if (e1,e2,e3) coincide with fabric symmetry axes, then these are the fabric eigenenhancements.
 
         implicit none
-        
-        complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp), intent(in)    :: Eij_grain(2), beta, v(3),w(3), tau(3,3)
-        integer, intent(in)          :: n_grain
-        real(kind=dp)                :: vw(3,3), Evw
 
-        vw = outerprod(v,w)    
-    
-        Evw = doubleinner22(rheo_fwd_tranisotropic_HSPhomo(tau, nlm,     Eij_grain,beta,n_grain), vw) / &
-              doubleinner22(rheo_fwd_tranisotropic_HSPhomo(tau, nlm_iso, Eij_grain,beta,n_grain), vw)
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), dimension(3)  :: e1,e2,e3
+        real(kind=dp), intent(in)    :: Emin, Emax
+        real(kind=dp)                :: Eij(6)
+        
+        ! Longitudinal
+        Eij(1) = E_CAFFE(nlm, tau_vv(e1), Emin, Emax)
+        Eij(2) = E_CAFFE(nlm, tau_vv(e2), Emin, Emax)
+        Eij(3) = E_CAFFE(nlm, tau_vv(e3), Emin, Emax)
+
+        ! Shear
+        Eij(4) = E_CAFFE(nlm, tau_vw(e2,e3), Emin, Emax)
+        Eij(5) = E_CAFFE(nlm, tau_vw(e1,e3), Emin, Emax)
+        Eij(6) = E_CAFFE(nlm, tau_vw(e1,e2), Emin, Emax)
     end
 
     ! Orthotropic grains
@@ -266,12 +289,29 @@ contains
         real(kind=dp)                :: E, Davg, p
 
         Davg = ev_D(nlm, eps) ! Average deformability, <D>
-        Davg = abs(Davg) ! numerical errors cause this to be -1e-15 for a single max CPO when it should be zero.
-        if (Davg .lt. 1) then
+!        Davg = abs(Davg) ! numerical errors cause this to be -1e-15 for a single max CPO when it should be zero.
+        E = E_CAFFE_Davg(Davg, Emin, Emax)
+!        if (Davg .lt. 1) then
+!            p = 8.0d0/21 * (Emax-1)/(1-Emin)
+!            E = Emin + (1-Emin)*Davg**p
+!        else
+!            E = (4*Davg**2*(Emax-1) + 25 -4*Emax)/21.0d0
+!        end if
+    end
+    
+    function E_CAFFE_Davg(Davg, Emin, Emax)  result(E)
+    
+        implicit none
+
+        real(kind=dp), intent(in)    :: Davg, Emin, Emax
+        real(kind=dp)                :: E, Davgabs, p
+
+        Davgabs = abs(Davg) ! numerical errors cause this to be -1e-15 for a single max CPO when it should be zero.
+        if (Davgabs .lt. 1) then
             p = 8.0d0/21 * (Emax-1)/(1-Emin)
-            E = Emin + (1-Emin)*Davg**p
+            E = Emin + (1-Emin)*Davgabs**p
         else
-            E = (4*Davg**2*(Emax-1) + 25 -4*Emax)/21.0d0
+            E = (4*Davgabs**2*(Emax-1) + 25 -4*Emax)/21.0d0
         end if
     end
     

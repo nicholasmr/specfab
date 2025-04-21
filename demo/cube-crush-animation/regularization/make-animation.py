@@ -26,7 +26,7 @@ L = 20
 Nt = 100 
 strain_target = -0.97
 
-mod = dict(type='ps', axis=2, T=1, r=0) # mode of deformation
+DK = dict(type='ps', axis=2, tau=1, q=0)
 
 #---------------------
 # Fabric evolution
@@ -35,10 +35,10 @@ mod = dict(type='ps', axis=2, T=1, r=0) # mode of deformation
 lm, nlm_len = sf.init(L)
 
 # latrot only with calibrated high-L regularization
-nlm_reg, *_ = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, iota=+1, nu=1) 
+nlm_reg, *_ = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, iota=+1, nu=1) 
 
 # latrot only without regularization
-nlm_noreg, *_ = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, iota=+1, nu=None) 
+nlm_noreg, *_ = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, iota=+1, nu=None) 
 
 #---------------------
 # Plot results

@@ -26,23 +26,23 @@ ii_to_axis  = lambda ij: 0 if (ij=='xx') else (1 if (ij=='yy') else 2)
 ij_to_plane = lambda ij: 0 if (ij=='yz') else (1 if (ij=='xz') else 2)
 
 if exptype == 'ue': # Uniaxial extension
-    mod = dict(type='ps', T=-1, r=0,  axis=ii_to_axis(ijstr))
+    DK = dict(type='ps', tau=-1, q=0,  axis=ii_to_axis(ijstr))
     strain_target = 3
 
 if exptype == 'uc': # Uniaxial compression
-    mod = dict(type='ps', T=1, r=0,  axis=ii_to_axis(ijstr))
+    DK = dict(type='ps', tau=1, q=0,  axis=ii_to_axis(ijstr))
     strain_target = -0.98
 
 if exptype == 'cc': # Confined compression
-    mod = dict(type='ps', T=1, r=+1, axis=ii_to_axis(ijstr))
+    DK = dict(type='ps', tau=1, q=+1, axis=ii_to_axis(ijstr))
     strain_target = -0.98
 
 if exptype == 'ss': # Simple shear
-    mod = dict(type='ss', T=1, plane=ij_to_plane(ijstr))
+    DK = dict(type='ss', tau=1, plane=ij_to_plane(ijstr))
     strain_target = np.deg2rad(70)
     
 if exptype == 'rr': # Ridgid rotation
-    mod = dict(type='rr', T=1, plane=ij_to_plane(ijstr))
+    DK = dict(type='rr', tau=1, plane=ij_to_plane(ijstr))
     strain_target = np.deg2rad(90)
 
 #----------------------
@@ -53,7 +53,7 @@ Nt = 50 # Number of time steps
 L  = 8 # Spectral truncation
 
 lm, nlm_len = sf.init(L)
-nlm, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, iota=1, nu=1)
+nlm, F, time, ugrad = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, iota=1, nu=1)
 
 #----------------------
 # Determine eigenvalues, principal directions, and enhancement factors

@@ -31,13 +31,13 @@ def print_summary(nlm):
 Nt = 100
 kwargs_LROT = dict(iota=1, Gamma0=None, nu=1)
 
-mod = dict(type='ss', plane=2)
+DK = dict(type='ss', plane=2)
 strain_target = np.deg2rad(50) # simulate  parcel deformation until this target strain
-nlm, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, **kwargs_LROT)
+nlm, F, time, ugrad = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, **kwargs_LROT)
 print_summary(nlm)
 
-mod = dict(type='ps', r=-1, T=-1, axis=0)
+DK = dict(type='ps', q=-1, tau=-1, axis=0)
 strain_target = +4 # simulate  parcel deformation until this target strain
-nlm, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, **kwargs_LROT)
+nlm, F, time, ugrad = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, **kwargs_LROT)
 print_summary(nlm)
 

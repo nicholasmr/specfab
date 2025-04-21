@@ -8,17 +8,17 @@ The coupled evolution of flow and CPO can be solved by joining different compone
 
 Hence, specfab can model/provides
 
-* [CPO evolution](cpo-dynamics-tranisotropic.md) given bulk stress, strain-rate and temperature fields (green piece)
+* [CPO evolution](cpo-matrix-model.md) given bulk stress, strain-rate and temperature fields (green piece)
 * [Viscous anisotropy](enhancements-strainrate.md) induced by the CPO (orange piece)
 * [Bulk anisotropic rheologies](constitutive-viscoplastic.md) given the local viscous anisotropy (blue piece)
 
 ## Elmer/Ice
 
-See [Lilien et al. (2023)](https://doi.org/10.1017/jog.2023.78) for ice-flow modelling.
+See [Lilien et al. (2023)](https://doi.org/10.1017/jog.2023.78) for ice flow modelling.
 
 ## FEniCS
 
-See [Rathmann et al. (2025)](https://doi.org/10.1029/2024GC011831) for olivine modelling.
+See [Rathmann et al. (2024)](https://doi.org/10.1029/2024GC011831) for olivine modelling.
 
 <!--
 ## Icepack

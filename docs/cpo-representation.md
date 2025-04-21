@@ -12,31 +12,24 @@ Thus, depending on which crystallographic slip system is preferentially activate
 
 !!! note "Glacier ice"
 
-    Since ice grains are approximately transversely isotropic, tracking $n(\theta,\phi)$ (the $c$-axis distribution) is sufficient for representing the CPO.
+    | <center><div style="width:180px">Polycrystalline ice</div></center> | <center><div style="width:180px">Ensemble of slip elements</div></center> | |
+    | :- | :- | :- |
+    | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png){: style="width:200px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/polycrystal-disk.png){: style="width:200px"} | <div style="width:200px;">Since ice grains are approximately<br> transversely isotropic, tracking<br> $n(\theta,\phi)$ (the $c$-axis distribution)<br> is sufficient for representing<br> the CPO. </div> | 
 
-    | <center>Polycrystalline ice</center> | <center>Ensemble of slip elements</center> |
-    | :- | :- |
-    | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png){: style="width:250px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/polycrystal-disk.png){: style="width:250px"} |
+!!! tip "Olivine"
 
-!!! note "Olivine"
-
-    For orthotropic grains such as olivine, both $n(\theta,\phi)$ and $b(\theta,\phi)$ distributions must be tracked to represent the CPO.
-
-    | <center>Polycrystalline olivine</center> | <center>Ensemble of slip elements</center> |
-    | :- | :- |
-    | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:250px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/polycrystal-plane.png){: style="width:250px"} |
-
-    Note that $n(\theta,\phi)$ and $b(\theta,\phi)$ represent the distributions of particular crystallographic axes (${\bf m}'_i$) depending on fabric type (A&mdash;E type).
-    
+    | <center><div style="width:180px">Polycrystalline olivine</div></center> | <center><div style="width:180px">Ensemble of slip elements</div></center> | | 
+    | :- | :- | :- |
+    | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:200px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/polycrystal-plane.png){: style="width:200px"} | <div style="width:200px;">For orthotropic grains such as<br> olivine, both $n(\theta,\phi)$ and $b(\theta,\phi)$<br> distributions must be tracked<br> to represent the CPO.<br><br> <u>*Notice*</u>: $n$ and $b$ represent the<br> distributions of a particular<br> crystallographic axes, depending<br> on fabric type (A&mdash;E type).</div> | 
    
-## Definitions
+## Background
 
 
 CPOs of ice and olivine are here defined as the size and orientation distribution of grains, without any reference to grain topology, grain shape, or the spatial arrangement of grains. 
 In the general-most case, this means statistically describing the directions in which grain slip-plane normal and slip direction ($n$- and $b$-axes) are pointing while also taking into account how massive each grain is. 
 
 
-The *mass-density orientation distribution function* $\rho^{*}({\bf n},{\bf b})$ describes how grain mass is distributed in the space of possible grain orientations, where ${\bf n}$ and ${\bf b}$ are arbitrary $n$- and $b$-axes (unit vectors). Since $\rho^{*}$ is taken to be normalized by the polycrystal volume, integrating $\rho^{*}$ over all possible grain orientations recovers the mass density of the polycrystal (e.g. $\rho=917$ kg/m$^3$ for ice):
+The *mass-density orientation distribution function* $\rho^{*}({\bf n},{\bf b})$ describes how grain mass is distributed in the space of possible grain orientations ([Faria, 2006](https://royalsocietypublishing.org/doi/abs/10.1098/rspa.2005.1610)), where ${\bf n}(\theta,\phi)$ and ${\bf b}(\theta,\phi)$ are arbitrary $n$- and $b$-axes (unit vectors). Since $\rho^{*}$ is taken to be normalized by the polycrystal volume, integrating $\rho^{*}$ over all possible grain orientations recovers the mass density of the polycrystal (e.g. $\rho=917$ kg/m$^3$ for ice):
 $$ 
 \rho = \int_{S^2} \int_{S^2} \rho^{*}({\bf n},{\bf b}) \,\mathrm{d}^2{\bf b}\, \mathrm{d}^2{\bf n} ,
 $$ 
@@ -61,6 +54,14 @@ $$
 b(\theta,\phi) = \frac{\int_{S^2} \rho^{*}({\bf n},{\bf b})\,\mathrm{d}^2{\bf n}}{\rho} .
 $$
 When needed, the joint distribution function $\rho^{*}({\bf n},{\bf b})$ is the back-constructed from its marginal distributions following the identity for conditional probability density functions [and some assumptions](https://doi.org/10.1029/2024GC011831). 
+
+## Mass or number density distributions?
+The normalized distributions $n(\theta,\phi)$ and $b(\theta,\phi)$ are typically referred to as the Mass Orientation Distribution Functions (**MODFs**) or the Orientation Mass Distributions (**OMDs**).
+
+In the literature, number density distributions, rather than mass density, frequently appear. 
+In this case, $n(\theta,\phi)/N$ and $b(\theta,\phi)/N$ are understood as the normalized Orientation Distribution Functions (**ODFs**) of slip-plane normals and slip directions, respectively, where $N = \int_{S^2} n(\theta,\phi) \,\mathrm{d}^2{\bf n}$ is the total number of grains. 
+In specfab's representation of [crystal processes](cpo-matrix-model.md) (lattice rotation, DDRX, CDRX) the normalization is conserved and the two views give, in effect, the same result (not least because CPO-derived quantities depend on the normalized distributions, which are identical). 
+The mass-density-fraction interpretation rests, however, on stronger physical grounds as mass is conserved whereas grain numbers are not.
 
 <!--
 
@@ -110,20 +111,28 @@ where the magnitude and complex phase of the coefficients determine the size and
 
 ### Reduced form
 
-Not all expansion coefficients are independent for real-valued expansion series, but must fulfill (likewise for $b$)
+Not all expansion coefficients are independent for real-valued expansion series, but must fulfill
 
 $$ 
-n_l^{-m}=(-1)^m(n_l^m)^* .
+n_l^{-m}=(-1)^m(n_l^m)^* ,
+$$
+
+$$ 
+b_l^{-m}=(-1)^m(b_l^m)^* .
 $$
 
 This can be taken advantage of for large problems where many (e.g. gridded) CPOs must be stored in memory, thereby effectively reducing the size of the problem. 
-The vector of reduced expansion coefficients is defined as
+The vectors of reduced expansion coefficients is defined as
 
 $$
-\tilde{{\bf s}}= [n_0^0,n_2^{0},n_2^{1},n_2^{2},n_4^{0},\cdots,n_4^{4},\cdots,n_L^{0},\cdots,n_L^{L}] \quad\text{(reduced state vector)}.
+\tilde{{\bf s}}_n = [n_0^0,n_2^{0},n_2^{1},n_2^{2},n_4^{0},\cdots,n_4^{4},\cdots,n_L^{0},\cdots,n_L^{L}] \quad\text{(reduced $n$ state vector)}.
 $$
 
-Converting between full and reduced forms is done as follows:
+$$
+\tilde{{\bf s}}_b = [b_0^0,b_2^{0},b_2^{1},b_2^{2},b_4^{0},\cdots,b_4^{4},\cdots,b_L^{0},\cdots,b_L^{L}] \quad\text{(reduced $b$ state vector)}.
+$$
+
+Converting between full and reduced forms is done as follows (and similarly for $\tilde{{\bf s}}_b$):
 
 ```python
 import numpy as np

@@ -290,5 +290,6 @@ sfplt.plotparcel(ax1, F, **kwargs)
 
 fout = 'shear-angle-validation.pdf'
 print('Saving %s'%(fout))
+fig.patch.set_alpha(0.0)
 plt.savefig(fout, dpi=300)
 

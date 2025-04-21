@@ -79,8 +79,8 @@ y_corr = sf.nhat40_empcorr_ice(x_corr)
 # Load modelled state trajectories
 #--------------------
 
-mod = dict(type='pureshear', axis=2, T=1 if strain_target<0 else -1, r=0)
-nlm, F, time, ugrad = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, iota=+1, nu=1) # latrot only
+DK = dict(type='pureshear', axis=2, tau=1 if strain_target<0 else -1, q=0)
+nlm, F, time, ugrad = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, iota=+1, nu=1) # latrot only
 nlm /= norm # nlm is now normalized (nhat coefs)
 strainzz = np.array([sf.F_to_strain(F[tt,:,:])[2,2] for tt in range(Nt+1)])
 

@@ -1,7 +1,5 @@
 # Radar-derived physical properties of glacier ice  
 
-## Introduction
-
 The dielectric permittivity tensor of a single ice crystal is approximately transversely isotropic w.r.t. the crystal $c$-axis:
 $$
 \epsilon_{ij}' = (2\epsilon_{\perp}' + \epsilon_{\parallel}') \frac{\delta_{ij}}{3}
@@ -71,16 +69,19 @@ Since $\lambda_1$ is unknown, the problem can be closed by making different assu
 Suppose $\Delta\lambda$ is measured in region where $c$-axes are, to a good approximation, suspected to be distributed on the ${\bf m}_2$&mdash;${\bf z}$ plane because the smallest eigenvalue is vanishing, $\lambda_1 \rightarrow 0$.
 In this case, $\Delta \lambda = 0$ represents a perfect single-maximum along ${\bf z}$, $\Delta \lambda = 0.5$ a perfect girdle in the ${\bf m}_2$&mdash;${\bf z}$ plane, and $\Delta \lambda = 1$ a perfect single-maximum along ${\bf m}_2$, respectively:
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/plane-CPOs.png){: style="width:650px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/plane-CPOs.png){: style="width:600px"}
 
 ## CPO $\rightarrow$ Enhancement factors
 
 If $\langle c_i c_j \rangle$ can be inferred from radar sounding following the above method, so can the bulk strain-rate enhancement factors, $E_{ij}$, in the same eigenframe (i.e. [eigenenhancements](enhancements-strainrate.md)).
 
 The eigenenhancements depend, however, also on the fourth-order structure tensor, $\langle c_i c_j c_k c_l \rangle$, but the bulk permittivity $\epsilon_{ij}$ is insensitive to $\langle c_i c_j c_k c_l \rangle$.
-To overcome this, two approaches can be taken:
+To overcome this, two approaches can be taken.
 
-* Use the [IBOF closure approximation of Elmer/Ice](https://doi.org/10.1016/j.jnnfm.2005.11.005):
+### Method 1: 
+
+Use the [IBOF closure approximation of Elmer/Ice](https://doi.org/10.1016/j.jnnfm.2005.11.005):
+ 
 ```python
 import numpy as np
 from specfabpy import specfab as sf
@@ -93,9 +94,9 @@ a2 = np.diag([l1, l1+dl, 1-dl-2*l1]) # second-order structure tensor, <c_i c_j>,
 a4 = sf.a4_IBOF(a2) # Elmer/Ice IBOF closure approximation
 ```
 
-* Use an empirical correlation for determining $\langle c_i c_j c_k c_l \rangle$ given $\langle c_i c_j\rangle$ if the CPO is approximately rotationally symmetric.
+### Method 2
 
-### Emperical correlation between $\langle c_i c_j c_k c_l \rangle$ and $\langle c_i c_j\rangle$
+Use an empirical correlation for determining $\langle c_i c_j c_k c_l \rangle$ given $\langle c_i c_j\rangle$ if the CPO is approximately rotationally symmetric.
 
 If the CPO symmetry axis is rotated into the vertical direction, $\langle c_i c_j\rangle$ depends only on the normalized [spectral component](cpo-representation.md) $\hat{n}_2^0 = n_2^0/n_0^0:$
 
@@ -112,12 +113,10 @@ $$
 and $\langle c_i c_j c_k c_l \rangle$ only on $\hat{n}_2^0$ and $\hat{n}_4^0 = n_4^0/n_0^0$ (not shown).
 The figure below shows the empirical correlation between these two components based on ice-core samples.
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/research/state-space/ice/state-space-empcorr.png){: style="width:570px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/research/state-space/ice/state-space-empcorr.png){: style="width:540px"}
 
 Thus, if $\hat{n}_2^0$ is extracted from $\langle c_i c_j\rangle$ in this frame, $\hat{n}_4^0$ can be derived and hence $\langle c_i c_j c_k c_l \rangle$ constructed.
 To pose the CPO in the original, unrotated eigenframe (${\bf m}_1, {\bf m}_2, {\bf z}$), the resulting expansion series is finally rotated back, allowing eigenenhancements to easily be calculated using specfab.
-
-### Code example
 
 The following code demonstrates how to take each step with specfab:
 
@@ -167,14 +166,10 @@ Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # (E_{m1,m1},
 # To calculate bulk enhancement factors w.r.t. other axes of deformation/stress, change (e1,e2,e3) accordingly.
 ```
 
-For reference, the below plots show the different CPOs at each step for $\Delta\lambda=0.5$ and $\Delta\lambda=1$.
+For reference, the following plots show the different CPOs at each step for $\Delta\lambda=0.5$ and $\Delta\lambda=1$, respectively:
 
-!!! info "$\Delta\lambda = 0.5$"
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/code-example-output-dl0.5.png){: style="width:600px"}
 
-    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/code-example-output-dl0.5.png){: style="width:650px"}
-
-!!! info "$\Delta\lambda = 1.0$"
-
-    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/code-example-output-dl1.0.png){: style="width:650px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/radar-PP-figs/code-example-output-dl1.0.png){: style="width:600px"}
 
 

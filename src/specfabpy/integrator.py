@@ -3,37 +3,37 @@
 import numpy as np
 from progress.bar import Bar
 
-def lagrangianparcel(sf, mod, strain_target, Nt=100, dt=None, nlm0=None, verbose=True, \
+def lagrangianparcel(sf, DK, strain_target, Nt=100, dt=None, nlm0=None, verbose=True, \
                     iota=None, zeta=0, Lambda=None, Gamma0=None, # fabric process params \
                     nu=None, regexpo=None, apply_bounds=False # regularization \
     ):
 
     """
-    Lagrangian parcel integrator subject to a time-constant mode of deformation (constant ugrad)
+    Lagrangian parcel integrator subject to a time-constant deformation kinematics (constant ugrad)
     """
 
-    ### Mode of deformation
+    ### Deformation kinematics
     
-    if not ('T' in mod): mod['T'] = 1 # set T if not characteristic time-scale provided
+    if not ('tau' in DK): DK['tau'] = 1 # set T if not characteristic time-scale provided
     
-    if mod['type'] == 'simpleshear' or mod['type'] == 'ss':
+    if DK['type'] == 'simpleshear' or DK['type'] == 'ss':
         # strain_target is shear angle (rad)
-        if dt is None: dt = sf.simpleshear_gamma_to_t(strain_target, mod['T'])/Nt
-        F     = np.array([sf.simpleshear_F(mod['plane'], mod['T'], dt*nt) for nt in np.arange(Nt+1)])
-        ugrad = sf.simpleshear_ugrad(mod['plane'], mod['T'])
+        if dt is None: dt = sf.simpleshear_gamma_to_t(strain_target, DK['tau'])/Nt
+        F     = np.array([sf.simpleshear_F(DK['plane'], DK['tau'], dt*nt) for nt in np.arange(Nt+1)])
+        ugrad = sf.simpleshear_ugrad(DK['plane'], DK['tau'])
         
-    elif mod['type'] == 'pureshear' or mod['type'] == 'ps':
+    elif DK['type'] == 'pureshear' or DK['type'] == 'ps':
         # strain_target is axial strain
-        if dt is None: dt = sf.pureshear_strainii_to_t(strain_target, mod['T'])/Nt
-        F     = np.array([sf.pureshear_F(mod['axis'], mod['r'], mod['T'], dt*nt) for nt in np.arange(Nt+1)])
-        ugrad = sf.pureshear_ugrad(mod['axis'], mod['r'], mod['T'])
+        if dt is None: dt = sf.pureshear_strainii_to_t(strain_target, DK['tau'])/Nt
+        F     = np.array([sf.pureshear_F(DK['axis'], DK['q'], DK['tau'], dt*nt) for nt in np.arange(Nt+1)])
+        ugrad = sf.pureshear_ugrad(DK['axis'], DK['q'], DK['tau'])
         
-    elif mod['type'] == 'rigidrotation' or mod['type'] == 'rr':
+    elif DK['type'] == 'rigidrotation' or DK['type'] == 'rr':
         # strain_target is rotation angle
         raise Exception('type="rigidrotation" not yet supported')
         
     else:
-        raise ValueError('Mode of deformation type="%s" not supported'%(mod['type']))
+        raise ValueError('Mode of deformation type="%s" not supported'%(DK['type']))
     
     D, W = sf.ugrad_to_D_and_W(ugrad) 
     S = D.copy() # assume coaxial stress strain-rate
@@ -68,7 +68,7 @@ def lagrangianparcel(sf, mod, strain_target, Nt=100, dt=None, nlm0=None, verbose
            
     ### Euler integration
 
-    if verbose: bar = Bar('MOD=%s :: Nt=%i :: dt=%.2e :: nlm_len=%i ::'%(mod['type'],Nt,dt,nlm_len), max=Nt-1, fill='#', suffix='%(percent).1f%% - %(eta)ds')
+    if verbose: bar = Bar('DK=%s :: Nt=%i :: dt=%.1e ::'%(DK['type'],Nt,dt), max=Nt-1, fill='#', suffix='%(percent).1f%% - %(eta)ds')
     
     for nt in np.arange(1,Nt+1):
         nlm_prev = nlm[nt-1,:]

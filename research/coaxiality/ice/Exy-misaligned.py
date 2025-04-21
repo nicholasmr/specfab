@@ -36,9 +36,9 @@ lm, nlm_len = sf.init(L)
 # Uniaxial compression fabric as reference fabric state
 Nt = 200
 kwargs_LROT = dict(iota=1, Gamma0=None, nu=1) #      
-mod = dict(type='ps', r=+0, T=+1, axis=1)
+DK = dict(type='ps', q=+0, tau=+1, axis=1)
 strain_target = -0.95 # simulate parcel deformation until this target strain
-nlm_uc, F_uc, time_uc, ugrad_uc = sfint.lagrangianparcel(sf, mod, strain_target, Nt=Nt, **kwargs_LROT)
+nlm_uc, F_uc, time_uc, ugrad_uc = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, **kwargs_LROT)
 nlm0 = nlm_uc[-1,:] # reference fabric
 
 #----------------------

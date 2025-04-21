@@ -18,76 +18,74 @@ end
 
 ! Pure shear
 
-function pureshear_b(T, time) result (b)
+function pureshear_r(tau, time) result (r)
     use specfabpy_const
     implicit none
-    real(kind=dp), intent(in) :: T, time
-    real(kind=dp)             :: b
-    b = pureshear_b__sf(T, time)
+    real(kind=dp), intent(in) :: tau, time
+    real(kind=dp)             :: r
+    r = pureshear_r__sf(tau, time)
 end
 
-function pureshear_strainii_to_t(strainii, T) result (time)
-    ! Time taken to reach strainii strain for ax=i:
-    !   strainii = Fii - 1 = b^(-1) - 1 = exp(-t/T) - 1 => exp(-t/T) = strainii + 1
+function pureshear_strainii_to_t(strainii, tau) result (time)
     use specfabpy_const
     implicit none
-    real(kind=dp), intent(in) :: strainii,T
+    real(kind=dp), intent(in) :: strainii, tau
     real(kind=dp)             :: time
-    time = pureshear_strainii_to_t__sf(strainii, T)
+    time = pureshear_strainii_to_t__sf(strainii, tau)
 end
 
-function pureshear_F(ax,r,T, time) result (F)
+function pureshear_F(ax,q,tau, time) result (F)
     use specfabpy_const
     implicit none
     integer, intent(in) :: ax
-    real(kind=dp), intent(in) :: r,T,time
+    real(kind=dp), intent(in) :: q,tau,time
     real(kind=dp)             :: F(3,3)
-    F = pureshear_F__sf(ax,r,T, time)
+    F = pureshear_F__sf(ax,q,tau, time)
 end
    
-function pureshear_ugrad(ax,r,T) result(ugrad)
+function pureshear_ugrad(ax,q,tau) result(ugrad)
     use specfabpy_const
     implicit none
     integer, intent(in)       :: ax
-    real(kind=dp), intent(in) :: r,T
+    real(kind=dp), intent(in) :: q,tau
     real(kind=dp)             :: ugrad(3,3)
-    ugrad = pureshear_ugrad__sf(ax,r,T)
+    ugrad = pureshear_ugrad__sf(ax,q,tau)
 end
 
 ! Simple shear 
 
-function simpleshear_gamma(T, time) result (gam)
+function simpleshear_gamma(tau, time) result (gam)
     use specfabpy_const
     implicit none
-    real(kind=dp), intent(in) :: T, time
+    real(kind=dp), intent(in) :: tau, time
     real(kind=dp)             :: gam
-    gam = simpleshear_gamma__sf(T, time)
+    gam = simpleshear_gamma__sf(tau, time)
 end
 
-function simpleshear_gamma_to_t(gam, T) result (time)
+function simpleshear_gamma_to_t(gam, tau) result (time)
     ! Time taken to reach shear angle gam
     use specfabpy_const
     implicit none
-    real(kind=dp), intent(in) :: gam,T
+    real(kind=dp), intent(in) :: gam,tau
     real(kind=dp)             :: time
-    time = simpleshear_gamma_to_t__sf(gam, T)
+    time = simpleshear_gamma_to_t__sf(gam, tau)
 end
 
-function simpleshear_F(plane,T, time) result (F)
+function simpleshear_F(plane,tau, time) result (F)
     use specfabpy_const
     implicit none
     integer, intent(in)       :: plane
-    real(kind=dp), intent(in) :: T,time
+    real(kind=dp), intent(in) :: tau,time
     real(kind=dp)             :: F(3,3)
-    F = simpleshear_F__sf(plane,T, time)
+    F = simpleshear_F__sf(plane,tau, time)
 end
    
-function simpleshear_ugrad(plane,T) result(ugrad)
+function simpleshear_ugrad(plane,tau) result(ugrad)
     use specfabpy_const
     implicit none
     integer, intent(in)       :: plane
-    real(kind=dp), intent(in) :: T
+    real(kind=dp), intent(in) :: tau
     real(kind=dp)             :: ugrad(3,3)
-    ugrad = simpleshear_ugrad__sf(plane,T)
+    ugrad = simpleshear_ugrad__sf(plane,tau)
 end
 

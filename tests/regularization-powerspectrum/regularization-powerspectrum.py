@@ -26,13 +26,13 @@ FSAX = FS+0
 
 Nt = 100 
 strain_target = -0.97
-mod = dict(type='ps', axis=2, T=1, r=0) # mode of deformation
+DK = dict(type='ps', axis=2, tau=1, q=0) 
 
 #---------------------
 # Fabric evolution
 #---------------------
 
-args   = (sf, mod, strain_target)
+args   = (sf, DK, strain_target)
 kwargs = dict(Nt=Nt, iota=+1)
 
 L = 16

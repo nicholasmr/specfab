@@ -296,16 +296,42 @@ contains
         end do
     end
 
-    function ev_D(nlm, tau) 
+    function ev_ED(nlm, tau) 
     
         !------------------
-        ! DDRX sink term <D>, where D is the deformability
+        ! Average basal-plane RSS to the *forth* power (Extended Deformability, ED) 
         !------------------
     
         implicit none
 
         complex(kind=dp), intent(in) :: nlm(nlm_len)
-        real(kind=dp), intent(in)    :: tau(3,3) ! Stress tensor
+        real(kind=dp), intent(in)    :: tau(3,3) ! deviatoric stress tensor
+        real(kind=dp)                :: ev_ED
+        real(kind=dp)                :: norm, normsq, tausq(3,3), tautau(3,3,3,3), tausqtau(3,3,3,3)
+        real(kind=dp)                :: a2mat(3,3), a4mat(3,3,3,3), a6mat(3,3,3,3, 3,3), a8mat(3,3,3,3, 3,3,3,3)
+
+        tausq    = matmul(tau,tau)          ! = tau.tau
+        tautau   = outerprodmat2(tau,tau)   ! = tau otimes tau
+        tausqtau = outerprodmat2(tausq,tau) ! = (tau.tau) otimes tau
+        norm = tausq(1,1) + tausq(2,2) + tausq(3,3) ! tr(tau.tau) = tau:tau
+        normsq = norm**2
+        call f_ev_ck(nlm, 'f', a2mat, a4mat, a6mat, a8mat) ! structure tensors 
+        ev_ED =         doubleinner22(tausq,doubleinner42(a4mat,tausq)) 
+        ev_ED = ev_ED + doubleinner44(tautau,doubleinner84(a8mat,tautau))
+        ev_ED = ev_ED - 2*doubleinner44(tausqtau,doubleinner62(a6mat,tau))
+        ev_ED = 35/2.0d0 * ev_ED/normsq ! normalize
+    end
+
+    function ev_D(nlm, tau) 
+    
+        !------------------
+        ! Average basal-plane RSS to the *second* power (Deformability, D)
+        !------------------
+    
+        implicit none
+
+        complex(kind=dp), intent(in) :: nlm(nlm_len)
+        real(kind=dp), intent(in)    :: tau(3,3) ! deviatoric stress tensor
         real(kind=dp)                :: ev_D
         real(kind=dp)                :: tauv(6), tausq(3,3), norm, a4v(6,6), a2v(6)
 
@@ -313,21 +339,21 @@ contains
         tausq = matmul(tau,tau) ! = tau.tau
         norm = tausq(1,1) + tausq(2,2) + tausq(3,3) ! tr(tau.tau) = tau:tau
         
-        call f_ev_ck_Mandel(nlm, a2v, a4v) ! Structure tensors in Mandel notation
+        call f_ev_ck_Mandel(nlm, a2v, a4v) ! structure tensors in Mandel notation
         ev_D = dot_product(mat_to_vec(tausq),a2v) - dot_product(tauv,matmul(a4v,tauv)) ! (tau.tau):a2 - tau:a4:tau
-        ev_D = 5 * ev_D/norm ! Normalize by tau:tau/5 
+        ev_D = 5 * ev_D/norm ! normalize by tau:tau/5 
     end
     
     subroutine ev_Dk(nlm, tau, ev_D2, ev_D4)
     
         !------------------
-        ! DDRX sink term <D c^k> for k=2,4, where D is the deformability
+        ! DDRX sink term <D c^k> for k=2,4, where D is the deformability (normalized basal-plane RSS squared)
         !------------------
     
         implicit none
 
         complex(kind=dp), intent(in) :: nlm(nlm_len)
-        real(kind=dp), intent(in)    :: tau(3,3) ! Stress tensor
+        real(kind=dp), intent(in)    :: tau(3,3) ! deviatoric stress tensor
         real(kind=dp), intent(out)   :: ev_D2(3,3), ev_D4(3,3,3,3)
         
         real(kind=dp)                :: tauv(6), tausq(3,3), norm
