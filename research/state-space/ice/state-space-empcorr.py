@@ -166,7 +166,7 @@ plt.ylim(ylims)
 ### Second x axis for a_zz^(2) comparrison 
 
 secax = ax.secondary_xaxis('top', functions=(n20_to_azz, azz_to_n20))
-secax.set_xlabel(r'$\ev*{c_i c_j}_{zz}$')
+secax.set_xlabel(r'$\ev*{\vb{c}^2}_{zz}$')
 xticks = np.arange(0,1+1e-3,0.1)
 secax.set_xticks(xticks[0::2])
 secax.set_xticks(xticks[::1], minor=True)
