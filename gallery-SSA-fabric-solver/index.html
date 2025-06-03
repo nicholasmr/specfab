@@ -5,15 +5,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Elastic constitutive eqns. - specfab documentation</title>
+    <title>Steady SSA CPO field - specfab documentation</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Elastic constitutive eqns.";
-        var mkdocs_page_input_path = "constitutive-elastic.md";
+        var mkdocs_page_name = "Steady SSA CPO field";
+        var mkdocs_page_input_path = "gallery-SSA-fabric-solver.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -87,8 +87,16 @@
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
-              <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../gallery-SSA-fabric-solver/">Steady SSA CPO field</a>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Steady SSA CPO field</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#closing-the-problem">Closing the problem</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#regularization">Regularization</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#example-for-ross-ice-shelf">Example for Ross ice shelf</a>
+    </li>
+    </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../gallery-CPO-from-radar/">Inferring CPO from radar</a>
                   </li>
@@ -98,7 +106,7 @@
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🧩 Miscellaneous</span></p>
-              <ul class="current">
+              <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../deformation-kinematics/">Deformation kinematics</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plot CPO</a>
@@ -107,21 +115,7 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../constitutive-viscoplastic/">Viscoplastic constitutive eqns.</a>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Elastic constitutive eqns.</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#transversely-isotropic">Transversely isotropic</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#api">API</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#orthotropic">Orthotropic</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#api_1">API</a>
-    </li>
-        </ul>
-    </li>
-    </ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Elastic constitutive eqns.</a>
                   </li>
               </ul>
       </div>
@@ -138,8 +132,8 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
-          <li>🧩 Miscellaneous &raquo;</li>
-      <li>Elastic constitutive eqns.</li>
+          <li>🖼️ Application Gallery &raquo;</li>
+      <li>Steady SSA CPO field</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -148,137 +142,48 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="elastic-constitutive-equations">Elastic constitutive equations</h1>
-<p>Linear elastic constituve equations are supported in both forward and inverse (reverse) form.</p>
+                <h1 id="steady-ssa-cpo-field">Steady SSA CPO field</h1>
+<p>If the velocity field <span class="arithmatex">\({\bf u}({\bf{x}},t)\)</span> and CPO field <span class="arithmatex">\({\bf s}({\bf{x}},t)\)</span> can be assumed steady, CPO evolution reduces to a high-dimensional boundary value problem in <span class="arithmatex">\({\bf s}({\bf{x}},t)\)</span> that can easily be solved using e.g. the finite element method. </p>
+<p>When considering the flow glacier ice, it is common to simplify the problem by invoking the Shallow Shelf Approximation (SSA), a depth-integrated version of the full Stokes equations. 
+This approximation conveniently reduces the problem to a two-dimensional horizontal, membrane-like flow with negligible vertical shear. </p>
+<p>Performing a similar calculation, the depth-average equation for steady CPO evolution can be shown to take the form <a href="missinglink">(Rathmann et al., 2025)</a> </p>
+<div class="arithmatex">\[
+({\bf u} \cdot \nabla) {\bf \bar s} = 
+({\bf M}_{\mathrm{LROT}}+{\bf M}_{\mathrm{DDRX}}+{\bf M}_{\mathrm{CDRX}}) \cdot {\bf \bar s} 
++ \frac{a_{\mathrm{sfc}}}{H}( {\bf s}_{\mathrm{sfc}} - {\bf \bar s} ) 
++ \frac{a_{\mathrm{sub}}}{H}( {\bf s}_{\mathrm{sub}} - {\bf \bar s} ) 
+,
+\]</div>
+<p>where <span class="arithmatex">\({\bf \bar s}(x,y)\)</span> is the depth-average CPO state vector field, <span class="arithmatex">\({\bf{u}}(x,y)=[u_x(x,y),u_y(x,y)]\)</span> is the horizontal surface velocity field, and <span class="arithmatex">\(H\)</span> is the ice thickness, 
+The first term represents CPO advection along stream lines, and the second term represents the depth-average effect of crystal processes. 
+The third and fourth terms are state-space attractors, causing <span class="arithmatex">\({\bf \bar s}\)</span> to tend towards the characteristic CPO states of ice that accumulates on the surface <span class="arithmatex">\({\bf s}_{\mathrm{sfc}}\)</span> or subglacially <span class="arithmatex">\({\bf s}_{\mathrm{sub}}\)</span> (likely isotropic), depending on the positively-defined accumulation rates <span class="arithmatex">\(a_{\mathrm{sfc}}\)</span> and <span class="arithmatex">\(a_{\mathrm{sub}}\)</span>. </p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/SSA-fabric/SSA-fabric.png" style="width:440px" /></p>
+<h2 id="closing-the-problem">Closing the problem</h2>
+<p>If only lattice rotation is relevant (typical for cold ice), the problem is closed by specifying the horizontal surface velocity field (e.g., satellite-derived velocities), together with accumulation rates and the characteristic CPO state of accumulated ice (typically isotropic). </p>
+<p>If DDRX is non-negligible (typical for warm ice), the temperature and stress field must additionally be prescribed. One solution is to presume some temperature field and assert that the stress and strain-rate tensors are coaxial so that <span class="arithmatex">\({\boldsymbol\tau} \propto \dot{\boldsymbol\epsilon}\)</span> <a href="missinglink">(Rathmann et al., 2025)</a>.</p>
+<h2 id="regularization">Regularization</h2>
+<p>Noise in the surface velocity products used, in addition to uncertainties due to model assumptions, can render the steady SSA CPO problem ill-posed. 
+Adding Laplacian regularization of the form <span class="arithmatex">\(\gamma \nabla^2 {\bf \bar s}\)</span> to the right-hand side of the problem solves this, at the expense of limiting how large spatial gradients are permitted in the CPO field. 
+The strength of regularization <span class="arithmatex">\(\gamma\)</span> is therefore a free model parameter which must be carefully selected, especially in very dynamic regions where the CPO field might change rapidly with distance. </p>
+<h2 id="example-for-ross-ice-shelf">Example for Ross ice shelf</h2>
+<p><b>Documentation in prep. Will be updated once new paper is released.</b></p>
 <!--
-- Forward form ${\bf E}({\bf S})$ 
-- Inverse form ${\bf S}({\bf E})$ 
+**Step 1**<br>
 
-where $\bf{E}$ and $\bf{S}$ are the strain and stress tensors, respectively.
--->
+**Step 2**<br>
 
-<h2 id="transversely-isotropic">Transversely isotropic</h2>
-<table>
-<thead>
-<tr>
-<th align="center">Symmetries</th>
-<th align="center">Stiffness matrix <span class="arithmatex">\({\bf C}\)</span> for <span class="arithmatex">\(\bf{m}=\hat{\bf{z}}\)</span></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-elastic-bulk.png" style="width:120px" /></td>
-<td align="center"><span class="arithmatex">\(\begin{bmatrix}\gamma &amp; \lambda &amp; \hat{\lambda}\lambda &amp; 0 &amp; 0 &amp; 0 \\\lambda &amp; \gamma &amp; \hat{\lambda}\lambda &amp; 0 &amp; 0 &amp; 0 \\\hat{\lambda}\lambda &amp; \hat{\lambda}\lambda &amp; \hat{\gamma}\gamma &amp; 0 &amp; 0 &amp; 0 \\0&amp;0&amp;0&amp; \hat{\mu}\mu &amp; 0 &amp; 0\\0&amp;0&amp;0&amp; 0 &amp; \hat{\mu}\mu &amp; 0\\0&amp;0&amp;0&amp; 0 &amp; 0 &amp; \mu\\\end{bmatrix}\)</span></td>
-</tr>
-</tbody>
-</table>
-<h3 id="api">API</h3>
-<ul>
-<li>Forward form: <code>E = sf.elas_fwd_tranisotropic(S, lam, mu, Elam, Emu, Egam, m)</code></li>
-<li>Inverse form: <code>S = sf.elas_rev_tranisotropic(E, lam, mu, Elam, Emu, Egam, m)</code></li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>Arguments</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>S</code>, <code>E</code></td>
-<td>Stress and strain tensor (3x3)</td>
-</tr>
-<tr>
-<td><code>lam</code>, <code>mu</code></td>
-<td>Isotropic Lamé parameters <span class="arithmatex">\(\lambda\)</span> and <span class="arithmatex">\(\mu\)</span></td>
-</tr>
-<tr>
-<td><code>Elam</code>, <code>Emu</code>, <code>Egam</code></td>
-<td>Anisotropic enhancement factors <span class="arithmatex">\(\hat{\lambda}\)</span>, <span class="arithmatex">\(\hat{\mu}\)</span>, and <span class="arithmatex">\(\hat{\gamma}\)</span></td>
-</tr>
-<tr>
-<td><code>m</code></td>
-<td>Rotational symmetry axis <span class="arithmatex">\(\bf{m}\)</span></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition note">
-<p class="admonition-title">P-wave modulus</p>
-<p>P-wave modulus is not a free parameter but given by <span class="arithmatex">\(\gamma \equiv \lambda + 2\mu\)</span>.</p>
-</div>
-<div class="admonition tip">
-<p class="admonition-title">Tip: convert from <span class="arithmatex">\(C_{ij}\)</span> to Lamé parameters</p>
-<p><code>Cij = (C11,C33,C55, C12,C13)
-(lam,mu, Elam,Emu,Egam) = sf.Cij_to_Lame_tranisotropic(Cij)</code></p>
-</div>
-<h2 id="orthotropic">Orthotropic</h2>
-<table>
-<thead>
-<tr>
-<th align="center">Symmetries</th>
-<th align="center">Stiffness matrix <span class="arithmatex">\({\bf C}\)</span> for <span class="arithmatex">\(({\bf m}_1,{\bf m}_2,{\bf m}_3)=(\hat{{\bf x}},\hat{{\bf y}},\hat{{\bf z}})\)</span></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-elastic-bulk.png" style="width:250px" /></td>
-<td align="center"><span class="arithmatex">\(\small\begin{bmatrix} \lambda_{11} + 2\mu_1 &amp; \lambda_{12} &amp; \lambda_{13} &amp; 0 &amp; 0 &amp; 0 \\ \lambda_{12} &amp; \lambda_{22} + 2\mu_2 &amp; \lambda_{23} &amp; 0 &amp; 0 &amp; 0 \\ \lambda_{13 }&amp; \lambda_{23} &amp; \lambda_{33} + 2\mu_3 &amp; 0 &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 0 &amp; \dfrac{\mu_2+\mu_3}{2} &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 0 &amp; 0 &amp; \dfrac{\mu_3+\mu_1}{2} &amp; 0 \\ 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; \dfrac{\mu_1+\mu_2}{2} \end{bmatrix}\)</span></td>
-</tr>
-</tbody>
-</table>
-<h3 id="api_1">API</h3>
-<ul>
-<li>Forward form: <code>E = sf.elas_fwd_orthotropic(S, lame, m1,m2,m3)</code></li>
-<li>Inverse form: <code>S = sf.elas_rev_orthotropic(E, lame, m1,m2,m3)</code></li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>Arguments</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>S</code>, <code>E</code></td>
-<td>Stress and strain tensor (3x3)</td>
-</tr>
-<tr>
-<td><code>lame</code></td>
-<td>Tuple of anisotropic Lamé parameters <span class="arithmatex">\((\lambda_{11},\lambda_{22},\lambda_{33}, \lambda_{23},\lambda_{13},\lambda_{12}, \mu_{1}, \mu_{2}, \mu_{3})\)</span></td>
-</tr>
-<tr>
-<td><code>m1</code>, <code>m2</code>, <code>m3</code></td>
-<td>Reflection symmetry axes <span class="arithmatex">\(\bf{m}_1\)</span>, <span class="arithmatex">\(\bf{m}_2\)</span>, and <span class="arithmatex">\(\bf{m}_3\)</span></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition tip">
-<p class="admonition-title">Tip: convert from <span class="arithmatex">\(C_{ij}\)</span> to Lamé parameters</p>
-<p><code>Cij = (C11,C22,C33,C44,C55,C66, C23,C13,C12)
-(lam11,lam22,lam33, lam23,lam13,lam12, mu1,mu2,mu3) = sf.Cij_to_Lame_orthotropic(Cij)</code></p>
-</div>
-<!--
+**Step 3**<br>
 
-### `E = sf.elas_fwd_orthotropic(S, lam, mu, Elam, Emu, Egam, m)`
-
-### `S = sf.elas_rev_orthotropic(E, lam, mu, Elam, Emu, Egam, m)`
-
-where 
-
-| Arguments | Type |
-| --- | --- |
-| `S`, `E` | stress and strain tensor (3x3) |
-| `lam`, `mu` | Isotropic Lamé parameters $\lambda$ and $\mu$  |
-| `Elam`, `Emu`, `Egam` | Anisotropic enhancement factors $\hat{\lambda}$, $\hat{\mu}$, and $\hat{\gamma}$  |
-
+The figure below shows the modelled steady-state horizontal eigenvalue difference $\Delta\lambda$ over Ekström ice shelf, Antarctica.
+While plotting e.g. all three eigenvalues shows more fabric information, $\Delta\lambda$ can be inferred from radar surveys and is therefore a useful metric for validating the model and its assumptions.
+The code for reproducing the figure [can be found here](https://github.com/nicholasmr/specfab/tree/main/demo).
 -->
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../constitutive-viscoplastic/" class="btn btn-neutral float-left" title="Viscoplastic constitutive eqns."><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../wavepropagation-electromagnetic/" class="btn btn-neutral float-left" title="Electromagnetic"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../gallery-CPO-from-radar/" class="btn btn-neutral float-right" title="Inferring CPO from radar">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -301,8 +206,10 @@ where
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../constitutive-viscoplastic/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../wavepropagation-electromagnetic/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
+    
+      <span><a href="../gallery-CPO-from-radar/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

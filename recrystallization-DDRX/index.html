@@ -76,9 +76,9 @@
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-regularization/">Regularization</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🌀 Viscous Anisotropy</span></p>
+              <p class="caption"><span class="caption-text">🌀 Viscosity</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain rate enhancement</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain-rate enhancement</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-ice/">Glacier ice</a>
                   </li>
@@ -94,22 +94,26 @@
               </ul>
               <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel/">Lagrangian parcel model</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-SSA-fabric-solver/">Steady SSA CPO field</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-CPO-from-radar/">Inferring CPO from radar</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">Finite element integration</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-CPO-flow-coupling/">Coupling flow and CPO</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-Lagrangian-parcel/">Lagrangian parcel model</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🧩 Miscellaneous</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../deformation-kinematics/">Deformation kinematics</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotating CPOs</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plot CPO</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-viscoplastic/">Viscoplastic constitutive equations</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotate CPO</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Elastic constitutive equations</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-viscoplastic/">Viscoplastic constitutive eqns.</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Elastic constitutive eqns.</a>
                   </li>
               </ul>
       </div>
@@ -137,6 +141,7 @@
             <div class="section" itemprop="articleBody">
               
                 <h2 id="discontinous-dynamic-recrystallization-ddrx">Discontinous dynamic recrystallization (DDRX)</h2>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/crystal-processes-3.png" style="width:140px" /></p>
 <p>Following <a href="https://doi.org/10.1007/s00161-009-0126-0">Placidi and others (2010)</a>, DDRX is modeled as a spontaneous mass decay&mdash;production process in orientation space <span class="arithmatex">\(S^2\)</span>, intended to represent the combined effect of nucleation and grain boundary migration. 
 That is, mass is spontaneously exchanged between grains with different orientations depending on the local stress state, strain rate, and temperature, in a statistical sense. </p>
 <p>The decay&mdash;production rate is defined as</p>
@@ -145,21 +150,27 @@ That is, mass is spontaneously exchanged between grains with different orientati
 \]</div>
 <p>where the  prefactor <span class="arithmatex">\(\Gamma_0\)</span> accounts for the preferential (Arrhenius) activation at warm temperatures and the effect of strain-rate magnitude, defined as
 \begin{align}
-\Gamma_0 = \sqrt{\frac{{\bf D}:{\bf D}}{2}} A_{\Gamma}\exp(-Q_{\Gamma}/RT)
+\Gamma_0 = \sqrt{\frac{{\dot{\boldsymbol\epsilon}}:{\dot{\boldsymbol\epsilon}}}{2}} A_{\Gamma}\exp(-Q_{\Gamma}/RT)
 .
 \end{align}
-Here, <span class="arithmatex">\({\bf D}\)</span> is the strain-rate tensor, <span class="arithmatex">\(R\)</span> is the gas constant, <span class="arithmatex">\(T\)</span> is the temperature, and <span class="arithmatex">\(A_{\Gamma}\)</span> and <span class="arithmatex">\(Q_{\Gamma}\)</span> have been calibration by <a href="https://doi.org/10.1016/j.epsl.2020.116718">Richards et al. (2021)</a> and <a href="https://doi.org/10.1017/jog.2023.78">Lilien et al. (2023)</a>. </p>
-<p>The deformability <span class="arithmatex">\(D\)</span> (not to be mistaken for the strain-rate tensor <span class="arithmatex">\({\bf D}\)</span>) is the normalized square of the basal-plane resolved shear stress</p>
+Here, <span class="arithmatex">\({\dot{\boldsymbol\epsilon}}\)</span> is the strain-rate tensor, <span class="arithmatex">\(R\)</span> is the gas constant, <span class="arithmatex">\(T\)</span> is the temperature, and <span class="arithmatex">\(A_{\Gamma}\)</span> and <span class="arithmatex">\(Q_{\Gamma}\)</span> have been calibration by <a href="https://doi.org/10.1016/j.epsl.2020.116718">Richards et al. (2021)</a> and <a href="https://doi.org/10.1017/jog.2023.78">Lilien et al. (2023)</a>. </p>
+<p>The deformability <span class="arithmatex">\(D\)</span> is the square of the basal-plane resolved shear stress</p>
 <div class="arithmatex">\[
-D = 5\frac{({\bf S}\cdot{\bf S}):({\bf n}\otimes{\bf n}) - {\bf S}:({\bf n}\otimes{\bf n}\otimes{\bf n}\otimes{\bf n}):{\bf S}}{{\bf S}:{\bf S}},
+\tau^2_\mathrm{RSS} = ({\boldsymbol\tau}\cdot{\boldsymbol\tau}):{\bf n}^2 - {\boldsymbol\tau}:{\bf n}^4:{\boldsymbol\tau},
 \]</div>
-<p>where <span class="arithmatex">\({\bf n}\)</span> is an arbitrary slip-plane normal (<span class="arithmatex">\(c\)</span>-axis for ice) and the factor of 5 is conventional to include.
+<p>relative to the average value of an isotropic fabric:</p>
+<div class="arithmatex">\[
+D = \frac{\tau^2_\mathrm{RSS}}{\langle \tau^2_\mathrm{RSS} \rangle_\mathrm{iso}} = \frac{({\boldsymbol\tau}\cdot{\boldsymbol\tau}):{\bf n}^2 - {\boldsymbol\tau}:{\bf n}^4:{\boldsymbol\tau}}{{\boldsymbol\tau}:{\boldsymbol\tau}/5},
+\]</div>
+<p>where <span class="arithmatex">\({\bf n}\)</span> is an arbitrary slip-plane normal (<span class="arithmatex">\(c\)</span>-axis for ice). 
 Because <span class="arithmatex">\(D\)</span> is largest for grains with an orientation favorable to easy glide, mass is spontaneously created/added to grains with such preferred orientations (in a statistical sense).
 Conversely, mass spontaneously decays if <span class="arithmatex">\(D&lt;{\langle} D {\rangle}\)</span>, corresponding to grains with an unfavorable orientation being consumed by grains with a more favorable orientation to basal glide. 
-Here, <span class="arithmatex">\({\langle} D {\rangle}\)</span> is the grain-average deformability of the polycrystal. </p>
+Here, <span class="arithmatex">\({\langle} D {\rangle}\)</span> is the grain-average deformability of the polycrystal, and the total mass of the polycrystal is conserved since <span class="arithmatex">\(\Gamma\)</span> is zero on average, <span class="arithmatex">\(\langle\Gamma\rangle=\Gamma_0\langle D-\langle D\rangle\rangle=0\)</span> (equal amounts of grain mass are created and destroyed per time).</p>
+<p>The primary driver for grain boundary migration is generally regarded to be the contrast in dislocation density (stored strain energy) between grains. 
+In this sense, <span class="arithmatex">\(1/D\)</span> can be understood as a parameterization of the dislocation density: the larger <span class="arithmatex">\(1/D\)</span> is, the more dislocations a grain has, and the more likely it is to be consumed (decay).</p>
 <div class="admonition warning">
 <p class="admonition-title">Nonlinear process</p>
-<p>Since average deformability <span class="arithmatex">\(\langle D\rangle\)</span> depends on the instantaneous CPO state &mdash; specifically, the <a href="../cpo-representation/">structure tensors</a> <code>a2</code> and <code>a4</code> &mdash; this crystal process is nonlinear (renders a nonlinear matrix problem below).</p>
+<p>Since average deformability <span class="arithmatex">\(\langle D\rangle\)</span> depends on the instantaneous CPO state &mdash; specifically, the <a href="../cpo-representation/">structure tensors</a> <span class="arithmatex">\(\langle{\bf c}^2\rangle\)</span> and <span class="arithmatex">\(\langle{\bf c}^4\rangle\)</span> &mdash; this crystal process is nonlinear (renders a nonlinear matrix problem below).</p>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Limited use</p>
@@ -170,7 +181,7 @@ The model is therefore not yet useful for e.g. olivine. </p>
 <p class="admonition-title">Glacier ice</p>
 <p>The normalized decay&mdash;production rate is shown below for three different stress states:</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/stress-modes.png#center" style="width:550px" /></p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/ddrx-decayrate/ddrx-decayrate.png" style="width:560px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/ddrx-decayrate/ddrx-decayrate.png" style="width:550px" /></p>
 </div>
 <h3 id="matrix-model">Matrix model</h3>
 <p>The corresponding effect on the continuous distribution function is </p>
@@ -180,7 +191,7 @@ The model is therefore not yet useful for e.g. olivine. </p>
 \frac{\mathrm{D} {\bf s}_n}{\mathrm{D} t} = {\bf M_{\mathrm{DDRX}}} \cdot {\bf s}_n ,
 \]</div>
 <p>where <span class="arithmatex">\({\bf M_{\mathrm{DDRX}}}\)</span> is given analytically in <a href="https://doi.org/10.1017/jog.2021.88">Rathmann and Lilien (2021)</a>.</p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-DDRX.gif" style="width:650px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-DDRX.gif" style="width:610px" /></p>
 <h3 id="code-example">Code example</h3>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfab as sf

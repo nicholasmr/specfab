@@ -70,12 +70,14 @@
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-regularization/">Regularization</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🌀 Viscous Anisotropy</span></p>
+              <p class="caption"><span class="caption-text">🌀 Viscosity</span></p>
               <ul class="current">
-                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain rate enhancement</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain-rate enhancement</a>
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Glacier ice</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#code-example">Code example</a>
+    </li>
     </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-olivine/">Olivine</a>
@@ -90,22 +92,26 @@
               </ul>
               <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel/">Lagrangian parcel model</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-SSA-fabric-solver/">Steady SSA CPO field</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-CPO-from-radar/">Inferring CPO from radar</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">Finite element integration</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-CPO-flow-coupling/">Coupling flow and CPO</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-Lagrangian-parcel/">Lagrangian parcel model</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🧩 Miscellaneous</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../deformation-kinematics/">Deformation kinematics</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotating CPOs</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plot CPO</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-viscoplastic/">Viscoplastic constitutive equations</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotate CPO</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Elastic constitutive equations</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-viscoplastic/">Viscoplastic constitutive eqns.</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Elastic constitutive eqns.</a>
                   </li>
               </ul>
       </div>
@@ -122,7 +128,7 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
-          <li>🌀 Viscous Anisotropy &raquo;</li>
+          <li>🌀 Viscosity &raquo;</li>
       <li>Glacier ice</li>
     <li class="wy-breadcrumbs-aside">
     </li>
@@ -142,18 +148,20 @@
 </thead>
 <tbody>
 <tr>
-<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-monocrystal.png" style="width:120px" /></td>
-<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png" style="width:200px" /></td>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-monocrystal-ice.png" style="width:120px" /></td>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png" style="width:200px" /></td>
 </tr>
 </tbody>
 </table>
-<p>If grains are approximately transversely isotropic, the grain rheology can be modelled using the <a href="../constitutive-viscoplastic/">transversely isotropic power-law rheology</a>.
-This requires specifying the grain eigenenhancements <span class="arithmatex">\(E_{mm}'\)</span> and <span class="arithmatex">\(E_{mt}'\)</span>, the power-law exponent <span class="arithmatex">\(n'\)</span>, and the Taylor&mdash;Sachs weight <span class="arithmatex">\(\alpha\)</span>.</p>
-<p>For glacier ice, we follow the literature and rename </p>
-<div class="arithmatex">\[
-{\bf c} = {\bf m}^\prime \quad\text{and}\quad {\bf a} = {\bf t}^\prime.
-\]</div>
-<p>The below code example shows how to calculate <span class="arithmatex">\(E_{ij}\)</span> given <code>a4</code> (or <code>nlm</code>) assuming the grain parameters proposed by <a href="https://doi.org/10.1017/jog.2021.88">Rathmann and Lilien (2021)</a>: </p>
+<p>If ice grains are treated as transversely isotropic, the rheology of a single grain can be modeled as a <a href="../constitutive-viscoplastic/">transversely isotropic power law</a>.
+This requires specifying the grain eigenenhancements <span class="arithmatex">\(E_{cc}'\)</span> and <span class="arithmatex">\(E_{ca}'\)</span> and the power law exponent <span class="arithmatex">\(n'\)</span>. </p>
+<p>The grain parameters proposed by <a href="https://doi.org/10.1017/jog.2021.88">Rathmann and Lilien (2021)</a> assume linear-viscous behavior of single crystals (<span class="arithmatex">\(n'=1\)</span>) and promote the activation of basal glide by making that slip system soft compared to other systems: <span class="arithmatex">\(E_{ca}' &gt; 1\)</span>, whereas <span class="arithmatex">\(E_{cc}'=1\)</span>. 
+This reduces the problem to picking <span class="arithmatex">\(E_{ca}'\)</span> and <span class="arithmatex">\(\alpha\)</span> (Taylor&mdash;Sachs homogenization weight), which <a href="https://doi.org/10.1017/jog.2021.88">Rathmann and Lilien (2021)</a> determined by requiring that deformation tests on strong single-maximum CPOs (aligned grains) are approximately reproduced; that is, <span class="arithmatex">\(E_{mt}=10\)</span> and <span class="arithmatex">\(E_{mm}=0.01\)</span>.</p>
+<p>The effect of choosing different <span class="arithmatex">\(E_{ca}'\)</span> and <span class="arithmatex">\(\alpha\)</span> (left panel) on the eigenenhancements of different CPO states (right panel) is shown below for combinations of <span class="arithmatex">\(E_{ca}'\)</span> and <span class="arithmatex">\(\alpha\)</span> that fulfill <span class="arithmatex">\(E_{mt}=10\)</span> given a unidirectional CPO. </p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/research/calibrate-Eij/ice/Eij-state-space/Eij-state-space.gif" style="width:750px" /></p>
+<p>Clearly, there is a trade-off between how shear enhanced (<span class="arithmatex">\(E_{mt}\)</span>) and how hard for axial compression (<span class="arithmatex">\(E_{mm}\)</span>) the model allows a unidirectional CPO to be.</p>
+<h3 id="code-example">Code example</h3>
+<p>The below code shows how to calculate <span class="arithmatex">\(E_{ij}\)</span> given <span class="arithmatex">\({\bf a}^{(4)}\)</span> (or the state vector <span class="arithmatex">\(\bf s\)</span>) and a set of grain parameters.</p>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfab as sf
 lm, nlm_len = sf.init(8) 
@@ -176,19 +184,11 @@ alpha     = 0.0125   # Taylor--Sachs weight
 ### Calculate enhancement factors w.r.t. (e1,e2,e3)
 Eij = sf.Eij_tranisotropic(nlm, e1,e2,e3, Eij_grain,alpha,n_grain) # Eij=(E11,E22,E33,E23,E13,E12)
 </code></pre>
-<div class="admonition tip">
-<p class="admonition-title">Choosing grain parameters for glacier ice</p>
-<p>The grain parameters proposed by <a href="https://doi.org/10.1017/jog.2021.88">Rathmann and Lilien (2021)</a> assume a linear viscous (<span class="arithmatex">\(n'=1\)</span>) response and promote the activation of basal glide by making that slip system soft compared to other systems: <span class="arithmatex">\(E_{ca}' &gt; 1\)</span>, whereas <span class="arithmatex">\(E_{cc}'=1\)</span>. 
-This reduces the problem to that of picking <span class="arithmatex">\(E_{ca}'\)</span> and <span class="arithmatex">\(\alpha\)</span>, which <a href="https://doi.org/10.1017/jog.2021.88">Rathmann and Lilien (2021)</a> chose such that deformation tests on unidirectional CPOs (perfect single maximum) are approximately reproduced: <span class="arithmatex">\(E_{mt}=10\)</span> while <span class="arithmatex">\(E_{mt}/E_{pq} \sim 10^4\)</span>, where <span class="arithmatex">\(p,q\)</span> denote directions at <span class="arithmatex">\(45^\circ\)</span> to <span class="arithmatex">\({\bf m}\)</span>.</p>
-<p>The effect of choosing alternative <span class="arithmatex">\(E_{ca}'\)</span> and <span class="arithmatex">\(\alpha\)</span> (left plot) on eigenenhancements for different CPO states (right plot) is here shown for combinations of <span class="arithmatex">\(E_{ca}'\)</span> and <span class="arithmatex">\(\alpha\)</span> that fulfill <span class="arithmatex">\(E_{mt}=10\)</span> for a unidirectional CPO:</p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/research/calibrate-Eij/ice/Eij-state-space/Eij-state-space.gif" style="width:750px" /></p>
-<p>Clearly, there is a tradeoff between how shear enhanced (<span class="arithmatex">\(E_{mt}\)</span>) and how hard for axial compression (<span class="arithmatex">\(E_{mm}\)</span>) the model allows a unidirectional CPO to be.</p>
-</div>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../enhancements-strainrate/" class="btn btn-neutral float-left" title="Strain rate enhancement"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../enhancements-strainrate/" class="btn btn-neutral float-left" title="Strain-rate enhancement"><span class="icon icon-circle-arrow-left"></span> Previous</a>
         <a href="../enhancements-strainrate-olivine/" class="btn btn-neutral float-right" title="Olivine">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 

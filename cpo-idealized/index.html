@@ -76,9 +76,9 @@
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-regularization/">Regularization</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🌀 Viscous Anisotropy</span></p>
+              <p class="caption"><span class="caption-text">🌀 Viscosity</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain rate enhancement</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain-rate enhancement</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-ice/">Glacier ice</a>
                   </li>
@@ -94,22 +94,26 @@
               </ul>
               <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel/">Lagrangian parcel model</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-SSA-fabric-solver/">Steady SSA CPO field</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-CPO-from-radar/">Inferring CPO from radar</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">Finite element integration</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-CPO-flow-coupling/">Coupling flow and CPO</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-Lagrangian-parcel/">Lagrangian parcel model</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🧩 Miscellaneous</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../deformation-kinematics/">Deformation kinematics</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotating CPOs</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plot CPO</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-viscoplastic/">Viscoplastic constitutive equations</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotate CPO</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Elastic constitutive equations</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-viscoplastic/">Viscoplastic constitutive eqns.</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Elastic constitutive eqns.</a>
                   </li>
               </ul>
       </div>
@@ -145,15 +149,15 @@
 </ul>
 <p>Each of these can be expanded as a spherical harmonics series by using the sifting property of the delta function <span class="arithmatex">\(\delta({\hat {\bf r}})\)</span>.</p>
 <h2 id="unidirectional">Unidirectional</h2>
-<p>Consider the case where slip-plane normals are perfectly aligned with <span class="arithmatex">\({{\bf m}}\)</span> such that <span class="arithmatex">\(n({\hat {\bf r}}) = \delta({\hat {\bf r}}-{{\bf m}})\)</span>.
-The corresponding expansion coefficients follow from the usual overlap integral:</p>
+<p>Consider the case where slip-plane normals are perfectly aligned with <span class="arithmatex">\({\hat {\bf r}}_0\)</span> such that <span class="arithmatex">\(n({\hat {\bf r}}) = \delta({\hat {\bf r}}- {\hat {\bf r}}_0)\)</span> where <span class="arithmatex">\({\hat {\bf r}}(\theta,\phi)\)</span> is an arbitrary radial unit vector.
+The corresponding expansion coefficients follow from the evaluating overlap integral </p>
 <div class="arithmatex">\[
 n_l^m 
-= \int_{S^2} \delta(\hat{{\bf r}}-{{\bf m}}) (Y_l^m(\hat{{\bf r}}))^* \,\mathrm{d}\Omega
-= (Y_l^m({{\bf m}}))^*
+= \int_{S^2} \delta(\hat{{\bf r}}-{\hat {\bf r}}_0) (Y_l^m(\hat{{\bf r}}))^* \,\mathrm{d}\Omega
+= (Y_l^m({\hat {\bf r}}_0))^*
 .
 \]</div>
-<p>In the figure below, the resulting unidirectional distribution is shown (rightmost inset), where the white area represents the subspace of possible CPOs when expressed in terms of the normalized coefficients of lowest order: <span class="arithmatex">\(\hat{n}_2^0 = n_2^0/n_0^0\)</span> and <span class="arithmatex">\(\hat{n}_4^0 = n_4^0/n_0^0\)</span>.</p>
+<p>In the figure below, the resulting unidirectional distribution is shown (rightmost inset), where the white area represents the subspace of admissible CPOs when expressed in terms of the normalized coefficients of lowest order: <span class="arithmatex">\(\hat{n}_2^0 = n_2^0/n_0^0\)</span> and <span class="arithmatex">\(\hat{n}_4^0 = n_4^0/n_0^0\)</span>.</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/research/state-space/ice/state-space-ideal.png#center" style="width:570px" /></p>
 <p>The code below demonstrates how to generate the distribution with specfab.</p>
 <pre><code class="language-python">import numpy as np
@@ -166,7 +170,7 @@ colat = 0 # 0 = unidirectional distribution, pi/2 = planar distribution, and any
 nlm = sf.nlm_ideal(m, colat, L) # note: only l&lt;=12 coefs are determined even if L&gt;12
 </code></pre>
 <h2 id="planar-and-circle">Planar and circle</h2>
-<p>Planar and circle distributions follow from averaging the delta function over a desired co-latitude <span class="arithmatex">\(\theta\)</span> &mdash; i.e. the co-latitude where <span class="arithmatex">\(n(\hat{{\bf r}})\)</span> should be sharply defined &mdash; in which case all zonal structure vanishes (<span class="arithmatex">\(m\neq 0\)</span> components vanish) and we are left with</p>
+<p>Planar and circle distributions follow from averaging the delta function over a desired co-latitude <span class="arithmatex">\(\theta\)</span> &mdash; i.e., the co-latitude where <span class="arithmatex">\(n(\hat{{\bf r}})\)</span> should be sharply defined &mdash; in which case all zonal structure vanishes (<span class="arithmatex">\(m\neq 0\)</span> components vanish) and we are left with</p>
 <div class="arithmatex">\[
 n_l^m(\theta) = 
 \begin{cases}
@@ -175,8 +179,8 @@ Y_l^0(\theta, \phi=0) \qquad\text{if}\quad m=0\\
 \end{cases}
 .
 \]</div>
-<p>Here, <span class="arithmatex">\({{\bf m}}\)</span> is to be understood as the rotational symmetry axis of <span class="arithmatex">\(n(\hat{{\bf r}})\)</span>, and the co-latitude is defined w.r.t. <span class="arithmatex">\({{\bf m}}\)</span>, not <span class="arithmatex">\(\hat{{\bf z}}\)</span>.</p>
-<p>The above figure also shows the resulting <span class="arithmatex">\(n(\hat{{\bf r}})\)</span> for different <span class="arithmatex">\(\theta\)</span>, calculated using the same code as above but for nonzero <code>colat</code>.</p>
+<p>Here, <span class="arithmatex">\({\hat {\bf r}}_0\)</span> is to be understood as the rotational symmetry axis of <span class="arithmatex">\(n(\hat{{\bf r}})\)</span>, and the co-latitude is defined w.r.t. <span class="arithmatex">\({\hat {\bf r}}_0\)</span>, not <span class="arithmatex">\(\hat{{\bf z}}\)</span>.</p>
+<p>The above figure also shows the resulting <span class="arithmatex">\(n(\hat{{\bf r}})\)</span> for different <span class="arithmatex">\(\theta\)</span>, calculated using the same code as above but with a nonzero <code>colat</code>.</p>
               
             </div>
           </div><footer>

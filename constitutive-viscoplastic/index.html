@@ -5,14 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Viscoplastic constitutive equations - specfab documentation</title>
+    <title>Viscoplastic constitutive eqns. - specfab documentation</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Viscoplastic constitutive equations";
+        var mkdocs_page_name = "Viscoplastic constitutive eqns.";
         var mkdocs_page_input_path = "constitutive-viscoplastic.md";
         var mkdocs_page_url = null;
       </script>
@@ -70,9 +70,9 @@
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-regularization/">Regularization</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🌀 Viscous Anisotropy</span></p>
+              <p class="caption"><span class="caption-text">🌀 Viscosity</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain rate enhancement</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain-rate enhancement</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-ice/">Glacier ice</a>
                   </li>
@@ -88,44 +88,38 @@
               </ul>
               <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel/">Lagrangian parcel model</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-SSA-fabric-solver/">Steady SSA CPO field</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-CPO-from-radar/">Inferring CPO from radar</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">Finite element integration</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-CPO-flow-coupling/">Coupling flow and CPO</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-Lagrangian-parcel/">Lagrangian parcel model</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🧩 Miscellaneous</span></p>
               <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../deformation-kinematics/">Deformation kinematics</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotating CPOs</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plot CPO</a>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Viscoplastic constitutive equations</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotate CPO</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Viscoplastic constitutive eqns.</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#transversely-isotropic">Transversely isotropic</a>
         <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#special-cases">Special cases</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="#api">API</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#d-sfrheo_fwd_tranisotropics-a-n-m-eij">D = sf.rheo_fwd_tranisotropic(S, A, n, m, Eij)</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#s-sfrheo_rev_tranisotropicd-a-n-m-eij">S = sf.rheo_rev_tranisotropic(D, A, n, m, Eij)</a>
     </li>
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#orthotropic">Orthotropic</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#api_1">API</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#d-sfrheo_fwd_orthotropics-a-n-m1m2m3-eij">D = sf.rheo_fwd_orthotropic(S, A, n, m1,m2,m3, Eij)</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#s-sfrheo_rev_orthotropicd-a-n-m1m2m3-eij">S = sf.rheo_rev_orthotropic(D, A, n, m1,m2,m3, Eij)</a>
-    </li>
-        </ul>
     </li>
     </ul>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Elastic constitutive equations</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Elastic constitutive eqns.</a>
                   </li>
               </ul>
       </div>
@@ -143,7 +137,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
           <li>🧩 Miscellaneous &raquo;</li>
-      <li>Viscoplastic constitutive equations</li>
+      <li>Viscoplastic constitutive eqns.</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -153,77 +147,102 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="viscoplastic-constitutive-equations">Viscoplastic constitutive equations</h1>
-<p>Anisotropic power-law rheologies are supported in both forward and inverse (or reverse) form.</p>
-<!--
-* Forward form: ${\bf D}({\bf S})$ 
-* Inverse form: ${\bf S}({\bf D})$ 
-
-where $\bf{D}$ and $\bf{S}$ are the strain-rate and deviatoric stress tensors, respectively.
--->
-
-<div class="admonition note">
-<p class="admonition-title">Eigenenhancements</p>
-<p>Bulk viscous anisotropy is prescribed in terms of logitudinal and shear strain-rate enhancement factors w.r.t rheological symmetry axes, termed <a href="../enhancements-strainrate/">eigenenhancements</a> (<span class="arithmatex">\(E_{ij}\)</span>).</p>
-</div>
+<p>Anisotropic power law rheologies are supported in both forward and inverse (reverse) form.
+All rheologies are assumed incompressible and are based on classical creep equations where the effective stress <span class="arithmatex">\(\tau_\mathrm{E}\)</span> has a quadratic form with respect to the invariants of the stress tensor. </p>
+<p>The bulk viscous anisotropy is prescribed in terms of logitudinal and shear strain-rate enhancement factors with respect to the rheological symmetry axes <span class="arithmatex">\({\bf m}_i\)</span>, termed <a href="../enhancements-strainrate/">eigenenhancements</a> <span class="arithmatex">\(E_{ij}\)</span>.</p>
 <h2 id="transversely-isotropic">Transversely isotropic</h2>
-<!--
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-bulk.png){: style="width:140px"} 
-
-### Forward rheology
--->
-
 <table>
 <thead>
 <tr>
-<th align="center">Rheolgical symmetries</th>
-<th align="center">Forward rheology</th>
+<th align="center">Rheological symmetry</th>
+<th align="center">Invariants</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-bulk.png" style="width:140px" /></td>
-<td align="center">$$ {\bf D} = \eta^{-1} \Big( {\bf S} - \lambda_1 ({\bf S}:{\bf M}){\bf I} + \lambda_2 ({\bf S}:{\bf M}){\bf M} + \lambda_3 ({\bf S}\cdot{\bf M} + {\bf M}\cdot{\bf S}) \Big) $$ $$ \eta^{-1} = A\Big( {\bf S}:{\bf S} + \lambda_2 ({\bf S}:{\bf M})^2 + 2\lambda_2 ({\bf S}^2:{\bf M}) \Big)^{(n-1)/2} $$ $$ {\bf M}={\bf m}^2$$</td>
+<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-viscous-bulk.png" style="width:130px" /></td>
+<td align="center">$$ \color{blue}{I_1 = \mathrm{tr}({\boldsymbol\tau})},\quad I_2 = \mathrm{tr}({\boldsymbol\tau}^2) = {\boldsymbol\tau}:{\boldsymbol\tau},\quad \color{blue}{I_3 = \mathrm{tr}({\boldsymbol\tau}^3)}, $$ $$I_4 = {\boldsymbol\tau}:{\bf m}^2, \quad I_5 = ({\boldsymbol\tau}\cdot{\boldsymbol\tau}):{\bf m}^2  $$ <br> <span class="arithmatex">\(\color{blue}{^*\text{irrelevant for incompressible, classical creep.}}\)</span></td>
 </tr>
 </tbody>
 </table>
-<!--
-$$
-{\bf D} = \eta^{-1} \Big(
-{\bf S} 
-- \lambda_1 ({\bf S}:{\bf m}^2){\bf I} 
-+ \lambda_2 ({\bf S}:{\bf m}^2){\bf m}^2
-+ \lambda_3 ({\bf S}\cdot{\bf m}^2 + {\bf m}^2\cdot{\bf S})
-\Big)
+<p>The transversely isotropic rheology is commonly written as </p>
+<div class="arithmatex">\[
+{\dot{\boldsymbol\epsilon}} = A \tau_\mathrm{E}^{n-1} \Big[
+{\boldsymbol\tau} 
+- \lambda_{mm} I_4{\bf I} 
++ \left(3\lambda_{mm}-4\lambda_{mt}\right) I_4{\bf m}^2
++ 2\lambda_{mt} ({\boldsymbol\tau}\cdot{\bf m}^2 + {\bf m}^2\cdot{\boldsymbol\tau})
+\Big] ,
 \\
-\eta^{-1} = A\Big( {\bf S}:{\bf S} + \lambda_2 ({\bf S}:{\bf m}^2)^2 + 2\lambda_2 ({\bf S}^2:{\bf m}^2) \Big)^{(n-1)/2}
-$$
+\tau_\mathrm{E}^2 = I_2 + \left(3\lambda_{mm}-4\lambda_{mt}\right) I_4^2 + 4\lambda_{mt} I_5 ,
+\hspace{16em}
+\]</div>
+<p>where <span class="arithmatex">\(A\)</span> is the flow-rate factor, <span class="arithmatex">\(n\)</span> is the power law exponent, and <span class="arithmatex">\(\lambda_i\)</span> are material parameters. 
+Written in terms of the eigenenhancements, the material parameters are</p>
+<div class="arithmatex">\[
+\lambda_{mm} = \frac{E_{mm}^{2/(n+1)}-1}{2} ,\quad
+\lambda_{mt} = \frac{E_{mt}^{2/(n+1)}-1}{2} .
+\]</div>
+<p><b>Alternative form</b><br>
+Unlike the isotropic rheology, the transversely isotropic rheology allows to scale the strain rate components depending on the stress projection along <span class="arithmatex">\(\bf m\)</span> and in the transverse plane of isotropy. 
+Realizing this, the rheology takes particularly simple form if rewritten it in terms of the normal- and shear-stress projectors : </p>
+<div class="arithmatex">\[
+{\bf P}_{mm} = {\bf m}^2 - {\bf I}/3, \hspace{7em}
+\\
+{\bf P}_{mt} = \frac{{\boldsymbol\tau}\cdot{\bf m}^2 + {\bf m}^2\cdot{\boldsymbol\tau}}{2} - \boldsymbol\tau:{\bf m}^4 ,
+\]</div>
+<p>so that</p>
+<div class="arithmatex">\[
+{\dot{\boldsymbol\epsilon}} = A \tau_\mathrm{E}^{n-1} \Big[
+{\boldsymbol\tau} 
++ 3\lambda_{mm} I_{mm} {\bf P}_{mm}
++ 4\lambda_{mt} {\bf P}_{mt}
+\Big] ,
+\\
+\tau_\mathrm{E}^2 = I_2 + 3\lambda_{mm}I_{mm}^2 + 4\lambda_{mt} I_{mt} ,
+\hspace{6em}
+\]</div>
+<p>where the invariant <span class="arithmatex">\(I_{mm}\)</span> is the normal stress acting in the plane with the unit normal <span class="arithmatex">\(\bf m\)</span>, and <span class="arithmatex">\(I_{mt}\)</span> is the square of the shear stress resolved in the transverse plane of isotropy (<span class="arithmatex">\(\tau_\mathrm{RSS}^2\)</span>), defined as: </p>
+<div class="arithmatex">\[
+I_{mm} = {\bf P}_{mm} : {\boldsymbol\tau}  ,
+\\
+I_{mt} = {\bf P}_{mt} : {\boldsymbol\tau}  .
+\]</div>
+<h3 id="special-cases">Special cases</h3>
+<!--
+<b>Aligned stress</b><br>
+...
 -->
 
-<p>where the material parameters <span class="arithmatex">\(\lambda_i\)</span> depend on the eigenenhancements:</p>
+<p><b>Schmid limit</b><br></p>
+<p>In the case that <span class="arithmatex">\(E_{mm}=1\)</span> and <span class="arithmatex">\(E_{mt}\gg 1\)</span>, the rheology reduces to the transversely isotropic Schmid rheology that permits only shear deformation in the <span class="arithmatex">\(\bf m\)</span>&mdash;<span class="arithmatex">\(\bf t\)</span> plane. </p>
 <div class="arithmatex">\[
-\lambda_1 = \frac{E_{mm}^{2/(n+1)}-1}{2} ,\quad
-\lambda_2 = \frac{3(E_{mm}^{2/(n+1)}-1) - 4(E_{mt}^{2/(n+1)}-1)}{2} ,\quad
-\lambda_3 = E_{mt}^{2/(n+1)}-1
+{\dot{\boldsymbol\epsilon}} = A \tau_\mathrm{E}^{n-1} {\bf P}_{mt},
+\\
+\tau_\mathrm{E}^2 = I_{mt} = \tau_\mathrm{RSS}^2,
+\hspace{0em}
 \]</div>
+<p>where a factor of <span class="arithmatex">\(4^{(n+1)/2}\)</span> was absorbed into <span class="arithmatex">\(A\)</span>. </p>
 <h3 id="api">API</h3>
-<h3 id="d-sfrheo_fwd_tranisotropics-a-n-m-eij"><code>D = sf.rheo_fwd_tranisotropic(S, A, n, m, Eij)</code></h3>
-<h3 id="s-sfrheo_rev_tranisotropicd-a-n-m-eij"><code>S = sf.rheo_rev_tranisotropic(D, A, n, m, Eij)</code></h3>
-<p>where </p>
+<ul>
+<li>Forward rheology: <code>D = sf.rheo_fwd_tranisotropic(S, A, n, m, Eij)</code> </li>
+<li>Inverse rheology: <code>S = sf.rheo_rev_tranisotropic(D, A, n, m, Eij)</code></li>
+</ul>
 <table>
 <thead>
 <tr>
 <th>Arguments</th>
-<th>Type</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>S</code>, <code>D</code></td>
-<td>Deviatoric-stress and strain-rate tensor (3x3)</td>
+<td>Deviatoric stress tensor and strain rate tensor (3x3)</td>
 </tr>
 <tr>
 <td><code>A</code>, <code>n</code></td>
-<td>Flow-rate factor <span class="arithmatex">\(A\)</span> and power-law exponent <span class="arithmatex">\(n\)</span></td>
+<td>Flow-rate factor <span class="arithmatex">\(A\)</span> and power law exponent <span class="arithmatex">\(n\)</span></td>
 </tr>
 <tr>
 <td><code>m</code></td>
@@ -236,79 +255,51 @@ $$
 </tbody>
 </table>
 <h2 id="orthotropic">Orthotropic</h2>
-<!--
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous-bulk.png){: style="width:250px"} 
+<p><b>🚧 Being rewritten, soon available again. </b></p>
+<!-- 
 
-### Forward rheology
--->
+| Rheolgical symmetry | Invariants |
+| :-: | :-: |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous-bulk.png){: style="width:250px"} | $I_i = {\boldsymbol\tau}:{\bf m}^2_i, \quad I_{i+3} = ({\boldsymbol\tau}\cdot{\boldsymbol\tau}):{\bf m}^2_{i+3} \quad\text{for}\; i=1,2,3$ <hr><u>Or instead</u><br><br> $I_i = {\bf P}_{i}:{\boldsymbol\tau}, \quad I_{i+3} = {\bf P}_{i+3}:{\boldsymbol\tau}$ <br><br> where the projectors are defined as <br><br>  ${\bf P}_{i} = {\bf I}/3-{\bf m}_i^2 ,\quad {\bf P}_{i+3} = \dfrac{{\bf m}_{j_i} {\bf m}_{k_i} + {\bf m}_{k_i} {\bf m}_{j_i}}{2},$ </br> </br> and the index tuples are <br><br> $(j_1, j_2, j_3) = (2,3,1),\quad (k_1, k_2, k_3) = (3,1,2).$ |
 
-<table>
-<thead>
-<tr>
-<th align="center">Rheolgical symmetries</th>
-<th align="center">Forward rheology</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous-bulk.png" style="width:250px" /></td>
-<td align="center"><span class="arithmatex">\({\bf D} = \eta^{-1} \displaystyle\sum_{i=1}^{3} \Big[ \lambda_i ({\bf S}:{\bf M}_i){\bf M}_{i}  + \lambda_{i+3} ({\bf S}:{\bf M}_{i+3}) {\bf M}_{i+3} \Big]\)</span> </br></br> <span class="arithmatex">\(\eta^{-1} = A\left( \displaystyle\sum_{i=1}^3 \Big[ \lambda_i ({\bf S}:{\bf M}_{i})^2 + \lambda_{i+3} ({\bf S}:{\bf M}_{i+3})^2 \Big] \right)^{(n-1)/2}\)</span> </br></br>  <span class="arithmatex">\({\bf M}_{i} = \dfrac{{\bf m}_{j_i} {\bf m}_{j_i} - {\bf m}_{k_i} {\bf m}_{k_i}}{2} ,\quad {\bf M}_{i+3} = \dfrac{{\bf m}_{j_i} {\bf m}_{k_i} + {\bf m}_{k_i} {\bf m}_{j_i}}{2},\)</span> </br> </br> <span class="arithmatex">\((j_1, j_2, j_3) = (2,3,1),\quad (k_1, k_2, k_3) = (3,1,2)\)</span></td>
-</tr>
-</tbody>
-</table>
-<!--
 $$
-{\bf D} = \eta^{-1} \sum_{i=1}^{3} \left(
-\lambda_i I_{i} \frac{ {\bf m}_{j_i}{\bf m}_{j_i} - {\bf m}_{k_i}{\bf m}_{k_i} }{2}
+{\dot{\boldsymbol\epsilon}} = \eta^{-1} \sum_{i=1}^{3} \left(
+\lambda_i I_{i} {\bf P}_{i}
 +
-\lambda_{i+3} I_{i+3} \frac{ {\bf m}_{j_i}{\bf m}_{k_i} + {\bf m}_{k_i}{\bf m}_{j_i} }{2}
+\lambda_{i+3} I_{i+3} {\bf P}_{i+3}
 \right)
 \\
-\eta^{-1} = A\left( \sum_{i=1}^3 \left( \lambda_i I_i^2 + \lambda_{i+3} I_{i+3}^2 \right) \right)^{(n-1)/2}
+\eta^{-1} = A\left( \sum_{i=1}^3 ( \lambda_i I_i^2 + \lambda_{i+3} I_{i+3}^2 ) \right)^{(n-1)/2}
 $$
--->
 
-<p>where the material parameters <span class="arithmatex">\(\lambda_i\)</span> depend on the eigenenhancements:</p>
-<div class="arithmatex">\[
+where $A$ is the flow-rate factor, $n$ is the power law exponent, and the material parameters $\lambda_i$ are functions of the eigenenhancements:
+
+$$
 \lambda_i     = \frac{4}{3} \left( E_{j_i j_i}^{2/(n+1)} + E_{k_i k_i}^{2/(n+1)} - E_{i i}^{2/(n+1)} \right),\quad
 \lambda_{i+3} = 2 E_{j_i k_i}^{2/(n+1)}
-\]</div>
-<h3 id="api_1">API</h3>
-<h3 id="d-sfrheo_fwd_orthotropics-a-n-m1m2m3-eij"><code>D = sf.rheo_fwd_orthotropic(S, A, n, m1,m2,m3, Eij)</code></h3>
-<h3 id="s-sfrheo_rev_orthotropicd-a-n-m1m2m3-eij"><code>S = sf.rheo_rev_orthotropic(D, A, n, m1,m2,m3, Eij)</code></h3>
-<p>where </p>
-<table>
-<thead>
-<tr>
-<th>Arguments</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>S</code>, <code>D</code></td>
-<td>Deviatoric-stress and strain-rate tensor (3x3)</td>
-</tr>
-<tr>
-<td><code>A</code>, <code>n</code></td>
-<td>Flow-rate factor <span class="arithmatex">\(A\)</span> and power-law exponent <span class="arithmatex">\(n\)</span></td>
-</tr>
-<tr>
-<td><code>m1</code>, <code>m2</code>, <code>m3</code></td>
-<td>Reflection symmetry axes <span class="arithmatex">\(\bf{m}_1\)</span>, <span class="arithmatex">\(\bf{m}_2\)</span>, and <span class="arithmatex">\(\bf{m}_3\)</span></td>
-</tr>
-<tr>
-<td><code>Eij</code></td>
-<td>Tuple of eigenenhancements <code>(E11,E22,E33,E23,E13,E12)</code></td>
-</tr>
-</tbody>
-</table>
+$$
+
+### API
+
+* Forward rheology: `D = sf.rheo_fwd_orthotropic(S, A, n, m1, m2, m3, Eij)`
+* Inverse rheology: `S = sf.rheo_rev_orthotropic(D, A, n, m1, m2, m3, Eij)`
+
+| Arguments | Description |
+| --- | --- |
+| `S`, `D` | Deviatoric stress tensor and strain rate tensor (3x3) |
+| `A`, `n` | Flow-rate factor $A$ and power law exponent $n$  |
+| `m1`, `m2`, `m3` | Rheological reflection symmetry axes ${\bf m}_1$, ${\bf m}_2$, and ${\bf m}_3$  |
+| `Eij` | Tuple of eigenenhancements `(E11,E22,E33,E23,E13,E12)` |
+
+### Schmid limit
+
+-->
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../cpo-rotation/" class="btn btn-neutral float-left" title="Rotating CPOs"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../constitutive-elastic/" class="btn btn-neutral float-right" title="Elastic constitutive equations">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../cpo-rotation/" class="btn btn-neutral float-left" title="Rotate CPO"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../constitutive-elastic/" class="btn btn-neutral float-right" title="Elastic constitutive eqns.">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>

@@ -76,9 +76,9 @@
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-regularization/">Regularization</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🌀 Viscous Anisotropy</span></p>
+              <p class="caption"><span class="caption-text">🌀 Viscosity</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain rate enhancement</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain-rate enhancement</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-ice/">Glacier ice</a>
                   </li>
@@ -94,22 +94,26 @@
               </ul>
               <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel/">Lagrangian parcel model</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-SSA-fabric-solver/">Steady SSA CPO field</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-CPO-from-radar/">Inferring CPO from radar</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">Finite element integration</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-CPO-flow-coupling/">Coupling flow and CPO</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-Lagrangian-parcel/">Lagrangian parcel model</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🧩 Miscellaneous</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../deformation-kinematics/">Deformation kinematics</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotating CPOs</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plot CPO</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-viscoplastic/">Viscoplastic constitutive equations</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotate CPO</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Elastic constitutive equations</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-viscoplastic/">Viscoplastic constitutive eqns.</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Elastic constitutive eqns.</a>
                   </li>
               </ul>
       </div>
@@ -137,6 +141,7 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="continous-dynamic-recrystallization-cdrx">Continous dynamic recrystallization (CDRX)</h1>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/crystal-processes-4.png" style="width:140px" /></p>
 <p>Polygonization (rotation recrystallization, CDRX) accounts for the division of grains along internal sub-grain boundaries resulting from local strain incompatibilities. 
 In effect, CDRX reduces the average grain size upon grain division but does not necessarily change the CPO much (<a href="https://doi.org/10.3189/S0022143000003658">Alley, 1992</a>). </p>
 <p>Following <a href="https://doi.org/10.1007/s001610050095">Gödert (2003)</a>, CDRX can be modeled by approximating this effect as a Laplacian diffusive process on <span class="arithmatex">\(S^2\)</span>:</p>
@@ -156,19 +161,14 @@ The model is therefore not yet useful for e.g. olivine. </p>
 \quad\Longrightarrow\quad
 \frac{\mathrm{D} {\bf s}}{\mathrm{D} t} = {\bf M_{\mathrm{CDRX}}} \cdot {\bf s} .
 \]</div>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-CDRX.gif" style="width:650px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-CDRX.gif" style="width:610px" /></p>
 <h3 id="code-example">Code example</h3>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfab as sf
 # L=8 truncation is sufficient in this case, but larger L allows a very strong fabric to  
 #  develop and minimizes the effect that regularization has on low wavenumber modes (l=2,4)
-lm, nlm_len = sf.init(8) 
-
-### Velocity gradient tensor experienced by parcel
-
-ugrad = np.diag([0.5, 0.5, -1.0]) # uniaxial compression along z-axis
-D = (ugrad+np.transpose(ugrad))/2 # symmetric part (strain rate tensor)
-W = (ugrad-np.transpose(ugrad))/2 # anti-symmetric part (spin tensor)
+L = 8
+lm, nlm_len = sf.init(L) 
 
 ### Numerics 
 
@@ -178,7 +178,7 @@ dt = 0.05 # time-step size
 ### Initial fabric state
 
 nlm = np.zeros((Nt,nlm_len), dtype=np.complex64) # n state vector
-nlm[0,0] = 1/np.sqrt(4*np.pi) # normalized isotropic state at t=0
+nlm[0,:] = sf.nlm_ideal([0,0,1], 0, L) # sigle maximum at t=0
 
 ### Euler integration
 

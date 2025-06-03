@@ -5,15 +5,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Elastic constitutive eqns. - specfab documentation</title>
+    <title>Plot CPO - specfab documentation</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Elastic constitutive eqns.";
-        var mkdocs_page_input_path = "constitutive-elastic.md";
+        var mkdocs_page_name = "Plot CPO";
+        var mkdocs_page_input_path = "cpo-plot.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -101,27 +101,15 @@
               <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../deformation-kinematics/">Deformation kinematics</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plot CPO</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Plot CPO</a>
+    <ul class="current">
+    </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotate CPO</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../constitutive-viscoplastic/">Viscoplastic constitutive eqns.</a>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Elastic constitutive eqns.</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#transversely-isotropic">Transversely isotropic</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#api">API</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#orthotropic">Orthotropic</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#api_1">API</a>
-    </li>
-        </ul>
-    </li>
-    </ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Elastic constitutive eqns.</a>
                   </li>
               </ul>
       </div>
@@ -139,7 +127,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
           <li>🧩 Miscellaneous &raquo;</li>
-      <li>Elastic constitutive eqns.</li>
+      <li>Plot CPO</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -148,137 +136,38 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="elastic-constitutive-equations">Elastic constitutive equations</h1>
-<p>Linear elastic constituve equations are supported in both forward and inverse (reverse) form.</p>
-<!--
-- Forward form ${\bf E}({\bf S})$ 
-- Inverse form ${\bf S}({\bf E})$ 
+                <h1 id="plot-cpo">Plot CPO</h1>
+<p>The orientation distribution can be plotted as follows:</p>
+<pre><code class="language-python">import numpy as np
+import matplotlib.pyplot as plt
+from specfabpy import specfab as sf
+from specfabpy import plotting as sfplt
+lm, nlm_len = sf.init(6)
 
-where $\bf{E}$ and $\bf{S}$ are the strain and stress tensors, respectively.
--->
+### Synthetic CPO to be plotted
+a2 = np.diag([0,0,1]) # CPO characterized by a^(2)
+nlm = sf.a2_to_nlm(a2) # vector of expansion coefficients
 
-<h2 id="transversely-isotropic">Transversely isotropic</h2>
-<table>
-<thead>
-<tr>
-<th align="center">Symmetries</th>
-<th align="center">Stiffness matrix <span class="arithmatex">\({\bf C}\)</span> for <span class="arithmatex">\(\bf{m}=\hat{\bf{z}}\)</span></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-elastic-bulk.png" style="width:120px" /></td>
-<td align="center"><span class="arithmatex">\(\begin{bmatrix}\gamma &amp; \lambda &amp; \hat{\lambda}\lambda &amp; 0 &amp; 0 &amp; 0 \\\lambda &amp; \gamma &amp; \hat{\lambda}\lambda &amp; 0 &amp; 0 &amp; 0 \\\hat{\lambda}\lambda &amp; \hat{\lambda}\lambda &amp; \hat{\gamma}\gamma &amp; 0 &amp; 0 &amp; 0 \\0&amp;0&amp;0&amp; \hat{\mu}\mu &amp; 0 &amp; 0\\0&amp;0&amp;0&amp; 0 &amp; \hat{\mu}\mu &amp; 0\\0&amp;0&amp;0&amp; 0 &amp; 0 &amp; \mu\\\end{bmatrix}\)</span></td>
-</tr>
-</tbody>
-</table>
-<h3 id="api">API</h3>
-<ul>
-<li>Forward form: <code>E = sf.elas_fwd_tranisotropic(S, lam, mu, Elam, Emu, Egam, m)</code></li>
-<li>Inverse form: <code>S = sf.elas_rev_tranisotropic(E, lam, mu, Elam, Emu, Egam, m)</code></li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>Arguments</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>S</code>, <code>E</code></td>
-<td>Stress and strain tensor (3x3)</td>
-</tr>
-<tr>
-<td><code>lam</code>, <code>mu</code></td>
-<td>Isotropic Lamé parameters <span class="arithmatex">\(\lambda\)</span> and <span class="arithmatex">\(\mu\)</span></td>
-</tr>
-<tr>
-<td><code>Elam</code>, <code>Emu</code>, <code>Egam</code></td>
-<td>Anisotropic enhancement factors <span class="arithmatex">\(\hat{\lambda}\)</span>, <span class="arithmatex">\(\hat{\mu}\)</span>, and <span class="arithmatex">\(\hat{\gamma}\)</span></td>
-</tr>
-<tr>
-<td><code>m</code></td>
-<td>Rotational symmetry axis <span class="arithmatex">\(\bf{m}\)</span></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition note">
-<p class="admonition-title">P-wave modulus</p>
-<p>P-wave modulus is not a free parameter but given by <span class="arithmatex">\(\gamma \equiv \lambda + 2\mu\)</span>.</p>
-</div>
-<div class="admonition tip">
-<p class="admonition-title">Tip: convert from <span class="arithmatex">\(C_{ij}\)</span> to Lamé parameters</p>
-<p><code>Cij = (C11,C33,C55, C12,C13)
-(lam,mu, Elam,Emu,Egam) = sf.Cij_to_Lame_tranisotropic(Cij)</code></p>
-</div>
-<h2 id="orthotropic">Orthotropic</h2>
-<table>
-<thead>
-<tr>
-<th align="center">Symmetries</th>
-<th align="center">Stiffness matrix <span class="arithmatex">\({\bf C}\)</span> for <span class="arithmatex">\(({\bf m}_1,{\bf m}_2,{\bf m}_3)=(\hat{{\bf x}},\hat{{\bf y}},\hat{{\bf z}})\)</span></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-elastic-bulk.png" style="width:250px" /></td>
-<td align="center"><span class="arithmatex">\(\small\begin{bmatrix} \lambda_{11} + 2\mu_1 &amp; \lambda_{12} &amp; \lambda_{13} &amp; 0 &amp; 0 &amp; 0 \\ \lambda_{12} &amp; \lambda_{22} + 2\mu_2 &amp; \lambda_{23} &amp; 0 &amp; 0 &amp; 0 \\ \lambda_{13 }&amp; \lambda_{23} &amp; \lambda_{33} + 2\mu_3 &amp; 0 &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 0 &amp; \dfrac{\mu_2+\mu_3}{2} &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 0 &amp; 0 &amp; \dfrac{\mu_3+\mu_1}{2} &amp; 0 \\ 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; \dfrac{\mu_1+\mu_2}{2} \end{bmatrix}\)</span></td>
-</tr>
-</tbody>
-</table>
-<h3 id="api_1">API</h3>
-<ul>
-<li>Forward form: <code>E = sf.elas_fwd_orthotropic(S, lame, m1,m2,m3)</code></li>
-<li>Inverse form: <code>S = sf.elas_rev_orthotropic(E, lame, m1,m2,m3)</code></li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>Arguments</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>S</code>, <code>E</code></td>
-<td>Stress and strain tensor (3x3)</td>
-</tr>
-<tr>
-<td><code>lame</code></td>
-<td>Tuple of anisotropic Lamé parameters <span class="arithmatex">\((\lambda_{11},\lambda_{22},\lambda_{33}, \lambda_{23},\lambda_{13},\lambda_{12}, \mu_{1}, \mu_{2}, \mu_{3})\)</span></td>
-</tr>
-<tr>
-<td><code>m1</code>, <code>m2</code>, <code>m3</code></td>
-<td>Reflection symmetry axes <span class="arithmatex">\(\bf{m}_1\)</span>, <span class="arithmatex">\(\bf{m}_2\)</span>, and <span class="arithmatex">\(\bf{m}_3\)</span></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition tip">
-<p class="admonition-title">Tip: convert from <span class="arithmatex">\(C_{ij}\)</span> to Lamé parameters</p>
-<p><code>Cij = (C11,C22,C33,C44,C55,C66, C23,C13,C12)
-(lam11,lam22,lam33, lam23,lam13,lam12, mu1,mu2,mu3) = sf.Cij_to_Lame_orthotropic(Cij)</code></p>
-</div>
-<!--
+### Setup axes and projection
+geo, prj = sfplt.getprojection(rotation=45, inclination=45)
+fig = plt.figure(figsize=(2,2))
+ax = plt.subplot(111, projection=prj)
+ax.set_global() # ensure entire S^2 is shown
 
-### `E = sf.elas_fwd_orthotropic(S, lam, mu, Elam, Emu, Egam, m)`
-
-### `S = sf.elas_rev_orthotropic(E, lam, mu, Elam, Emu, Egam, m)`
-
-where 
-
-| Arguments | Type |
-| --- | --- |
-| `S`, `E` | stress and strain tensor (3x3) |
-| `lam`, `mu` | Isotropic Lamé parameters $\lambda$ and $\mu$  |
-| `Elam`, `Emu`, `Egam` | Anisotropic enhancement factors $\hat{\lambda}$, $\hat{\mu}$, and $\hat{\gamma}$  |
-
--->
+### Plot
+lvlset = 'iso-up' # default level set: lowest tick/level is the value of an isotropic distribution
+lvlset = (np.linspace(0,0.8,9), lambda x,p:'%.1f'%x) # custom level set: (list of levels, how to format colorbar tick labels)
+sfplt.plotODF(nlm, lm, ax, cmap='Greys', lvlset=lvlset) # plot distribution (see src/specfabpy/plotting.py for API)
+sfplt.plotcoordaxes(ax, geo, color=sfplt.c_dred) # plot coordinate axes (see src/specfabpy/plotting.py for API)
+plt.savefig('ODF-plot.png', dpi=175, pad_inches=0.1, bbox_inches='tight')
+</code></pre>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/tests/deformation-kinematics/ODF-plot.png" style="width:150px" /></p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../constitutive-viscoplastic/" class="btn btn-neutral float-left" title="Viscoplastic constitutive eqns."><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../deformation-kinematics/" class="btn btn-neutral float-left" title="Deformation kinematics"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../cpo-rotation/" class="btn btn-neutral float-right" title="Rotate CPO">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -301,8 +190,10 @@ where
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../constitutive-viscoplastic/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../deformation-kinematics/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
+    
+      <span><a href="../cpo-rotation/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

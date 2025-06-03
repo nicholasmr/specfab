@@ -84,9 +84,9 @@
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-regularization/">Regularization</a>
                   </li>
               </ul>
-              <p class="caption"><span class="caption-text">🌀 Viscous Anisotropy</span></p>
+              <p class="caption"><span class="caption-text">🌀 Viscosity</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain rate enhancement</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate/">Strain-rate enhancement</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../enhancements-strainrate-ice/">Glacier ice</a>
                   </li>
@@ -102,22 +102,26 @@
               </ul>
               <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../Lagrangian-parcel/">Lagrangian parcel model</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-SSA-fabric-solver/">Steady SSA CPO field</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../radar-derived-PP/">Radar-derived physical properties</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-CPO-from-radar/">Inferring CPO from radar</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../FEM-integration/">Finite element integration</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-CPO-flow-coupling/">Coupling flow and CPO</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-Lagrangian-parcel/">Lagrangian parcel model</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🧩 Miscellaneous</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../deformation-kinematics/">Deformation kinematics</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotating CPOs</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-plot/">Plot CPO</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-viscoplastic/">Viscoplastic constitutive equations</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-rotation/">Rotate CPO</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Elastic constitutive equations</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-viscoplastic/">Viscoplastic constitutive eqns.</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../constitutive-elastic/">Elastic constitutive eqns.</a>
                   </li>
               </ul>
       </div>
@@ -145,11 +149,9 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="matrix-model-of-cpo-dynamics">Matrix model of CPO dynamics</h1>
-<p>In specfab, CPO evolution is modelled as a matrix problem involving the <a href="../cpo-representation/">spectral state vectors</a> of <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span>. </p>
-<div class="admonition warning">
-<p class="admonition-title">Mass or number density distributions?</p>
-<p>Recall that <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span> may equally be understood as the <a href="../cpo-representation/">mass density fraction</a> of grains with a given slip-plane normal and slip direction, respectively.</p>
-</div>
+<p>CPO evolution is modelled as a matrix problem involving the <a href="../cpo-representation/">state vectors</a> of <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span>. </p>
+<p>Recall that <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span> may either be understood as the <a href="../cpo-representation/">grain number-density or mass-density distribution</a> in orientation space, the integrals of which give the total number of grains (<span class="arithmatex">\(N\)</span>) or the bulk density (<span class="arithmatex">\(\rho\)</span>), respectively. 
+Because the models of crystal processes included in <em>specfab</em> conserve the normalization, the two different views produce the same result.</p>
 <hr />
 <h2 id="glacier-ice">Glacier ice</h2>
 <table>
@@ -166,7 +168,7 @@
 </tr>
 </tbody>
 </table>
-<p>For polycrystalline glacier ice, <span class="arithmatex">\(n(\theta,\phi)\)</span> is simply the distribution of (easy) slip-plane normals (<span class="arithmatex">\({\bf n}={\bf c}\)</span>).
+<p>For polycrystalline glacier ice, <span class="arithmatex">\(n(\theta,\phi)\)</span> is simply the distribution of (easy) slip-plane normals since <span class="arithmatex">\({\bf n}={\bf c}\)</span>.
 Given the expansion</p>
 <div class="arithmatex">\[
 n({\bf x},t,\theta,\phi)=\sum_{l=0}^{L}\sum_{m=-l}^{l}n_{l}^{m}({\bf x},t) Y_{l}^{m}(\theta,\phi) \quad\text{(distribution of slip-plane normals)}, 
