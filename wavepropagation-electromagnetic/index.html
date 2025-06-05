@@ -85,13 +85,15 @@
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Electromagnetic</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#transversely-isotropic-grains">Transversely isotropic grains</a>
+    <li class="toctree-l2"><a class="reference internal" href="#homogenization">Homogenization</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#glacier-ice">Glacier ice</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#example-for-glacier-ice">Example for glacier ice</a>
+    <li class="toctree-l3"><a class="reference internal" href="#code-example">Code example</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#orthotropic-grains">Orthotropic grains</a>
+    <li class="toctree-l2"><a class="reference internal" href="#olivine">Olivine</a>
     </li>
     </ul>
                   </li>
@@ -168,41 +170,27 @@ The above equation requires </p>
 V^2 = \frac{\omega^2}{k^2}
 \]</div>
 <p>is the wave velocity squared.</p>
-<div class="admonition note">
-<p class="admonition-title">Homogenization</p>
+<h2 id="homogenization">Homogenization</h2>
 <p>If wave lengths are much longer than the average grain size, the problem can be closed by approximating the bulk polycrystalline permittivity tensor by the grain-averaged permittivity tensor</p>
 <div class="arithmatex">\[{\boldsymbol \epsilon} = \langle {\boldsymbol \epsilon}' \rangle,\]</div>
 <p>constructed by averaging over all grain orientations (over the CPO).</p>
-</div>
-<h2 id="transversely-isotropic-grains">Transversely isotropic grains</h2>
-<table>
-<thead>
-<tr>
-<th align="center">Monocrystal</th>
-<th align="center">Polycrystal</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/tranisotropic-electromagnetic-monocrystal.png" style="width:140px" /></td>
-<td align="center"><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal.png" style="width:220px" /></td>
-</tr>
-</tbody>
-</table>
-<p>If grains are approximately transversely isotropic w.r.t. the symmetry axis <span class="arithmatex">\({\bf m}'\)</span>, the dielectric permittivity tensor of a single crystal can be written as
+<hr />
+<h2 id="glacier-ice">Glacier ice</h2>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/monoice-dielectric.png" style="width:150px" /></p>
+<p>If ice grains are approximated as transversely isotropic w.r.t. the <span class="arithmatex">\(c\)</span>-axis, the dielectric permittivity tensor of a single crystal can be written as
 $$
-{\boldsymbol \epsilon}' =  (2\epsilon_{t}' + \epsilon_{m}') \frac{\bf I}{3}
-+ (\epsilon_{m}'-\epsilon_{t}') \left( {\bf m}'^2 - \frac{\bf I}{3} \right),
+{\boldsymbol \epsilon}' =  (2\epsilon_{a}' + \epsilon_{c}') \frac{\bf I}{3}
++ (\epsilon_{c}'-\epsilon_{a}') \left( {\bf c}^2 - \frac{\bf I}{3} \right),
 $$
-where <span class="arithmatex">\(\epsilon_{m}'\)</span> and <span class="arithmatex">\(\epsilon_{t}'\)</span> are the permittivities parallel and perpendicular to the symmetry axis.
+where <span class="arithmatex">\(\epsilon_{c}'\)</span> and <span class="arithmatex">\(\epsilon_{a}'\)</span> are the permittivities parallel and perpendicular to the <span class="arithmatex">\(c\)</span> axis.
 In this case, the grain-averaged permitivity is simply </p>
 <div class="arithmatex">\[
-{\boldsymbol \epsilon} = (2\epsilon_{t}' + \epsilon_{m}') \frac{\bf I}{3}
-+ (\epsilon_{m}'-\epsilon_{t}') \left( \langle {\bf m}'^2 \rangle - \frac{\bf I}{3} \right)
+\langle {\boldsymbol \epsilon}'\rangle = (2\epsilon_{a}' + \epsilon_{c}') \frac{\bf I}{3}
++ (\epsilon_{c}'-\epsilon_{a}') \left( \langle {\bf c}^2 \rangle - \frac{\bf I}{3} \right)
 ,
 \]</div>
-<p>where <span class="arithmatex">\(\langle {\bf m}'^2 \rangle\)</span> is the <a href="../cpo-structuretensors/">second-order structure tensor</a> (aka <span class="arithmatex">\({\bf a}^{(2)}\)</span>).</p>
-<h3 id="example-for-glacier-ice">Example for glacier ice</h3>
+<p>where <span class="arithmatex">\(\langle {\bf c}^2 \rangle\)</span> is the <a href="../cpo-structuretensors/">second-order structure tensor</a>.</p>
+<h3 id="code-example">Code example</h3>
 <p>Experimental, bug reports are welcome.</p>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfab as sf
@@ -210,27 +198,25 @@ lm, nlm_len = sf.init(4)
 nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
 
 ### Physical parameters (note eps=eps0*epsr, mu=mu0*mur)
-epsr_m = 3.17        # relative permittivity of a single grain parallel to symmetry axis (c) 
-epsr_t = 3.17-0.034  # relative permittivity of a single grain perpendicular to symmetry axis (a)
+epsr_c = 3.17        # relative permittivity of a single grain parallel to symmetry axis (c) 
+epsr_a = 3.17-0.034  # relative permittivity of a single grain perpendicular to symmetry axis (a)
 mur = 1              # relative permeability of a single grain
 
-### c-axis number distribution (nlm) from second-order structure tensor (a2)
+### CPO from second-order structure tensor
 p = np.array([0,0,1]) # preferred c-axis direction
-a2 = np.einsum('i,j', p,p) # a2 if ODF = deltafunc(r-p) 
-nlm[:sf.L2len] = sf.a2_to_nlm(a2) # l&lt;=2 expansion coefficients for corresponding normalized ODF
+a2 = np.einsum('i,j', p,p) # a2 if MODF = deltafunc(r-p) 
+nlm[:sf.L2len] = sf.a2_to_nlm(a2) # l&lt;=2 expansion coefficients
 
 ### Propagation directions of interest
-theta, phi = np.deg2rad([0,90,]), np.deg2rad([0,0,]) # wave-vector directions (theta is colatitude, phi is longitude)
+theta, phi = np.deg2rad([0,90,]), np.deg2rad([0,0,]) # theta=colatitude, phi=longitude
 
 ### Calculate phase velocities
-Vi = sf.Vi_electromagnetic_tranisotropic(nlm, epsr_m, epsr_t, mur, theta,phi) # fast and slow phase velocities are V_S1=vi[0,:], V_S2=vi[1,:]
+Vi = sf.Vi_electromagnetic_tranisotropic(nlm, epsr_c, epsr_a, mur, theta,phi) # fast and slow phase velocities are V_S1=vi[0,:], V_S2=vi[1,:]
 </code></pre>
-<div class="admonition tip">
-<p class="admonition-title">Evolving CPO</p>
-<p>The below animation shows directional S-wave velocities for a CPO evolving under <a href="../deformation-kinematics/"><span class="arithmatex">\({\hat {\bf x}}\)</span>&mdash;<span class="arithmatex">\({\hat {\bf z}}\)</span> confined compression</a>, relative to an isotropic CPO, when subject to <a href="../lattice-rotation/">lattice rotation</a>.</p>
+<p>The below animation shows directional S-wave velocities for a CPO evolving under <a href="../deformation-kinematics/"><span class="arithmatex">\(xz\)</span> confined compression</a>, relative to an isotropic CPO, when subject to <a href="../lattice-rotation/">lattice rotation</a>.</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/S2-maps/S2-vi-EM.gif" style="width:460px" /></p>
-</div>
-<h2 id="orthotropic-grains">Orthotropic grains</h2>
+<hr />
+<h2 id="olivine">Olivine</h2>
 <p>🚧 <em>Not yet supported.</em></p>
               
             </div>

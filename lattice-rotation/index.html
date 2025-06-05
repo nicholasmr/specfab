@@ -145,7 +145,7 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="lattice-rotation">Lattice rotation</h1>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/plastic-spin.png" style="width:320px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/plastic-spin.png" style="width:380px" /></p>
 <p>When subject to simple shear, the orientation of easy slip systems in polycrystalline materials like ice or olivine tend towards aligning with the bulk shear-plane system. 
 That is, the <span class="arithmatex">\(n\)</span>-axis (<span class="arithmatex">\(c\)</span>-axis in ice) tends towards to bulk shear plane normal, and the <span class="arithmatex">\(b\)</span>-axis (<span class="arithmatex">\(a\)</span>-axis in ice) towards to bulk shear direction.
 Thus, if grains are perfectly aligned with the bulk shear system, their orientation should be unaffected by any further shearing, but be in steady state.
@@ -154,10 +154,10 @@ Clearly, slip systems do therefore not simply co-rotate with the bulk continuum 
 Rather, slip systems must be subject to an additional contribution &mdash; a plastic spin <span class="arithmatex">\({\boldsymbol\omega}'\)</span> &mdash; such that the bulk spin is exactly counteracted to achieve steady state if favorably aligned:</p>
 <!-- \quad\text{for ${\bf b}$&ndash;${\bf n}$ shear}. -->
 <div class="arithmatex">\[
-{\bf \dot{n}} = ({\boldsymbol\omega} + {\boldsymbol\omega}'_\mathrm{n}) \cdot {\bf n} = {\bf 0} , 
+{\bf \dot{n}} = ({\boldsymbol\omega} + {\boldsymbol\omega}'_{n}) \cdot {\bf n} = {\bf 0} , 
 \]</div>
 <div class="arithmatex">\[
-{\bf \dot{b}} = ({\boldsymbol\omega} + {\boldsymbol\omega}'_\mathrm{b}) \cdot {\bf b} = {\bf 0} .
+{\bf \dot{b}} = ({\boldsymbol\omega} + {\boldsymbol\omega}'_{b}) \cdot {\bf b} = {\bf 0} .
 \]</div>
 <p>More precisely, the crystallographic axes reorient themselves in response to both the bulk continuum spin and a plastic spin that is supposed to represent the crystallographic spin needed to accommodate strain compatibility between grains that otherwise preferentially deform by easy slip (i.e., basal slip for ice).</p>
 <h2 id="directors-method">Directors method</h2>
@@ -177,9 +177,9 @@ Rather, slip systems must be subject to an additional contribution &mdash; a pla
 <span class="arithmatex">\({\bf b}^2 \cdot {\dot{\boldsymbol\epsilon}}\)</span>, 
 that</p>
 <div class="arithmatex">\[
-{\boldsymbol \omega}'_\mathrm{n} = +{\bf n}^2 \cdot {\dot{\boldsymbol\epsilon}} - {\dot{\boldsymbol\epsilon}} \cdot {\bf n}^2 ,
+{\boldsymbol \omega}'_{n} = +{\bf n}^2 \cdot {\dot{\boldsymbol\epsilon}} - {\dot{\boldsymbol\epsilon}} \cdot {\bf n}^2 ,
 \\
-{\boldsymbol \omega}'_\mathrm{b} = -{\bf b}^2 \cdot {\dot{\boldsymbol\epsilon}} + {\dot{\boldsymbol\epsilon}} \cdot {\bf b}^2 .
+{\boldsymbol \omega}'_{b} = -{\bf b}^2 \cdot {\dot{\boldsymbol\epsilon}} + {\dot{\boldsymbol\epsilon}} \cdot {\bf b}^2 .
 \]</div>
 <p>Indeed, this result agrees with representation theorems for isotropic functions (Wang, 1969), stating that an antisymmetric tensor-valued function of a symmetric tensor (<span class="arithmatex">\({\dot{\boldsymbol\epsilon}}\)</span>) and a vector (<span class="arithmatex">\({\hat {\bf r}}\)</span>) is to lowest order given by</p>
 <div class="arithmatex">\[
@@ -188,10 +188,10 @@ that</p>
 .
 \]</div>
 <p>To be consistent with the above, <span class="arithmatex">\(\iota = +1\)</span> for <span class="arithmatex">\({\hat {\bf r}}={\bf n}\)</span> and <span class="arithmatex">\(\iota = -1\)</span> for <span class="arithmatex">\({\hat {\bf r}}={\bf b}\)</span>.</p>
-<p><span class="arithmatex">\({\boldsymbol \omega}'_\mathrm{n}\)</span> and <span class="arithmatex">\({\boldsymbol \omega}'_\mathrm{b}\)</span> are then generally taken to suffice for other deformation kinematics, too.</p>
+<p><span class="arithmatex">\({\boldsymbol \omega}'_{n}\)</span> and <span class="arithmatex">\({\boldsymbol \omega}'_{b}\)</span> are then generally taken to suffice for other deformation kinematics, too.</p>
 <div class="admonition note">
 <p class="admonition-title">Glacier ice</p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/plastic-spin.png" style="width:330px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/plastic-spin.png" style="width:350px" /></p>
 <p>The predicted normalized <span class="arithmatex">\(c\)</span>-axis velocity field for glacier ice where <span class="arithmatex">\({\bf n} = {\bf c}\)</span> is show below for three different deformation kinematics:</p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/deformation-modes.png#center" style="width:550px" /></p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/latrot-velocity/latrot-velocity.png" style="width:560px" /></p>

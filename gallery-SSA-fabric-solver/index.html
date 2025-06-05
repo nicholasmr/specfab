@@ -90,7 +90,7 @@
               <ul class="current">
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Steady SSA CPO field</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#closing-the-problem">Closing the problem</a>
+    <li class="toctree-l2"><a class="reference internal" href="#closure">Closure</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#regularization">Regularization</a>
     </li>
@@ -157,8 +157,8 @@ This approximation conveniently reduces the problem to a two-dimensional horizon
 <p>where <span class="arithmatex">\({\bf \bar s}(x,y)\)</span> is the depth-average CPO state vector field, <span class="arithmatex">\({\bf{u}}(x,y)=[u_x(x,y),u_y(x,y)]\)</span> is the horizontal surface velocity field, and <span class="arithmatex">\(H\)</span> is the ice thickness, 
 The first term represents CPO advection along stream lines, and the second term represents the depth-average effect of crystal processes. 
 The third and fourth terms are state-space attractors, causing <span class="arithmatex">\({\bf \bar s}\)</span> to tend towards the characteristic CPO states of ice that accumulates on the surface <span class="arithmatex">\({\bf s}_{\mathrm{sfc}}\)</span> or subglacially <span class="arithmatex">\({\bf s}_{\mathrm{sub}}\)</span> (likely isotropic), depending on the positively-defined accumulation rates <span class="arithmatex">\(a_{\mathrm{sfc}}\)</span> and <span class="arithmatex">\(a_{\mathrm{sub}}\)</span>. </p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/SSA-fabric/SSA-fabric.png" style="width:440px" /></p>
-<h2 id="closing-the-problem">Closing the problem</h2>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/SSA-fabric/SSA-fabric.png" style="width:480px" /></p>
+<h2 id="closure">Closure</h2>
 <p>If only lattice rotation is relevant (typical for cold ice), the problem is closed by specifying the horizontal surface velocity field (e.g., satellite-derived velocities), together with accumulation rates and the characteristic CPO state of accumulated ice (typically isotropic). </p>
 <p>If DDRX is non-negligible (typical for warm ice), the temperature and stress field must additionally be prescribed. One solution is to presume some temperature field and assert that the stress and strain-rate tensors are coaxial so that <span class="arithmatex">\({\boldsymbol\tau} \propto \dot{\boldsymbol\epsilon}\)</span> <a href="missinglink">(Rathmann et al., 2025)</a>.</p>
 <h2 id="regularization">Regularization</h2>
