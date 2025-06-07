@@ -59,15 +59,15 @@
               </ul>
               <p class="caption"><span class="caption-text">⚙️ CPO Dynamics</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-matrix-model/">Matrix model</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../fabdyn-matrix-model/">Matrix model</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../lattice-rotation/">Lattice rotation</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../fabdyn-LROT/">Lattice rotation</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../recrystallization-DDRX/">Discontinous DRX</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../fabdyn-DDRX/">Discontinous DRX</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../recrystallization-CDRX/">Continous DRX</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../fabdyn-CDRX/">Continous DRX</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-regularization/">Regularization</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../fabdyn-REG/">Regularization</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🌀 Viscosity</span></p>
@@ -81,9 +81,9 @@
               </ul>
               <p class="caption"><span class="caption-text">🌊 Wave propagation</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-elastic/">Elastic</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../waveprop-elastic/">Elastic</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Electromagnetic</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../waveprop-electromagnetic/">Electromagnetic</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
@@ -149,7 +149,7 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="deformation-kinematics">Deformation kinematics</h1>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/displacement-field.png#center" style="width:630px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation/displacement-field.png#center" style="width:630px" /></p>
 <p>The <a href="https://www.continuummechanics.org/deformationgradient.html">deformation gradient tensor</a> <span class="arithmatex">\({\bf F}\)</span> quantifies how infinitesimal material elements (line, area, or volume) are deformed relative to some original reference configuration.
 The strain tensor <span class="arithmatex">\({\boldsymbol \epsilon}\)</span> is derived from <span class="arithmatex">\({\bf F}\)</span> and is a measure of how a material deforms, excluding rigid body motions like rotation and translation.
 In continuum mechanics, it is useful to isolate such pure deformation (stretching) from rigid body motion, since the viscous and elastic response of a material when subject external forces is concerned with how easy or hard it is to stretch a material.</p>
@@ -176,10 +176,10 @@ where the <a href="https://www.continuummechanics.org/velocitygradient.html">vel
 <h2 id="kinematic-modes">Kinematic modes</h2>
 <p>Let us now turn to the two common kinematic modes of deformation, pure shear and simple shear, that we will encounter many times throughout this book.
 Introducing these kinematic modes in terms of their deformation gradient <span class="arithmatex">\({\bf F}\)</span> provides a powerful way to describe e.g. how ice deforms below ice divides and domes of ice sheets.</p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/kinematic-modes.png#center" style="width:560px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/modes-strain/kinematic-modes.png#center" style="width:560px" /></p>
 <div class="admonition warning">
 <p class="admonition-title">Example of strain tensors</p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/strain-tensors.png#center" style="width:570px" /></p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/modes-strain/strain-tensors.png#center" style="width:570px" /></p>
 </div>
 <h3 id="pure-shear">Pure shear</h3>
 <p>Pure shear (stretching) aligned with the Cartesian coordinate axes renders <span class="arithmatex">\({\bf F}\)</span> diagonal, a convenient frame to consider. 
@@ -296,10 +296,6 @@ eps   = sf.F_to_strain(F)               # strain tensor at time t
 </code></pre>
 <hr />
 <h2 id="plotting-deformed-parcels">Plotting deformed parcels</h2>
-<!--
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/parcel-trajectory.png#center){: style="width:440px"} 
--->
-
 <p>Given a deformation gradient <span class="arithmatex">\({\bf F}\)</span>, the resulting deformed parcel shape can be plotting as follows: </p>
 <pre><code class="language-python">import numpy as np
 import matplotlib.pyplot as plt

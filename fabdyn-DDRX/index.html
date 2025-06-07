@@ -5,15 +5,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Continous DRX - specfab documentation</title>
+    <title>Discontinous DRX - specfab documentation</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Continous DRX";
-        var mkdocs_page_input_path = "recrystallization-CDRX.md";
+        var mkdocs_page_name = "Discontinous DRX";
+        var mkdocs_page_input_path = "fabdyn-DDRX.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -59,13 +59,11 @@
               </ul>
               <p class="caption"><span class="caption-text">⚙️ CPO Dynamics</span></p>
               <ul class="current">
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-matrix-model/">Matrix model</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../fabdyn-matrix-model/">Matrix model</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../lattice-rotation/">Lattice rotation</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../fabdyn-LROT/">Lattice rotation</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../recrystallization-DDRX/">Discontinous DRX</a>
-                  </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Continous DRX</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Discontinous DRX</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#matrix-model">Matrix model</a>
     </li>
@@ -73,7 +71,9 @@
     </li>
     </ul>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-regularization/">Regularization</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../fabdyn-CDRX/">Continous DRX</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../fabdyn-REG/">Regularization</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🌀 Viscosity</span></p>
@@ -87,9 +87,9 @@
               </ul>
               <p class="caption"><span class="caption-text">🌊 Wave propagation</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-elastic/">Elastic</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../waveprop-elastic/">Elastic</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Electromagnetic</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../waveprop-electromagnetic/">Electromagnetic</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
@@ -131,7 +131,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
           <li>⚙️ CPO Dynamics &raquo;</li>
-      <li>Continous DRX</li>
+      <li>Discontinous DRX</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -140,35 +140,67 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="continous-dynamic-recrystallization-cdrx">Continous dynamic recrystallization (CDRX)</h1>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/iceproc-CDRX.png" style="width:140px" /></p>
-<p>Polygonization (rotation recrystallization, CDRX) accounts for the division of grains along internal sub-grain boundaries resulting from local strain incompatibilities. 
-In effect, CDRX reduces the average grain size upon grain division but does not necessarily change the CPO much (<a href="https://doi.org/10.3189/S0022143000003658">Alley, 1992</a>). </p>
-<p>Following <a href="https://doi.org/10.1007/s001610050095">Gödert (2003)</a>, CDRX can be modeled by approximating this effect as a Laplacian diffusive process on <span class="arithmatex">\(S^2\)</span>:</p>
+                <h2 id="discontinous-dynamic-recrystallization-ddrx">Discontinous dynamic recrystallization (DDRX)</h2>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/iceproc-DDRX.png" style="width:140px" /></p>
+<p>Following <a href="https://doi.org/10.1007/s00161-009-0126-0">Placidi and others (2010)</a>, DDRX is modeled as a spontaneous mass decay&mdash;production process in orientation space <span class="arithmatex">\(S^2\)</span>, intended to represent the combined effect of nucleation and grain boundary migration. 
+That is, mass is spontaneously exchanged between grains with different orientations depending on the local stress state, strain rate, and temperature, in a statistical sense. </p>
+<p>The decay&mdash;production rate is defined as</p>
 <div class="arithmatex">\[
-\frac{\mathrm{D} n}{\mathrm{D} t} = \Lambda\nabla^2 n  ,
+\Gamma = \Gamma_0\left(D- {\langle} D {\rangle}\right) 
 \]</div>
-<p>where <span class="arithmatex">\(\Lambda\)</span> is the CDRX rate-factor magnitude that depends on temperature, stress, strain-rate, etc. (<a href="https://doi.org/10.1016/j.epsl.2020.116718">Richards et al., 2021</a>).</p>
+<p>where the  prefactor <span class="arithmatex">\(\Gamma_0\)</span> accounts for the preferential (Arrhenius) activation at warm temperatures and the effect of strain-rate magnitude, defined as
+\begin{align}
+\Gamma_0 = \sqrt{\frac{{\dot{\boldsymbol\epsilon}}:{\dot{\boldsymbol\epsilon}}}{2}} A_{\Gamma}\exp(-Q_{\Gamma}/RT)
+.
+\end{align}
+Here, <span class="arithmatex">\({\dot{\boldsymbol\epsilon}}\)</span> is the strain-rate tensor, <span class="arithmatex">\(R\)</span> is the gas constant, <span class="arithmatex">\(T\)</span> is the temperature, and <span class="arithmatex">\(A_{\Gamma}\)</span> and <span class="arithmatex">\(Q_{\Gamma}\)</span> have been calibration by <a href="https://doi.org/10.1016/j.epsl.2020.116718">Richards et al. (2021)</a> and <a href="https://doi.org/10.1017/jog.2023.78">Lilien et al. (2023)</a>. </p>
+<p>The deformability <span class="arithmatex">\(D\)</span> is the square of the basal-plane resolved shear stress</p>
+<div class="arithmatex">\[
+\tau^2_\mathrm{RSS} = ({\boldsymbol\tau}\cdot{\boldsymbol\tau}):{\bf n}^2 - {\boldsymbol\tau}:{\bf n}^4:{\boldsymbol\tau},
+\]</div>
+<p>relative to the average value of an isotropic fabric:</p>
+<div class="arithmatex">\[
+D = \frac{\tau^2_\mathrm{RSS}}{\langle \tau^2_\mathrm{RSS} \rangle_\mathrm{iso}} = \frac{({\boldsymbol\tau}\cdot{\boldsymbol\tau}):{\bf n}^2 - {\boldsymbol\tau}:{\bf n}^4:{\boldsymbol\tau}}{{\boldsymbol\tau}:{\boldsymbol\tau}/5},
+\]</div>
+<p>where <span class="arithmatex">\({\bf n}\)</span> is an arbitrary slip-plane normal (<span class="arithmatex">\(c\)</span>-axis for ice). 
+Because <span class="arithmatex">\(D\)</span> is largest for grains with an orientation favorable to easy glide, mass is spontaneously created/added to grains with such preferred orientations (in a statistical sense).
+Conversely, mass spontaneously decays if <span class="arithmatex">\(D&lt;{\langle} D {\rangle}\)</span>, corresponding to grains with an unfavorable orientation being consumed by grains with a more favorable orientation to basal glide. 
+Here, <span class="arithmatex">\({\langle} D {\rangle}\)</span> is the grain-average deformability of the polycrystal, and the total mass of the polycrystal is conserved since <span class="arithmatex">\(\Gamma\)</span> is zero on average, <span class="arithmatex">\(\langle\Gamma\rangle=\Gamma_0\langle D-\langle D\rangle\rangle=0\)</span> (equal amounts of grain mass are created and destroyed per time).</p>
+<p>The primary driver for grain boundary migration is generally regarded to be the contrast in dislocation density (stored strain energy) between grains. 
+In this sense, <span class="arithmatex">\(1/D\)</span> can be understood as a parameterization of the dislocation density: the larger <span class="arithmatex">\(1/D\)</span> is, the more dislocations a grain has, and the more likely it is to be consumed (decay).</p>
+<div class="admonition warning">
+<p class="admonition-title">Nonlinear process</p>
+<p>Since average deformability <span class="arithmatex">\(\langle D\rangle\)</span> depends on the instantaneous CPO state &mdash; specifically, the <a href="../cpo-representation/">structure tensors</a> <span class="arithmatex">\(\langle{\bf c}^2\rangle\)</span> and <span class="arithmatex">\(\langle{\bf c}^4\rangle\)</span> &mdash; this crystal process is nonlinear (renders a nonlinear matrix problem below).</p>
+</div>
 <div class="admonition warning">
 <p class="admonition-title">Limited use</p>
 <p>Notice that this model is currently only relevant to slip-system normals. 
 The model is therefore not yet useful for e.g. olivine. </p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Glacier ice</p>
+<p>The normalized decay&mdash;production rate is shown below for three different stress states:</p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/fabric-dynamics/fabdyn-DDRX.png#center" style="width:550px" /></p>
+</div>
 <h3 id="matrix-model">Matrix model</h3>
 <p>The corresponding effect on the continuous distribution function is </p>
-<div class="arithmatex">\[
-\frac{\mathrm{D} n}{\mathrm{D} t} = \Lambda\nabla^2 n 
+<div class="arithmatex">\[ 
+\frac{\mathrm{D} n}{\mathrm{D} t} = \Gamma n 
 \quad\Longrightarrow\quad
-\frac{\mathrm{D} {\bf s}}{\mathrm{D} t} = {\bf M_{\mathrm{CDRX}}} \cdot {\bf s} .
+\frac{\mathrm{D} {\bf s}_n}{\mathrm{D} t} = {\bf M_{\mathrm{DDRX}}} \cdot {\bf s}_n ,
 \]</div>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-CDRX.gif" style="width:610px" /></p>
+<p>where <span class="arithmatex">\({\bf M_{\mathrm{DDRX}}}\)</span> is given analytically in <a href="https://doi.org/10.1017/jog.2021.88">Rathmann and Lilien (2021)</a>.</p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-DDRX.gif" style="width:610px" /></p>
 <h3 id="code-example">Code example</h3>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfab as sf
 # L=8 truncation is sufficient in this case, but larger L allows a very strong fabric to  
 #  develop and minimizes the effect that regularization has on low wavenumber modes (l=2,4)
-L = 8
-lm, nlm_len = sf.init(L) 
+lm, nlm_len = sf.init(8) 
+
+### Stress tensor experienced by parcel
+
+S = np.diag([0.5, 0.5, -1.0]) # uniaxial compression along z-axis
 
 ### Numerics 
 
@@ -178,23 +210,23 @@ dt = 0.05 # time-step size
 ### Initial fabric state
 
 nlm = np.zeros((Nt,nlm_len), dtype=np.complex64) # n state vector
-nlm[0,:] = sf.nlm_ideal([0,0,1], 0, L) # sigle maximum at t=0
+nlm[0,0] = 1/np.sqrt(4*np.pi) # normalized isotropic state at t=0
 
 ### Euler integration
 
 for tt in np.arange(1,Nt):
     nlm_prev = nlm[tt-1,:] # previous solution
-    Lambda = 1             # CDRX rate-factor
-    M = Lambda*sf.M_CDRX(nlm) # CDRX operator 
+    Gamma0 = 10            # DDRX decay-rate magnitude
+    M = Gamma0 * sf.M_DDRX(nlm_prev, S) # DDRX operator
     nlm[tt,:] = nlm_prev + dt*np.matmul(M, nlm_prev) # euler step
-    nlm[tt,:] = sf.apply_bounds(nlm[tt,:]) # apply spectral bounds if needed 
+    nlm[tt,:] = sf.apply_bounds(nlm[tt,:]) # apply spectral bounds if needed    
 </code></pre>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../recrystallization-DDRX/" class="btn btn-neutral float-left" title="Discontinous DRX"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../cpo-regularization/" class="btn btn-neutral float-right" title="Regularization">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../fabdyn-LROT/" class="btn btn-neutral float-left" title="Lattice rotation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../fabdyn-CDRX/" class="btn btn-neutral float-right" title="Continous DRX">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -217,10 +249,10 @@ for tt in np.arange(1,Nt):
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../recrystallization-DDRX/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../fabdyn-LROT/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../cpo-regularization/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../fabdyn-CDRX/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

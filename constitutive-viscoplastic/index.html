@@ -59,15 +59,15 @@
               </ul>
               <p class="caption"><span class="caption-text">⚙️ CPO Dynamics</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-matrix-model/">Matrix model</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../fabdyn-matrix-model/">Matrix model</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../lattice-rotation/">Lattice rotation</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../fabdyn-LROT/">Lattice rotation</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../recrystallization-DDRX/">Discontinous DRX</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../fabdyn-DDRX/">Discontinous DRX</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../recrystallization-CDRX/">Continous DRX</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../fabdyn-CDRX/">Continous DRX</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-regularization/">Regularization</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../fabdyn-REG/">Regularization</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🌀 Viscosity</span></p>
@@ -81,9 +81,9 @@
               </ul>
               <p class="caption"><span class="caption-text">🌊 Wave propagation</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-elastic/">Elastic</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../waveprop-elastic/">Elastic</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../wavepropagation-electromagnetic/">Electromagnetic</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../waveprop-electromagnetic/">Electromagnetic</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
@@ -224,6 +224,10 @@ Written in terms of the eigenenhancements, the material parameters are</p>
 \lambda_{mm} = \frac{E_{mm}^{2/(n+1)}-1}{2} ,\quad
 \lambda_{mt} = \frac{E_{mt}^{2/(n+1)}-1}{2} .
 \]</div>
+<div class="admonition warning">
+<p class="admonition-title">Free parameters</p>
+<p>In addition to <span class="arithmatex">\(A\)</span> and <span class="arithmatex">\(n\)</span>, the transversely isotropic rheology has three additional rheological parameters that must be specified: <span class="arithmatex">\(\bf m\)</span>, <span class="arithmatex">\(E_{mm}\)</span>, <span class="arithmatex">\(E_{mt}\)</span>.</p>
+</div>
 <h3 id="alternative-form">Alternative form</h3>
 <p>Unlike the isotropic rheology, the transversely isotropic rheology allows to scale the strain rate components depending on the stress projection along <span class="arithmatex">\(\bf m\)</span> and in the transverse plane of isotropy. 
 Realizing this, the rheology takes a particularly simple form if rewritten it in terms of the normal- and shear-stress projectors : </p>
@@ -251,10 +255,6 @@ I_{mm} = {\bf P}_{mm} : {\boldsymbol\tau}  ,
 <div class="arithmatex">\[
 I_{mt} = {\bf P}_{mt} : {\boldsymbol\tau} = ({\boldsymbol\tau}\cdot{\boldsymbol\tau}):{\bf m}^2 - {\boldsymbol\tau}:{\bf m}^4:{\boldsymbol\tau} = \tau^2_\mathrm{RSS} .
 \]</div>
-<div class="admonition warning">
-<p class="admonition-title">Free parameters</p>
-<p>In addition to <span class="arithmatex">\(A\)</span> and <span class="arithmatex">\(n\)</span>, the transversely isotropic rheology has three additional rheological parameters that must be specified: <span class="arithmatex">\(\bf m\)</span>, <span class="arithmatex">\(E_{mm}\)</span>, <span class="arithmatex">\(E_{mt}\)</span>.</p>
-</div>
 <h3 id="special-cases">Special cases</h3>
 <!--
 <b>Aligned stress</b><br>
