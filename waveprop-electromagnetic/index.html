@@ -151,25 +151,14 @@
 <div class="arithmatex">\[
 \nabla \times \nabla \times {\bf E} = -\mu {\boldsymbol \epsilon} \frac{\partial^2 {\bf E}}{\partial t^2},
 \]</div>
+<!--Note this can also be written as $\nabla^2 {\bf E} = \mu {\boldsymbol \epsilon} {\partial^2 {\bf E}}/{\partial t^2}$.-->
 <p>where <span class="arithmatex">\({\bf E}\)</span> is the electric field, <span class="arithmatex">\({\boldsymbol \epsilon}\)</span> is the bulk dielectric permittivity tensor, and <span class="arithmatex">\(\mu\)</span> the bulk isotropic permeability of the medium.
-Note this can also be written as <span class="arithmatex">\(\nabla^2 {\bf E} = \mu {\boldsymbol \epsilon} {\partial^2 {\bf E}}/{\partial t^2}\)</span>.
-Substituting <span class="arithmatex">\({\bf E}\)</span> for a plane wave solution, <span class="arithmatex">\({\bf E} = {\bf E}_0 \exp[i({\bf k}\cdot {\bf x} - \omega t)]\)</span>, the problem reduces to</p>
+Substituting <span class="arithmatex">\({\bf E}\)</span> for the plane wave solution, <span class="arithmatex">\({\bf E} = {\bf E}_0 \exp[i({\bf k}\cdot {\bf x} - \omega t)]\)</span>, the problem reduces to</p>
 <div class="arithmatex">\[
-({\bf K} + \omega^2 \mu {\boldsymbol \epsilon}) {\bf E} = {\bf 0},
+({\bf K} + \omega^2 \mu {\boldsymbol \epsilon}) \cdot {\bf E} = {\bf 0},
 \]</div>
 <p>where <span class="arithmatex">\({\bf K} = {\bf k}\times{\bf k} \times\)</span> is the <a href="https://en.wikipedia.org/wiki/Cross_product#Alternative_ways_to_compute">matrix representation</a> of the twice-applied cross product.
-The above equation requires </p>
-<div class="arithmatex">\[
-\det( {\bf K} + \omega^2 \mu {\boldsymbol \epsilon} ) = 0
-.
-\]</div>
-<!--{\boldsymbol \epsilon}^{-1} \frac{\hat{{\bf k}}^2}{\mu} {\bf E} = \frac{\omega^2}{k^2} {\bf E} -->
-
-<p>Evidently, the eigenvalues and eigenvectors of <span class="arithmatex">\({\boldsymbol \epsilon}^{-1} {\bf K}/(\mu k^2)\)</span> are the permitted wave velocities squared and wave polarization, respectively, where</p>
-<div class="arithmatex">\[
-V^2 = \frac{\omega^2}{k^2}
-\]</div>
-<p>is the wave velocity squared.</p>
+The above equation implies that <span class="arithmatex">\(\det( {\bf K} + \omega^2 \mu {\boldsymbol \epsilon} ) = 0\)</span>. Hence, the eigenvalues and eigenvectors of the normalized Christoffel tensor <span class="arithmatex">\({\boldsymbol \epsilon}^{-1} {\bf K}/(\mu k^2)\)</span> are the permitted wave velocities squared <span class="arithmatex">\(V^2 = {\omega^2}/{k^2}\)</span> and wave polarization, respectively.</p>
 <h2 id="homogenization">Homogenization</h2>
 <p>If wave lengths are much longer than the average grain size, the problem can be closed by approximating the bulk polycrystalline permittivity tensor by the grain-averaged permittivity tensor</p>
 <div class="arithmatex">\[{\boldsymbol \epsilon} = \langle {\boldsymbol \epsilon}' \rangle,\]</div>

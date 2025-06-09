@@ -151,26 +151,18 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="elastic-wave-propagation">Elastic wave propagation</h1>
-<p>Plane waves are a well-known solution to the Cauchy-Navier equation of motion</p>
+<p>Plane waves are a well-known solution to the Cauchy-Navier equation</p>
 <div class="arithmatex">\[
 \nabla\cdot {\boldsymbol \sigma} = \rho \frac{\partial^2 {\bf d}}{\partial t^2},
 \]</div>
 <p>where <span class="arithmatex">\({\boldsymbol \sigma}\)</span> is the bulk stress tensor, <span class="arithmatex">\({\bf d}\)</span> is the displacement field, and <span class="arithmatex">\(\rho\)</span> the mass density.
-Substituting <span class="arithmatex">\({\bf d}\)</span> for a plane wave solution, <span class="arithmatex">\({\bf d} = {\bf d}_0 \exp[i({\bf k}\cdot {\bf x} - \omega t)]\)</span>, the problem reduces to</p>
+Substituting <span class="arithmatex">\({\bf d}\)</span> for the plane wave solution, <span class="arithmatex">\({\bf d} = {\bf d}_0 \exp[i({\bf k}\cdot {\bf x} - \omega t)]\)</span>, the problem reduces to</p>
 <div class="arithmatex">\[
-(k^2\hat{{\bf Q}} - \omega^2 \rho {\bf I}) {\bf d} = {\bf 0},
+(k^2\hat{{\bf Q}} - \omega^2 \rho {\bf I}) \cdot {\bf d} = {\bf 0},
 \]</div>
-<p>where <span class="arithmatex">\(\hat{{\bf Q}}(\hat{{\bf k}})\)</span> is the normalized <a href="https://www.brown.edu/Departments/Engineering/Courses/En221/Notes/Elasticity/Elasticity.htm">acoustic tensor</a> that varies depending on the bulk <a href="../constitutive-elastic/">constitutive equation</a> substituted for <span class="arithmatex">\({\boldsymbol \sigma}({\bf d})\)</span>.
-The above equation requires </p>
-<div class="arithmatex">\[
-\det( k^2\hat{{\bf Q}} - \omega^2 \rho {\bf I} ) = 0
-.
-\]</div>
-<p>Evidently, the eigenvalues and eigenvectors of <span class="arithmatex">\(\hat{{\bf Q}}/\rho\)</span> are the permitted wave velocities squared and wave polarization, respectively, where </p>
-<div class="arithmatex">\[
-V^2 = \frac{\omega^2}{k^2}
-\]</div>
-<p>is the wave velocity squared.</p>
+<p>where <span class="arithmatex">\(\hat{{\bf Q}}(\hat{{\bf k}})\)</span> is the normalized <a href="https://www.brown.edu/Departments/Engineering/Courses/En221/Notes/Elasticity/Elasticity.htm">Christoffel (acoustic) tensor</a>, the form of which depends on the bulk <a href="../constitutive-elastic/">constitutive equation</a> substituted for <span class="arithmatex">\({\boldsymbol \sigma}({\bf d})\)</span>.
+The above equation implies that <span class="arithmatex">\(\det( k^2\hat{{\bf Q}} - \omega^2 \rho {\bf I} ) = 0\)</span>. 
+Hence, the eigenvalues and eigenvectors of <span class="arithmatex">\(\hat{{\bf Q}}/\rho\)</span> are the permitted wave velocities squared <span class="arithmatex">\(V^2 = {\omega^2}/{k^2}\)</span> and wave polarization, respectively.</p>
 <h2 id="homogenization">Homogenization</h2>
 <p>The problem may be closed by approximating <span class="arithmatex">\(\hat{{\bf Q}}\)</span> as the grain-averaged acoustic tensor, subject to a  linear combination of the Voigt and Reuss homogenization schemes:</p>
 <div class="arithmatex">\[
