@@ -1,9 +1,9 @@
 # Matrix model of CPO dynamics
 
-In specfab, CPO evolution is modelled as a matrix problem involving the [spectral state vectors](cpo-representation.md) of $n(\theta,\phi)$ and $b(\theta,\phi)$. 
+CPO evolution is modelled as a matrix problem involving the [state vectors](cpo-representation.md) of $n(\theta,\phi)$ and $b(\theta,\phi)$. 
 
-!!! warning "Mass or number density distributions?"
-    Recall that $n(\theta,\phi)$ and $b(\theta,\phi)$ may equally be understood as the [mass density fraction](cpo-representation.md) of grains with a given slip-plane normal and slip direction, respectively.
+Recall that $n(\theta,\phi)$ and $b(\theta,\phi)$ may either be understood as the [grain number-density or mass-density distribution](cpo-representation.md) in orientation space, the integrals of which give the total number of grains ($N$) or the bulk density ($\rho$), respectively. 
+Because the models of crystal processes included in *specfab* conserve the normalization, the two different views produce the same result.
 
 - - - 
 
@@ -11,9 +11,9 @@ In specfab, CPO evolution is modelled as a matrix problem involving the [spectra
 
 | <center>Polycrystalline ice</center> | <center>Ensemble of slip elements</center> |
 | :- | :- |
-| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polycrystal-ice.png){: style="width:180px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/polycrystal-disk.png){: style="width:180px"} |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/polyice-iso.png){: style="width:180px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/polycrystal-disk.png){: style="width:190px"} |
 
-For polycrystalline glacier ice, $n(\theta,\phi)$ is simply the distribution of (easy) slip-plane normals (${\bf n}={\bf c}$).
+For polycrystalline glacier ice, $n(\theta,\phi)$ is simply the distribution of (easy) slip-plane normals since ${\bf n}={\bf c}$.
 Given the expansion
 
 $$
@@ -40,7 +40,7 @@ $$
 {\bf M} = {\bf M_{\mathrm{LROT}}} + {\bf M_{\mathrm{DDRX}}} + {\bf M_{\mathrm{CDRX}}} + \cdots \quad\text{(operator)}. 
 $$
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/crystal-processes-combined.png){: style="width:600px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/iceproc-all.png){: style="width:570px"}
 
 ### Validation
 
@@ -56,7 +56,7 @@ The below plot from [Lilien et al. (2023)](https://doi.org/10.1017/jog.2023.78) 
 
 | <center>Polycrystalline olivine</center> | <center>Ensemble of slip elements</center> |
 | :-: | :-: |
-| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:190px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/polycrystal-plane.png){: style="width:190px"} |
+| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polyoli-iso-mi.png){: style="width:180px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/slip-plane/polycrystal-plane.png){: style="width:190px"} |
 
 
 For polycrystalline olivine, the distributions $n(\theta,\phi)$ and $b(\theta,\phi)$ refer to certain crystallographic axes (${\bf m}'_i$) depending on the fabric type; i.e. thermodynamic conditions, water content, and stress magnitude that control which of the crystallographic slip systems is activated.

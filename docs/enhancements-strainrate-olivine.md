@@ -1,8 +1,6 @@
-# Viscous anisotropy of olivine
+# Olivine viscous anisotropy
 
-| Monocrystal | Polycrystal |
-| :-: | :-: |
-| ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/orthotropic-viscous-monocrystal.png){: style="width:190px"} | ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/polycrystal.png){: style="width:220px"} |
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/monooli-viscous-mi.png){: style="width:200px"}
 
 If grains are approximately orthotropic, the grain rheology can be modelled using the [orthotropic power-law rheology](constitutive-viscoplastic.md).
 This requires specifying the grain eigenenhancements $E_{ij}'$, the power-law exponent $n'$, and the Taylor&mdash;Sachs weight $\alpha$.

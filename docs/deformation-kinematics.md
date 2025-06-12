@@ -1,6 +1,6 @@
 # Deformation kinematics
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/displacement-field.png#center){: style="width:630px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation/displacement-field.png#center){: style="width:630px"}
 
 The [deformation gradient tensor](https://www.continuummechanics.org/deformationgradient.html) ${\bf F}$ quantifies how infinitesimal material elements (line, area, or volume) are deformed relative to some original reference configuration.
 The strain tensor ${\boldsymbol \epsilon}$ is derived from ${\bf F}$ and is a measure of how a material deforms, excluding rigid body motions like rotation and translation.
@@ -24,28 +24,23 @@ Notice that ${\bf F}= {\boldsymbol \epsilon} + {\bf w}$ by definition.
 While the strain tensor is the kinematic field of interest for elastic deformation (elastic problems are concerned with displacement), the strain-rate and spin tensors are more relevant for viscous deformation (viscous problems are concerned with velocity, ${\bf u}$). 
 The strain-rate and spin tensors are simply the rate-of-change of ${\boldsymbol \epsilon}$ and ${\bf w}$, respectively:
 $$
-{\bf D} = \frac{1}{2}\left(\nabla {\bf u} + \nabla {\bf u}^\top\right) ,
+{\dot{\boldsymbol\epsilon}} = \frac{1}{2}\left(\nabla {\bf u} + \nabla {\bf u}^\top\right) ,
+\quad
+{\boldsymbol\omega} = \frac{1}{2}\left( \nabla {\bf u} - \nabla {\bf u}^\top \right) ,
 $$
-$$
-{\bf W} = \frac{1}{2}\left( \nabla {\bf u} - \nabla {\bf u}^\top \right) ,
-$$
-where the [velocity gradient tensor](https://www.continuummechanics.org/velocitygradient.html) is
-$$
-\nabla {\bf u} = \dot{{\bf F}}  \cdot {\bf F}^{-1} .
-$$
-
+where the [velocity gradient tensor](https://www.continuummechanics.org/velocitygradient.html) is $\nabla {\bf u} = \dot{{\bf F}}  \cdot {\bf F}^{-1}$.
 
 ## Kinematic modes
 
 Let us now turn to the two common kinematic modes of deformation, pure shear and simple shear, that we will encounter many times throughout this book.
 Introducing these kinematic modes in terms of their deformation gradient ${\bf F}$ provides a powerful way to describe e.g. how ice deforms below ice divides and domes of ice sheets.
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/kinematic-modes.png#center){: style="width:560px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/modes-strain/kinematic-modes.png#center){: style="width:620px"}
 
 
-!!! tip "Example of strain tensors"
+!!! warning "Example of strain tensors"
     
-    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/strain-tensors.png#center){: style="width:570px"}
+    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/modes-strain/strain-tensors.png#center){: style="width:570px"}
 
 
 ### Pure shear
@@ -106,22 +101,7 @@ $$
 The above expressions are accessible in specfab as follows
 
 ```python
-import numpy as np
-from specfabpy import specfab as sf
-lm, nlm_len = sf.init(4) 
-
-axis = 2 # axis of shortening (tauc>0) or lengthening (tauc<0): 0=x, 1=y, 2=z
-tauc = 1 # time taken in seconds for parcel to reduce to half (50%) height if tauc>0, or abs(time) taken for parcel to double in height (200%) if tauc<0.
-q    = 0 # asymmetry parameter for shortening (if tauc>0) or lengthening (if tauc<0)
-
-tau = tauc/np.log(2)                     # corresponding e-folding time
-ugrad = sf.pureshear_ugrad(axis, q, tau) # velocity gradient
-D, W = sf.ugrad_to_D_and_W(ugrad)        # strain-rate and spin tensor
-
-t = 1 # some specific time of interest
-r   = sf.pureshear_r(tau, t)          # scaling parameter "r" at time t
-F   = sf.pureshear_F(axis, q, tau, t) # deformation gradient tensor at time t
-eps = sf.F_to_strain(F)               # strain tensor at time t
+--8<-- "docs/snippets/defkin-pureshear.py"
 ```
 
 ### Simple shear
@@ -171,62 +151,17 @@ Thus, $\tau$ is the time it takes to reach a shear angle of $\gamma=45^\circ$ fr
 The above expressions are accessible in specfab as follows
 
 ```python
-import numpy as np
-from specfabpy import specfab as sf
-lm, nlm_len = sf.init(4) 
-
-plane = 1 # plane of shear: 0=yz, 1=xz, 2=xy
-tau   = 1 # time taken in seconds for parcel to a reach shear strain of 1 (45 deg shear angle)
-
-ugrad = sf.simpleshear_ugrad(plane, tau) # velocity gradient
-D, W = sf.ugrad_to_D_and_W(ugrad)        # strain-rate and spin tensor
-
-t = 1 # some specific time of interest
-gamma = sf.simpleshear_gamma(tau, t)    # shear angle at time t
-F     = sf.simpleshear_F(plane, tau, t) # deformation gradient tensor at time t
-eps   = sf.F_to_strain(F)               # strain tensor at time t
+--8<-- "docs/snippets/defkin-pureshear.py"
 ```
 
 - - -
 
 ## Plotting deformed parcels
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation-modes/parcel-trajectory.png#center){: style="width:440px"} 
-
 Given a deformation gradient ${\bf F}$, the resulting deformed parcel shape can be plotting as follows: 
 
 ```python
-import numpy as np
-import matplotlib.pyplot as plt
-from specfabpy import specfab as sf
-from specfabpy import plotting as sfplt
-lm, nlm_len = sf.init(4)
-
-### Determine deformation gradient F
-
-# Pure shear 
-axis   = 2 # axis of compression/extension (0=x, 1=y, 2=z)
-q      = 0 # deformation asymmetry
-tau_ps = 1/np.log(2) # e-folding time scale
-t_ps   = 1 # time at which deformed parcel is sought
-F_ps   = sf.pureshear_F(axis, q, tau_ps, t_ps) # deformation gradient tensor 
-
-# Simple shear
-plane   = 1 # shear plane (0=yz, 1=xz, 2=xy)
-tau_ss  = 1 # characteristic time taken to reach shear strain 45 deg.
-t_ss    = 1 # time at which deformed parcel is sought
-F_ss    = sf.simpleshear_F(plane, tau_ss, t_ss) # deformation gradient tensor
-
-### Plot
-fig = plt.figure(figsize=(6,6))
-ax1 = plt.subplot(121, projection='3d')
-ax2 = plt.subplot(122, projection='3d')
-sfplt.plotparcel(ax1, F_ps, azim=35, axscale=1.7, axislabels=True, drawinit=True)
-sfplt.plotparcel(ax2, F_ss, azim=35, axscale=1.7, axislabels=True, drawinit=True)
-ax1.set_title(r'$\epsilon_{zz}=%.2f$'%(sf.F_to_strain(F_ps)[2,2]))
-ax2.set_title(r'$\gamma=%.0f$ deg.'%(np.rad2deg(sf.simpleshear_gamma(tau_ss, t_ss))))
-plt.savefig('deformed-parcel.png', dpi=175, pad_inches=0.1, bbox_inches='tight')
+--8<-- "docs/snippets/defkin-parcel.py"
 ```
-<br>
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/tests/deformation-kinematics/deformed-parcel.png){: style="width:450px"}
 
