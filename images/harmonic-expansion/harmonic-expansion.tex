@@ -1,85 +1,61 @@
-\documentclass[tikz,margin=0.0mm]{standalone}
-
-% pdftocairo -singlefile -transp -r 125 -f 1 -l 1 -png harmonic-expansion.pdf harmonic-expansion;
-% pdftocairo -singlefile -transp -r 125 -f 2 -l 2 -png harmonic-expansion.pdf harmonic-expansion-onerow;
+\documentclass[tikz,margin=-3pt]{standalone}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage{physics} % \usepackage[arrowdel]{physics}
-\usepackage{txfonts} % times for math (for consistency)
-\usepackage{times}
+\input{../fonts.tex}
 
-%\tikzset{every picture/.style={line cap=rect,line width=0.6pt}}
+\tikzset{
+	cdots/.style={font=\fontsize{25}{25}\selectfont},
+	plus/.style={font=\fontsize{27}{27}\selectfont},
+}
 
 \begin{document}
 
-\gdef\dx{4.1}
-\gdef\dy{4.4}
-\gdef\fs{27}
+\gdef\myimg#1{\includegraphics[scale=1]{Ylm/#1.pdf}}
+\gdef\dy{4.0}
+\gdef\dx{3.4}
 
-\begin{tikzpicture}[scale=1]
-
-%\node[] at ({0*\dx},+\dy) {\includegraphics[scale=0.6]{../tranisotropic/polycrystal-ice.png}};
-
-%\node[] at ({-1*\dx},-0.145*\dy) {\includegraphics[scale=1]{nlm.png}};
-\node[] at ({-1*\dx},0*\dy) {\includegraphics[scale=1]{nlm.png}};
-\node[] at ({-0.5*\dx},-0.5) {\fontsize{\fs}{\fs}\selectfont $\bf =$};
-
-\node[] at ({0*\dx},0) {\includegraphics[scale=1]{Y00.png}};
-
-\node[] at ({1*\dx},0) {\includegraphics[scale=1]{Y20.png}};
-\node[] at ({2*\dx},0) {\includegraphics[scale=1]{Y21.png}};
-\node[] at ({3*\dx},0) {\includegraphics[scale=1]{Y22.png}};
-
-\gdef\jj{-0.8}
-\node[] at ({(\jj+0)*\dx},-\dy) {\includegraphics[scale=1]{Y40.png}};
-\node[] at ({(\jj+1)*\dx},-\dy) {\includegraphics[scale=1]{Y41.png}};
-\node[] at ({(\jj+2)*\dx},-\dy) {\includegraphics[scale=1]{Y42.png}};
-\node[] at ({(\jj+3)*\dx},-\dy) {\includegraphics[scale=1]{Y43.png}};
-\node[] at ({(\jj+4)*\dx},-\dy) {\includegraphics[scale=1]{Y44.png}};
-
-\foreach \i in {0,...,2}
-{
-	\node[] at ({(\i+0.5)*\dx},-0.5) {\fontsize{\fs}{\fs}\selectfont $\bf +$};
-}
-
-\foreach \i in {-1,...,4}
-{
-	\node[] at ({(\i+0.5+\jj)*\dx},-0.5-\dy) {\fontsize{\fs}{\fs}\selectfont $\bf +$};
-}
-
-\node[] at ({(4+0.2)*\dx+\jj},-0.6-1*\dy) {\fontsize{25}{25}\selectfont $\bf\cdots$};
-
+\begin{tikzpicture}[]
+	\node[]     at ({-1*\dx},0*\dy)  {\myimg{nlm}};
+	\node[plus] at ({-0.5*\dx},-0.5) {$\bf =$};
+	\node[] at ({0*\dx},0) {\myimg{Y00}};	
+	\node[] at ({1*\dx},0) {\myimg{Y20}};
+	\node[] at ({2*\dx},0) {\myimg{Y21}};
+	\node[] at ({3*\dx},0) {\myimg{Y22}};
+	\gdef\jj{-0.8}
+	\node[] at ({(\jj+0)*\dx},-\dy) {\myimg{Y40}};
+	\node[] at ({(\jj+1)*\dx},-\dy) {\myimg{Y41}};
+	\node[] at ({(\jj+2)*\dx},-\dy) {\myimg{Y42}};
+	\node[] at ({(\jj+3)*\dx},-\dy) {\myimg{Y43}};
+	\node[] at ({(\jj+4)*\dx},-\dy) {\myimg{Y44}};	
+	\foreach \i in {0,...,2} {
+		\node[plus] at ({(\i+0.5)*\dx},-0.5) {$\bf +$};
+	}
+	\foreach \i in {-1,...,4} {
+		\node[plus] at ({(\i+0.5+\jj)*\dx},-0.5-\dy) {$\bf +$};
+	}
+	\node[cdots] at ({(4+0.2)*\dx+\jj},-0.6-1*\dy) {$\bf\cdots$};
 \end{tikzpicture}
 
+\gdef\dx{3.4}
 
 \begin{tikzpicture}[scale=1]
-
-\gdef\dx{3.8}
-
-\node[] at ({-1*\dx},0*\dy) {\includegraphics[scale=1]{nlm.png}};
-\node[] at ({-0.5*\dx},-0.5) {\fontsize{\fs}{\fs}\selectfont $\bf =$};
-
-\node[] at ({0*\dx},0) {\includegraphics[scale=1]{Y00.png}};
-
-\node[] at ({1*\dx},0) {\includegraphics[scale=1]{Y20.png}};
-\node[] at ({2*\dx},0) {\includegraphics[scale=1]{Y21.png}};
-\node[] at ({3*\dx},0) {\includegraphics[scale=1]{Y22.png}};
-
-\gdef\jj{-0.0}
-\node[] at ({(\jj+4)*\dx},-0*\dy) {\includegraphics[scale=1]{Y40.png}};
-\node[] at ({(\jj+5)*\dx},-0*\dy) {\includegraphics[scale=1]{Y41.png}};
-\node[] at ({(\jj+6)*\dx},-0*\dy) {\includegraphics[scale=1]{Y42.png}};
-\node[] at ({(\jj+7)*\dx},-0*\dy) {\includegraphics[scale=1]{Y43.png}};
-\node[] at ({(\jj+8)*\dx},-0*\dy) {\includegraphics[scale=1]{Y44.png}};
-
-\foreach \i in {0,...,8}
-{
-	\node[] at ({(\i+0.5)*\dx},-0.5) {\fontsize{\fs}{\fs}\selectfont $\bf +$};
-}
-
-\node[] at ({(9 -0.2)*\dx+\jj},-0.6-0*\dy) {\fontsize{25}{25}\selectfont $\bf\cdots$};
-
+	\node[]     at ({-1*\dx},0*\dy)  {\myimg{nlm}};
+	\node[plus] at ({-0.5*\dx},-0.5) {$\bf =$};
+	\node[] at ({0*\dx},0) {\myimg{Y00}};	
+	\node[] at ({1*\dx},0) {\myimg{Y20}};
+	\node[] at ({2*\dx},0) {\myimg{Y21}};
+	\node[] at ({3*\dx},0) {\myimg{Y22}};
+	\gdef\jj{-0.0}
+	\node[] at ({(\jj+4)*\dx},-0*\dy) {\myimg{Y40}};
+	\node[] at ({(\jj+5)*\dx},-0*\dy) {\myimg{Y41}};
+	\node[] at ({(\jj+6)*\dx},-0*\dy) {\myimg{Y42}};
+	\node[] at ({(\jj+7)*\dx},-0*\dy) {\myimg{Y43}};
+	\node[] at ({(\jj+8)*\dx},-0*\dy) {\myimg{Y44}};
+	\foreach \i in {0,...,8} {
+		\node[plus] at ({(\i+0.5)*\dx},-0.5) {$\bf +$};
+	}
+	\node[cdots] at ({(9 -0.2)*\dx+\jj},-0.6-0*\dy) {$\bf\cdots$};
 \end{tikzpicture}
 
 \end{document}

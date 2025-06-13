@@ -6,32 +6,37 @@ nav:
     - '💎 CPO representation':
         - Representation: cpo-representation.md
         - Structure tensors: cpo-structuretensors.md
-        - Idealized CPO states: cpo-idealized.md
+        - State space: cpo-statespace.md
     - '⚙️ CPO Dynamics':
-        - Matrix model: cpo-matrix-model.md
-        - Lattice rotation: lattice-rotation.md
-        - Discontinous DRX: recrystallization-DDRX.md
-        - Continous DRX: recrystallization-CDRX.md
-        - Regularization: cpo-regularization.md
-    - '🌀 Viscous Anisotropy':
-        - Strain rate enhancement: enhancements-strainrate.md
+        - Matrix model: fabdyn-matrix-model.md
+        - Lattice rotation: fabdyn-LROT.md
+        - Discontinous DRX: fabdyn-DDRX.md
+        - Continous DRX: fabdyn-CDRX.md
+        - Regularization: fabdyn-REG.md
+    - '🌀 Viscosity':
+        - Strain-rate enhancement: enhancements-strainrate.md
         - Glacier ice: enhancements-strainrate-ice.md
         - Olivine: enhancements-strainrate-olivine.md
     - '🌊 Wave propagation':
-        - Elastic: wavepropagation-elastic.md
-        - Electromagnetic: wavepropagation-electromagnetic.md
+        - Elastic: waveprop-elastic.md
+        - Electromagnetic: waveprop-electromagnetic.md
     - '🖼️ Application Gallery': 
-        - Lagrangian parcel model: Lagrangian-parcel.md
-        - Radar-derived physical properties: radar-derived-PP.md
-        - Finite element integration: FEM-integration.md
+        - Steady SSA CPO field: gallery-SSA-fabric-solver.md
+        - Inferring CPO from radar: gallery-CPO-from-radar.md
+        - Coupling flow and CPO: gallery-CPO-flow-coupling.md
+        - Lagrangian parcel model: gallery-Lagrangian-parcel.md
     - '🧩 Miscellaneous': 
         - Deformation kinematics: deformation-kinematics.md
-        - Rotating CPOs: cpo-rotation.md
-        - Viscoplastic constitutive equations: constitutive-viscoplastic.md
-        - Elastic constitutive equations: constitutive-elastic.md
+        - Plot CPO: cpo-plot.md
+        - Rotate CPO: cpo-rotation.md
+        - Viscoplastic constitutive eqns.: constitutive-viscoplastic.md
+        - Elastic constitutive eqns.: constitutive-elastic.md
 
 theme: 
     name: 'readthedocs'
+    #name: 'material'    
+    features:
+        - content.code.copy
 
 markdown_extensions:
     - attr_list
@@ -40,9 +45,12 @@ markdown_extensions:
     - pymdownx.arithmatex:
         generic: true
     - pymdownx.highlight:
-          anchor_linenums: true
-          line_spans: __span
-          pygments_lang_class: true
+        anchor_linenums: true
+        line_spans: __span
+        pygments_lang_class: true
+    - pymdownx.inlinehilite
+    - pymdownx.snippets
+#    - pymdownx.superfences
 
 extra_javascript:
   - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'

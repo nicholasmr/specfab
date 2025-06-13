@@ -14,15 +14,21 @@ from .rheology import Orthotropic, Isotropic
 
 class EnhancementFactor():
 
-    def __init__(self, mesh, L, symframe=-1, modelplane='xz', ele=()):
+    def __init__(self, mesh, L, enhancementmodel='LTS', homoparams=(), modelplane='xz', symframe=-1, ele=()):
 
         ### Setup
 
         self.mesh = mesh
         self.L = L
-        self.symframe = symframe # rheological symmetry frame: -1 is a2, 0-5 are the a4 eigentensors
+        self.enhancementmodel = enhancementmodel # 'LTS', 'APEX', ...
+        self.homoparams = homoparams
         self.modelplane = modelplane
+        self.symframe = symframe # rheological symmetry frame: -1 is a2, 0-5 are the a4 eigentensors
         self.USE_REDUCED = True # use reduced representation of fabric state vector 
+        
+        if self.enhancementmodel not in ['LTS', 'APEX']:           raise ValueError('Invalid enhancementmodel "%s"'%(self.enhancementmodel))
+        if self.enhancementmodel=='LTS'  and len(homoparams) != 3: raise ValueError('LTS model requires homoparams = (Eij_grain, alpha, n_grain)')
+        if self.enhancementmodel=='APEX' and len(homoparams) != 2: raise ValueError('APEX model requires homoparams = (Emin, Emax)')
         
         self.sf = sf__
         self.lm, self.nlm_len_full = self.sf.init(self.L)
@@ -92,31 +98,36 @@ class EnhancementFactor():
         D2 = np.array([ D2[nn*dn:(nn+1)*dn] for nn in self.dofs0 ]) # to [node, D2 flat index 0 to 3]
         return sfcom.mat3d_arr(D2, self.modelplane, reshape=True) # [node,3,3]
         
-    def Eij_tranisotropic(self, sn, Eij_grain, alpha, n_grain, ei=()):
+    def Eij_tranisotropic(self, sn, ei=()):
         """
         Bulk enhancement factors wrt ei=(e1,e2,e3) axes for *transversely isotropic* grains
 
         If ei=() then CPO eigenframe is used
-        
-        *args = (Eij_grain, alpha, n_grain)
         """
-    
-        if n_grain != 1: raise ValueError('only n_grain = 1 (linear viscous) is supported')
-        if not(0 <= alpha <= 1): raise ValueError('alpha should be between 0 and 1')
-       
+
         nlm = self._nlm_nodal(sn) # [node, component]
         mi, lami = sfcom.eigenframe(nlm, symframe=self.symframe, modelplane=self.modelplane) # [node,i,xyz], [node,i]
-        if   len(ei) == 0:           ei = (mi[:,0], mi[:,1], mi[:,2])
-        elif len(ei[0].shape) == 1:  ei = sfcom.ei_tile(ei, self.numdofs) # ei[i][node,xyz] = (e1[node,xyz], e2, e3)
-        Eij = self.sf.Eij_tranisotropic_arr(nlm, *ei, Eij_grain, alpha, n_grain) # [node, Voigt index 1--6]
+        if   len(ei) == 0:          ei = (mi[:,0], mi[:,1], mi[:,2])
+        elif len(ei[0].shape) == 1: ei = sfcom.ei_tile(ei, self.numdofs) # ei[i][node,xyz] = (e1[node,xyz], e2, e3)
+
+        if self.enhancementmodel == 'LTS':
+                    
+            Eij_grain, alpha, n_grain = self.homoparams
+            if n_grain != 1: raise ValueError('only n_grain = 1 (linear viscous) is supported')
+            if not(0 <= alpha <= 1): raise ValueError('alpha should be between 0 and 1')
+            Eij = self.sf.Eij_tranisotropic_arr(nlm, *ei, Eij_grain, alpha, n_grain) # [node, Voigt index 1--6]
+            # The enhancement factor model depends on effective (homogenized) grain parameters, calibrated against deformation tests.
+            # For CPOs far from the calibration states, negative values *may* occur where Eij should tend to zero if truncation L is not large enough.
+            Eij[Eij < 0] = 1e-2 # Set negative E_ij to a very small value (flow inhibiting)
         
-        # The enhancement factor model depends on effective (homogenized) grain parameters, calibrated against deformation tests.
-        # For CPOs far from the calibration states, negative values *may* occur where Eij should tend to zero if truncation L is not large enough.
-        Eij[Eij < 0] = 1e-2 # Set negative E_ij to a very small value (flow inhibiting)
-        
+        elif self.enhancementmodel == 'APEX':
+
+            Emin, Emax = self.homoparams
+            Eij = self.sf.Eij_tranisotropic_APEX_arr(nlm, *ei, Emin, Emax) # [node, Voigt index 1--6]
+            
         return self._np2func(ei, Eij, lami)
         
-    
+    # @TODO func inp args to use self.homoparams
     def Eij_orthotropic(self, sb, sn, Eij_grain, alpha, n_grain, ei=()):
         """
         Same as Eij_tranisotropic() but for *orthotropic* grains
@@ -138,13 +149,13 @@ class EnhancementFactor():
         return self._np2func(ei, Eij, lami)
         
 
-    def E_CAFFE(self, sn, u, Emin=0.1, Emax=10):
+    def E_CAFFE(self, sn, u, n_grain=1, Emin=0.1, Emax=10):
         """
         CAFFE model (Placidi et al., 2010)
         """
         Df = project( sym(grad(u)), self.G).vector()[:] # flattened strain-rate tensor
         E_CAFFE = Function(self.R)
-        E_CAFFE.vector()[:] = self.sf.E_CAFFE_arr(self._nlm_nodal(sn), self.mat3d(Df), Emin, Emax)[:]
+        E_CAFFE.vector()[:] = self.sf.E_CAFFE_arr(self._nlm_nodal(sn), self.mat3d(Df), Emin, Emax, n_grain)[:]
         return E_CAFFE
         
             

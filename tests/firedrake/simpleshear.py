@@ -48,7 +48,7 @@ ENABLE_DDRX = True
 alpha     = 0.455     # Taylor--Sachs homogenization weight
 Eij_grain = (1, 1e3)  # (Ecc, Eca) grain enhancements
 n_grain   = 1         # grain power-law exponent (only n_grain=1 supported)
-E_CAFFE   = (0.1, 10) # (Emin, Emax) of CAFFE
+E_CAFFE   = (0.1, 10, 1) # (Emin, Emax, n_grain) of CAFFE
 
 kw_VA = dict(alpha=alpha, Eij_grain=Eij_grain, n_grain=n_grain, E_CAFFE=E_CAFFE)
 

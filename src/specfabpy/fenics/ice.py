@@ -14,7 +14,7 @@ class IceFabric(CPO):
     def __init__(
         self, mesh, boundaries, L, *args, 
         nu_multiplier=1, nu_realspace=1e-3, modelplane='xz', symframe=-1, 
-        Eij_grain=(1,1), alpha=0, n_grain=1, CAFFE_params=(0.1, 10), n_EIE=3, 
+        enhancementmodel='LTS', Eij_grain=(1,1), alpha=0, n_grain=1, CAFFE_params=(0.1, 10), n_EIE=3, 
         ds=None, nvec=None, setextra=True, 
         Cij=sfconst.ice['elastic']['Bennett1968'], rho=sfconst.ice['density'], **kwargs
     ): 
@@ -29,7 +29,7 @@ class IceFabric(CPO):
         super().__init__(mesh, boundaries, L, nu_multiplier=nu_multiplier, nu_realspace=nu_realspace, modelplane=modelplane, ds=ds, nvec=nvec)
 
         # specfab
-        self.grain_params = (Eij_grain, alpha, n_grain)
+        self.enhancementmodel = enhancementmodel # 'LTS', 'APEX', ...
         self.CAFFE_params = CAFFE_params # (Emin, Emax)
         self.n_EIE = n_EIE
         self.Lame_grain = self.sf.Cij_to_Lame_tranisotropic(Cij) 
@@ -37,7 +37,10 @@ class IceFabric(CPO):
 
         # EnhancementFactor class
         self.symframe = symframe
-        self.enhancementfactor = EnhancementFactor(mesh, L, symframe=symframe, modelplane=modelplane)
+        if   self.enhancementmodel == 'LTS':  homoparams = (Eij_grain, alpha, n_grain)
+        elif self.enhancementmodel == 'APEX': homoparams = CAFFE_params
+        else: homoparams = ()
+        self.enhancementfactor = EnhancementFactor(mesh, L, enhancementmodel=enhancementmodel, homoparams=homoparams, modelplane=modelplane, symframe=symframe)
 
         ### Finish up
         
@@ -86,7 +89,7 @@ class IceFabric(CPO):
         return self.enhancementfactor.E_EIE(u, Eij, mi, self.n_EIE)
 
     def get_Eij(self, ei=(), **kwargs):
-        return self.enhancementfactor.Eij_tranisotropic(self.s, *self.grain_params, ei=ei, **kwargs)
+        return self.enhancementfactor.Eij_tranisotropic(self.s, ei=ei, **kwargs)
 
     def get_elastic_velocities(self, x,y, theta,phi, alpha=1):
         nlm = self.get_state(x,y)

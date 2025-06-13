@@ -332,7 +332,7 @@ if 1:
 
     ### CAFFE 
 
-    E_CAFFE_df = isomodel.momentum.set_E_CAFFE(fabric.s, u_true_df, Emin, Emax) # note arguments are from the orthotropic model!
+    E_CAFFE_df = isomodel.momentum.set_E_CAFFE(fabric.s, u_true_df, Emin, Emax, 1) # note arguments are from the orthotropic model!
     E_CAFFE = isomodel.mesh.vertexvals_on_Q(E_CAFFE_df)
     isomodel.tt = 0 # force fine-tolerance
     isomodel.integrate(0, **kwargs_integrate)

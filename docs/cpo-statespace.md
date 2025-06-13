@@ -1,4 +1,4 @@
-# Idealized CPOs
+# State space 
 
 If concerned with the distribution of a *single* crystallographic axis, three types of idealized CPO states can be said to exist:
 

@@ -1,4 +1,4 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2024
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-
 
 ! This file is a wrapper for the Fortran routines to be provided in specfabpy
 
@@ -66,10 +66,9 @@ module specfabpy
         ! Fluid enhancement factors
         Eij_tranisotropic__sf => Eij_tranisotropic, &
         Eij_tranisotropic_APEX__sf => Eij_tranisotropic_APEX, &
-!        Eij_tranisotropic_HSP__sf => Eij_tranisotropic_HSP, &
+        Eij_tranisotropic_Schmid__sf => Eij_tranisotropic_Schmid, &
         Eij_orthotropic__sf   => Eij_orthotropic, &
         Evw_tranisotropic__sf => Evw_tranisotropic, &
-!        Evw_tranisotropic_HSP__sf => Evw_tranisotropic_HSP, &
         Evw_orthotropic__sf   => Evw_orthotropic, &
         Evw_orthotropic_discrete__sf => Evw_orthotropic_discrete, &
         frame__sf => frame, eigframe__sf => eigframe, eig3__sf => eig3, &
@@ -356,27 +355,28 @@ contains
         Eij = Eij_tranisotropic__sf(nlm, e1,e2,e3, Eij_grain,alpha,n_grain)
     end
 
-    function Eij_tranisotropic_APEX(nlm, e1,e2,e3, Emin, Emax) result(Eij)
+    function Eij_tranisotropic_APEX(nlm, e1,e2,e3, Emin, Emax, n_grain) result(Eij)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), intent(in)    :: e1(3),e2(3),e3(3)
         real(kind=dp), intent(in)    :: Emin, Emax
+        integer, intent(in)          :: n_grain
         real(kind=dp)                :: Eij(6)
         
-        Eij = Eij_tranisotropic_APEX__sf(nlm, e1,e2,e3, Emin, Emax)
+        Eij = Eij_tranisotropic_APEX__sf(nlm, e1,e2,e3, Emin, Emax, n_grain)
     end
-
-!    function Evw_tranisotropic_HSP(nlm, v,w,tau, Eij_grain,beta,n_grain) result(Evw)
-!        use specfabpy_const
-!        implicit none
-!        complex(kind=dp), intent(in) :: nlm(:)
-!        real(kind=dp), intent(in) :: v(3),w(3), tau(3,3), Eij_grain(2),beta
-!        integer, intent(in)       :: n_grain
-!        real(kind=dp)             :: Evw
-!        
-!        Evw = Evw_tranisotropic_HSP__sf(v,w, tau, nlm, Eij_grain,beta,n_grain)
-!    end
+    
+    function Eij_tranisotropic_Schmid(nlm, e1,e2,e3, n_grain) result(Eij)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: e1(3),e2(3),e3(3)
+        integer, intent(in)          :: n_grain
+        real(kind=dp)                :: Eij(6)
+        
+        Eij = Eij_tranisotropic_Schmid__sf(nlm, e1,e2,e3, n_grain)
+    end
 
     function Evw_orthotropic(nlm_r1, nlm_r2, nlm_r3, v,w,tau, Eij_grain, alpha, n_grain) result(Evw)
         use specfabpy_const
@@ -414,14 +414,15 @@ contains
         E = E_EIE__sf(eps, nglen, nlm, m1,m2,m3, Eij_grain,alpha,n_grain)
     end
     
-    function E_CAFFE(nlm, eps, Emin, Emax)  result(E)
+    function E_CAFFE(nlm, eps, Emin, Emax, n_grain) result(E)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), intent(in)    :: eps(3,3), Emin, Emax
         real(kind=dp)                :: E
+        integer, intent(in)          :: n_grain
         
-        E = E_CAFFE__sf(nlm, eps, Emin, Emax)
+        E = E_CAFFE__sf(nlm, eps, Emin, Emax, n_grain)
     end
     
     ! Overloaded versions acting on an array of CPO states
@@ -468,60 +469,66 @@ contains
         end do
     end
     
-    function Eij_tranisotropic_APEX_arr(nlm, e1,e2,e3, Emin, Emax) result(Eij)
+    function Eij_tranisotropic_APEX_arr(nlm, e1,e2,e3, Emin, Emax, n_grain) result(Eij)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:,:)
         real(kind=dp), intent(in)    :: e1(size(nlm,1),3),e2(size(nlm,1),3),e3(size(nlm,1),3)
         real(kind=dp), intent(in)    :: Emin, Emax
+        integer, intent(in)          :: n_grain
         real(kind=dp)                :: Eij(size(nlm,1),6)
         
         do nn = 1,size(nlm,1)
-            Eij(nn,:) = Eij_tranisotropic_APEX__sf(nlm(nn,:), e1(nn,:),e2(nn,:),e3(nn,:), Emin, Emax)
+            Eij(nn,:) = Eij_tranisotropic_APEX__sf(nlm(nn,:), e1(nn,:),e2(nn,:),e3(nn,:), Emin, Emax, n_grain)
         end do
     end
     
-    function E_CAFFE_arr(nlm, eps, Emin, Emax)  result(E)
+    function Eij_tranisotropic_Schmid_arr(nlm, e1,e2,e3, n_grain) result(Eij)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:,:)
+        real(kind=dp), intent(in)    :: e1(size(nlm,1),3),e2(size(nlm,1),3),e3(size(nlm,1),3)
+        integer, intent(in)          :: n_grain
+        real(kind=dp)                :: Eij(size(nlm,1),6)
+        
+        do nn = 1,size(nlm,1)
+            Eij(nn,:) = Eij_tranisotropic_Schmid__sf(nlm(nn,:), e1(nn,:),e2(nn,:),e3(nn,:), n_grain)
+        end do
+    end
+    
+    function E_CAFFE_arr(nlm, eps, Emin, Emax, n_grain)  result(E)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:,:)
         real(kind=dp), intent(in)    :: eps(size(nlm,1),3,3), Emin, Emax
+        integer, intent(in)          :: n_grain
         real(kind=dp)                :: E(size(nlm,1))
         
         do nn = 1,size(nlm,1)
-            E(nn) = E_CAFFE__sf(nlm(nn,:), eps(nn,:,:), Emin, Emax)
+            E(nn) = E_CAFFE__sf(nlm(nn,:), eps(nn,:,:), Emin, Emax, n_grain)
         end do
     end
     
-    function E_CAFFE_Davg_arr(Davg, Emin, Emax)  result(E)
-        use specfabpy_const
-        implicit none
-        real(kind=dp), intent(in) :: Davg(:)
-        real(kind=dp), intent(in) :: Emin, Emax
-        real(kind=dp)             :: E(size(Davg))
-        
-        do nn = 1,size(Davg)
-            E(nn) = E_CAFFE_Davg(Davg(nn), Emin, Emax)
-        end do
-    end
-    
-    function deformability_tranisotropic(nlm, tau, beta) result(D)
+    function deformability_tranisotropic(nlm, tau, n_RSS) result(D)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp), intent(in)    :: tau(3,3), beta
+        real(kind=dp), intent(in)    :: tau(3,3)
+        integer, intent(in)          :: n_RSS
         real(kind=dp)                :: D
-        D = (1.0d0-beta)*ev_D(nlm, tau) + beta*ev_ED(nlm, tau) 
+        D = ev_D(nlm, tau, n_RSS)
     end
     
-    function deformability_tranisotropic_arr(nlm, tau, beta) result(D)
+    function deformability_tranisotropic_arr(nlm, tau, n_RSS) result(D)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:,:)
-        real(kind=dp), intent(in)    :: tau(3,3), beta
+        real(kind=dp), intent(in)    :: tau(3,3)
+        integer, intent(in)          :: n_RSS
         real(kind=dp)                :: D(size(nlm,1))
+        
         do nn = 1,size(nlm,1)
-            D(nn) = (1.0d0-beta)*ev_D(nlm(nn,:), tau) + beta*ev_ED(nlm(nn,:), tau) 
+            D(nn) = ev_D(nlm(nn,:), tau, n_RSS)
         end do 
     end
     
@@ -964,7 +971,7 @@ contains
         include "include/ddrx-coupling-weights.f90" ! Harmonic expansion coefficients of D (requires qt, sets g and k)
         g = k*g * 5/doubleinner22(tau,tau) ! Normalize by tau:tau/5
 
-        evD = ev_D(nlm, tau) ! <D>
+        evD = ev_D2(nlm, tau) ! <D>
         
         ! <D> is the isotropic reference level to be subtracted from D (on S^2), amounting to adjusting the isotropic harmonic mode (l,m=0,0).
         g(1) = g(1) - Sqrt(4*Pi)*evD ! Prefactor Sqrt(4*Pi) ensures the isotropic contribution is indeed n00*Y00 = Sqrt(4*Pi)*<D>*Y00 = <D>

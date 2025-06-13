@@ -44,7 +44,7 @@ $$
 
 ### Validation
 
-If the CPO is rotated into an approximately [rotationally-symmetric frame](cpo-idealized.md) about the $z$-axis, then only $n_l^0$ components are nonzero.
+If the CPO is rotated into an approximately [rotationally-symmetric frame](cpo-statespace.md) about the $z$-axis, then only $n_l^0$ components are nonzero.
 This conveniently allows validating modelled CPO processes by comparing modelled to observed correlations between, e.g., the lowest-order normalized components $\hat{n}_2^0 = n_2^0/n_0^0$ and $\hat{n}_4^0 = n_4^0/n_0^0$.
 The below plot from [Lilien et al. (2023)](https://doi.org/10.1017/jog.2023.78) shows the observed correlation structure (markers) compared to the above CPO model(s) for different modes of deformation, suggesting that modelled CPO processes capture observations reasonably well.
 

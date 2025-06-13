@@ -116,31 +116,31 @@ contains
     end
     
 
-    function rheo_fwd_tranisotropic_HSPhomo(tau, nlm, Eij_grain,beta,n_grain) result(eps)
-    
-        ! Grain-averaged forward rheology subject to HSP homogenization
-        
-        implicit none
-        
-        complex(kind=dp), intent(in) :: nlm(:)
-        real(kind=dp), intent(in)    :: Eij_grain(2), tau(3,3), beta
-        integer, intent(in)          :: n_grain
-        
-        real(kind=dp)                :: eps_Sachs(3,3), eps_fluc(3,3), eps(3,3)
-        real(kind=dp)                :: ev_D0, ev_D2(3,3), ev_D4(3,3,3,3), coefA,coefB,coefC
+!    function rheo_fwd_tranisotropic_HSPhomo(tau, nlm, Eij_grain,beta,n_grain) result(eps)
+!    
+!        ! Grain-averaged forward rheology subject to HSP homogenization
+!        
+!        implicit none
+!        
+!        complex(kind=dp), intent(in) :: nlm(:)
+!        real(kind=dp), intent(in)    :: Eij_grain(2), tau(3,3), beta
+!        integer, intent(in)          :: n_grain
+!        
+!        real(kind=dp)                :: eps_Sachs(3,3), eps_fluc(3,3), eps(3,3)
+!        real(kind=dp)                :: D0, D2(3,3), D4(3,3,3,3), coefA,coefB,coefC
 
-        if (n_grain .eq. 1) then
-            call rheo_params_tranisotropic(Eij_grain,3,DFLOAT(n_grain),1, coefA,coefB,coefC)
-            eps_Sachs = rheo_fwd_tranisotropic_sachshomo(tau, nlm, Eij_grain,n_grain)
-            ev_D0 = ev_D(nlm, tau)
-            call ev_Dk(nlm, tau, ev_D2, ev_D4)
-            eps_fluc = ev_D0*tau - coefA*doubleinner22(ev_D2,tau)*identity + coefB*doubleinner42(ev_D4,tau) + coefC*(matmul(tau,ev_D2)+matmul(ev_D2,tau))
-            eps = eps_Sachs + beta*(eps_fluc - ev_D0*eps_Sachs)
-        else
-            print *, "n'=", n_grain
-            stop "specfab error: unsupported n'"
-        end if
-    end
+!        if (n_grain .eq. 1) then
+!            call rheo_params_tranisotropic(Eij_grain,3,DFLOAT(n_grain),1, coefA,coefB,coefC)
+!            eps_Sachs = rheo_fwd_tranisotropic_sachshomo(tau, nlm, Eij_grain,n_grain)
+!            D0 = ev_D2(nlm, tau)
+!            call ev_D_ck(nlm, tau, D2, D4)
+!            eps_fluc = D0*tau - coefA*doubleinner22(D2,tau)*identity + coefB*doubleinner42(D4,tau) + coefC*(matmul(tau,D2)+matmul(D2,tau))
+!            eps = eps_Sachs + beta*(eps_fluc - D0*eps_Sachs)
+!        else
+!            print *, "n'=", n_grain
+!            stop "specfab error: unsupported n'"
+!        end if
+!    end
     
     function rheo_fwd_tranisotropic_taylorhomo(tau, nlm, Eij_grain,n_grain) result(eps)
         
@@ -256,6 +256,30 @@ contains
         L(5,:) = [s*a2mat(1,3), 0.0d0, s*a2mat(1,3), a2mat(1,2), a2mat(1,1)+a2mat(3,3), a2mat(2,3)]
         L(6,:) = [s*a2mat(1,2), s*a2mat(1,2), 0.0d0, a2mat(1,3), a2mat(2,3), a2mat(1,1)+a2mat(2,2)]
     end    
+
+    function rheo_fwd_tranisotropic_schmid_sachshomo(tau, nlm, n_grain) result(eps)
+    
+        ! Grain-averaged forward Schmid rheology subject to Sachs homogenization (constant stress over all grains).
+        
+        implicit none
+        
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: tau(3,3)
+        integer, intent(in)          :: n_grain
+        
+        real(kind=dp) :: eps(3,3)
+        real(kind=dp) :: a2v(6), a4v(6,6), a2mat(3,3), a4_tau(3,3)
+
+        if (n_grain .eq. 1) then
+            call f_ev_ck_Mandel(nlm, a2v, a4v)
+            a2mat  = vec_to_mat(a2v) ! a2 matrix form
+            a4_tau = vec_to_mat(matmul(a4v,mat_to_vec(tau))) ! = a4 : tau 
+
+            eps = (matmul(tau,a2mat) + matmul(a2mat,tau))/2 - a4_tau
+        else if (n_grain .eq. 3) then
+            stop "specfab error: Sachs homogenization for Schmid rheology not supported unless n'=1"
+        end if
+    end
 
     !---------------------------------
     ! VISCOUS -- Orthotropic grains

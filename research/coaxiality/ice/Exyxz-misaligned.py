@@ -132,14 +132,14 @@ ax.plot(X,   D_EIE[:,y,y], '--', lw=lw, color=cgreen, label=r"$\dot{\epsilon}_{y
 
 kwargs = dict(fontsize=FSSMALL, va='bottom')
 y0 = 9.45
-ax.text(0, y0, '$\\leftarrow$ $x$--$y$ simple shear', ha='left', **kwargs)
+ax.text(0, y0, '$\\leftarrow$ $xy$ simple shear', ha='left', **kwargs)
 ax.text(1, y0, '$y$ uniaxial tension $\\rightarrow$', ha='right', **kwargs)
 
 ax.annotate('overpredicted \n $y$-extension rate', xy=(0.2, 2.3), xytext=(0.19, 4.6), \
     arrowprops=dict(arrowstyle='-|>, head_width=0.25', facecolor='black'), fontsize=FSSMALL, ha='center', va='center', ma='left')
 
 ax.set_xlabel(r'shear--tension weight', fontsize=FS)
-ax.set_ylabel(r'$\dot{\epsilon}_{ij}/\dot{\epsilon}_{\mathrm{iso}}$', fontsize=FS+0.5)
+ax.set_ylabel(r'$\dot{\epsilon}_{ij}/\dot{\epsilon}_{\mathrm{e,iso}}$', fontsize=FS+0.5)
 
 xticks = np.arange(0,1+1e-5,0.1)
 ax.set_xticks(xticks[::2])  

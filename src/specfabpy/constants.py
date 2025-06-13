@@ -10,8 +10,8 @@ ice = {
         'linear':    ((1,1e3), 0.0125, 1), # Linear mixed Taylor--Sachs best-fit parameters from Rathmann and Lilien (2021)
         'linearL10': ((1,1e3), 0.455,  1), # Linear mixed Taylor--Sachs best-fit parameters from Rathmann et al. (2025)
         'nonlinear': ((1,1e4), 0.0, 3),    # Nonlinear Sachs-only best-fit parameters from Rathmann et al. (2021)
-        'CAFFE':       (0.1, 10), # Emin, Emax
-        'CAFFEdagger': (0.2, 3.2), 
+        'CAFFE':       (0.1,  10, 1), # Emin, Emax, n_grain
+        'CAFFEdagger': (0.2, 3.2, 1), 
         'ESTAR':       (3, 8), # Emin, Emax
     },
     'elastic': {

@@ -1,6 +1,6 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2024
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-
 
-! Stran-rate enhancement factors assuming Sachs and Taylor homogenizations.
+! Strain rate enhancement factor models
 
 module enhancementfactors  
 
@@ -67,25 +67,25 @@ contains
 
         Evw = (1-alpha)*Evw_Sachs + alpha*Evw_taylor
     end
+    
+    function Evw_tranisotropic_Schmid(v,w,tau, nlm, n_grain) result(Evw)
 
-!    function Evw_tranisotropic_HSP(v,w,tau, nlm, Eij_grain,beta,n_grain) result(Evw)
+        ! Enhancement factor for transversely isotropic Schmid grains.
 
-!        ! Generalized enhancement factor for transversely isotropic grains with the heterogeneous stress parametrization (HSP)
+        implicit none
+        
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: v(3),w(3), tau(3,3)
+        integer, intent(in)          :: n_grain
+        real(kind=dp)                :: vw(3,3), Evw
 
-!        implicit none
-!        
-!        complex(kind=dp), intent(in) :: nlm(:)
-!        real(kind=dp), intent(in)    :: Eij_grain(2), beta, v(3),w(3), tau(3,3)
-!        integer, intent(in)          :: n_grain
-!        real(kind=dp)                :: vw(3,3), Evw
+        vw = outerprod(v,w)    
+    
+        Evw = doubleinner22(rheo_fwd_tranisotropic_schmid_sachshomo(tau, nlm,     n_grain), vw) / &
+              doubleinner22(rheo_fwd_tranisotropic_schmid_sachshomo(tau, nlm_iso, n_grain), vw)
+    end
 
-!        vw = outerprod(v,w)    
-!    
-!        Evw = doubleinner22(rheo_fwd_tranisotropic_HSPhomo(tau, nlm,     Eij_grain,beta,n_grain), vw) / &
-!              doubleinner22(rheo_fwd_tranisotropic_HSPhomo(tau, nlm_iso, Eij_grain,beta,n_grain), vw)
-!    end
-
-    function Eij_tranisotropic_APEX(nlm, e1,e2,e3, Emin,Emax) result (Eij)
+    function Eij_tranisotropic_APEX(nlm, e1,e2,e3, Emin,Emax, n_grain) result (Eij)
 
         ! Enhancement factors w.r.t. (e1,e2,e3) axes.
         ! Note: if (e1,e2,e3) coincide with fabric symmetry axes, then these are the fabric eigenenhancements.
@@ -95,17 +95,38 @@ contains
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), dimension(3)  :: e1,e2,e3
         real(kind=dp), intent(in)    :: Emin, Emax
+        integer, intent(in)          :: n_grain
         real(kind=dp)                :: Eij(6)
         
         ! Longitudinal
-        Eij(1) = E_CAFFE(nlm, tau_vv(e1), Emin, Emax)
-        Eij(2) = E_CAFFE(nlm, tau_vv(e2), Emin, Emax)
-        Eij(3) = E_CAFFE(nlm, tau_vv(e3), Emin, Emax)
+        Eij(1) = E_CAFFE(nlm, tau_vv(e1), Emin, Emax, n_grain)
+        Eij(2) = E_CAFFE(nlm, tau_vv(e2), Emin, Emax, n_grain)
+        Eij(3) = E_CAFFE(nlm, tau_vv(e3), Emin, Emax, n_grain)
 
         ! Shear
-        Eij(4) = E_CAFFE(nlm, tau_vw(e2,e3), Emin, Emax)
-        Eij(5) = E_CAFFE(nlm, tau_vw(e1,e3), Emin, Emax)
-        Eij(6) = E_CAFFE(nlm, tau_vw(e1,e2), Emin, Emax)
+        Eij(4) = E_CAFFE(nlm, tau_vw(e2,e3), Emin, Emax, n_grain)
+        Eij(5) = E_CAFFE(nlm, tau_vw(e1,e3), Emin, Emax, n_grain)
+        Eij(6) = E_CAFFE(nlm, tau_vw(e1,e2), Emin, Emax, n_grain)
+    end
+    
+    function Eij_tranisotropic_Schmid(nlm, e1,e2,e3, n_grain) result (Eij)
+
+        implicit none
+
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), dimension(3)  :: e1,e2,e3
+        integer, intent(in)          :: n_grain
+        real(kind=dp)                :: Eij(6)
+        
+        ! Longitudinal
+        Eij(1) = Evw_tranisotropic_Schmid(e1,e1, tau_vv(e1),    nlm, n_grain) 
+        Eij(2) = Evw_tranisotropic_Schmid(e2,e2, tau_vv(e2),    nlm, n_grain)
+        Eij(3) = Evw_tranisotropic_Schmid(e3,e3, tau_vv(e3),    nlm, n_grain)    
+
+        ! Shear
+        Eij(4) = Evw_tranisotropic_Schmid(e2,e3, tau_vw(e2,e3), nlm, n_grain)
+        Eij(5) = Evw_tranisotropic_Schmid(e1,e3, tau_vw(e1,e3), nlm, n_grain) 
+        Eij(6) = Evw_tranisotropic_Schmid(e1,e2, tau_vw(e1,e2), nlm, n_grain) 
     end
 
     ! Orthotropic grains
@@ -277,8 +298,8 @@ contains
         q = -nglen-1
         E = (epsE_ort/epsE_iso)**q
     end
-    
-    function E_CAFFE(nlm, eps, Emin, Emax)  result(E)
+
+    function E_CAFFE(nlm, eps, Emin, Emax, n_grain)  result(E)
     
         ! Implements Placidi et al. (2010)
 
@@ -286,36 +307,53 @@ contains
 
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), intent(in)    :: eps(3,3), Emin, Emax
-        real(kind=dp)                :: E, Davg, p
+        integer, intent(in)          :: n_grain 
+        integer                      :: n_RSS 
+        real(kind=dp)                :: E, D, gam, Dmaxpow
+        real(kind=dp), parameter     :: Dmax(4) = [0.0d0, 5/2.0d0, 0.0d0, 35/8.0d0] ! for n_RSS = [1,2,3,4]
 
-        Davg = ev_D(nlm, eps) ! Average deformability, <D>
-!        Davg = abs(Davg) ! numerical errors cause this to be -1e-15 for a single max CPO when it should be zero.
-        E = E_CAFFE_Davg(Davg, Emin, Emax)
-!        if (Davg .lt. 1) then
-!            p = 8.0d0/21 * (Emax-1)/(1-Emin)
-!            E = Emin + (1-Emin)*Davg**p
-!        else
-!            E = (4*Davg**2*(Emax-1) + 25 -4*Emax)/21.0d0
-!        end if
-    end
-    
-    function E_CAFFE_Davg(Davg, Emin, Emax)  result(E)
-    
-        implicit none
-
-        real(kind=dp), intent(in)    :: Davg, Emin, Emax
-        real(kind=dp)                :: E, Davgabs, p
-
-        Davgabs = abs(Davg) ! numerical errors cause this to be -1e-15 for a single max CPO when it should be zero.
-        if (Davgabs .lt. 1) then
-            p = 8.0d0/21 * (Emax-1)/(1-Emin)
-            E = Emin + (1-Emin)*Davgabs**p
+        E = 0.0d0 ! initialize
+        
+        if (n_grain == 3) then 
+            n_RSS = 4 ! n'=3 nonlinear grain rheology depends on RSS^4
         else
-            E = (4*Davgabs**2*(Emax-1) + 25 -4*Emax)/21.0d0
+            n_RSS = 2 ! assume linear grain rheology that depends on RSS^2
+        end if  
+        
+        D = ev_D(nlm, eps, n_RSS) ! <D>
+        Dmaxpow = Dmax(n_RSS)**(4.0d0/n_RSS) ! e.g. (5/2)**2 for n_RSS=2 (regular CAFFE model)
+    
+        if (D .lt. 1) then
+            gam = (4.0d0/n_RSS)/(Dmaxpow) * (Emax-1)/(1-Emin) ! <D> exponent for range 0 <= <D> <= 1  
+            E = Emin + (1-Emin)*D**gam
+        else
+            E = ((Emax-1)*D**(4.0d0/n_RSS) + Dmaxpow - Emax)/(Dmaxpow-1)
         end if
     end
     
+!    function E_CAFFE(nlm, eps, Emin, Emax, n_grain)  result(E)
+!    
+!        ! Implements Placidi et al. (2010)
+
+!        implicit none
+
+!        complex(kind=dp), intent(in) :: nlm(:)
+!        real(kind=dp), intent(in)    :: eps(3,3), Emin, Emax
+!        integer, intent(in)          :: n_grain
+!        real(kind=dp)                :: E, Davg, p
+
+!        Davg = ev_D(nlm, eps, n_grain) ! Average deformability, <D>
+!!        Davg = abs(Davg) ! numerical errors cause this to be -1e-15 for a single max CPO when it should be zero.
+!        E = E_CAFFE_Davg(Davg, Emin, Emax)
+!!        if (Davg .lt. 1) then
+!!            p = 8.0d0/21 * (Emax-1)/(1-Emin)
+!!            E = Emin + (1-Emin)*Davg**p
+!!        else
+!!            E = (4*Davg**2*(Emax-1) + 25 -4*Emax)/21.0d0
+!!        end if
+!    end
     
+   
     function E_ESTAR(eps,spin, Ec,Es)  result(E)
     
         ! Implements Graham et al. (2018)

@@ -5,7 +5,7 @@
 FEniCS interface for CPO dynamics using specfab
 """
 
-import code # code.interact(local=locals())
+import code, copy # code.interact(local=locals())
 import numpy as np
 from datetime import datetime
 from dolfin import *
@@ -34,8 +34,8 @@ class CPO():
         self.USE_REDUCED = True # use reduced representation of fabric state vector 
         self.symframe = symframe
         self.modelplane = modelplane
-        self.nu_realspace  = Constant(nu_realspace)  # Real-space stabilization (multiplicative constant of real-space Laplacian)
-        self.nu_multiplier = Constant(nu_multiplier) # Multiplier of orientation-space regularization magnitude
+        self.nu_realspace  = nu_realspace  # Real-space stabilization (multiplicative constant of real-space Laplacian)
+        self.nu_multiplier = nu_multiplier # Multiplier of orientation-space regularization magnitude
                 
         ### Initialize fortran module
         
@@ -154,21 +154,23 @@ class CPO():
         F = self._weakform(*s, u,S, dt, iota,Gamma0,Lambda0, disable_advection=disable_advection)
         solve(lhs(F)==rhs(F), self.s, self.bcs, solver_parameters={'linear_solver':'gmres'}) # fastest tested are: gmres, bicgstab, tfqmr --- note this is a non-symmetric system!
 
-    def solvesteady(self, u, S, iota=+1, Gamma0=None, Lambda0=None, LROT_guess=False, **kwargs):
+    def solvesteady(self, u, S, iota=+1, Gamma0=None, Lambda0=None, LROT_guess=False, nu_realspacemul=None, **kwargs):
 
         dt = None # select steady weak form
 
         # LROT solution (+CDRX+REG) *or* used as init guess for nonlinear problem
         if Gamma0 is None or LROT_guess:
-            print('*** Linear solve for LROT-only problem %s'%('(used as initial guess)' if (LROT_guess and (Gamma0 is not None)) else ''))
+            print('*** Solving linear LROT problem %s'%('(used as initial guess)' if (LROT_guess and (Gamma0 is not None)) else ''))
             self.evolve(u,S, dt, iota=iota, Gamma0=None, Lambda0=Lambda0, **kwargs) # solution stored in self.s 
-
+            
         # LROT + DDRX solution (+CDRX+REG)
         if Gamma0 is not None: # nonlinear problem?
-            print('*** Nonlinear solve for DDRX-activated problem')
+            print('*** Solving nonlinear LROT+DDRX problem')
             if not isinstance(Gamma0, list): Gamma0 = [Gamma0,]
+            nu_realspace0 = copy.deepcopy(self.nu_realspace)
             for ii, gam0 in enumerate(Gamma0):
-                print('...approaching solution using DDRX rate factor %i of %i'%(ii, len(Gamma0)))
+                self.nu_realspace = nu_realspacemul[ii]*nu_realspace0 # gradually refine regularization, too
+                print('...approaching solution w/ nu_realmul=%.1f (step %i of %i)'%(nu_realspacemul[ii], ii+1, len(Gamma0)))
                 s = (self.s, None) if self.modelplane=='xz' else (self.s.sub(0), self.s.sub(1)) # (sr, si)
                 F = self._weakform(*s, u,S, dt, iota,gam0,Lambda0, **kwargs)
                 solve(F==0, self.s, self.bcs, solver_parameters={'newton_solver':{'linear_solver':'gmres', 'preconditioner':'none'}})
@@ -209,8 +211,8 @@ class CPO():
         if self.modelplane=='xy':
             
             # Real space stabilization (Laplacian diffusion)
-            F  = self.nu_realspace * inner(grad(sr), grad(self.wr))*dx # real part
-            F += self.nu_realspace * inner(grad(si), grad(self.wi))*dx # imag part
+            F  = Constant(self.nu_realspace) * inner(grad(sr), grad(self.wr))*dx # real part
+            F += Constant(self.nu_realspace) * inner(grad(si), grad(self.wi))*dx # imag part
 
             # Time derivative
             if dt is not None:
@@ -235,12 +237,12 @@ class CPO():
             # Orientation space stabilization (hyper diffusion)
             if ENABLE_REG:
                 Mrr_REG,  Mri_REG,  Mir_REG,  Mii_REG  = self.Mk_REG  # unpack for readability 
-                F += -self.nu_multiplier * sum([ (dot(Mrr_REG[ii], sr) + dot(Mri_REG[ii], si))*self.wr_sub[ii]*dx for ii in self.srng]) # real part
-                F += -self.nu_multiplier * sum([ (dot(Mir_REG[ii], sr) + dot(Mii_REG[ii], si))*self.wi_sub[ii]*dx for ii in self.srng]) # imag part
+                F += -Constant(self.nu_multiplier) * sum([ (dot(Mrr_REG[ii], sr) + dot(Mri_REG[ii], si))*self.wr_sub[ii]*dx for ii in self.srng]) # real part
+                F += -Constant(self.nu_multiplier) * sum([ (dot(Mir_REG[ii], sr) + dot(Mii_REG[ii], si))*self.wi_sub[ii]*dx for ii in self.srng]) # imag part
 
         elif self.modelplane=='xz':
                 
-            # dummy zero term to make rhs(F) work when solving steady-state problem 
+            # dummy zero term to make rhs(F) work when solving steady state problem 
             # this can probably be removed once the SSA source/sink terms are added
             s_null = Function(self.S)
             s_null.vector()[:] = 0.0
@@ -255,7 +257,7 @@ class CPO():
                 F += dot(dot(u, nabla_grad(sr)), self.wr)*dx # real part
                 
             # Real space stabilization (Laplacian diffusion)
-            F += self.nu_realspace * inner(grad(sr), grad(self.wr))*dx # real part
+            F += Constant(self.nu_realspace) * inner(grad(sr), grad(self.wr))*dx # real part
     
             # Lattice rotation
             if ENABLE_LROT:
@@ -281,7 +283,7 @@ class CPO():
             # Orientation space stabilization (hyper diffusion)
             if ENABLE_REG:
                 Mrr_REG,  *_ = self.Mk_REG  # unpack for readability 
-                F += -self.nu_multiplier * sum([ dot(Mrr_REG[ii], sr)*self.wr_sub[ii]*dx for ii in self.srng]) # real part
+                F += -Constant(self.nu_multiplier) * sum([ dot(Mrr_REG[ii], sr)*self.wr_sub[ii]*dx for ii in self.srng]) # real part
 
         return F
         

@@ -47,7 +47,7 @@ class IceFabric:
     def __init__(
         self, mesh, boundaries, L, *args, 
         nu_multiplier=1, nu_realspace=1e-3, modelplane='xz', symframe=-1, 
-        Eij_grain=(1,1), alpha=0, n_grain=1, CAFFE_params=(0.1, 10), n_EIE=3, 
+        Eij_grain=(1,1), alpha=0, n_grain=1, CAFFE_params=(0.1, 10, 1), n_EIE=3, 
         ds=None, nvec=None, setextra=True, 
         Cij=sfconst.ice['elastic']['Bennett1968'], rho=sfconst.ice['density'], **kwargs
     ):
