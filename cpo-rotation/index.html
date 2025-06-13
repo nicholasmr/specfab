@@ -54,7 +54,7 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-structuretensors/">Structure tensors</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-idealized/">Idealized CPO states</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-statespace/">State space</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">⚙️ CPO Dynamics</span></p>
@@ -144,7 +144,7 @@ lm, nlm_len = sf.init(8)
 
 ### Construct an arbitrary fabric to rotate
 a2 = np.diag([0, 0, 1]) # arbitrary second-order structure tensor
-nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
+nlm = np.zeros((nlm_len), dtype=np.complex64) # state vector (array of expansion coefficients)
 nlm[:sf.L2len] = sf.a2_to_nlm(a2) # l&lt;=2 expansion coefficients
 
 ### Rotate ODF

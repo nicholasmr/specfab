@@ -66,7 +66,7 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cpo-structuretensors/">Structure tensors</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cpo-idealized/">Idealized CPO states</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../cpo-statespace/">State space</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">⚙️ CPO Dynamics</span></p>
@@ -241,26 +241,6 @@ If needed, the joint distribution function <span class="arithmatex">\(\rho^{*}({
 In this case, <span class="arithmatex">\(n(\theta,\phi)/N\)</span> and <span class="arithmatex">\(b(\theta,\phi)/N\)</span> are referred to as the normalized Orientation Distribution Functions (ODFs) of slip-plane normals and slip directions, respectively, where <span class="arithmatex">\(N = \int_{S^2} n(\theta,\phi) \,\mathrm{d}^2{\bf n}\)</span> is the total number of grains. </p>
 <p>In the <a href="../fabdyn-matrix-model/">models of crystal processes</a> available in <em>specfab</em>, the normalization is conserved and the two views give, in effect, the same result. 
 The mass-density interpretation representation rests, however, on stronger physical grounds, since mass is conserved whereas grain numbers are not.</p>
-<!--  (not least because CPO-derived quantities depend on the normalized distributions, which are identical). -->
-
-<!--
-
-The orientation distribution function (ODF) of a given slip-system axis (crystallographic axis) $f\in \lbrace n,b\rbrace$ is defined as the normalized distribution
-
-$$ 
-\mathrm{ODF} = \frac{f(\theta,\phi)}{N} \quad\text{where}\quad N=\int_{S^2} f(\theta,\phi) \,\mathrm{d}\Omega .
-$$
-
-## Normalization
-
-$n(\theta,\phi)$ may be understood either as the number density of grains with a given slip-plane normal orientation, or as the mass density fraction ([Faria, 2006](https://royalsocietypublishing.org/doi/abs/10.1098/rspa.2005.1610); [Richards et al., 2021](https://www.sciencedirect.com/science/article/abs/pii/S0012821X20306622)) of grains with a given slip-plane normal orientation; $\varrho^*(\theta,\phi)$ in literature.
-The same goes for $b(\theta,\phi)$.
-
-From specfab's point-of-view, the difference is a matter of normalization: since the models of [CPO evolution](cpo-dynamics-tranisotropic.md) (lattice rotation, DDRX, CDRX) conserve the normalization, the two views are effectively the same, not least because CPO-derived quantities depend on the normalized distributions (which are identical).
-The mass-density-fraction interpretation rests, however, on stronger physical grounds as mass is conserved but grain numbers are not.
-
--->
-
 <h2 id="harmonic-expansion">Harmonic expansion</h2>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/harmonic-expansion/harmonic-expansion.png#center" style="width:630px" /></p>
 <p>The distributions <span class="arithmatex">\(n(\theta,\phi)\)</span> and <span class="arithmatex">\(b(\theta,\phi)\)</span> are represented as an expansion series in spherical harmonics</p>
@@ -299,15 +279,15 @@ The vectors of reduced expansion coefficients are defined as</p>
 from specfabpy import specfabpy as sf
 lm, nlm_len = sf.init(6)
 
-### Construct an arbitrary fabric
-a2 = np.diag([0.1,0.2,0.7]) # arbitrary second-order structure tensor
-nlm = np.zeros((nlm_len), dtype=np.complex64) # array of expansion coefficients
+### Construct an arbitrary fabric state
+a2 = np.diag([0.1,0.2,0.7]) # some second-order structure tensor
+nlm = np.zeros((nlm_len), dtype=np.complex64) # full form of state vector
 nlm[:sf.L2len] = sf.a2_to_nlm(a2) # l&lt;=2 expansion coefficients from a2
 print('original:', nlm)
 
-### Get reduced form of coefficient array, rnlm
+### Get reduced form of state vector, rnlm
 rnlm_len = sf.get_rnlm_len() 
-rnlm = np.zeros((rnlm_len), dtype=np.complex64) # array of reduced expansion coefficients
+rnlm = np.zeros((rnlm_len), dtype=np.complex64) # reduced state vector
 rnlm[:] = sf.nlm_to_rnlm(nlm, rnlm_len) # reduced form
 print('reduced:', rnlm)
 
