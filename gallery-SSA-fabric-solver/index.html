@@ -361,26 +361,26 @@ kw_save = dict(dpi=150, pad_inches=0.1, bbox_inches='tight')
 
 ### Load saved fields 
 
-(coords,cells, ux,uy,umag,epsE, S,B,H,mask) = scpo.npinputs()
+coords,cells, ux,uy,umag,epsE, S,B,H,mask = scpo.npinputs()
 coords,cells, mi,lami,E_CAFFE = scpo.npsolution(problem['name'])
 triang = scpo.triang(coords, cells, mapscale=mapscale)
 
-### Plot velocities
+### Velocities
 
 fig, ax = newfig(boundaries=False)
 lvls = np.logspace(0.5, 3.5, 13)
-cs = ax.tricontourf(triang, umag*ms2myr, levels=lvls, norm=colors.LogNorm(vmin=lvls[0], vmax=lvls[-1]), extend='both', cmap='inferno')
+cs = ax.tricontourf(triang, ms2myr*umag, levels=lvls, norm=colors.LogNorm(vmin=lvls[0], vmax=lvls[-1]), extend='both', cmap='inferno')
 hcb = plt.colorbar(cs, cax=newcax(ax))
 hcb.set_label('$u$ (m/yr)')
 plt.savefig('%s-umag.png'%(domain['name']), **kw_save)
 
-### Plot effective strain rate
+### Effective strain rate
 
 fig, ax = newfig(boundaries=False)
 lvls = np.arange(0, 50+.01, 5)
 cs = ax.tricontourf(triang, 1e3*ms2myr*epsE, levels=lvls, extend='max', cmap='viridis')
 hcb = plt.colorbar(cs, cax=newcax(ax))
-hcb.set_label(r'$\dot{\epsilon}_{E}$ (1/yr)'%())
+hcb.set_label(r'$\dot{\epsilon}_{e}$ (1/yr)')
 plt.savefig('%s-epsE.png'%(domain['name']), **kw_save)
 
 ### Delta lambda (horizontal eigenvalue difference)
@@ -421,7 +421,7 @@ plt.savefig('%s-%s-lamz.png'%(domain['name'], problem['name']), **kw_save)
 
 fig, ax = newfig()
 lvls = np.logspace(-1, 1, 17)
-cs = ax.tricontourf(triang, E_CAFFE, levels=lvls, norm=colors.LogNorm(vmin=lvls[0], vmax=lvls[-1]), extend='neither', cmap='PuOr_r')
+cs = ax.tricontourf(triang, E_CAFFE, levels=lvls, norm=colors.LogNorm(vmin=lvls[0], vmax=lvls[-1]), extend='both', cmap='PuOr_r')
 hcb = plt.colorbar(cs, cax=newcax(ax))
 hcb.set_label(r'$E$', labelpad=-2)
 plt.savefig('%s-%s-E.png'%(domain['name'], problem['name']), **kw_save)
