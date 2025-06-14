@@ -117,18 +117,18 @@ ax.plot(X, E_EIE, '-',  lw=lw, color=cgreen, label=r"$\dot{\epsilon}_{xy}$ Glen 
 
 ### Remaining axis setup
 
-ax.text(32, 7.3, 'constant $x$--$y$ shear stress', fontsize=FSSMALL, ma='center', ha='center', va='center')
+ax.text(34, 7.3, 'constant shear stress', fontsize=FSSMALL, ma='center', ha='center', va='center')
 
 kwargs = dict(fontsize=FSSMALL, va='bottom')
 y0 = 9.42
-ax.text(0, y0, '$\\leftarrow$ compatible', ha='left', **kwargs)
+ax.text(0, y0, '$\\leftarrow$ compatible fabric', ha='left', **kwargs)
 ax.text(45, y0, 'incompatible $\\rightarrow$', ha='right', **kwargs)
 
 ax.annotate('noncoaxial\n behaviour', xy=(12, 2.1), xytext=(7, 4.2), \
     arrowprops=dict(arrowstyle='-|>, head_width=0.25', facecolor='black'), fontsize=FS, ha='center', va='center', ma='center')
 
 ax.set_xlabel(r'stress--fabric misalignment angle $\vartheta$ ($\SI{}{\degree}$)', fontsize=FS)
-ax.set_ylabel(r'$\dot{\epsilon}_{ij}/\dot{\epsilon}_{\mathrm{iso}}$', fontsize=FS+0.5)
+ax.set_ylabel(r'$\dot{\epsilon}_{ij}/\dot{\epsilon}_{\mathrm{e,iso}}$', fontsize=FS+0.5)
 
 xticks = np.arange(0,90+1e-5,5)
 ax.set_xticks(xticks[::2])  

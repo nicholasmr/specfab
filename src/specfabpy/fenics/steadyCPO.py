@@ -7,22 +7,28 @@ Steady SSA CPO solver for ice
 
 import os, sys, copy, code # code.interact(local=locals())
 import numpy as np
+import xarray, pickle, pyproj # pyproj needed!
 from tabulate import tabulate
-import copy, xarray, pickle, pyproj # pyproj needed!
-from dolfin import *
-from .ice import IceFabric
-from ..specfabpy import specfabpy as sf__ # sf private copy 
-import matplotlib.tri as tri
 
-class SteadyCPO():
+#from dolfin import *
+from .ice import * # IceFabric
+
+import matplotlib.tri as tri
+import matplotlib.pyplot as plt
+import matplotlib.colors as colors
+from matplotlib.lines import Line2D
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from scipy.interpolate import griddata
+
+class steadyCPO():
 
     uxname, uyname = 'VX', 'VY'
     xuname, yuname = 'x', 'y'
 
     CAFFE_params = (0.1, 10) # Emin, Emax of CAFFE
 
-    velscale = 3.17098e+8 # m/s to m/yr
-    lenscale = 1e-3 # m to km
+    ms2myr = 3.17098e+8 # m/s to m/yr
+    m2km = 1e-3 # m to km
 
     modelplane = 'xz' # xz is much faster than xy (renders state vector real-valued)
 
@@ -47,8 +53,10 @@ class SteadyCPO():
         # ...unpack
         self.x0, self.y0 = p0
         self.x1, self.y1 = p1
-        self.dx = 0.025 * abs(self.x1-self.x0)
-        self.dy = 0.025 * abs(self.y1-self.y0)
+        self.dx = 0.05 * abs(self.x1-self.x0)
+        self.dy = 0.05 * abs(self.y1-self.y0)
+        
+        self.mapscale = self.m2km # x and y axis scale
         
     def _getnum(self, s):
         part1, part2 = s.split("=", 1) # Split the string into two parts based on the start delimiter
@@ -114,8 +122,8 @@ class SteadyCPO():
         print('*** Processing velocity')
 
         ds_ui = ds_u.interp(x=xQ2, y=yQ2, method='linear')
-        ux_np = 1/self.velscale * getattr(ds_ui, self.uxname).to_numpy()
-        uy_np = 1/self.velscale * getattr(ds_ui, self.uyname).to_numpy()
+        ux_np = 1/self.ms2myr * getattr(ds_ui, self.uxname).to_numpy()
+        uy_np = 1/self.ms2myr * getattr(ds_ui, self.uyname).to_numpy()
         I = np.argwhere(np.isnan(ux_np))
         if len(I) > 0:
             print('*** Warning: NaNs found in velocity map where nodes are located... please make sure the model domain does not extend outside that of the velocity product')
@@ -234,17 +242,14 @@ class SteadyCPO():
         fab = IceFabric(mesh, boundaries, numerics['L'], nu_realspace=numerics['nu_real'], nu_multiplier=numerics['nu_orimul'], \
                             modelplane=self.modelplane, CAFFE_params=self.CAFFE_params)
         
-        ### Boundary conditions
+        ### Boundary conditions  
         
-        nlm_list = [np.array(fab.nlm_iso), fab.sf.nlm_ideal([0,1,0], 0, numerics['L'])] # isotropic or z-SMAX (note y is vertical since modelplane is xz)
-        bc_vals  = [np.real(fab.sf.nlm_to_rnlm(nlm_list[bc[1]], fab.sf.get_rnlm_len())) for bc in problem['bcs']]
+        nlm_list = [ [1/np.sqrt(4*np.pi)] + [0]*(fab.nlm_len_full-1), fab.sf.nlm_ideal([0,1,0], 0, numerics['L'])] # isotropic or z-SMAX (note y is vertical since modelplane is xz)
+        bc_vals  = [np.real(fab.sf.nlm_to_rnlm(nlm_list[bc[1]], fab.nlm_len)) for bc in problem['bcs']]
         bc_ids   = [bc[0] for bc in problem['bcs']]
-
         fab.set_BCs(bc_vals, [0*val for val in bc_vals], bc_ids, domain=boundaries) # (real, imag) parts on bc_ids
-                
+            
         ### Solve steady SSA problem
-        
-        #print('*** Solving for steady SSA CPO field')
         
         if not isDDRX: Gamma0 = None
         else:          Gamma0 = [fab.Gamma0_Lilien23_lab(u, _+273.15) for _ in problem['T']] # list of DDRX rate factors used to gradually approach solution 
@@ -281,7 +286,6 @@ class SteadyCPO():
             return pickle.load(handle)
        
     def femsolution(self, probname, mesh=None, boundaries=None):
-        ### NOT USED, DELETE?
         
         if mesh is None: mesh, boundaries, *_ = self.get_mesh()
         fab = IceFabric(mesh, boundaries, self.L)
@@ -296,6 +300,15 @@ class SteadyCPO():
     """
     AUX
     """
+
+    def set_solution(self, probname):
+    
+        self.coords,self.cells, self.mi,self.lami,self.E_CAFFE = self.npsolution(probname)
+
+    def set_inputs(self):
+    
+        self.coords,self.cells, self.ux,self.uy,self.umag,self.epsE, self.S,self.B,self.H,self.mask = self.npinputs()
+        self.triang = self.triang(self.coords, self.cells, mapscale=self.mapscale)
 
     def bmesh(self, bcs, mapscale=1):
     
@@ -312,56 +325,157 @@ class SteadyCPO():
         coords = [copy.deepcopy(bmesh.coordinates().reshape((-1, 2)).T) for bmesh in bmeshes]
         return (coords, bmeshes)
         
-    def xyboundaries(self):
+    """
+    Plotting
+    """
+
+    def plot_inputs(self, figsize=(5,5), kw_vel={}, kw_epsE={}):
     
-        ### Not guaranteed to give the correct connectivity between nodes on the boundary (use with caution)
-        (coords, bmeshes) = self.bmesh()
-        x, y = [], []
-        for c in coords:
-            xy = c.T
-            tour, total_distance = self.tsp(xy)
-            xi = np.array([xy[i][0]  for i in tour])
-            yi = np.array([xy[i][1]  for i in tour])
-            x.append(xi)
-            y.append(yi)
-        return (x,y)
+        self.set_inputs()
         
-    """
-    TSP for determining ordered list of boundary coordinates 
-    Code from https://www.askpython.com/python/examples/travelling-salesman-problem-python
-    """
+        fig, ax = self.newfig(figsize=figsize)
+        self.setupaxis(ax, boundaries=False, mesh=True)
+        self.plot_velocities(ax, **kw_vel)
+        self.savefig(fig, '%s-vel.png'%(self.exname))
+        
+        fig, ax = self.newfig(figsize=figsize)
+        self.setupaxis(ax, boundaries=False, mesh=True)
+        self.plot_strainratemag(ax, **kw_epsE)
+        self.savefig(fig, '%s-epsE.png'%(self.exname))
+      
+    def plot_results(self, problem, figsize=(5,5), kw_E={}, kw_dlam={}, kw_lamz={}):
     
-    def distance(self, city1, city2):
-      # Replace this with your distance calculation function (e.g., Euclidean distance)
-      x1, y1 = city1
-      x2, y2 = city2
-      return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
-     
-    def tsp(self, cities):
-      visited = [False] * len(cities)
-      current_city = 0
-     
-      tour = []
-      total_distance = 0
-     
-      for _ in range(len(cities)):
-        visited[current_city] = True
-        tour.append(current_city)
-     
-        next_city = None
-        min_distance = float('inf')  # Represents positive infinity
-     
-        for i in range(len(cities)):
-          if visited[i]:
-            continue
-     
-          d = self.distance(cities[current_city], cities[i])
-          if d < min_distance:
-            min_distance = d
-            next_city = i
-     
-        current_city = next_city
-        total_distance += min_distance
-     
-      return tour, total_distance
+        self.set_inputs()
+        self.set_solution(problem['name'])
+        kw_setupaxis = dict(boundaries=problem['bcs'])
+        kw_leg = dict(ncol=2, loc=1, bbox_to_anchor=(1,1.12), handlelength=1.2, fancybox=False, frameon=False)
+        
+        fig, ax = self.newfig(figsize=figsize)
+        legh, legt = self.setupaxis(ax, **kw_setupaxis)
+        ax.legend(legh, legt, **kw_leg)
+        self.plot_E_CAFFE(ax, **kw_E)
+        self.savefig(fig, '%s-%s-E.png'%(self.exname, problem['name']))
+            
+        fig, ax = self.newfig(figsize=figsize)
+        legh, legt = self.setupaxis(ax, **kw_setupaxis)
+        ax.legend(legh, legt, **kw_leg)
+        self.plot_dlam(ax, **kw_dlam)
+        self.savefig(fig, '%s-%s-dlam.png'%(self.exname, problem['name']))
+        
+        fig, ax = self.newfig(figsize=figsize)
+        legh, legt = self.setupaxis(ax, **kw_setupaxis)
+        ax.legend(legh, legt, **kw_leg)
+        self.plot_lamz(ax, **kw_lamz)
+        self.savefig(fig, '%s-%s-lamz.png'%(self.exname, problem['name']))
+
+    def plot_velocities(self, ax, lvls=np.logspace(0.5, 3.5, 13), cblabel='$u$ (m/yr)', cmap='inferno'):
+    
+        cs = ax.tricontourf(self.triang, self.ms2myr*self.umag, levels=lvls, norm=colors.LogNorm(vmin=lvls[0], vmax=lvls[-1]), extend='both', cmap=cmap)
+        hcb = plt.colorbar(cs, cax=self.newcax(ax))
+        hcb.set_label(cblabel)
+        return (cs, hcb)
+
+    def plot_strainratemag(self, ax, lvls=np.arange(0, 50+.01, 5), cblabel=r'$\dot{\epsilon}_{e}$ (1/yr)', cmap='viridis'):
+    
+        cs = ax.tricontourf(self.triang, 1e3*self.ms2myr*self.epsE, levels=lvls, extend='max', cmap=cmap)
+        hcb = plt.colorbar(cs, cax=self.newcax(ax))
+        hcb.set_label(cblabel)
+        return (cs, hcb)
+
+
+    def plot_dlam(self, ax, lvls=np.arange(0, 0.8+.01, 0.1), cblabel=r'$\Delta\lambda$', cmap='Blues',
+                        quiverm1=False, args_quiverm1=(0.1, 0.05, 3, r'${\bf m}_1$')):
+                        
+        dlam = abs(self.lami[:,0] - self.lami[:,1]) # eigenvalues 1 and 2 are the largest and smallest in-model-plane eigenvalues
+        cs = ax.tricontourf(self.triang, dlam, levels=lvls, extend='max', cmap=cmap)
+        hcb = plt.colorbar(cs, cax=self.newcax(ax))
+        hcb.set_label(cblabel)
+        # Quiver principal horizontal eigenvector?
+        if quiverm1:
+            meshpts = (coords[0,:], coords[1,:])
+            xv, yv = np.linspace(scpo.x0, scpo.x1, 15)[1:-1], np.linspace(scpo.y0, scpo.y1, 15)[1:-1]
+            x, y = np.meshgrid(xv, yv, indexing='xy')
+            m1 = mi[:,0,:] # principal horizontal eigenvector
+            m1x = griddata(meshpts, m1[:,0].flatten(), (x, y), method='linear', fill_value=np.nan)
+            m1y = griddata(meshpts, m1[:,2].flatten(), (x, y), method='linear', fill_value=np.nan) # y coordinate is index 2 (z coordinate) since problem is in xz plane
+            renorm = np.sqrt(m1x**2+m1y**2)
+            m1x, m1y = np.divide(m1x, renorm), np.divide(m1y, renorm)
+            hq = ax.quiver(mapscale*x, mapscale*y, +m1x, +m1y, color='tab:red', scale=40)
+            hq = ax.quiver(mapscale*x, mapscale*y, -m1x, -m1y, color='tab:red', scale=40)
+            ax.quiverkey(hq, *args_quiverm1, labelpos='E')
+        return (cs, hcb)
+
+    def plot_lamz(self, ax, lvls=np.arange(0, 0.8+.01, 0.1), cblabel=r'$\lambda_z$', cmap='RdPu'):
+    
+        lamz = self.lami[:,2] # eigenvalue 3 is the out-of-model-plane (z) eigenvalue
+        cs = ax.tricontourf(self.triang, lamz, levels=lvls, extend='max', cmap=cmap)
+        hcb = plt.colorbar(cs, cax=self.newcax(ax))
+        hcb.set_label(cblabel)
+        return (cs, hcb)
+
+    def plot_E_CAFFE(self, ax, lvls=np.logspace(-1, 1, 17), cblabel=r'$E$', cmap='PuOr_r', labelpad=-2):
+    
+        cs = ax.tricontourf(self.triang, self.E_CAFFE, levels=lvls, norm=colors.LogNorm(vmin=lvls[0], vmax=lvls[-1]), extend='both', cmap=cmap)
+        hcb = plt.colorbar(cs, cax=self.newcax(ax))
+        hcb.set_label(cblabel, labelpad=labelpad)
+        return (cs, hcb)
+        
+    def newfig(self, figsize=(5,5)):
+    
+        fig = plt.figure(figsize=figsize)
+        ax = plt.subplot(111)
+        return (fig, ax)
+        
+    def savefig(self, fig, fname, dpi=150, pad_inches=0.1, bbox_inches='tight'):
+    
+        fig.savefig(fname, dpi=dpi, pad_inches=pad_inches, bbox_inches=bbox_inches)
+        
+    def setupaxis(self, ax, boundaries=False, floating=True, mesh=False, bgcolor='0.85', \
+                             xlims=None, ylims=None, showyaxis=True,
+                             xticks_major=None, xticks_minor=None, yticks_major=None, yticks_minor=None):
+
+        legh, legt = [], []
+        
+        if bgcolor is not None: 
+            x0, x1 = self.mapscale*(self.x0-self.dx), self.mapscale*(self.x1+self.dx)
+            y0, y1 = self.mapscale*(self.y0-self.dy), self.mapscale*(self.y1+self.dy)
+            ax.add_patch(plt.Rectangle((x0,y0), x1-x0, y1-y0, color=bgcolor))
+            
+        if mesh: 
+            ax.triplot(self.triang, lw=0.075, color='0.5', alpha=0.8, zorder=10)
+            
+        if boundaries:
+            coords, *_ = self.bmesh(boundaries) # boundaries = problem['bcs']
+            colors = ['cyan', 'yellow', 'magenta', 'aquamarine']
+            markers = ['s',]*len(colors)
+            for ii, (xb, yb) in enumerate(coords):
+                ax.scatter(xb*self.mapscale, yb*self.mapscale, c=colors[ii], marker=markers[ii], s=3, zorder=12, clip_on=False)
+                legh.append(Line2D([0], [0], color=colors[ii], lw=2))
+                legt.append('Isotropic')
+                
+        if floating: 
+            ax.tricontour(self.triang, self.mask==3, [0.5, 1.5], colors=['limegreen',], linewidths=2, zorder=11)
+            legh.append(Line2D([0], [0], color='limegreen', lw=2))
+            legt.append('Floating')
+            
+        ax.axis('square')
+        ax.set_xlabel(r'$x$ (km)')
+
+        if xticks_major is not None: ax.set_xticks(xticks_major)
+        if xticks_minor is not None: ax.set_xticks(xticks_minor, minor=True)
+            
+        if showyaxis:
+            if yticks_major is not None: ax.set_yticks(yticks_major)
+            if yticks_minor is not None: ax.set_yticks(yticks_minor, minor=True)
+            ax.set_ylabel(r'$y$ (km)')
+        else:
+            ax.tick_params('y', labelleft=False)
+
+        ax.set_xlim([self.mapscale*self.x0, self.mapscale*self.x1] if xlims is None else xlims)
+        ax.set_ylim([self.mapscale*self.y0, self.mapscale*self.y1] if ylims is None else ylims)
+        
+        return (legh, legt)
+    
+    def newcax(self, ax, loc="right", size="4%", pad=0.13, **kwargs): 
+        return make_axes_locatable(ax).append_axes(loc, size=size, pad=pad, **kwargs)
 
