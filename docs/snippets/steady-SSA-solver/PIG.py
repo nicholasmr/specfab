@@ -104,18 +104,19 @@ def newfig(boundaries=True, floating=True, mesh=False, bgcolor='0.85', figsize=(
         ax.triplot(triang, lw=0.075, color='0.5', alpha=0.8, zorder=10)
     if boundaries:
         coords, *_ = scpo.bmesh(problem['bcs'])
-        colors = ['cyan', 'yellow', 'magenta', 'aquamarine']
+        colors = ['cyan', 'magenta', 'yellow']
         markers = ['s',]*len(colors)
         for ii, (xb, yb) in enumerate(coords):
             ax.scatter(xb*mapscale, yb*mapscale, c=colors[ii], marker=markers[ii], s=3, zorder=12, clip_on=False)
             legh.append(Line2D([0], [0], color=colors[ii], lw=2))
-            legt.append('Isotropic')
+            legt.append('Isotropic' if ii == 0 else 'Free')
     if floating: 
         ax.tricontour(triang, mask==3, [0.5, 1.5], colors=['limegreen',], linewidths=2, zorder=11)
         legh.append(Line2D([0], [0], color='limegreen', lw=2))
         legt.append('Floating')
         
-    ax.legend(legh, legt, ncol=2, loc=1, bbox_to_anchor=(1,1.15), handlelength=1.2, fancybox=False, frameon=False)
+    ax.legend(legh, legt, ncol=3, loc=1, bbox_to_anchor=(1.15,1.15), fancybox=False, frameon=False, \
+                handletextpad=0.5, columnspacing=0.8, handlelength=1.3)
     ax.axis('square')
     ax.set_xlabel(r'$x$ (km)')
     ax.set_ylabel(r'$y$ (km)')

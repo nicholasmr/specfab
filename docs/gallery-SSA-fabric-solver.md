@@ -59,7 +59,7 @@ which looks like this:
 ```python
 --8<-- "docs/snippets/steady-SSA-solver/PIG.py"
 ```
-The resulting plots are:
+The resulting plots are shown below, where the first row shows the velocity and strain rate field interpolated onto the model mesh, and the second and third row shows model results without and with DDRX, respectively. 
 
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/snippets/steady-SSA-solver/PIG-gallery.png){: style="width:700px"}
 

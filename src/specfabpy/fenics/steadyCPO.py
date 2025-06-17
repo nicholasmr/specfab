@@ -350,7 +350,7 @@ class steadyCPO():
         self.set_inputs()
         self.set_solution(problem['name'])
         kw_setupaxis = dict(boundaries=problem['bcs'])
-        kw_leg = dict(ncol=2, loc=1, bbox_to_anchor=(1,1.12), handlelength=1.2, fancybox=False, frameon=False)
+        kw_leg = dict(ncol=3, loc=1, bbox_to_anchor=(1,1.12), handlelength=1.2, fancybox=False, frameon=False)
         
         fig, ax = self.newfig(figsize=figsize)
         legh, legt = self.setupaxis(ax, **kw_setupaxis)
@@ -387,7 +387,7 @@ class steadyCPO():
         return self.plot_generic(ax, self.ms2myr*self.umag, kw_tcf=kw_tcf, kw_cb=kw_cb, kw_cax=kw_cax)
 
     def plot_strainratemag(self, ax, kw_cb=dict(label=r'$\dot{\epsilon}_{e}$ (1/yr)'), kw_cax=dict(), \
-                            kw_tcf=dict(cmap='viridis', lvls=np.arange(0, 50+.01, 5), extend='max')):
+                            kw_tcf=dict(cmap='viridis', levels=np.arange(0, 50+.01, 5), extend='max')):
                             
         return self.plot_generic(ax, 1e3*self.ms2myr*self.epsE, kw_tcf=kw_tcf, kw_cb=kw_cb, kw_cax=kw_cax)
 
@@ -474,7 +474,7 @@ class steadyCPO():
             for ii, (xb, yb) in enumerate(coords):
                 ax.scatter(xb*self.mapscale, yb*self.mapscale, c=colors[ii], marker=markers[ii], s=3, zorder=12, clip_on=False)
                 legh.append(Line2D([0], [0], color=colors[ii], lw=2))
-                legt.append('Isotropic')
+                legt.append('Isotropic' if ii == 0 else 'Free')
                 
         if floating: 
             ax.tricontour(self.triang, self.mask==3, [0.5, 1.5], colors=[self.c_floating,], linewidths=2, zorder=11)
