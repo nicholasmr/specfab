@@ -35,7 +35,7 @@ Noise in surface velocity products, in addition to uncertainties due to model as
 To solve this, Laplacian regularization of the form $\nu \nabla^2 {\bf \bar s}$ can be adding to the right-hand side of the problem, at the expense of limiting how large spatial CPO gradients are permitted. 
 The strength of regularization $\nu$ (`nu_real` in code below) is therefore a free model parameter which must be carefully selected, especially in very dynamic regions where the CPO field might change rapidly with distance. 
 
-## Example: Pine Island Glacier
+## 📝 Example: Pine Island Glacier
 
 Let us consider the Pine Island Glacier (PIG), Antarctica, as an example for how to solve the steady SSA CPO problem, assuming that: 
 

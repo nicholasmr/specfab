@@ -35,6 +35,8 @@ class steadyCPO():
     bc_isotropic  = 0
     bc_zsinglemax = 1
 
+    c_floating = 'limegreen'
+
     def __init__(self, domain):
     
         self.exname = domain['name'] # experiment name
@@ -237,7 +239,7 @@ class steadyCPO():
         mesh, boundaries, Q,Q2,V, coords,cells = self.get_mesh()
         u, umag, *_ = self.feminputs(Q=Q, Q2=Q2, V=V)        
         
-        ### Init ice fabric class
+        ### Initialize solver class
         
         fab = IceFabric(mesh, boundaries, numerics['L'], nu_realspace=numerics['nu_real'], nu_multiplier=numerics['nu_orimul'], \
                             modelplane=self.modelplane, CAFFE_params=self.CAFFE_params)
@@ -285,17 +287,17 @@ class steadyCPO():
         with open(fout, 'rb') as handle:
             return pickle.load(handle)
        
-    def femsolution(self, probname, mesh=None, boundaries=None):
+    def femsolution(self, probname, L, mesh=None, boundaries=None):
         
         if mesh is None: mesh, boundaries, *_ = self.get_mesh()
-        fab = IceFabric(mesh, boundaries, self.L)
-        s = Function(fab.S)
+        self.fab = IceFabric(mesh, boundaries, L)
+        s = Function(self.fab.S)
         fout = '%s-solution-%s.h5'%(self.exname, probname)
         f = HDF5File(MPI.comm_world,fout,"r")
         f.read(s,"/s")
         f.close()
-        fab.s.assign(s)
-        return fab
+        self.fab.s.assign(s)
+        return self.fab
             
     """
     AUX
@@ -310,7 +312,7 @@ class steadyCPO():
         self.coords,self.cells, self.ux,self.uy,self.umag,self.epsE, self.S,self.B,self.H,self.mask = self.npinputs()
         self.triang = self.triang(self.coords, self.cells, mapscale=self.mapscale)
 
-    def bmesh(self, bcs, mapscale=1):
+    def bmesh(self, mapscale=1):
     
         mesh, boundaries, *_ = self.get_mesh()
         boundarymesh = BoundaryMesh(mesh, 'exterior')
@@ -321,7 +323,7 @@ class steadyCPO():
             parent_meshentity = boundarymesh.entity_map(bdim)[i]
             parent_boundarynumber = boundaries.array()[parent_meshentity]
             boundary_boundaries.array()[i] = parent_boundarynumber
-        bmeshes = [SubMesh(boundarymesh, boundary_boundaries, bc[0]) for bc in bcs]
+        bmeshes = [SubMesh(boundarymesh, boundary_boundaries, bcid) for bcid in [1,2]] # assume only two possible kinds; isotropic/smax and free
         coords = [copy.deepcopy(bmesh.coordinates().reshape((-1, 2)).T) for bmesh in bmeshes]
         return (coords, bmeshes)
         
@@ -368,30 +370,36 @@ class steadyCPO():
         self.plot_lamz(ax, **kw_lamz)
         self.savefig(fig, '%s-%s-lamz.png'%(self.exname, problem['name']))
 
-    def plot_velocities(self, ax, lvls=np.logspace(0.5, 3.5, 13), cblabel='$u$ (m/yr)', cmap='inferno'):
-    
-        cs = ax.tricontourf(self.triang, self.ms2myr*self.umag, levels=lvls, norm=colors.LogNorm(vmin=lvls[0], vmax=lvls[-1]), extend='both', cmap=cmap)
-        hcb = plt.colorbar(cs, cax=self.newcax(ax))
-        hcb.set_label(cblabel)
+    def plot_generic(self, ax, F, kw_tcf=dict(), kw_cb=dict(), kw_cax=dict()):
+
+        if ('norm' in kw_tcf) and (kw_tcf['norm'] == 'log'):
+            kw_tcf['norm'] = colors.LogNorm(vmin=kw_tcf['levels'][0], vmax=kw_tcf['levels'][-1])    
+        if ('norm' in kw_tcf) and (kw_tcf['norm'] == 'center'): 
+            kw_tcf['norm'] = colors.TwoSlopeNorm(vmin=kw_tcf['levels'][0], vcenter=kw_tcf['vcenter'], vmax=kw_tcf['levels'][-1])
+            kw_tcf.pop('vcenter')
+        cs = ax.tricontourf(self.triang, F, **kw_tcf)
+        hcb = plt.colorbar(cs, cax=self.newcax(ax, **kw_cax), **kw_cb)
         return (cs, hcb)
+        
+    def plot_velocities(self, ax, kw_cb=dict(label=r'$u$ (m/yr)'), kw_cax=dict(), \
+                            kw_tcf=dict(cmap='inferno', levels=np.logspace(0.5, 3.5, 13), norm='log', extend='both')):
+                            
+        return self.plot_generic(ax, self.ms2myr*self.umag, kw_tcf=kw_tcf, kw_cb=kw_cb, kw_cax=kw_cax)
 
-    def plot_strainratemag(self, ax, lvls=np.arange(0, 50+.01, 5), cblabel=r'$\dot{\epsilon}_{e}$ (1/yr)', cmap='viridis'):
-    
-        cs = ax.tricontourf(self.triang, 1e3*self.ms2myr*self.epsE, levels=lvls, extend='max', cmap=cmap)
-        hcb = plt.colorbar(cs, cax=self.newcax(ax))
-        hcb.set_label(cblabel)
-        return (cs, hcb)
+    def plot_strainratemag(self, ax, kw_cb=dict(label=r'$\dot{\epsilon}_{e}$ (1/yr)'), kw_cax=dict(), \
+                            kw_tcf=dict(cmap='viridis', lvls=np.arange(0, 50+.01, 5), extend='max')):
+                            
+        return self.plot_generic(ax, 1e3*self.ms2myr*self.epsE, kw_tcf=kw_tcf, kw_cb=kw_cb, kw_cax=kw_cax)
 
+    def plot_dlam(self, ax,  kw_cb=dict(label=r'$\Delta\lambda$'), kw_cax=dict(), \
+                        kw_tcf=dict(cmap='Blues', levels=np.arange(0, 0.8+.01, 0.1), extend='max'), \
+                        quiver=False, quiverkey=(0.1, 0.05, 3, r'${\bf m}_1$') ): 
 
-    def plot_dlam(self, ax, lvls=np.arange(0, 0.8+.01, 0.1), cblabel=r'$\Delta\lambda$', cmap='Blues',
-                        quiverm1=False, args_quiverm1=(0.1, 0.05, 3, r'${\bf m}_1$')):
-                        
         dlam = abs(self.lami[:,0] - self.lami[:,1]) # eigenvalues 1 and 2 are the largest and smallest in-model-plane eigenvalues
-        cs = ax.tricontourf(self.triang, dlam, levels=lvls, extend='max', cmap=cmap)
-        hcb = plt.colorbar(cs, cax=self.newcax(ax))
-        hcb.set_label(cblabel)
+        returnme = self.plot_generic(ax, dlam, kw_tcf=kw_tcf, kw_cb=kw_cb, kw_cax=kw_cax)
+
         # Quiver principal horizontal eigenvector?
-        if quiverm1:
+        if quiver:
             meshpts = (coords[0,:], coords[1,:])
             xv, yv = np.linspace(scpo.x0, scpo.x1, 15)[1:-1], np.linspace(scpo.y0, scpo.y1, 15)[1:-1]
             x, y = np.meshgrid(xv, yv, indexing='xy')
@@ -402,23 +410,39 @@ class steadyCPO():
             m1x, m1y = np.divide(m1x, renorm), np.divide(m1y, renorm)
             hq = ax.quiver(mapscale*x, mapscale*y, +m1x, +m1y, color='tab:red', scale=40)
             hq = ax.quiver(mapscale*x, mapscale*y, -m1x, -m1y, color='tab:red', scale=40)
-            ax.quiverkey(hq, *args_quiverm1, labelpos='E')
-        return (cs, hcb)
+            ax.quiverkey(hq, *quiverkey, labelpos='E')
 
-    def plot_lamz(self, ax, lvls=np.arange(0, 0.8+.01, 0.1), cblabel=r'$\lambda_z$', cmap='RdPu'):
-    
-        lamz = self.lami[:,2] # eigenvalue 3 is the out-of-model-plane (z) eigenvalue
-        cs = ax.tricontourf(self.triang, lamz, levels=lvls, extend='max', cmap=cmap)
-        hcb = plt.colorbar(cs, cax=self.newcax(ax))
-        hcb.set_label(cblabel)
-        return (cs, hcb)
+        return returnme
 
-    def plot_E_CAFFE(self, ax, lvls=np.logspace(-1, 1, 17), cblabel=r'$E$', cmap='PuOr_r', labelpad=-2):
+    def plot_lamz(self, ax, kw_cb=dict(label=r'$\lambda_z$'), kw_cax=dict(), \
+                        kw_tcf=dict(cmap='RdPu', levels=np.arange(0, 0.8+.01, 0.1), extend='max')): 
+                        
+        return self.plot_generic(ax, self.lami[:,2], kw_tcf=kw_tcf, kw_cb=kw_cb, kw_cax=kw_cax) # eigenvalue 3 is the out-of-model-plane (z) eigenvalue
+
+    def plot_E_CAFFE(self, ax, kw_cb=dict(label=r'$E$'), kw_cax=dict(), \
+                            kw_tcf=dict(cmap='PuOr_r', levels=np.logspace(-1, 1, 17), norm='log', extend='both')): 
+                            
+        return self.plot_generic(ax, self.E_CAFFE, kw_tcf=kw_tcf, kw_cb=kw_cb, kw_cax=kw_cax)
+        
+    def plot_shearfrac(self, ax, kw_cb=dict(label=r'{\fontsize{10}{10}\selectfont $\leftarrow$ stretching} \;\; $\gamma$\;\; {\fontsize{10}{10}\selectfont shearing $\rightarrow$}'), kw_cax=dict(), \
+                            kw_tcf=dict(cmap='Spectral_r', levels=np.arange(0, 1+.01, 0.1), extend='neither')): 
+
+        mesh, boundaries, Q,Q2,V, coords,cells = self.get_mesh()
+        u, *_ = self.feminputs(Q=Q, Q2=Q2, V=V)
+        u.set_allow_extrapolation(True)
+        shearfrac_df, *_ = self.fab.enhancementfactor.shearfrac_SSA(u)
+        self.shearfrac   = shearfrac_df.compute_vertex_values(mesh)
+        return self.plot_generic(ax, self.shearfrac, kw_tcf=kw_tcf, kw_cb=kw_cb, kw_cax=kw_cax)
     
-        cs = ax.tricontourf(self.triang, self.E_CAFFE, levels=lvls, norm=colors.LogNorm(vmin=lvls[0], vmax=lvls[-1]), extend='both', cmap=cmap)
-        hcb = plt.colorbar(cs, cax=self.newcax(ax))
-        hcb.set_label(cblabel, labelpad=labelpad)
-        return (cs, hcb)
+    def plot_chi(self, ax, kw_cb=dict(label=r'{\fontsize{10}{10}\selectfont $\leftarrow$ incompatible} \;\; $\chi$\;\; {\fontsize{10}{10}\selectfont compatible $\rightarrow$}'), kw_cax=dict(), \
+                            kw_tcf=dict(cmap='PiYG', levels=np.arange(0,1+.01,0.1), extend='neither')): 
+
+        mesh, boundaries, Q,Q2,V, coords,cells = self.get_mesh()
+        u, *_ = self.feminputs(Q=Q, Q2=Q2, V=V)
+        u.set_allow_extrapolation(True)
+        chi_df   = self.fab.enhancementfactor.chi(u, self.fab.s)
+        self.chi = chi_df.compute_vertex_values(mesh)
+        return self.plot_generic(ax, self.chi, kw_tcf=kw_tcf, kw_cb=kw_cb, kw_cax=kw_cax)
         
     def newfig(self, figsize=(5,5)):
     
@@ -430,9 +454,8 @@ class steadyCPO():
     
         fig.savefig(fname, dpi=dpi, pad_inches=pad_inches, bbox_inches=bbox_inches)
         
-    def setupaxis(self, ax, boundaries=False, floating=True, mesh=False, bgcolor='0.85', \
-                             xlims=None, ylims=None, showyaxis=True,
-                             xticks_major=None, xticks_minor=None, yticks_major=None, yticks_minor=None):
+    def setupaxis(self, ax, boundaries=False, floating=True, mesh=False, bgcolor='0.85', showyaxis=True, \
+             xlims=None, ylims=None, xticks_major=None, xticks_minor=None, yticks_major=None, yticks_minor=None):
 
         legh, legt = [], []
         
@@ -445,8 +468,8 @@ class steadyCPO():
             ax.triplot(self.triang, lw=0.075, color='0.5', alpha=0.8, zorder=10)
             
         if boundaries:
-            coords, *_ = self.bmesh(boundaries) # boundaries = problem['bcs']
-            colors = ['cyan', 'yellow', 'magenta', 'aquamarine']
+            coords, *_ = self.bmesh()
+            colors = ['cyan', 'magenta'] # , 'yellow', 'aquamarine']
             markers = ['s',]*len(colors)
             for ii, (xb, yb) in enumerate(coords):
                 ax.scatter(xb*self.mapscale, yb*self.mapscale, c=colors[ii], marker=markers[ii], s=3, zorder=12, clip_on=False)
@@ -454,8 +477,8 @@ class steadyCPO():
                 legt.append('Isotropic')
                 
         if floating: 
-            ax.tricontour(self.triang, self.mask==3, [0.5, 1.5], colors=['limegreen',], linewidths=2, zorder=11)
-            legh.append(Line2D([0], [0], color='limegreen', lw=2))
+            ax.tricontour(self.triang, self.mask==3, [0.5, 1.5], colors=[self.c_floating,], linewidths=2, zorder=11)
+            legh.append(Line2D([0], [0], color=self.c_floating, lw=2))
             legt.append('Floating')
             
         ax.axis('square')

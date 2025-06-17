@@ -44,7 +44,7 @@ print('Im(nlm[2,:I]) = ', np.imag(nlm[2,:I]))
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-dpi, scale = 125, 1.5
+dpi, scale = 150, 1.3
 fig = plt.figure(figsize=(4*scale,1.4*scale))
 gs = gridspec.GridSpec(1,4)
 a = 0.03
@@ -60,7 +60,7 @@ ax1.set_global(); ax2.set_global(); ax3.set_global(); ax4.set_global()
 
 ### Plot
 
-kw = dict(cblabel='ODF', lvlset=(np.linspace(0,0.4,9), lambda x,p:'%.1f'%x))
+kw = dict(showcb=False, cblabel='ODF', lvlset=(np.linspace(0,0.4,9), lambda x,p:'%.1f'%x))
 
 sfplt.plotODF(nlm[0,:], lm, ax1, **kw)
 sfplt.plotcoordaxes(ax1, geo, axislabels='vuxi')

@@ -19,27 +19,35 @@ for a stress state aligned with $({\bf e}_i, {\bf e}_j)$:
 $$
 {\boldsymbol\tau}({\bf e}_i, {\bf e}_j) = \tau_0
 \begin{cases}
-    {\bf I}/3 - {\bf e}_i \otimes {\bf e}_i \;\;\quad\quad\text{if}\quad i=j \\
-    {\bf e}_i \otimes {\bf e}_j + {\bf e}_j \otimes {\bf e}_i \quad\text{if}\quad i\neq j \\
+    {\bf I}/3 - {\bf e}_i {\bf e}_i \;\quad\text{if}\quad i=j \\
+    {\bf e}_i {\bf e}_j + {\bf e}_j {\bf e}_i \quad\text{if}\quad i\neq j \\
 \end{cases}
 .
 $$
 
 In this way:
 
-* ${E_{11}}$ is the longitudinal strain-rate enhancement along ${\bf e}_{1}$ when subject to compression along ${\bf e}_{1}$
+* ${E_{11}}$ is the longitudinal strain-rate enhancement along ${\bf e}_{1}$ when subject to compression along ${\bf e}_{1}$,
 
-* ${E_{12}}$ is the ${\bf e}_{1}$&mdash;${\bf e}_{2}$ shear strain-rate enhancement when subject to shear in the ${\bf e}_{1}$&mdash;${\bf e}_{2}$ plane
+* ${E_{12}}$ is the ${\bf e}_{1}$&mdash;${\bf e}_{2}$ shear strain-rate enhancement when subject to shear in the ${\bf e}_{1}$&mdash;${\bf e}_{2}$ plane,
 
-and so on.
+* ...and so on.
 
-!!! warning "Hard or soft"
+To be clear, $E_{ij}>1$ implies the material response is *softened* due to fabric (compared to an isotropic CPO), whereas $E_{ij}<1$ implies *hardening*.
 
-    $E_{ij}>1$ implies the material response is *softened* due to fabric (compared to an isotropic CPO), whereas $E_{ij}<1$ implies *hardening*.
+!!! note "Glacier ice"
+
+    In the case of glacier ice with a strongly-developed preferred $c$-axis direction (*single maximum*)
+    
+    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/deck-of-cards/ice-cards-2.png){: style="width:370px"}
+    
+    $E_{ij}$ have been measured in lab tests of compression and shear along the preferred direction: 
+    
+    ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/deck-of-cards/ice-cards-VA.png){: style="width:350px"}
 
 ## Eigenenhancements
 
-*Eigenenhancements* are defined as the enhancement factors w.r.t. the CPO symmetry axes (${\bf m}_i$): 
+*Eigenenhancements* are defined as the enhancement factors with respect to the symmetry axes ${\bf m}_i$ of the CPO: 
 
 $${\bf e}_i = {\bf m}_i .$$
 

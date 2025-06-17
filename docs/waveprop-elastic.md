@@ -46,7 +46,7 @@ Elastic P and S plan-wave velocities, permitted in a polycrystal with an arbitra
 If ice grains are approximated as transversely isotropic, their elastic behaviour can be modelled using the [transversely isotropic elastic constitutive equation](constitutive-elastic.md).
 This requires specifying the grain elastic parameters $\lambda'$, $\mu'$, $\hat{\lambda}'$, $\hat{\mu}'$, $\hat{\gamma}'$, and the Voigt&mdash;Reuss weight $\alpha$.
 
-### Code example
+### 📝 Code example
 
 ```python
 --8<-- "docs/snippets/waveprop-elastic-ice.py"
@@ -65,7 +65,7 @@ The below animation shows directional P- and S-wave velocities for a CPO evolvin
 If olivine grains are approximated as orthotropic, their elastic behaviour can be modelled using the [orthotropic elastic constitutive equation](constitutive-elastic.md).
 This requires specifying the grain elastic parameters $\lambda_{ij}'$, $\mu_{i}'$, and the Voigt&mdash;Reuss weight $\alpha$.
 
-### Code example
+### 📝 Code example
 
 ```python
 --8<-- "docs/snippets/waveprop-elastic-olivine.py"

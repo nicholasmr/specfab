@@ -88,7 +88,7 @@ where ${\bf M_{\mathrm{LROT}}}(\iota)$ is given analytically in [Rathmann et al.
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-LROT.gif){: style="width:610px"}
 
 
-### Code example
+### 📝 Code example
 
 ```python
 --8<-- "docs/snippets/fabdyn-LROT.py"

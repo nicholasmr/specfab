@@ -58,7 +58,7 @@ $$
 
 where the identity $\operatorname{tr}(\langle {\bf c}^2 \rangle) = 1$ was used.
 
-### Gerber's approximation 
+### 💡 Gerber's approximation 
 
 Since $\lambda_1$ is unknown, the problem can be closed by making different assumptions about $\lambda_1$ given the local/upstream flow regime, such as proposed by [Gerber et al. (2023)](https://www.nature.com/articles/s41467-023-38139-8).
 
@@ -73,7 +73,7 @@ If $\langle {\bf c}^2 \rangle$ can be inferred from radar measurements following
 The enhancements depend, however, also on the fourth-order structure tensor, $\langle {\bf c}^4 \rangle$, while the bulk permittivity $\boldsymbol\epsilon$ depends exclusively on $\langle {\bf c}^2 \rangle$.
 To overcome this, two approaches can be taken.
 
-### Method 1: 
+### ➡️ Method 1 
 
 Use the [IBOF closure](https://doi.org/10.1016/j.jnnfm.2005.11.005) of the Elmer/Ice flow model:
  
@@ -89,7 +89,7 @@ a2 = np.diag([l1, l1+dl, 1-dl-2*l1]) # structure tensor <c^2> in eigenframe
 a4 = sf.a4_IBOF(a2) # Elmer/Ice IBOF closure for <c^4> given <c^2>
 ```
 
-### Method 2
+### ➡️ Method 2
 
 Use an empirical correlation for determining $\langle {\bf c}^4 \rangle$ given $\langle {\bf c}^2 \rangle$ if the CPO is approximately rotationally symmetric.
 

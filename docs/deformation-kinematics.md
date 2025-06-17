@@ -97,7 +97,7 @@ $$
 \epsilon_{zz} = -\frac{1}{\tau} .
 $$
 
-**Code example**<br>
+**📝 Code example**<br>
 The above expressions are accessible in specfab as follows
 
 ```python
@@ -147,7 +147,7 @@ $$
 
 Thus, $\tau$ is the time it takes to reach a shear angle of $\gamma=45^\circ$ from the undeformed configuration, corresponding to $\epsilon_{xz}=\tan(45^\circ)/2=0.5$.
 
-**Code example**<br>
+**📝 Code example**<br>
 The above expressions are accessible in specfab as follows
 
 ```python

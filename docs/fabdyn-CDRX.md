@@ -30,7 +30,7 @@ $$
 
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-CDRX.gif){: style="width:610px"}
 
-### Code example 
+### 📝 Code example 
 
 ```python
 --8<-- "docs/snippets/fabdyn-CDRX.py"

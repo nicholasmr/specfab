@@ -189,7 +189,7 @@ def plot_calibmap(ax, nlm, alpha_list, pcalib,pmrk,pname):
 CS, hcalib = plot_calibmap(ax2, nlm_ref, alpha_list, (alpha, Eca), 'X', r'$\epsilon_{zz}=-0.95$')
 hcb = plt.colorbar(CS, orientation='horizontal', pad=0.22, fraction=0.05, aspect=20)
 hcb.set_label('$E_{xz}$, $E_{yz}$', fontsize=FSAX)
-ax2.text(1.045, 1.6e3, r'Asymptotical $\rightarrow$', va='top', ha='center', rotation=90, fontsize=FSAX)
+ax2.text(1.045, 1.6e3, r'Asymptotic $\rightarrow$', va='top', ha='center', rotation=90, fontsize=FSAX)
 #ax2.legend([hcalib,], [r'Best fit: $E_{ca}^\prime,\, \alpha = %i,\, %.3f$'%(Eij_grain[1],alpha), ], bbox_to_anchor=(1,1.175), handletextpad=0.1, frameon=False)
 ax2.text(alpha, Eca*0.7, 'Best fit', color='w', ha='center', va='top')
 sfplt.panellabel(ax2, 2, r'\textbf{a}', frameon=False, bbox=(-0.24,1.175), fontsize=FSLBL)

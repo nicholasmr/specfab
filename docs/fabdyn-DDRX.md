@@ -67,7 +67,7 @@ where ${\bf M_{\mathrm{DDRX}}}$ is given analytically in [Rathmann and Lilien (2
 
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/fabric-evolution/animation-DDRX.gif){: style="width:610px"}
 
-### Code example
+### 📝 Code example
 
 ```python
 --8<-- "docs/snippets/fabdyn-DDRX.py"

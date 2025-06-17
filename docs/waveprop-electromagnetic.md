@@ -47,7 +47,7 @@ $$
 
 where $\langle {\bf c}^2 \rangle$ is the [second-order structure tensor](cpo-structuretensors.md).
 
-### Code example
+### 📝 Code example
 
 Experimental, bug reports are welcome.
 

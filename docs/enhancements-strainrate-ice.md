@@ -14,7 +14,7 @@ The effect of choosing different $E_{ca}'$ and $\alpha$ (left panel) on the eige
 
 Clearly, there is a trade-off between how shear enhanced ($E_{mt}$) and how hard for axial compression ($E_{mm}$) the model allows a unidirectional CPO to be.
     
-###Code example
+### 📝 Code example
 
 The below code shows how to calculate $E_{ij}$ given ${\bf a}^{(4)}$ (or the state vector $\bf s$) and a set of grain parameters.
 
