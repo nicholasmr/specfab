@@ -303,6 +303,12 @@ leg = plt.legend(bbox_to_anchor=(1.43,1.02), title=r'{\bf Observations}', title_
 leg.get_frame().set_linewidth(0.7);
 ax.add_artist(legend_modellines)
 
+xt = np.arange(-5,5,0.25)
+ax.set_xticks(xt[::4])
+ax.set_xticks(xt, minor=True)
+ax.set_yticks(xt[::4])
+ax.set_yticks(xt, minor=True)
+
 plt.xlim(xlims)
 plt.ylim(ylims)
 

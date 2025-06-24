@@ -119,6 +119,12 @@ leg = plt.legend(loc=2, fontsize=FSLEG, frameon=False, ncol=1, **legkwargs);
 
 ### Limits
 
+xt = np.arange(-5,5,0.25)
+ax.set_xticks(xt[::4])
+ax.set_xticks(xt, minor=True)
+ax.set_yticks(xt[::4])
+ax.set_yticks(xt, minor=True)
+
 plt.xlim(xlims)
 plt.ylim(ylims)
 

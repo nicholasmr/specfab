@@ -160,6 +160,12 @@ plt.ylabel(r'$\hat{n}_4^0$')
 legkwargs = {'handlelength':1.4, 'framealpha':1.0, 'fancybox':False, 'columnspacing': 0.5, 'handletextpad':0.4, 'borderpad':0.37, 'edgecolor':'k'}
 leg = plt.legend(loc=2, fontsize=FSLEG, frameon=False, ncol=2, **legkwargs); 
 
+xt = np.arange(-5,5,0.25)
+ax.set_xticks(xt[::4])
+ax.set_xticks(xt, minor=True)
+ax.set_yticks(xt[::4])
+ax.set_yticks(xt, minor=True)
+
 plt.xlim(xlims)
 plt.ylim(ylims)
 

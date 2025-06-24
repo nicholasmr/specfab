@@ -1,4 +1,4 @@
-# Steady SSA CPO field
+# Eulerian CPO field
 
 If the velocity field ${\bf u}({\bf{x}},t)$ and CPO field ${\bf s}({\bf{x}},t)$ can be assumed steady, CPO evolution reduces to a high-dimensional boundary value problem in ${\bf s}({\bf{x}},t)$ that can easily be solved using e.g. the finite element method. 
 
