@@ -1,5 +1,5 @@
 """
-Modeled CPO profile of the GRIP ice core, Greenland
+Modeled CPO evolution for a SSA parcel over Pine Island Glacier, Antarctica
 """
 
 import numpy as np

@@ -90,7 +90,7 @@
               <ul class="current">
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Lagrangian CPO parcel</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#constant-conditions">Constant conditions</a>
+    <li class="toctree-l2"><a class="reference internal" href="#constant-thermomechanical-conditions">Constant thermomechanical conditions</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#ice-core-cpos">Ice core CPOs</a>
         <ul>
@@ -98,7 +98,7 @@
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#ssa-parcel">SSA parcel</a>
+    <li class="toctree-l2"><a class="reference internal" href="#ssa-column">SSA column</a>
     </li>
     </ul>
                   </li>
@@ -147,12 +147,13 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="lagrangian-cpo-parcel">Lagrangian CPO parcel</h1>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/modes-strain/lagrangian-parcel-trajectory-bg.png#center" style="width:400px" /> </p>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/modes-strain/lagrangian-parcel-trajectory.png#center" style="width:380px" /> </p>
 <p>A Lagrangian parcel refers to a small, moving material volume that is followed through time as it flows within e.g. a glacier or ice sheet, unlike the <a href="../gallery-Eulerian-CPO-field/">Eulerian perspective</a> which focuses on fixed locations in space. 
 A Lagrangian description is well-suited for studying CPO evolution along a flow line <span class="arithmatex">\({\bf x}(t)\)</span> if the thermomechanical background conditions are (approximately) steady; that is, the velocity, temperature, and stress fields are constant in time, <em>though not necessarily in space</em>.
 By treating each parcel as a discrete entity with its own microstructural state that updates with time, a Lagrangian parcel model is a particularly simply way to estimate CPO evolution and to calculate CPO-induced quantities along a flow line, such as mechanical or dielectric anisotropy. </p>
 <p>Below, some examples are given on how to model CPO evolution of a Lagrangian parcel relevant to glacier ice.</p>
-<h2 id="constant-conditions">Constant conditions</h2>
+<hr />
+<h2 id="constant-thermomechanical-conditions">Constant thermomechanical conditions</h2>
 <p><em>Specfab</em> includes a high-level integrator for calculating the CPO evolution of a Lagrangian parcel subject to a spatio-temporally constant strain-rate, stress and temperature.
 The following code illustrates how to use it, which relies on specifying the kinematic mode of deformation in terms of the <code>DK</code> object.</p>
 <pre><code class="language-python">import numpy as np
@@ -206,9 +207,11 @@ ugrad (3,3):      Velocity gradient
 
 strain = np.array([sf.F_to_strain(Fi[nn]) for nn in np.arange(Nt)]) # strain tensor
 </code></pre>
+<hr />
 <h2 id="ice-core-cpos">Ice core CPOs</h2>
+<div style="float: left; width: 60%;">
 <p>A Lagrangian approach is well-suited for modelling the vertical CPO profile at ice sheet domes and divides. 
-Assuming, for example, the classical Nye model of an ice divide of height <span class="arithmatex">\(H\)</span> (no basal melt, constant rate of thinning, a constant accumulation rate <span class="arithmatex">\(a\)</span>), the <a href="../deformation-kinematics/">velocity gradient</a> is constant and equal to </p>
+Assuming e.g. the classical Nye model of an ice divide of height <span class="arithmatex">\(H\)</span> (no basal melt, constant rate of thinning, a constant accumulation rate <span class="arithmatex">\(a\)</span>), the <a href="../deformation-kinematics/">velocity gradient</a> is constant and equal to </p>
 <div class="arithmatex">\[
 \nabla {\bf u} = 
 -\frac{1}{\tau}
@@ -219,14 +222,22 @@ Assuming, for example, the classical Nye model of an ice divide of height <span 
 \end{bmatrix}
 ,
 \]</div>
-<p>where <span class="arithmatex">\(q=0\)</span> for a axis-symmetric dome and <span class="arithmatex">\(q=\pm 1\)</span> for a divide aligned with the <span class="arithmatex">\(x\)</span> or <span class="arithmatex">\(y\)</span> direction, and the <span class="arithmatex">\(e\)</span>-folding time <span class="arithmatex">\(\tau\)</span> is </p>
+<p>where <span class="arithmatex">\(q=0\)</span> for a axis-symmetric dome and <span class="arithmatex">\(q=\pm 1\)</span> for a divide aligned with the <span class="arithmatex">\(x\)</span> or <span class="arithmatex">\(y\)</span> direction. 
+The <span class="arithmatex">\(e\)</span>-folding time <span class="arithmatex">\(\tau\)</span> is a function of the ice-equivalent accumulation rate and divide thickness: </p>
 <div class="arithmatex">\[    
 \tau = \frac{a}{H}.
 \]</div>
+<p>Depending on whether temperatures are large enough to <a href="../fabdyn-DDRX/">activate DDRX</a> or not, the temperature profile must be prescribed, too. </p>
+</div>
+<div style="float: right;width: 2%;"></div>
+<div style="float: right;width: 38%;">
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation/divide-parcel.png" style="width:250px" /> </p>
+</div>
+<div style="clear: both;"></div>
 <h3 id="code-example">📝 Code example</h3>
-<p>The example shows how to model the CPO profile of the GRIP ice core, Greenland:</p>
+<p>The below example shows how to model the CPO profile of the GRIP ice core, Greenland:</p>
 <pre><code class="language-python">&quot;&quot;&quot;
-Modeled CPO profile of GRIP ice core, Greenland
+Modeled CPO profile of the GRIP ice core, Greenland
 &quot;&quot;&quot;
 
 import numpy as np
@@ -362,8 +373,12 @@ ax.scatter(df['lam3'].to_numpy(), zi, edgecolor=c3, **kw)
 plt.savefig('GRIP.png', dpi=175, pad_inches=0.1, bbox_inches='tight')
 </code></pre>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/snippets/Lagrangian-CPO-parcel/GRIP.png#center" style="width:400px" /> </p>
-<h2 id="ssa-parcel">SSA parcel</h2>
-<p><strong>To be documented...</strong></p>
+<hr />
+<h2 id="ssa-column">SSA column</h2>
+<p>If the Shallow Shelf/Stream Approximation (SSA) is applicable, velocities can be assumed depth constant (no vertical shearing). 
+In this case, a <a href="../gallery-Eulerian-CPO-field/">depth-average treatment of CPO evolution</a> transforms the Lagrangian parcel model into a Lagrangian <em>column</em> model. 
+This generalizes the above parcel model, since the velocity gradient, stress and temperature fields can no longer be assumed constant but depend on the column position <span class="arithmatex">\({\bf x}(t)=[x(t),y(t)]\)</span>.</p>
+<p>🚧 <em>Documentation not finished.</em></p>
               
             </div>
           </div><footer>
