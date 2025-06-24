@@ -5,7 +5,7 @@ Example of steady state SSA fabric (CPO) solver for Pine Island Glacier, Antarct
 import numpy as np
 from specfabpy.fenics.steadyCPO import steadyCPO
 
-SOLVE = False # Solve problem (True) or only plot results (False)?
+SOLVE = True # Solve problem (True) or only plot results (False)?
 
 """
 Model domain

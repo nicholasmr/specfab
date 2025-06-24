@@ -1,6 +1,6 @@
 # Lagrangian CPO parcel
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/modes-strain/lagrangian-parcel-trajectory.png#center){: style="width:400px"} 
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/modes-strain/lagrangian-parcel-trajectory-bg.png#center){: style="width:400px"} 
 
 A Lagrangian parcel refers to a small, moving material volume that is followed through time as it flows within e.g. a glacier or ice sheet, unlike the [Eulerian perspective](gallery-Eulerian-CPO-field.md) which focuses on fixed locations in space. 
 A Lagrangian description is well-suited for studying CPO evolution along a flow line ${\bf x}(t)$ if the thermomechanical background conditions are (approximately) steady; that is, the velocity, temperature, and stress fields are constant in time, *though not necessarily in space*.
@@ -19,6 +19,7 @@ The following code illustrates how to use it, which relies on specifying the kin
 
 ## Ice core CPOs
 
+/// html | div[style='float: left; width: 60%;']
 A Lagrangian approach is well-suited for modelling the vertical CPO profile at ice sheet domes and divides. 
 Assuming, for example, the classical Nye model of an ice divide of height $H$ (no basal melt, constant rate of thinning, a constant accumulation rate $a$), the [velocity gradient](deformation-kinematics.md) is constant and equal to 
 
@@ -38,6 +39,16 @@ where $q=0$ for a axis-symmetric dome and $q=\pm 1$ for a divide aligned with th
 $$    
 \tau = \frac{a}{H}.
 $$
+///
+
+/// html | div[style='float: right;width: 40%;']
+[markdown here]
+///
+
+/// html | div[style='clear: both;']
+///
+
+
 
 ###📝 Code example
 The example shows how to model the CPO profile of the GRIP ice core, Greenland:
@@ -46,8 +57,11 @@ The example shows how to model the CPO profile of the GRIP ice core, Greenland:
 --8<-- "docs/snippets/Lagrangian-CPO-parcel/GRIP.py"
 ```
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/snippets/Lagrangian-CPO-parcel/GRIP.py#center){: style="width:300px"} 
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/snippets/Lagrangian-CPO-parcel/GRIP.png#center){: style="width:400px"} 
 
-## SSA parcel
+## SSA column
 
-**To be documented...**
+If the Shallow Shelf/Stream Approximation (SSA) is applicable, velocities can be assumed depth constant (no vertical shearing). 
+In this case, a [depth-average treatment of CPO evolution](gallery-Eulerian-CPO-field.md) transforms the Lagrangian parcel model into a Lagrangian *column* model. 
+This generalizes the above parcel model, since the velocity gradient, stress and temperature fields can no longer be assumed constant but depend on the column position ${\bf x}(t)=[x(t),y(t)]$.
+

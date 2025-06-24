@@ -1,5 +1,5 @@
 """
-Modeled CPO profile of GRIP ice core, Greenland
+Modeled CPO profile of the GRIP ice core, Greenland
 """
 
 import numpy as np

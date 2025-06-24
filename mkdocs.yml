@@ -21,10 +21,10 @@ nav:
         - Elastic: waveprop-elastic.md
         - Electromagnetic: waveprop-electromagnetic.md
     - '🖼️ Application Gallery': 
-        - Steady SSA CPO field: gallery-SSA-fabric-solver.md
+        - Lagrangian CPO parcel: gallery-Lagrangian-CPO-parcel.md
+        - Eulerian CPO field: gallery-Eulerian-CPO-field.md
         - Inferring CPO from radar: gallery-CPO-from-radar.md
-        - Coupling flow and CPO: gallery-CPO-flow-coupling.md
-        - Lagrangian parcel model: gallery-Lagrangian-parcel.md
+        - Coupling CPO and flow: gallery-CPO-flow-coupling.md
     - '🧩 Miscellaneous': 
         - Deformation kinematics: deformation-kinematics.md
         - Plot CPO: cpo-plot.md
@@ -50,6 +50,7 @@ markdown_extensions:
         pygments_lang_class: true
     - pymdownx.inlinehilite
     - pymdownx.snippets
+    - pymdownx.blocks.html
 #    - pymdownx.superfences
 
 extra_javascript:
