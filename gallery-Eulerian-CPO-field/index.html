@@ -5,15 +5,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Steady SSA CPO field - specfab documentation</title>
+    <title>Eulerian CPO field - specfab documentation</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Steady SSA CPO field";
-        var mkdocs_page_input_path = "gallery-SSA-fabric-solver.md";
+        var mkdocs_page_name = "Eulerian CPO field";
+        var mkdocs_page_input_path = "gallery-Eulerian-CPO-field.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -88,7 +88,9 @@
               </ul>
               <p class="caption"><span class="caption-text">🖼️ Application Gallery</span></p>
               <ul class="current">
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Steady SSA CPO field</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-Lagrangian-CPO-parcel/">Lagrangian CPO parcel</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Eulerian CPO field</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#closure">Closure</a>
     </li>
@@ -100,9 +102,7 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../gallery-CPO-from-radar/">Inferring CPO from radar</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../gallery-CPO-flow-coupling/">Coupling flow and CPO</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../gallery-Lagrangian-parcel/">Lagrangian parcel model</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../gallery-CPO-flow-coupling/">Coupling CPO and flow</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">🧩 Miscellaneous</span></p>
@@ -133,7 +133,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
           <li>🖼️ Application Gallery &raquo;</li>
-      <li>Steady SSA CPO field</li>
+      <li>Eulerian CPO field</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -142,7 +142,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="steady-ssa-cpo-field">Steady SSA CPO field</h1>
+                <h1 id="eulerian-cpo-field">Eulerian CPO field</h1>
 <p>If the velocity field <span class="arithmatex">\({\bf u}({\bf{x}},t)\)</span> and CPO field <span class="arithmatex">\({\bf s}({\bf{x}},t)\)</span> can be assumed steady, CPO evolution reduces to a high-dimensional boundary value problem in <span class="arithmatex">\({\bf s}({\bf{x}},t)\)</span> that can easily be solved using e.g. the finite element method. </p>
 <p>When considering the flow glacier ice, it is common to simplify the problem by invoking the Shallow Shelf Approximation (SSA), a depth-integrated version of the full Stokes equations. 
 This approximation conveniently reduces the problem to a two-dimensional horizontal, membrane-like flow with negligible vertical shear. </p>
@@ -237,6 +237,8 @@ Example of steady state SSA fabric (CPO) solver for Pine Island Glacier, Antarct
 import numpy as np
 from specfabpy.fenics.steadyCPO import steadyCPO
 
+SOLVE = True # Solve problem (True) or only plot results (False)?
+
 &quot;&quot;&quot;
 Model domain
 &quot;&quot;&quot;
@@ -253,7 +255,7 @@ domain = dict(
 scpo = steadyCPO(domain)
 
 ### Generate mesh and interpolate ice velocities and ice geometry onto mesh
-scpo.preprocess() # Once run, this can be outcommented
+if SOLVE: scpo.preprocess()
 
 &quot;&quot;&quot;
 Steady CPO problem
@@ -303,7 +305,7 @@ numerics = dict(
 )
 
 ### Run the solver and dump solution (may take a few minutes depending on problem size)
-scpo.solve(problem, numerics) # Once run, this can be outcommented
+if SOLVE: scpo.solve(problem, numerics)
 
 &quot;&quot;&quot;
 Plot results
@@ -324,9 +326,13 @@ ms2myr = 3.17098e+8
 m2km = 1e-3
 mapscale = m2km # x and y axis scale
 
-def newfig(boundaries=True, floating=True, mesh=False, bgcolor='0.85', figsize=(3,3)):
+def newfig(probname=None, boundaries=True, floating=True, mesh=False, bgcolor='0.85', figsize=(3,3)):
     fig = plt.figure(figsize=figsize)
     ax = plt.subplot(111)
+
+    if probname is not None: 
+        ax.text(-1400, -400, r'\it %s'%(probname), ha='center')
+
     legh, legt = [], []
     if bgcolor is not None: 
         x0, x1 = mapscale*(scpo.x0-scpo.dx), mapscale*(scpo.x1+scpo.dx)
@@ -336,7 +342,7 @@ def newfig(boundaries=True, floating=True, mesh=False, bgcolor='0.85', figsize=(
         ax.triplot(triang, lw=0.075, color='0.5', alpha=0.8, zorder=10)
     if boundaries:
         coords, *_ = scpo.bmesh(problem['bcs'])
-        colors = ['cyan', 'magenta', 'yellow']
+        colors = ['0.4', 'magenta', 'yellow']
         markers = ['s',]*len(colors)
         for ii, (xb, yb) in enumerate(coords):
             ax.scatter(xb*mapscale, yb*mapscale, c=colors[ii], marker=markers[ii], s=3, zorder=12, clip_on=False)
@@ -386,7 +392,7 @@ plt.savefig('%s-epsE.png'%(domain['name']), **kw_save)
 
 ### Delta lambda (horizontal eigenvalue difference)
 
-fig, ax = newfig()
+fig, ax = newfig(probname=problem['name'])
 lvls = np.arange(0, 0.8+.01, 0.1)
 dlam = abs(lami[:,0] - lami[:,1]) # eigenvalues 1 and 2 are the largest and smallest in-model-plane eigenvalues
 cs = ax.tricontourf(triang, dlam, levels=lvls, extend='max', cmap='Blues')
@@ -410,7 +416,7 @@ plt.savefig('%s-%s-dlam.png'%(domain['name'], problem['name']), **kw_save)
 
 ### lambda_z (vertical eigenvalue)
 
-fig, ax = newfig()
+fig, ax = newfig(probname=problem['name'])
 lvls = np.arange(0, 0.8+.01, 0.1)
 lamz = lami[:,2] # eigenvalue 3 is the out-of-model-plane (z) eigenvalue
 cs = ax.tricontourf(triang, lamz, levels=lvls, extend='max', cmap='RdPu')
@@ -420,7 +426,7 @@ plt.savefig('%s-%s-lamz.png'%(domain['name'], problem['name']), **kw_save)
 
 ### E (CAFFE)
 
-fig, ax = newfig()
+fig, ax = newfig(probname=problem['name'])
 lvls = np.logspace(-1, 1, 17)
 cs = ax.tricontourf(triang, E_CAFFE, levels=lvls, norm=colors.LogNorm(vmin=lvls[0], vmax=lvls[-1]), extend='both', cmap='PuOr_r')
 hcb = plt.colorbar(cs, cax=newcax(ax))
@@ -434,7 +440,7 @@ plt.savefig('%s-%s-E.png'%(domain['name'], problem['name']), **kw_save)
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../waveprop-electromagnetic/" class="btn btn-neutral float-left" title="Electromagnetic"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../gallery-Lagrangian-CPO-parcel/" class="btn btn-neutral float-left" title="Lagrangian CPO parcel"><span class="icon icon-circle-arrow-left"></span> Previous</a>
         <a href="../gallery-CPO-from-radar/" class="btn btn-neutral float-right" title="Inferring CPO from radar">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
@@ -458,7 +464,7 @@ plt.savefig('%s-%s-E.png'%(domain['name'], problem['name']), **kw_save)
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../waveprop-electromagnetic/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../gallery-Lagrangian-CPO-parcel/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
       <span><a href="../gallery-CPO-from-radar/" style="color: #fcfcfc">Next &raquo;</a></span>

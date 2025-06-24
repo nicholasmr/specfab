@@ -5,6 +5,8 @@ Example of steady state SSA fabric (CPO) solver for Pine Island Glacier, Antarct
 import numpy as np
 from specfabpy.fenics.steadyCPO import steadyCPO
 
+SOLVE = True # Solve problem (True) or only plot results (False)?
+
 """
 Model domain
 """
@@ -21,7 +23,7 @@ domain = dict(
 scpo = steadyCPO(domain)
 
 ### Generate mesh and interpolate ice velocities and ice geometry onto mesh
-scpo.preprocess() # Once run, this can be outcommented
+if SOLVE: scpo.preprocess()
 
 """
 Steady CPO problem
@@ -71,7 +73,7 @@ numerics = dict(
 )
 
 ### Run the solver and dump solution (may take a few minutes depending on problem size)
-scpo.solve(problem, numerics) # Once run, this can be outcommented
+if SOLVE: scpo.solve(problem, numerics)
 
 """
 Plot results
@@ -92,9 +94,13 @@ ms2myr = 3.17098e+8
 m2km = 1e-3
 mapscale = m2km # x and y axis scale
 
-def newfig(boundaries=True, floating=True, mesh=False, bgcolor='0.85', figsize=(3,3)):
+def newfig(probname=None, boundaries=True, floating=True, mesh=False, bgcolor='0.85', figsize=(3,3)):
     fig = plt.figure(figsize=figsize)
     ax = plt.subplot(111)
+    
+    if probname is not None: 
+        ax.text(-1400, -400, r'\it %s'%(probname), ha='center')
+    
     legh, legt = [], []
     if bgcolor is not None: 
         x0, x1 = mapscale*(scpo.x0-scpo.dx), mapscale*(scpo.x1+scpo.dx)
@@ -104,7 +110,7 @@ def newfig(boundaries=True, floating=True, mesh=False, bgcolor='0.85', figsize=(
         ax.triplot(triang, lw=0.075, color='0.5', alpha=0.8, zorder=10)
     if boundaries:
         coords, *_ = scpo.bmesh(problem['bcs'])
-        colors = ['cyan', 'magenta', 'yellow']
+        colors = ['0.4', 'magenta', 'yellow']
         markers = ['s',]*len(colors)
         for ii, (xb, yb) in enumerate(coords):
             ax.scatter(xb*mapscale, yb*mapscale, c=colors[ii], marker=markers[ii], s=3, zorder=12, clip_on=False)
@@ -154,7 +160,7 @@ plt.savefig('%s-epsE.png'%(domain['name']), **kw_save)
 
 ### Delta lambda (horizontal eigenvalue difference)
 
-fig, ax = newfig()
+fig, ax = newfig(probname=problem['name'])
 lvls = np.arange(0, 0.8+.01, 0.1)
 dlam = abs(lami[:,0] - lami[:,1]) # eigenvalues 1 and 2 are the largest and smallest in-model-plane eigenvalues
 cs = ax.tricontourf(triang, dlam, levels=lvls, extend='max', cmap='Blues')
@@ -178,7 +184,7 @@ plt.savefig('%s-%s-dlam.png'%(domain['name'], problem['name']), **kw_save)
 
 ### lambda_z (vertical eigenvalue)
 
-fig, ax = newfig()
+fig, ax = newfig(probname=problem['name'])
 lvls = np.arange(0, 0.8+.01, 0.1)
 lamz = lami[:,2] # eigenvalue 3 is the out-of-model-plane (z) eigenvalue
 cs = ax.tricontourf(triang, lamz, levels=lvls, extend='max', cmap='RdPu')
@@ -188,7 +194,7 @@ plt.savefig('%s-%s-lamz.png'%(domain['name'], problem['name']), **kw_save)
 
 ### E (CAFFE)
 
-fig, ax = newfig()
+fig, ax = newfig(probname=problem['name'])
 lvls = np.logspace(-1, 1, 17)
 cs = ax.tricontourf(triang, E_CAFFE, levels=lvls, norm=colors.LogNorm(vmin=lvls[0], vmax=lvls[-1]), extend='both', cmap='PuOr_r')
 hcb = plt.colorbar(cs, cax=newcax(ax))

@@ -5,7 +5,7 @@ from specfabpy import integrator as sfint
 L = 12 # expansion series truncation
 lm, nlm_len = sf.init(L) 
 
-Nt = 200 # number of integration time steps for below mode of deformation (MOD)
+Nt = 200 # number of integration time steps taken
 nlm = np.zeros((Nt+1,nlm_len), dtype=np.complex64) # expansion coefficients
 
 ### Pure shear
@@ -30,21 +30,21 @@ DK = dict(type='ps', q=q, axis=axis, tau=tau) # deformation kinematics
 kw_dyn = dict(
     iota   = 1,    # plastic spin strength (default: iota=1 for deck-of-cards behaviour)
     nu     = 1,    # multiplicative factor for default regularization strength (default: nu=1)
-    Gamma0 = None, # DDRX magnitude (None = disabled)
+    Gamma0 = None, # DDRX magnitude (None = disabled), assumes stress is coaxial to strain rate
     Lambda = None, # CDRX magnitude (None = disabled)
 )
 
-nlm[:,:], F, time, ugrad = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, **kw_dyn)
+nlm[:,:], Fi, ti, ugrad = sfint.lagrangianparcel(sf, DK, strain_target, Nt=Nt, **kw_dyn)
 
 """
 Outputs are:
 ------------
 nlm (Nt,nlm_len): Harmonic coefficients at each time step
-F (Nt,3,3):       Deformation gradient tensor at each time step
-time (Nt):        Total time at each time step 
+Fi (Nt,3,3):      Deformation gradient tensor at each time step
+ti (Nt):          Total time at each time step 
 ugrad (3,3):      Velocity gradient
 """
 
 ### Auxiliary
 
-strain_ij = np.array([sf.F_to_strain(F[nn,:,:]) for nn in np.arange(Nt)]) # full strain tensor
+strain = np.array([sf.F_to_strain(Fi[nn]) for nn in np.arange(Nt)]) # strain tensor
