@@ -181,9 +181,14 @@ Elastic P and S plan-wave velocities, permitted in a polycrystal with an arbitra
 </div>
 <hr />
 <h2 id="glacier-ice">Glacier ice</h2>
+<div style="float: left; width: 30%; text-align: center;">
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/monoice-elastic.png" style="width:150px" /></p>
+</div>
+<div style="float: right; width: 70%;">
 <p>If ice grains are approximated as transversely isotropic, their elastic behaviour can be modelled using the <a href="../constitutive-elastic/">transversely isotropic elastic constitutive equation</a>.
 This requires specifying the grain elastic parameters <span class="arithmatex">\(\lambda'\)</span>, <span class="arithmatex">\(\mu'\)</span>, <span class="arithmatex">\(\hat{\lambda}'\)</span>, <span class="arithmatex">\(\hat{\mu}'\)</span>, <span class="arithmatex">\(\hat{\gamma}'\)</span>, and the Voigt&mdash;Reuss weight <span class="arithmatex">\(\alpha\)</span>.</p>
+</div>
+<div style="clear: both;"></div>
 <h3 id="code-example">📝 Code example</h3>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfab as sf
@@ -211,9 +216,14 @@ Vi = sf.Vi_elastic_tranisotropic(nlm, alpha, Lame_grain, rho, theta,phi) # phase
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/S2-maps/S2-vi.gif" style="width:660px" /></p>
 <hr />
 <h2 id="olivine">Olivine</h2>
+<div style="float: left; width: 35%; text-align: center;">
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/monooli-elastic-mi.png" style="width:200px" /> </p>
+</div>
+<div style="float: right; width: 65%;">
 <p>If olivine grains are approximated as orthotropic, their elastic behaviour can be modelled using the <a href="../constitutive-elastic/">orthotropic elastic constitutive equation</a>.
 This requires specifying the grain elastic parameters <span class="arithmatex">\(\lambda_{ij}'\)</span>, <span class="arithmatex">\(\mu_{i}'\)</span>, and the Voigt&mdash;Reuss weight <span class="arithmatex">\(\alpha\)</span>.</p>
+</div>
+<div style="clear: both;"></div>
 <h3 id="code-example_1">📝 Code example</h3>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfab as sf
