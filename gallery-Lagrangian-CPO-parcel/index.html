@@ -98,7 +98,11 @@
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#ssa-column">SSA column</a>
+    <li class="toctree-l2"><a class="reference internal" href="#plug-flow">Plug flow</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#code-example_1">📝 Code example</a>
+    </li>
+        </ul>
     </li>
     </ul>
                   </li>
@@ -376,12 +380,14 @@ plt.savefig('GRIP.png', dpi=175, pad_inches=0.1, bbox_inches='tight')
 <p>The below figure shows the model result (lines) compared to observations (markers) from thin sections made on the GRIP ice core. </p>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/docs/snippets/Lagrangian-CPO-parcel/GRIP.png#center" style="width:400px" /> </p>
 <hr />
-<h2 id="ssa-column">SSA column</h2>
+<h2 id="plug-flow">Plug flow</h2>
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/SSA-fabric/lagrangian-column-trajectory.png#center" style="width:500px" /> </p>
-<p>If the Shallow Shelf/Stream Approximation (SSA) is applicable, velocities can be assumed depth constant (no vertical shearing). 
+<p>If the Shallow Shelf/Stream Approximation (SSA) is applicable, velocities can be assumed depth constant (i.e, <em>plug flow</em> without vertical shearing). 
 In this case, a <a href="../gallery-Eulerian-CPO-field/">depth-average treatment of CPO evolution</a> transforms the Lagrangian parcel model into a Lagrangian <em>column</em> model. 
 This generalizes the above parcel model, since the velocity gradient, stress and temperature fields can no longer be assumed constant but depend on the column position <span class="arithmatex">\({\bf x}(t)=[x(t),y(t)]\)</span>.</p>
 <p>🚧 <em>Documentation not finished.</em></p>
+<h3 id="code-example_1">📝 Code example</h3>
+<p>...</p>
               
             </div>
           </div><footer>
