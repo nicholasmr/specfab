@@ -190,19 +190,19 @@ $$
 S_i^2 = S_a^2 + \lambda_i \Delta S^2 
 $$
 when (eigen)polarized along the <span class="arithmatex">\({\bf x}\)</span>- and <span class="arithmatex">\({\bf y}\)</span>-axis (<span class="arithmatex">\(i=x,y\)</span>). Here, <span class="arithmatex">\(S_c=\mu\epsilon'_c\)</span> and <span class="arithmatex">\(S_a=\mu\epsilon'_a\)</span> are the monocrystal slownesses for waves polarized along the <span class="arithmatex">\({\bf c}\)</span> and <span class="arithmatex">\({\bf a}\)</span> axes of a single crystal, and <span class="arithmatex">\(\Delta S=S^2_c - S^2_a\)</span> is the squared monocrystal slowness anisotropy.</p>
-<p>The two-way travel time difference between eigenpolarized waves, propagating from the surface at height <span class="arithmatex">\(H\)</span> to a depth of <span class="arithmatex">\(z\)</span>, and back, is</p>
+<p>For a depth-varying fabric where <span class="arithmatex">\(\lambda_i=\lambda_i(z)\)</span>, the two-way travel time difference between eigenpolarized waves, propagating from the surface at height <span class="arithmatex">\(z=H\)</span> down to <span class="arithmatex">\(z=z_0\)</span>, and back, is</p>
 <p>$$
-\Delta t(z) = t_x(z) - t_y(z) = 2 \int_z^H S_x(z') \,\mathrm{d}{z'} - 2\int_z^H S_y(z') \,\mathrm{d}{z'} .
+\Delta t = t_x - t_y = 2 \int_H^{z_0} S_x(z) \,\mathrm{d}{z} - 2\int_H^{z_0} S_y(z) \,\mathrm{d}{z} .
 $$
 Expanding the depth-depedent slowness 
 $$
 S_i(z) = \sqrt{S_a^2 + \lambda_i(z) \Delta S^2 }
 $$
-around the isotropic state <span class="arithmatex">\(\lambda_i=1/3\)</span>, it can be shown that 
+around the isotropic state <span class="arithmatex">\(\lambda_i=1/3\)</span>, it can be shown that <span class="arithmatex">\(\Delta t\)</span> is to first order
 $$
-\Delta t(z) \simeq \frac{\Delta S^2}{S_{\mathrm{iso}}} \int_z^H (\lambda_x(z')-\lambda_y(z')) \,\mathrm{d}{z'}, 
+\Delta t \simeq \frac{\Delta S^2}{S_{\mathrm{iso}}} \int_H^{z_0} \Delta\lambda \,\mathrm{d}{z}, 
 $$
-where <span class="arithmatex">\(S_{\mathrm{iso}}=\sqrt{\mu(2\epsilon'_a+\epsilon'_c)/3}\)</span> is the slowness within an isotropic polycrystal. </p>
+where <span class="arithmatex">\(S_{\mathrm{iso}}=\sqrt{\mu(2\epsilon'_a+\epsilon'_c)/3}\)</span> is the slowness within an isotropic polycrystal, and <span class="arithmatex">\(\Delta\lambda=\lambda_x-\lambda_y\)</span> is the difference in horizontal eigenvalues.</p>
 <p>Thus, the travel time difference between vertically-propagating eigenpolarized waves is (approximately) proportional to the depth-integrated difference in horizontal eigenvalues.</p>
 <h3 id="code-example">📝 Code example</h3>
 <div style="float: left; width: 48%;">
