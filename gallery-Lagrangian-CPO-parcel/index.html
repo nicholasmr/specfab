@@ -92,13 +92,13 @@
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#ice-divide">Ice divide</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#code-example">📝 Code example</a>
+    <li class="toctree-l3"><a class="reference internal" href="#example-grip-ice-core">📝 Example: GRIP ice core</a>
     </li>
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#plug-flow">Plug flow</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#code-example_1">📝 Code example</a>
+    <li class="toctree-l3"><a class="reference internal" href="#example-pine-island-glacier">📝 Example: Pine Island Glacier</a>
     </li>
         </ul>
     </li>
@@ -181,7 +181,7 @@ The <span class="arithmatex">\(e\)</span>-folding time <span class="arithmatex">
 <p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/deformation/divide-parcel.png" style="width:300px" /> </p>
 </div>
 <div style="clear: both;"></div>
-<h3 id="code-example">📝 Code example</h3>
+<h3 id="example-grip-ice-core">📝 Example: GRIP ice core</h3>
 <div style="float: left; width: 38%;">
 <p>The following code example shows how to model the CPO profile of the GRIP ice core, Greenland. 
 Eigenvalues of other ice cores can be <a href="https://github.com/nicholasmr/specfab/tree/main/data/icecores">found here</a>.</p>
@@ -346,7 +346,7 @@ plt.savefig('GRIP-parcel.png', dpi=175, pad_inches=0.1, bbox_inches='tight')
 In this case, a <a href="../gallery-Eulerian-CPO-field/">depth-average treatment of CPO evolution</a> transforms the Lagrangian parcel model into a Lagrangian <em>column</em> model. 
 This generalizes the above parcel model, since the velocity gradient and stress fields can no longer be assumed constant but depend on the column position <span class="arithmatex">\({\bf x}(t)=[x(t),y(t)]\)</span>. </p>
 <p>Assuming that both velocity and CPO fields are steady, and neglecting surface accumulation that adds new (isotropic) ice, the problem can be solved by prescribing satellite-derived surface velocities and estimates of the ice temperature.  </p>
-<h3 id="code-example_1">📝 Code example</h3>
+<h3 id="example-pine-island-glacier">📝 Example: Pine Island Glacier</h3>
 <p>The following code example shows how to model CPO evolution along a flow line over the Pine Island Glacier, Antarctica. 
 The example relies on <em>MEaSUREs</em> ice velocities, assumes a constant temperature field, and asserts that the stress tensor can be approximated as coaxial to the strain rate tensor to close the DDRX problem. 
 If the ice mass is sufficiently cold, DDRX can be neglected altogether and only satellite-derived velocities are needed to close the problem. </p>

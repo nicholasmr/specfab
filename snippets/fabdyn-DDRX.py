@@ -8,21 +8,23 @@ lm, nlm_len = sf.init(8)
 
 S = np.diag([0.5, 0.5, -1.0]) # uniaxial compression along z-axis
 
-### Numerics 
+### Numerics
 
 Nt = 25   # number of time steps
 dt = 0.05 # time step size
 
-### Initial fabric state
+### Initial state
 
 nlm = np.zeros((Nt,nlm_len), dtype=np.complex64) # state vector
 nlm[0,0] = 1/np.sqrt(4*np.pi) # normalized isotropic state at t=0
 
 ### Euler integration
+# See Lagrangian parcel demo for more advanced (RK4) integration
 
 for tt in np.arange(1,Nt):
+
     nlm_prev = nlm[tt-1,:] # previous solution
     Gamma0 = 10            # DDRX rate factor magnitude
     M = Gamma0 * sf.M_DDRX(nlm_prev, S) # DDRX operator
-    nlm[tt,:] = nlm_prev + dt*np.matmul(M, nlm_prev) # euler step
+    nlm[tt,:] = nlm_prev + dt*np.matmul(M, nlm_prev) # Euler step
     nlm[tt,:] = sf.apply_bounds(nlm[tt,:]) # apply spectral bounds if needed

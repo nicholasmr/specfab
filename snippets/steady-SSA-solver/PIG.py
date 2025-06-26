@@ -110,7 +110,7 @@ def newfig(probname=None, boundaries=True, floating=True, mesh=False, bgcolor='0
         ax.triplot(triang, lw=0.075, color='0.5', alpha=0.8, zorder=10)
     if boundaries:
         coords, *_ = scpo.bmesh(problem['bcs'])
-        colors = ['0.4', 'magenta', 'yellow']
+        colors = ['0.3', 'deeppink', 'yellow']
         markers = ['s',]*len(colors)
         for ii, (xb, yb) in enumerate(coords):
             ax.scatter(xb*mapscale, yb*mapscale, c=colors[ii], marker=markers[ii], s=3, zorder=12, clip_on=False)

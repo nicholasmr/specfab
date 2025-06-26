@@ -89,11 +89,11 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#glacier-ice">Glacier ice</a>
         <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#travel-time-difference">Travel time difference</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="#code-example">📝 Code example</a>
     </li>
         </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#olivine">Olivine</a>
     </li>
     </ul>
                   </li>
@@ -179,7 +179,41 @@ In this case, the grain-averaged permitivity is simply </p>
 ,
 \]</div>
 <p>where <span class="arithmatex">\(\langle {\bf c}^2 \rangle\)</span> is the <a href="../cpo-structuretensors/">second-order structure tensor</a>.</p>
+<h3 id="travel-time-difference">Travel time difference</h3>
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/images/waveprop/radioglac.png" style="width:550px" /></p>
+<p>Radioglaciological field surveys are a popular approach for understanding the depth-averaged CPOs of ice sheets and glaciers. 
+Such surveys rely on the fact that orthogonally polarized radio waves travel at different speeds depending on the misalignment between wave polarization and the CPO principal axes (birefringence). 
+Thus, if travel-time delays can be measured accurately for orthogonally polarized waves, inferences about the CPOs  of glaciers and ice sheets can be made.</p>
+<p>To realize how, consider a frame where the CPO principal axes are aligned with the Cartesian coordinate system so that <span class="arithmatex">\(\langle {\bf c}^2 \rangle = \operatorname{diag}(\lambda_x,\lambda_y,\lambda_z)\)</span>. 
+It can be shown that two S-wave solutions exist for the above eigenvalue problem that have the distinct slownesses (inverse velocities) 
+$$
+S_i^2 = S_a^2 + \lambda_i \Delta S^2 
+$$
+when (eigen)polarized along the <span class="arithmatex">\({\bf x}\)</span>- and <span class="arithmatex">\({\bf y}\)</span>-axis (<span class="arithmatex">\(i=x,y\)</span>). Here, <span class="arithmatex">\(S_c=\mu\epsilon'_c\)</span> and <span class="arithmatex">\(S_a=\mu\epsilon'_a\)</span> are the monocrystal slownesses for waves polarized along the <span class="arithmatex">\({\bf c}\)</span> and <span class="arithmatex">\({\bf a}\)</span> axes of a single crystal, and <span class="arithmatex">\(\Delta S=S^2_c - S^2_a\)</span> is the squared monocrystal slowness anisotropy.</p>
+<p>The two-way travel time difference between eigenpolarized waves, propagating from the surface at height <span class="arithmatex">\(H\)</span> to a depth of <span class="arithmatex">\(z\)</span>, and back, is</p>
+<p>$$
+\Delta t(z) = t_x(z) - t_y(z) = 2 \int_z^H S_x(z') \,\mathrm{d}{z'} - 2\int_z^H S_y(z') \,\mathrm{d}{z'} .
+$$
+Expanding the depth-depedent slowness 
+$$
+S_i(z) = \sqrt{S_a^2 + \lambda_i(z) \Delta S^2 }
+$$
+around the isotropic state <span class="arithmatex">\(\lambda_i=1/3\)</span>, it can be shown that 
+$$
+\Delta t(z) \simeq \frac{\Delta S^2}{S_{\mathrm{iso}}} \int_z^H (\lambda_x(z')-\lambda_y(z')) \,\mathrm{d}{z'}, 
+$$
+where <span class="arithmatex">\(S_{\mathrm{iso}}=\sqrt{\mu(2\epsilon'_a+\epsilon'_c)/3}\)</span> is the slowness within an isotropic polycrystal. </p>
+<p>Thus, the travel time difference between vertically-propagating eigenpolarized waves is (approximately) proportional to the depth-integrated difference in horizontal eigenvalues.</p>
 <h3 id="code-example">📝 Code example</h3>
+<div style="float: left; width: 48%;">
+<p>A code example is given below of how to calculate EM wave velocities using <em>specfab</em>. 
+Notice that the problem depends on the <em>relative</em> permitivity and permeability, and that wave propagation is sensitive only the the lowest-order (coarsets degree) of CPO anisotropy, <span class="arithmatex">\(\langle {\bf c}^2 \rangle\)</span>.</p>
+<p>The animation to the right shows directional S-wave velocities for a CPO evolving under <a href="../deformation-kinematics/"><span class="arithmatex">\(xz\)</span> confined compression</a>, relative to an isotropic CPO, when subject to <a href="../fabdyn-LROT/">lattice rotation</a>.</p>
+</div>
+<div style="float: right; width: 50%;">
+<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/S2-maps/S2-vi-EM.gif" style="width:430px" /></p>
+</div>
+<div style="clear: both;"></div>
 <pre><code class="language-python">import numpy as np
 from specfabpy import specfab as sf
 lm, nlm_len = sf.init(4)
@@ -201,11 +235,14 @@ theta, phi = np.deg2rad([0,90,]), np.deg2rad([0,0,]) # theta=colatitude, phi=lon
 ### Calculate phase velocities
 Vi = sf.Vi_electromagnetic_tranisotropic(nlm, epsr_c, epsr_a, mur, theta,phi) # fast and slow phase velocities are V_S1=vi[0,:], V_S2=vi[1,:]
 </code></pre>
-<p>The below animation shows directional S-wave velocities for a CPO evolving under <a href="../deformation-kinematics/"><span class="arithmatex">\(xz\)</span> confined compression</a>, relative to an isotropic CPO, when subject to <a href="../fabdyn-LROT/">lattice rotation</a>.</p>
-<p><img alt="" src="https://raw.githubusercontent.com/nicholasmr/specfab/main/demo/cube-crush-animation/S2-maps/S2-vi-EM.gif" style="width:460px" /></p>
-<hr />
-<h2 id="olivine">Olivine</h2>
-<p>🚧 <em>Not yet supported.</em></p>
+<!--
+- - -
+
+## Olivine
+
+🚧 *Not yet supported.*
+
+-->
               
             </div>
           </div><footer>

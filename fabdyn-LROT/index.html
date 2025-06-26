@@ -227,14 +227,16 @@ W = (ugrad-np.transpose(ugrad))/2 # anti-symmetric part (spin tensor)
 Nt = 25   # number of time steps
 dt = 0.05 # time step size
 
-### Initial fabric state
+### Initial state
 
 nlm = np.zeros((Nt,nlm_len), dtype=np.complex64) # state vector
 nlm[0,0] = 1/np.sqrt(4*np.pi) # normalized isotropic state at t=0
 
 ### Euler integration
+# See Lagrangian parcel demo for more advanced (RK4) integration
 
 for tt in np.arange(1,Nt):
+
     nlm_prev = nlm[tt-1,:] # previous solution
     iota, zeta = 1, 0      # &quot;deck of cards&quot; behavior 
     M_LROT = sf.M_LROT(nlm_prev, D, W, iota, zeta) # lattice rotation operator
