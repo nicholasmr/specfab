@@ -37,7 +37,7 @@ class steadyCPOfancy(steadyCPO):
     yticks_minor = None
     
     kw_leg    = dict(bbox_to_anchor=(-0.07, 1.17), handletextpad=0.5, columnspacing=0.8, handlelength=1.6,)
-    color_bcs = ['c', '#f0027f'] # isotropic, free
+    color_bcs = ['0.3', 'deeppink'] # isotropic, free
     ls_bcs    = ['-', '--']
     label_bcs = ['Isotropic', 'Free']
     
@@ -104,7 +104,7 @@ class steadyCPOfancy(steadyCPO):
         self.savefig(4 if problem['name'] == 'LROT' else 5)
         
        
-    def plot_CPOs(self, ax, fab, onlymarkers=False, lvlmax=0.4, ROTATE_TO_XY=True, cnum='w'):
+    def plot_CPOs(self, ax, fab, onlymarkers=False, lvlmax=0.4, ROTATE_TO_XY=True, dfs=3, cnum='w'):
         geo, prj = sfplt.getprojection(rotation=-90, inclination=(0 if ROTATE_TO_XY else 90))
         for ii, (x,y) in enumerate(self.kw_MODF['xy']):
             if not onlymarkers:
@@ -121,7 +121,7 @@ class steadyCPOfancy(steadyCPO):
             peff = [pe.withStroke(linewidth=1.5, foreground='k')]
             if not onlymarkers:
                 axin.add_artist(AnchoredText(num, loc=2, prop=dict(color='k', size=FS+1.5), frameon=False, pad=0.3, bbox_to_anchor=self.kw_MODF['lbl_bbox'], bbox_transform=axin.transAxes))
-            ax.text(x,y, num, fontsize=FS+3, color='w', path_effects=peff, zorder=30, ha='center', va='center') 
+            ax.text(x,y, num, fontsize=FS+dfs, color='w', path_effects=peff, zorder=30, ha='center', va='center') 
 
     ###########
 
@@ -143,49 +143,97 @@ class steadyCPOfancy(steadyCPO):
         (coords, bmeshes) = self.bmesh()
         x, y = [], []
         for c in coords:
-            xy = c.T
-            tour, total_distance = self.tsp(xy)
-            xi = np.array([xy[i][0]  for i in tour])
-            yi = np.array([xy[i][1]  for i in tour])
-            x.append(xi)
-            y.append(yi)
+            xynew = self.reorder_coordinates(c.T)
+            x.append(xynew[:,0])
+            y.append(xynew[:,1])
+#            code.interact(local=locals())
+#            xy = c.T
+#            tour, total_distance = self.tsp(xy)
+#            xi = np.array([xy[i][0]  for i in tour])
+#            yi = np.array([xy[i][1]  for i in tour])
+#            xi = c[0,:]
+#            yi = c[1,:]
+#            x.append(xi)
+#            y.append(yi)
         return (x,y)
         
-    """
-    TSP for determining ordered list of boundary coordinates 
-    Code from https://www.askpython.com/python/examples/travelling-salesman-problem-python
-    """
+    def reorder_coordinates(self, coords):
     
-    def distance(self, city1, city2):
-      # Replace this with your distance calculation function (e.g., Euclidean distance)
-      x1, y1 = city1
-      x2, y2 = city2
-      return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
-     
-    def tsp(self, cities):
-      visited = [False] * len(cities)
-      current_city = 0
-     
-      tour = []
-      total_distance = 0
-     
-      for _ in range(len(cities)):
-        visited[current_city] = True
-        tour.append(current_city)
-     
-        next_city = None
-        min_distance = float('inf')  # Represents positive infinity
-     
-        for i in range(len(cities)):
-          if visited[i]:
-            continue
-     
-          d = self.distance(cities[current_city], cities[i])
-          if d < min_distance:
-            min_distance = d
-            next_city = i
-     
-        current_city = next_city
-        total_distance += min_distance
-     
-      return tour, total_distance
+        coords = np.array(coords)
+        n = len(coords)
+        visited = np.zeros(n, dtype=bool)
+        path = [0]
+        visited[0] = True
+
+        for _ in range(1, n):
+            last = path[-1]
+            dists = np.linalg.norm(coords - coords[last], axis=1)
+            dists[visited] = np.inf
+            next_point = np.argmin(dists)
+            path.append(next_point)
+            visited[next_point] = True
+
+        return self.roll_to_max_distance_endpoints(coords[path])
+        
+    def roll_to_max_distance_endpoints(self, coords):
+    
+        coords = np.array(coords)
+        n = len(coords)
+        
+        # Find the index pair with maximum distance
+        max_dist = -1
+        start_idx, end_idx = 0, 1
+        for i in range(n):
+            for j in range(i + 1, n):
+                dist = np.linalg.norm(coords[i] - coords[j])
+                if dist > max_dist:
+                    max_dist = dist
+                    start_idx, end_idx = i, j
+
+        # Try both rotations: start_idx → end_idx, or end_idx → start_idx (reversed)
+        rolled1 = np.roll(coords, -start_idx, axis=0)
+        rolled2 = np.roll(coords[::-1], -(n - 1 - start_idx), axis=0)
+
+        dist1 = np.linalg.norm(rolled1[0] - rolled1[-1])
+        dist2 = np.linalg.norm(rolled2[0] - rolled2[-1])
+
+        return rolled1 if dist1 >= dist2 else rolled2
+        
+#    """
+#    TSP for determining ordered list of boundary coordinates 
+#    Code from https://www.askpython.com/python/examples/travelling-salesman-problem-python
+#    """
+#        
+#    def distance(self, city1, city2):
+#      # Replace this with your distance calculation function (e.g., Euclidean distance)
+#      x1, y1 = city1
+#      x2, y2 = city2
+#      return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+#     
+#    def tsp(self, cities):
+#      visited = [False] * len(cities)
+#      current_city = 0
+#     
+#      tour = []
+#      total_distance = 0
+#     
+#      for _ in range(len(cities)):
+#        visited[current_city] = True
+#        tour.append(current_city)
+#     
+#        next_city = None
+#        min_distance = float('inf')  # Represents positive infinity
+#     
+#        for i in range(len(cities)):
+#          if visited[i]:
+#            continue
+#     
+#          d = self.distance(cities[current_city], cities[i])
+#          if d < min_distance:
+#            min_distance = d
+#            next_city = i
+#     
+#        current_city = next_city
+#        total_distance += min_distance
+#     
+#      return tour, total_distance

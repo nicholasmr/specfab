@@ -208,7 +208,8 @@ def discretize(nlm, lm, latres, lonres):
     nlmlen_from_lm = lm.shape[1]
     if nlmlen_from_nlm != nlmlen_from_lm: 
         nlmlen = np.amin([nlmlen_from_nlm,nlmlen_from_lm]) # pick smallest common range and continue (this is probably what the user wants)
-        warnings.warn('sfplt.discretize(): dimensions of nlm (%i) and lm (%i) do not match, setting nlm_len=%i'%(nlmlen_from_nlm, nlmlen_from_lm, nlmlen))
+        warnstr = 'sfplt.discretize(): dimensions of nlm (%i) and lm (%i) do not match, setting nlm_len=%i'%(nlmlen_from_nlm, nlmlen_from_lm, nlmlen)
+        warnings.warn(warnstr)
     else:
         nlmlen = nlmlen_from_nlm
         

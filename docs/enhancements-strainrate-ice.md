@@ -1,9 +1,14 @@
 # Ice viscous anisotropy
 
+/// html | div[style='float: left; width: 30%; text-align: center;']
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/monoice-viscous.png){: style="width:150px"}
-
+///
+/// html | div[style='float: right; width: 70%;']
 If ice grains are treated as transversely isotropic, the rheology of a single grain can be modeled as a [transversely isotropic power law](constitutive-viscoplastic.md).
 This requires specifying the grain eigenenhancements $E_{cc}'$ and $E_{ca}'$ and the power law exponent $n'$. 
+///
+/// html | div[style='clear: both;']
+///
 
 The grain parameters proposed by [Rathmann and Lilien (2021)](https://doi.org/10.1017/jog.2021.88) assume linear-viscous behavior of single crystals ($n'=1$) and promote the activation of basal glide by making that slip system soft compared to other systems: $E_{ca}' > 1$, whereas $E_{cc}'=1$. 
 This reduces the problem to picking $E_{ca}'$ and $\alpha$ (Taylor&mdash;Sachs homogenization weight), which [Rathmann and Lilien (2021)](https://doi.org/10.1017/jog.2021.88) determined by requiring that deformation tests on strong single-maximum CPOs (aligned grains) are approximately reproduced; that is, $E_{mt}=10$ and $E_{mm}=0.01$.

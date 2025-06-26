@@ -42,7 +42,7 @@ $$
 \Delta \lambda = \lambda_2 - \lambda_1,
 $$
 
-can be inferred from ice-penetrating radar, where ${\bf m}_1$ and ${\bf m}_2$ are the corresponding horizontal eigenvectors and eigenvalues are sorted such that $\lambda_1 \leq \lambda_2$.
+can be [inferred from ice-penetrating radar](waveprop-electromagnetic.md), where ${\bf m}_1$ and ${\bf m}_2$ are the corresponding horizontal eigenvectors and eigenvalues are sorted such that $\lambda_1 \leq \lambda_2$.
 It follows that the structure tensor, posed in its eigenframe (${\bf m}_1, {\bf m}_2, {\bf z}$), is
 
 $$

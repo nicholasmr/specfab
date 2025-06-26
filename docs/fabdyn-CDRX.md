@@ -1,9 +1,14 @@
 # Continous dynamic recrystallization (CDRX) 
 
+/// html | div[style='float: left; width: 25%; text-align: center;']
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/iceproc-CDRX.png){: style="width:120px"}
-
+///
+/// html | div[style='float: right; width: 75%;']
 Polygonization (rotation recrystallization, CDRX) accounts for the division of grains along internal sub-grain boundaries resulting from local strain incompatibilities. 
 In effect, CDRX reduces the average grain size upon grain division but does not necessarily change the CPO much ([Alley, 1992](https://doi.org/10.3189/S0022143000003658)). 
+///
+/// html | div[style='clear: both;']
+///
 
 Following [Gödert (2003)](https://doi.org/10.1007/s001610050095), CDRX can be modeled by approximating this effect as a Laplacian diffusive process on $S^2$:
 

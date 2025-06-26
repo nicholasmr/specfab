@@ -35,15 +35,21 @@ In this way:
 
 To be clear, $E_{ij}>1$ implies the material response is *softened* due to fabric (compared to an isotropic CPO), whereas $E_{ij}<1$ implies *hardening*.
 
-!!! note "Glacier ice"
+!!! note "Example: Glacier ice"
 
-    In the case of glacier ice with a strongly-developed preferred $c$-axis direction (*single maximum*)
-    
+    In the case of glacier ice with a strongly-developed preferred $c$-axis direction (*single maximum*; left figure below), $E_{ij}$ have been measured in lab tests of compression and shear along the preferred direction (right figure below): 
+
+    /// html | div[style='float: left; width: 50%;']
+    <br>
     ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/deck-of-cards/ice-cards-2.png){: style="width:370px"}
-    
-    $E_{ij}$ have been measured in lab tests of compression and shear along the preferred direction: 
-    
+    ///
+
+    /// html | div[style='float: right; width: 44%;']
     ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/deck-of-cards/ice-cards-VA.png){: style="width:350px"}
+    ///
+
+    /// html | div[style='clear: both;']
+    ///
 
 ## Eigenenhancements
 

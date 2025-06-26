@@ -36,6 +36,8 @@ class steadyCPO():
     bc_zsinglemax = 1
 
     c_floating = 'limegreen'
+    
+    kw_leg = dict(ncol=3, loc=1, bbox_to_anchor=(1,1.12), handlelength=1.2, fancybox=False, frameon=False)
 
     def __init__(self, domain):
     
@@ -157,9 +159,9 @@ class steadyCPO():
 
         ### Save FEM fields
 
-        print('*** Saving FEM fields to %s-inputs.h5'%(self.exname))
+        print('*** Saving FEM fields to %s-inp.h5'%(self.exname))
 
-        fout = '%s-inputs.h5'%(self.exname)
+        fout = '%s-inp.h5'%(self.exname)
         f = HDF5File(MPI.comm_world, fout, "w")
         f.write(u, "/u")
         f.write(umag, "/umag")
@@ -172,9 +174,9 @@ class steadyCPO():
         
         ### Save numpy fields
 
-        print('*** Saving numpy fields to %s-inputs.pkl'%(self.exname))
+        print('*** Saving numpy fields to %s-inp.pkl'%(self.exname))
 
-        fout = '%s-inputs.pkl'%(self.exname)
+        fout = '%s-inp.pkl'%(self.exname)
         with open(fout, 'wb') as handle:
             data = [coords,cells] + [F.compute_vertex_values(mesh) for F in (ux,uy,umag,epsE, S,B,H,mask)]
             pickle.dump(data, handle)
@@ -199,7 +201,7 @@ class steadyCPO():
         if Q is None: mesh,boundaries, Q,Q2,V, coords,cells = self.get_mesh()
         u,umag,epsE = Function(V), Function(Q2), Function(Q2)
         S,B,H,mask = Function(Q), Function(Q), Function(Q), Function(Q)
-        f = HDF5File(MPI.comm_world,'%s-inputs.h5'%(self.exname),'r')
+        f = HDF5File(MPI.comm_world,'%s-inp.h5'%(self.exname),'r')
         f.read(u, '/u')
         f.read(umag, '/umag')
         f.read(epsE, '/epsE')
@@ -213,7 +215,7 @@ class steadyCPO():
     def npinputs(self):
     
         #print('*** Loading numpy inputs')
-        with open('%s-inputs.pkl'%(self.exname), 'rb') as handle:
+        with open('%s-inp.pkl'%(self.exname), 'rb') as handle:
             return pickle.load(handle)
         
     """
@@ -224,7 +226,8 @@ class steadyCPO():
     
         isDDRX = len(np.shape(problem['T']))>0
         print(tabulate([['PROBLEM', 'LROT+ADVEC' if not isDDRX else 'LROT+DDRX+ADVEC'], 
-                        ['T',          'None' if not isDDRX else ','.join(['%.1f'%(_) for _ in problem['T']])], 
+                        ['T',          ','.join(['%.1f'%(_) for _ in problem['T']]) if isDDRX else 'None'], 
+                        ['A,Q (DDRX)', ','.join(['%.2e'%(_) for _ in problem['AQ_DDRX']]) if 'AQ_DDRX' in problem.keys() else 'None'], 
                         ['L',          numerics['L']], 
                         ['nu_orimul',  '%.2e'%(numerics['nu_orimul'])], 
                         ['nu_real',    '%.2e'%(numerics['nu_real'])], 
@@ -254,7 +257,7 @@ class steadyCPO():
         ### Solve steady SSA problem
         
         if not isDDRX: Gamma0 = None
-        else:          Gamma0 = [fab.Gamma0_Lilien23_lab(u, _+273.15) for _ in problem['T']] # list of DDRX rate factors used to gradually approach solution 
+        else:          Gamma0 = [fab.Gamma0(u, _+273.15, *problem['AQ_DDRX']) for _ in problem['T']] # list of DDRX rate factors used to gradually approach solution 
 
         S = sym(grad(u)) # approximation strain rate tensor (D) as coaxial to stress tensor (S)
         fab.solvesteady(u, S, iota=+1, Gamma0=Gamma0, nu_realspacemul=numerics['nu_realmul'], LROT_guess=True)
@@ -267,7 +270,7 @@ class steadyCPO():
             
         ### Save numpy solution
 
-        fout = '%s-solution-%s.pkl'%(self.exname, problem['name'])
+        fout = '%s-sol-%s.pkl'%(self.exname, problem['name'])
         print('*** Saving numpy solution to %s'%(fout))
         with open(fout, 'wb') as handle:
             data = (coords,cells, mi,lami,E)
@@ -275,7 +278,7 @@ class steadyCPO():
          
         ### Save FEM solution
         
-        fout = '%s-solution-%s.h5'%(self.exname, problem['name'])
+        fout = '%s-sol-%s.h5'%(self.exname, problem['name'])
         print('*** Saving FEM solution to %s'%(fout))
         f = HDF5File(MPI.comm_world, fout, "w")
         f.write(fab.s,"/s")
@@ -283,7 +286,7 @@ class steadyCPO():
         
     def npsolution(self, probname):
     
-        fout = '%s-solution-%s.pkl'%(self.exname, probname)
+        fout = '%s-sol-%s.pkl'%(self.exname, probname)
         with open(fout, 'rb') as handle:
             return pickle.load(handle)
        
@@ -292,7 +295,7 @@ class steadyCPO():
         if mesh is None: mesh, boundaries, *_ = self.get_mesh()
         self.fab = IceFabric(mesh, boundaries, L)
         s = Function(self.fab.S)
-        fout = '%s-solution-%s.h5'%(self.exname, probname)
+        fout = '%s-sol-%s.h5'%(self.exname, probname)
         f = HDF5File(MPI.comm_world,fout,"r")
         f.read(s,"/s")
         f.close()
@@ -331,44 +334,45 @@ class steadyCPO():
     Plotting
     """
 
-    def plot_inputs(self, figsize=(5,5), kw_vel={}, kw_epsE={}):
+    def plot_inputs(self, figsize=(5,5), boundaries=False, mesh=True, kw_vel={}, kw_epsE={}):
     
         self.set_inputs()
         
         fig, ax = self.newfig(figsize=figsize)
-        self.setupaxis(ax, boundaries=False, mesh=True)
+        legh, legt = self.setupaxis(ax, boundaries=boundaries, mesh=mesh)
+        if boundaries: ax.legend(legh, legt, **self.kw_leg)
         self.plot_velocities(ax, **kw_vel)
-        self.savefig(fig, '%s-vel.png'%(self.exname))
+        self.savefig(fig, '%s-inp-vel.png'%(self.exname))
         
         fig, ax = self.newfig(figsize=figsize)
-        self.setupaxis(ax, boundaries=False, mesh=True)
+        legh, legt = self.setupaxis(ax, boundaries=boundaries, mesh=mesh)
+        if boundaries: ax.legend(legh, legt, **self.kw_leg)
         self.plot_strainratemag(ax, **kw_epsE)
-        self.savefig(fig, '%s-epsE.png'%(self.exname))
+        self.savefig(fig, '%s-inp-epsE.png'%(self.exname))
       
-    def plot_results(self, problem, figsize=(5,5), kw_E={}, kw_dlam={}, kw_lamz={}):
+    def plot_results(self, problem, figsize=(5,5), boundaries=True, mesh=False, kw_E={}, kw_dlam={}, kw_lamz={}):
     
         self.set_inputs()
         self.set_solution(problem['name'])
-        kw_setupaxis = dict(boundaries=problem['bcs'])
-        kw_leg = dict(ncol=3, loc=1, bbox_to_anchor=(1,1.12), handlelength=1.2, fancybox=False, frameon=False)
+        kw_setupaxis = dict(boundaries=boundaries, mesh=mesh)
         
         fig, ax = self.newfig(figsize=figsize)
         legh, legt = self.setupaxis(ax, **kw_setupaxis)
-        ax.legend(legh, legt, **kw_leg)
+        ax.legend(legh, legt, **self.kw_leg)
         self.plot_E_CAFFE(ax, **kw_E)
-        self.savefig(fig, '%s-%s-E.png'%(self.exname, problem['name']))
+        self.savefig(fig, '%s-sol-%s-E.png'%(self.exname, problem['name']))
             
         fig, ax = self.newfig(figsize=figsize)
         legh, legt = self.setupaxis(ax, **kw_setupaxis)
-        ax.legend(legh, legt, **kw_leg)
+        ax.legend(legh, legt, **self.kw_leg)
         self.plot_dlam(ax, **kw_dlam)
-        self.savefig(fig, '%s-%s-dlam.png'%(self.exname, problem['name']))
+        self.savefig(fig, '%s-sol-%s-dlam.png'%(self.exname, problem['name']))
         
         fig, ax = self.newfig(figsize=figsize)
         legh, legt = self.setupaxis(ax, **kw_setupaxis)
-        ax.legend(legh, legt, **kw_leg)
+        ax.legend(legh, legt, **self.kw_leg)
         self.plot_lamz(ax, **kw_lamz)
-        self.savefig(fig, '%s-%s-lamz.png'%(self.exname, problem['name']))
+        self.savefig(fig, '%s-sol-%s-lamz.png'%(self.exname, problem['name']))
 
     def plot_generic(self, ax, F, kw_tcf=dict(), kw_cb=dict(), kw_cax=dict()):
 
@@ -469,7 +473,7 @@ class steadyCPO():
             
         if boundaries:
             coords, *_ = self.bmesh()
-            colors = ['cyan', 'magenta'] # , 'yellow', 'aquamarine']
+            colors = ['0.3', 'deeppink'] # , 'yellow', 'aquamarine']
             markers = ['s',]*len(colors)
             for ii, (xb, yb) in enumerate(coords):
                 ax.scatter(xb*self.mapscale, yb*self.mapscale, c=colors[ii], marker=markers[ii], s=3, zorder=12, clip_on=False)

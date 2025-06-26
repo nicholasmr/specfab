@@ -1,6 +1,15 @@
 ## Discontinous dynamic recrystallization (DDRX) 
 
+/// html | div[style='float: left; width: 25%; text-align: center;']
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/iceproc-DDRX.png){: style="width:120px"}
+///
+/// html | div[style='float: right; width: 75%;']
+Following [Placidi and others (2010)](https://doi.org/10.1007/s00161-009-0126-0), DDRX is modeled as a spontaneous mass decay&mdash;production process in orientation space $S^2$, intended to represent the combined effect of nucleation and grain boundary migration. 
+That is, mass is spontaneously exchanged between grains with different orientations depending on the local stress state, strain rate, and temperature, in a statistical sense. 
+///
+/// html | div[style='clear: both;']
+///
+
 
 Following [Placidi and others (2010)](https://doi.org/10.1007/s00161-009-0126-0), DDRX is modeled as a spontaneous mass decay&mdash;production process in orientation space $S^2$, intended to represent the combined effect of nucleation and grain boundary migration. 
 That is, mass is spontaneously exchanged between grains with different orientations depending on the local stress state, strain rate, and temperature, in a statistical sense. 
@@ -49,7 +58,7 @@ In this sense, $1/D$ can be understood as a parameterization of the dislocation 
 
 !!! note "Glacier ice"
 
-    The normalized decay&mdash;production rate is shown below for three different stress states:
+    The normalized decay&mdash;production rate is shown below for three different stress states in the case of glacier ice where ${\bf n} = {\bf c}$:
 
     ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/fabric-dynamics/fabdyn-DDRX.png#center){: style="width:470px"}
 

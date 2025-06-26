@@ -49,6 +49,10 @@ def plot_nlm(a2, fname, ei=None, title='n', micolor='black'):
         sfplt.plotS2text(ax, [0,0,1],  r'$\vb{m}_3$', **kw_axes)
         sfplt.plotS2text(ax, [0,-1,0], r'$\vb{m}_2$', **kw_axes)
         sfplt.plotS2text(ax, [-1,0,0], r'$\vb{m}_1$', **kw_axes)    
+    elif ei=='xi': 
+        sfplt.plotS2text(ax, [0,0,1],  r'$\vu{z}$', **kw_axes)
+        sfplt.plotS2text(ax, [0,-1,0], r'$\vu{y}$', **kw_axes)
+        sfplt.plotS2text(ax, [-1,0,0], r'$\vu{x}$', **kw_axes)
         
     fields = [fname,]
     if ei is not None:     fields.append(ei)
@@ -62,11 +66,11 @@ def plot_nlm(a2, fname, ei=None, title='n', micolor='black'):
 ### States 
 
 states = dict(
-    iso      = {'a2':np.eye(3)/3,              'ei':(None,'mi','mialt')},
-    traniso  = {'a2':np.diag([0.2, 0.2, 0.6]), 'ei':(None,'mt')}, 
-    ortho    = {'a2':np.diag([0.1, 0.3, 0.6]), 'ei':(None,'mi')}, 
-    smaxz    = {'a2':np.diag([0.2, 0.2, 0.6]), 'ei':(None,'mi','mialt')}, 
-    girdlexz = {'a2':np.diag([0.2, 0.4, 0.4]), 'ei':(None,'mi','mialt')}, 
+    iso      = {'a2':np.eye(3)/3,              'ei':(None,'xi','mi','mialt')},
+    traniso  = {'a2':np.diag([0.2, 0.2, 0.6]), 'ei':(None,'xi','mt')}, 
+    ortho    = {'a2':np.diag([0.1, 0.3, 0.6]), 'ei':(None,'xi','mi')}, 
+    smaxz    = {'a2':np.diag([0.2, 0.2, 0.6]), 'ei':(None,'xi','mi','mialt')}, 
+    girdlexz = {'a2':np.diag([0.2, 0.4, 0.4]), 'ei':(None,'xi','mi','mialt')}, 
 )
 
 for name, state in states.items():

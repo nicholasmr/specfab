@@ -41,10 +41,15 @@ Elastic P and S plan-wave velocities, permitted in a polycrystal with an arbitra
 
 ## Glacier ice
 
+/// html | div[style='float: left; width: 30%; text-align: center;']
 ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/tranisotropic/monoice-elastic.png){: style="width:150px"}
-
+///
+/// html | div[style='float: right; width: 70%;']
 If ice grains are approximated as transversely isotropic, their elastic behaviour can be modelled using the [transversely isotropic elastic constitutive equation](constitutive-elastic.md).
 This requires specifying the grain elastic parameters $\lambda'$, $\mu'$, $\hat{\lambda}'$, $\hat{\mu}'$, $\hat{\gamma}'$, and the Voigt&mdash;Reuss weight $\alpha$.
+///
+/// html | div[style='clear: both;']
+///
 
 ### 📝 Code example
 
@@ -60,10 +65,15 @@ The below animation shows directional P- and S-wave velocities for a CPO evolvin
 
 ## Olivine
 
- ![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/monooli-elastic-mi.png){: style="width:200px"} 
- 
+/// html | div[style='float: left; width: 35%; text-align: center;']
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/orthotropic/monooli-elastic-mi.png){: style="width:200px"} 
+///
+/// html | div[style='float: right; width: 65%;']
 If olivine grains are approximated as orthotropic, their elastic behaviour can be modelled using the [orthotropic elastic constitutive equation](constitutive-elastic.md).
 This requires specifying the grain elastic parameters $\lambda_{ij}'$, $\mu_{i}'$, and the Voigt&mdash;Reuss weight $\alpha$.
+///
+/// html | div[style='clear: both;']
+///
 
 ### 📝 Code example
 

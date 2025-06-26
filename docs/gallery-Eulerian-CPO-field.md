@@ -19,7 +19,7 @@ where ${\bf \bar s}(x,y)$ is the depth-average CPO state vector field, ${\bf{u}}
 The first term represents CPO advection along stream lines, and the second term represents the depth-average effect of crystal processes. 
 The third and fourth terms are state-space attractors, causing ${\bf \bar s}$ to tend towards the characteristic CPO states of ice that accumulates on the surface ${\bf s}_{\mathrm{sfc}}$ or subglacially ${\bf s}_{\mathrm{sub}}$, depending on the positively-defined ice-equivalent accumulation rates $a_{\mathrm{sfc}}$ and $a_{\mathrm{sub}}$. 
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/SSA-fabric/SSA-fabric.png){: style="width:450px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/SSA-fabric/SSA-fabric-long.png){: style="width:700px"}
 
 ## Closure
 

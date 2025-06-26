@@ -32,18 +32,19 @@ scpo.kw_vel['kw_tcf']['levels'] = np.logspace(0.5, 3.0, 11)
 scpo.kw_epsE['kw_tcf']['levels'] = np.arange(0, 6+1e-3, 1)
 scpo.kw_E['kw_tcf']['levels'] = np.arange(0, 3+.01, 0.25)
 scpo.kw_E['kw_cb']['ticks'] = scpo.kw_E['kw_tcf']['levels'][::4]
+scpo.color_bcs[0] = 'c'
 scpo.kw_MODF = dict(
-        axsize   = 0.145, 
-        xy       = [(-180,-1080),(-20,-1050),(180,-1100),(-70,-680)], 
-        axloc    = [(0.6+xi, 0.76) for xi in np.linspace(0, 0.235, 4)],
-        lbl_bbox = (-0.55,1.4),
+    axsize   = 0.145, 
+    xy       = [(-180,-1080),(-20,-1050),(180,-1100),(-70,-680)], 
+    axloc    = [(0.6+xi, 0.76) for xi in np.linspace(0, 0.235, 4)],
+    lbl_bbox = (-0.55,1.4),
 )
 
 ### Problem specification
 
-problem_LROT  = dict(name='LROT',  T=None, bcs=[[1,scpo.bc_isotropic],])
-problem_altbc = dict(name='altbc', T=None, bcs=[[1,scpo.bc_zsinglemax],])
-problem_DDRX  = dict(name='LROT+DDRX', T=np.linspace(-40, -15, 4), bcs=problem_LROT['bcs'])
+problem_LROT  = dict(name='LROT',      T=None, bcs=[[1,scpo.bc_isotropic],])
+problem_altbc = dict(name='altbc',     T=None, bcs=[[1,scpo.bc_zsinglemax],])
+problem_DDRX  = dict(name='LROT+DDRX', T=np.linspace(-40, -15, 4), AQ_DDRX = (1.91e7, 3.36e4), bcs=problem_LROT['bcs'])
 numerics      = dict(L=8, nu_orimul=0.8, nu_real=2e-3, nu_realmul=[50,20,12,8])
 
 ### Run requested task
