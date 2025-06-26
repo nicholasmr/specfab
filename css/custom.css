@@ -1,0 +1,15 @@
+details {
+  margin: 1em 0;
+  padding: 0.5em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+}
+
+details[open] summary::before {
+  content: "▼ ";
+}
+
+details summary::before {
+  content: "▶ ";
+}
