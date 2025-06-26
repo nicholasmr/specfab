@@ -23,11 +23,11 @@ Line(3)={3,4};
 Line(4)={4,5};
 Line(5)={5,1};
 Line Loop(50)={1,2,3,4,5};
+Plane Surface(10)={50};
 
 // Physical lines, etc.
 Physical Line (1)={1,2,3,4}; // isotropic boundary on grounded ice
 Physical Line (2)={5};       // free boundary on shelf edge
-Plane Surface(10)={50};
 Physical Surface(11)={10};
 
 // Refine the mesh in the neighborhood of a line that passes through flow trunk

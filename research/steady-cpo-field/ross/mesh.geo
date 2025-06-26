@@ -34,11 +34,11 @@ Line(7)={7,8};
 Line(8)={8,9};
 Line(9)={9,1};
 Line Loop(50)={1,2,3,4,5,6,7,8,9};
+Plane Surface(10)={50};
 
 // Physical lines, etc.
 Physical Line(1)={1,2,3,4,5,6}; // isotropic boundary on grounded ice
 Physical Line(2)={7,8,9};       // free boundary on shelf edge
-Plane Surface(10)={50};
 Physical Surface(11)={10};
 
 // Refine mesh
