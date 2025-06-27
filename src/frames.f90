@@ -1,6 +1,6 @@
 ! N. M. Rathmann <rathmann@nbi.ku.dk>
 
-! Fabric eigenframes
+! Fabric eigenframe etc.
 
 module frames
 
@@ -9,7 +9,17 @@ module frames
 
     implicit none 
     
-contains      
+contains
+
+    subroutine eig(nlm, ei,lami)
+
+        implicit none
+        integer, parameter           :: n = 3
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(out)   :: ei(n,n), lami(n) ! (i,xyz), (i) for eigenpair i=1,2,3
+
+        call eigframe(a2(nlm), 'ij', ei,lami) ! shorthand for eigenframe of nlm
+    end
 
     subroutine eigframe(M,plane, ei,lami)
 
@@ -17,7 +27,7 @@ contains
         integer, parameter         :: n = 3
         real(kind=dp), intent(in)  :: M(n,n)
         character*2, intent(in)    :: plane ! ['ij'|'xy'|'xz']
-        real(kind=dp), intent(out) :: ei(n,n), lami(n) ! (i,xyz), (i) for eigenpair i
+        real(kind=dp), intent(out) :: ei(n,n), lami(n) ! (i,xyz), (i) for eigenpair i=1,2,3
         
         real(kind=dp)              :: e1(n),e2(n),e3(n)
         integer                    :: k, sort(n), Imax
@@ -69,37 +79,53 @@ contains
         eigvals = [eigvals(3),eigvals(2),eigvals(1)] ! Largest first        
     end
     
-    subroutine frame(nlm, ftype, e1,e2,e3, eigvals)
+!    subroutine frame(nlm, ftype, e1,e2,e3, eigvals)
+
+!        implicit none
+!        complex(kind=dp), intent(in) :: nlm(:)
+!        character*1, intent(in)      :: ftype ! 'x','e','p' (Cartesian frame, a2 eigenframe, 45deg rotated eigenframe)
+!        real(kind=dp), intent(out)   :: e1(3),e2(3),e3(3), eigvals(3)
+!        real(kind=dp)                :: p(3),q(3)
+!        
+!        ! Cartesian frame
+!        if (ftype == 'x') then
+!            e1 = [1,0,0] 
+!            e2 = [0,1,0] 
+!            e3 = [0,0,1] 
+!            
+!        else
+!            ! a2 eigen frame    
+!            call eig3(a2(nlm), e1,e2,e3, eigvals)
+!            
+!            ! Rotated a2 eigen frame
+!            if (ftype == 'p') then
+!                p = (e1+e2)/sqrt(2.0) 
+!                q = (e1-e2)/sqrt(2.0) 
+!                e1 = p
+!                e2 = q
+!                ! cross product
+!                e3(1) = p(2) * q(3) - p(3) * q(2)
+!                e3(2) = p(3) * q(1) - p(1) * q(3)
+!                e3(3) = p(1) * q(2) - p(2) * q(1)
+!            end if     
+!               
+!        end if
+!    end
+    
+    function pqframe(ei) result(pq)
+
+        ! Rotated a2 eigenframe
 
         implicit none
-        complex(kind=dp), intent(in) :: nlm(:)
-        character*1, intent(in)      :: ftype ! 'x','e','p' (Cartesian frame, a2 eigenframe, 45deg rotated eigenframe)
-        real(kind=dp), intent(out)   :: e1(3),e2(3),e3(3), eigvals(3)
-        real(kind=dp)                :: p(3),q(3)
-        
-        ! Cartesian frame
-        if (ftype == 'x') then
-            e1 = [1,0,0] 
-            e2 = [0,1,0] 
-            e3 = [0,0,1] 
-            
-        else
-            ! a2 eigen frame    
-            call eig3(a2(nlm), e1,e2,e3, eigvals)
-            
-            ! Rotated a2 eigen frame
-            if (ftype == 'p') then
-                p = (e1+e2)/sqrt(2.0) 
-                q = (e1-e2)/sqrt(2.0) 
-                e1 = p
-                e2 = q
-                ! cross product
-                e3(1) = p(2) * q(3) - p(3) * q(2)
-                e3(2) = p(3) * q(1) - p(1) * q(3)
-                e3(3) = p(1) * q(2) - p(2) * q(1)
-            end if     
-               
-        end if
+        real(kind=dp), intent(in) :: ei(3,3)
+        real(kind=dp)             :: pq(3,3)
+
+        pq(1,:) = (ei(1,:)+ei(2,:))/sqrt(2.0) 
+        pq(2,:) = (ei(1,:)-ei(2,:))/sqrt(2.0) 
+        ! cross product
+        pq(3,1) = pq(1,2) * pq(2,3) - pq(1,3) * pq(2,2)
+        pq(3,2) = pq(1,3) * pq(2,1) - pq(1,1) * pq(2,3)
+        pq(3,3) = pq(1,1) * pq(2,2) - pq(1,2) * pq(2,1)
     end
 
     subroutine a4_eigentensors(nlm, Q1,Q2,Q3,Q4,Q5,Q6, eigvals6)  

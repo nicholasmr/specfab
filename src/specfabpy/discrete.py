@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2023
+# Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2023-
 
 """
 Discrete methods
@@ -17,6 +17,7 @@ def lat2colat(lat, deg=False):   return 90 - lat   if deg else np.pi/2 - lat
 def colat2lat(colat, deg=False): return 90 - colat if deg else np.pi/2 - colat
 
 def L2nlmlen(L): return int((L+1)*(L+2)/2)
+
 
 def cart2sph(v, deg=False):
 
@@ -47,7 +48,7 @@ def sph2cart(colat, lon, deg=False):
     return r
 
 
-def sphericalbasisvectors(colat, lon, deg=False):
+def sphbasis(colat, lon, deg=False):
 
     """
     Spherical coordinates --> spherical basis vectors
@@ -77,7 +78,7 @@ def idealstressstate(latres=40, lonres=80):
     ### Determine spherical basis vectors
     mlon, mlat = np.meshgrid(vlon, vlat)
     mcolat = lat2colat(mlat, deg=False)
-    vr, vt, vp = sphericalbasisvectors(mcolat, mlon)
+    vr, vt, vp = sphbasis(mcolat, mlon)
 
     rr = np.einsum('ikl,jkl->ijkl', vr, vr)
     rt = np.einsum('ikl,jkl->ijkl', vr, vt)
@@ -92,32 +93,34 @@ def idealstressstate(latres=40, lonres=80):
     return (vr,vt,vp, rr,rt,rp, tau_rr,tau_rt,tau_rp, vlon,vlat, mlon,mlat)
     
 
+"""
+Deprecated, use fortran version sf.ri_to_nlm(ri, wi, L)
+"""
+#def vi2nlm(vi, L=6):
 
-def vi2nlm(vi, L=6):
+#    """
+#    Discrete array of crystallographic axes --> spectral CPO representation
+#    """
 
-    """
-    Discrete array of crystallographic axes --> spectral CPO representation
-    """
+#    nlm_len = L2nlmlen(L)
+#    nlm = np.zeros((nlm_len), dtype=np.complex128) 
+#    
+#    vi = np.array(vi)
+#    N = vi.shape[0] # vi(N,xyz)
+#    
+#    if L==2:
+#        a2 = np.array([ np.einsum('i,j',vi[n],vi[n]) for n in range(N)]).mean(axis=0)
+#        nlm[:sf__.L2len] = sf__.a2_to_nlm(a2)    
+#    elif L==4:
+#        a4 = np.array([ np.einsum('i,j,k,l',vi[n],vi[n],vi[n],vi[n]) for n in range(N)]).mean(axis=0)
+#        nlm[:sf__.L4len] = sf__.a4_to_nlm(a4)
+#    elif L==6:
+#        a6 = np.array([ np.einsum('i,j,k,l,m,n',vi[n],vi[n],vi[n],vi[n],vi[n],vi[n]) for n in range(N)]).mean(axis=0)
+#        nlm[:sf__.L6len] = sf__.a6_to_nlm(a6)
+#    else:
+#        raise ValueError('sfdsc.vi2nlm(): only L <= 6 is supported')
 
-    nlm_len = L2nlmlen(L)
-    nlm = np.zeros((nlm_len), dtype=np.complex128) 
-    
-    vi = np.array(vi)
-    N = vi.shape[0] # vi(N,xyz)
-    
-    if L==2:
-        a2 = np.array([ np.einsum('i,j',vi[n],vi[n]) for n in range(N)]).mean(axis=0)
-        nlm[:sf__.L2len] = sf__.a2_to_nlm(a2)    
-    elif L==4:
-        a4 = np.array([ np.einsum('i,j,k,l',vi[n],vi[n],vi[n],vi[n]) for n in range(N)]).mean(axis=0)
-        nlm[:sf__.L4len] = sf__.a4_to_nlm(a4)
-    elif L==6:
-        a6 = np.array([ np.einsum('i,j,k,l,m,n',vi[n],vi[n],vi[n],vi[n],vi[n],vi[n]) for n in range(N)]).mean(axis=0)
-        nlm[:sf__.L6len] = sf__.a6_to_nlm(a6)
-    else:
-        raise ValueError('sfdsc.vi2nlm(): only L <= 6 is supported')
-
-    return nlm
+#    return nlm
     
     
 def Sl_delta(L):

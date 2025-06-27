@@ -43,19 +43,17 @@ contains
         nlm_len = nlm_lenvec(Lcap) ! Number of DOFs (expansion coefficients) for full nlm vector
 
         call initreduced(Lcap) ! Initialize reduced nlm (rnlm) module for 2D x-z problems
+        call initmoments(Lcap)
         call initdynamics(Lcap)
         call inithomogenizations(Lcap) ! Set isotropic structure tensors
         
     end
 
     !---------------------------------
-    ! EXTERNAL, ADD-ON FAETURES
+    ! EXTERNAL ADD-ONS
     !---------------------------------
 
     ! Elmer/ice flow model (Lilien)
     include "elmer/specfab_elmer.f90"
-
-    ! JOSEF ice flow model (Rathmann and Lilien, 2021)
-    include "josef/specfab_josef.f90"
 
 end module specfab 

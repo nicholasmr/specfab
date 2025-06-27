@@ -88,7 +88,7 @@ def plotS2field(ax, F, lon, lat, kwargs_cf={}, \
 
 def plotODF(nlm, lm, ax, \
         showcb=True, showgl=True, hidetruncerr=True, # options/flags \
-        norm=True, latres=50, lonres=2*50, nchunk=5, # general \
+        norm=True, latres=50, lonres=2*50, nchunk=None, # general \
         cmap='Greys', lvlset='iso-up', # colormap and lvls \ 
         cbfraction=0.075, cbaspect=9, cborientation='horizontal', cbpad=0.1, cblabel='$n/N$ (ODF)', cblabelpad=None, cbtickintvl=4, extend=None, # colorbar \
         kwargs_gl=kwargs_gl_default, # grid lines \
@@ -129,6 +129,9 @@ def plotODF(nlm, lm, ax, \
     else:
         print('lvlset=',lvlset)
         raise ValueError('sfplt.plotODF(): Note sure what to do with passed lvlset; should be "iso-up", "zero-up" or list [lvls0, lvlmul, lvlfmt]')
+
+    ### Set nchunk if distribution is close to isotropic 
+    if np.sum(np.abs(nlm[1:])) < 0.05*np.real(nlm[0]): nchunk = 20
 
     ### Plot distribution
     # "nchunk" argument must be larger than 0 for isotropic distributions to be plotted correctly, else 0 is best choice.

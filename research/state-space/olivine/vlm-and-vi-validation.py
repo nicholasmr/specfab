@@ -185,9 +185,11 @@ for deformationType in deformationTypes:
         ni = sf.ri_LROT(n0, dt, N, eps,omg, +1)
         vi = np.array([np.cross(bi[nn,:,:], ni[nn,:,:]) for nn in range(N)])
 
-        blm = np.array([sf.ri_to_nlm(bi[nn], L) for nn in range(N)])
-        nlm = np.array([sf.ri_to_nlm(ni[nn], L) for nn in range(N)])
-        vlm = np.array([sf.ri_to_nlm(vi[nn], L) for nn in range(N)])
+        Ngrains = bi.shape[1] # no grains
+        wi = np.ones(Ngrains)/Ngrains # equal weights
+        blm = np.array([sf.ri_to_nlm(bi[nn], wi, L) for nn in range(N)])
+        nlm = np.array([sf.ri_to_nlm(ni[nn], wi, L) for nn in range(N)])
+        vlm = np.array([sf.ri_to_nlm(vi[nn], wi, L) for nn in range(N)])
 
         ### Plot selected steps
 
@@ -208,9 +210,9 @@ for deformationType in deformationTypes:
                     x3 = sf.rotate_vector(x3, theta_, phi_)
                 print('b=',x1, 'n=',x2, 'v=',x3)
                 bi, ni, vi = x1, x2, x3
-                blm = np.array([sf.ri_to_nlm(np.array(bi,ndmin=2), L),])
-                nlm = np.array([sf.ri_to_nlm(np.array(ni,ndmin=2), L),])
-                vlm = np.array([sf.ri_to_nlm(np.array(vi,ndmin=2), L),])
+                blm = np.array([sf.ri_to_nlm(np.array(bi,ndmin=2), wi, L),])
+                nlm = np.array([sf.ri_to_nlm(np.array(ni,ndmin=2), wi, L),])
+                vlm = np.array([sf.ri_to_nlm(np.array(vi,ndmin=2), wi, L),])
                 
             blm_, nlm_, vlm_ = blm[nn,:], nlm[nn,:], vlm[nn,:] # v=0 => estimate it from b,n
 

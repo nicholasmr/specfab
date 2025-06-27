@@ -49,7 +49,7 @@ where $\langle {\bf c}^2 \rangle$ is the [second-order structure tensor](cpo-str
 
 ### Travel time difference
 
-![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/waveprop/radioglac.png){: style="width:700px"}
+![](https://raw.githubusercontent.com/nicholasmr/specfab/main/images/waveprop/radioglac.png){: style="width:550px"}
 
 Radioglaciological field surveys are a popular approach for understanding the depth-averaged CPOs of ice sheets and glaciers. 
 Such surveys rely on the fact that orthogonally polarized radio waves travel at different speeds depending on the misalignment between wave polarization and the CPO principal axes (birefringence). 
@@ -62,18 +62,18 @@ S_i^2 = S_a^2 + \lambda_i \Delta S^2
 $$
 when (eigen)polarized along the ${\bf x}$- and ${\bf y}$-axis ($i=x,y$). Here, $S_c=\mu\epsilon'_c$ and $S_a=\mu\epsilon'_a$ are the monocrystal slownesses for waves polarized along the ${\bf c}$ and ${\bf a}$ axes of a single crystal, and $\Delta S=S^2_c - S^2_a$ is the squared monocrystal slowness anisotropy.
 
-The two-way travel time difference between eigenpolarized waves, propagating from the surface at height $H$ to a depth of $z$, and back, is
+For a depth-varying fabric where $\lambda_i=\lambda_i(z)$, the two-way travel time difference between eigenpolarized waves, propagating from the surface at height $z=H$ down to $z=z_0$, and back, is
 
 $$
-\Delta t(z) = t_x(z) - t_y(z) = 2 \int_z^H S_x(z') \,\mathrm{d}{z'} - 2\int_z^H S_y(z') \,\mathrm{d}{z'} .
+\Delta t = t_x - t_y = 2 \int_H^{z_0} S_x(z) \,\mathrm{d}{z} - 2\int_H^{z_0} S_y(z) \,\mathrm{d}{z} .
 $$
 Expanding the depth-depedent slowness 
 $$
 S_i(z) = \sqrt{S_a^2 + \lambda_i(z) \Delta S^2 }
 $$
-around the isotropic state $\lambda_i=1/3$, it can be shown that 
+around the isotropic state $\lambda_i=1/3$, it can be shown that $\Delta t$ is to first order
 $$
-\Delta t(z) \simeq \frac{\Delta S^2}{S_{\mathrm{iso}}} \int_z^H (\lambda_x(z')-\lambda_y(z')) \,\mathrm{d}{z'}, 
+\Delta t \simeq \frac{\Delta S^2}{S_{\mathrm{iso}}} \int_H^{z_0} (\lambda_x-\lambda_y) \,\mathrm{d}{z}, 
 $$
 where $S_{\mathrm{iso}}=\sqrt{\mu(2\epsilon'_a+\epsilon'_c)/3}$ is the slowness within an isotropic polycrystal. 
 

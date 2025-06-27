@@ -1,4 +1,4 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2024
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-
 
 ! Normalized vector moments (structure tensors) given the spectral expansion coefficients of CPO.
 
@@ -10,10 +10,25 @@ module moments
 
     implicit none 
     
+    ! Set by init()
+    integer, private :: Lcap ! Truncation "L" of expansion series 
+    integer, private :: nlm_len
+    
     real(kind=dp), parameter :: a2_iso(3,3)     = identity/3
     real(kind=dp), parameter :: a4_iso(3,3,3,3) = reshape([ ( ( ( ( (identity(ii,jj)*identity(kk,ll)+identity(ii,kk)*identity(jj,ll)+identity(ii,ll)*identity(jj,kk))/15, ii=1,3), jj=1,3), kk=1,3), ll=1,3) ], [3,3,3,3]) 
     
 contains      
+
+    subroutine initmoments(Lcap_) 
+
+        ! Needs to be called once before using the module routines.
+
+        implicit none    
+        integer, intent(in) :: Lcap_ ! Truncation "Lcap"
+        
+        Lcap = Lcap_ ! Save internal copy
+        nlm_len = nlm_lenvec(Lcap)
+    end
 
     !---------------------------------
     ! Conversion between nlm and <c^k> 
@@ -77,41 +92,41 @@ contains
     end
 
     !---------------------------------
-    ! Conversion between ri and nlm
+    ! Conversion from ri to nlm
     !---------------------------------
 
-    function ri_to_nlm(ri, L) result(nlm)
+    function ri_to_nlm(ri, wi, L) result(nlm)
     
         implicit none
-        real(kind=dp), intent(in)     :: ri(:,:) ! axis no, xyz
-        integer, intent(in)           :: L ! truncation of resulting series
+        real(kind=dp), intent(in)     :: ri(:,:), wi(:) ! (grain no, xyz), (grain no)
+        integer, intent(in)           :: L
         integer                       :: N
-        real(kind=dp)                 :: a2_(3,3), a4_(3,3,3,3), a6_(3,3,3,3,3,3)
+        real(kind=dp)                 :: a2mat(3,3), a4mat(3,3,3,3), a6mat(3,3,3,3,3,3)
         complex(kind=dp)              :: nlm(nlm_lenvec(L)) 
     
-        N = size(ri,1) ! number of axes (grains)
+        N = size(ri,1) ! number of grains
+        nlm = 0.0d0
     
-        if (L .eq. 2) then
-            a2_ = 0.0d0
-            do nn=1,N
-                a2_ = a2_ + outerprod(ri(nn,:),ri(nn,:))
+        if (L == 2) then
+            a2mat = 0.0d0
+            do ii=1,N
+                a2mat = a2mat + wi(ii)*outerprod(ri(ii,:),ri(ii,:))
             end do
-            nlm(:) = a2_to_nlm(a2_/N)
+            nlm(1:L2len) = a2_to_nlm(a2mat)
+            
         elseif (L == 4) then
-            a4_ = 0.0d0
-            do nn=1,N
-                a4_ = a4_ + outerprod4(ri(nn,:),ri(nn,:),ri(nn,:),ri(nn,:))
+            a4mat = 0.0d0
+            do ii=1,N
+                a4mat = a4mat + wi(ii)*outerprod4(ri(ii,:),ri(ii,:),ri(ii,:),ri(ii,:))
             end do
-            nlm(:) = a4_to_nlm(a4_/N)
-        elseif (L == 6) then
-            a6_ = 0.0d0
-            do nn=1,N
-                a6_ = a6_ + outerprod6(ri(nn,:),ri(nn,:),ri(nn,:),ri(nn,:),ri(nn,:),ri(nn,:))
-            end do
-            nlm(:) = a6_to_nlm(a6_/N)
+            nlm(1:L4len) = a4_to_nlm(a4mat)
+            
         else
-            print *, "ri_to_nlm(): bad value of L, returning zeroes"
-            nlm(:) = 0.0d0
+            a6mat = 0.0d0
+            do ii=1,N
+                a6mat = a6mat + wi(ii)*outerprod6(ri(ii,:),ri(ii,:),ri(ii,:),ri(ii,:),ri(ii,:),ri(ii,:))
+            end do
+            nlm(1:L6len) = a6_to_nlm(a6mat)
         end if
     end
 

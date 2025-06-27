@@ -193,9 +193,9 @@ for Lii, L in enumerate(L_list):
         Eeiej = np.zeros((6,Nt+1), dtype=np.float64)
         for nn in tsteps:
             c = nlm[nn,:]
-            e1,e2,e3, eigvals[:,nn] = sf.frame(c, 'e')
+            ei, eigvals[:,nn] = sf.eig(c)
             (Eij_grain, alpha, n_grain) = sfconst.ice['viscoplastic']['linear'] # Optimal n'=1 (lin) grain parameters (Rathmann and Lilien, 2021)
-            try: Eeiej[:,nn] = np.transpose(sf.Eij_tranisotropic(c, e1,e2,e3, Eij_grain, alpha, n_grain))
+            try: Eeiej[:,nn] = np.transpose(sf.Eij_tranisotropic(c, *ei, Eij_grain, alpha, n_grain))
             except: pass
         
         ax = fig.add_subplot(gs[0,2])

@@ -1,4 +1,4 @@
-# N. M. Rathmann <rathmann@nbi.ku.dk>, 2022-2023
+# N. M. Rathmann <rathmann@nbi.ku.dk>, 2022-
 
 """
 Header file for common routines etc.
@@ -118,8 +118,8 @@ def load_sample(fname, expr, Ilam1=None):
     
     lm, nlm_len = sf.init(6)
     caxes = sfdsc.sph2cart(qcolat, qlon)
-#    nlm = sfdsc.vi2nlm(caxes, L=6)
-    nlm = sf.ri_to_nlm(caxes, 6) # @TODO test new fortran-based version gives same result as old python version
+    N = caxes.shape[0]
+    nlm = sf.ri_to_nlm(caxes, np.ones(N)/N, 6) # equal weights
 
     ### Rotated frame 
        

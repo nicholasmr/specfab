@@ -22,7 +22,7 @@ mul = 10
 colat = np.linspace(0, np.pi, 10*mul)   
 lon   = np.linspace(0, 2*np.pi, 20*mul)
 lon2, colat2 = np.meshgrid(lon, colat)
-vr, vt, vp = sfdsc.sphericalbasisvectors(colat2, lon2)
+vr, vt, vp = sfdsc.sphbasis(colat2, lon2)
 
 ### Low-res grid
 
@@ -30,7 +30,7 @@ mul = 1
 colat_ = np.linspace(0, np.pi, 10*mul)  
 lon_   = np.linspace(0, 2*np.pi, 20*mul)
 lon2_, colat2_ = np.meshgrid(lon_, colat_)
-vr_, vt_, vp_ = sfdsc.sphericalbasisvectors(colat2_, lon2_)
+vr_, vt_, vp_ = sfdsc.sphbasis(colat2_, lon2_)
 
 ### Functions
 

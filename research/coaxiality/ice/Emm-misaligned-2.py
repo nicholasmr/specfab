@@ -177,7 +177,7 @@ for ang in angles:
     nlm_ = sf.rotate_nlm(nlm_uc, np.deg2rad(ang), 0) 
     sfplt.plotODF(nlm_, lm, axin, lvlset=lvlset, cmap=cmap, showcb=False, nchunk=None)
     
-    (e1,e2,e3, _) = sf.frame(nlm_, 'e') 
+    (e1,e2,e3), _ = sf.eig(nlm_)
     kwargs = dict(fontsize=FSSMALL+1.2, transform=geo)
     sfplt.plotS2text(axin, e1, r'$\vb{m}_1$', c=sfplt.c_green, **kwargs)
     sfplt.plotS2text(axin, [0,0,1], r'$\vu{z}$', c='k', **kwargs)

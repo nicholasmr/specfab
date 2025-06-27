@@ -35,6 +35,12 @@ module specfabpy
         a2_orth__sf => a2_orth, a4_orth__sf => a4_orth, &
         a2_irpart__sf => a2_irpart, a4_irpart__sf => a4_irpart, &
         ri_to_nlm__sf => ri_to_nlm, &
+        
+        ! Frames
+        eig__sf      => eig, &
+        eig3__sf     => eig3, &
+        eigframe__sf => eigframe, &
+        pqframe__sf  => pqframe, &
 
         ! Rheologies
         rheo_rev_isotropic__sf     => rheo_rev_isotropic, &
@@ -71,18 +77,28 @@ module specfabpy
         Evw_tranisotropic__sf => Evw_tranisotropic, &
         Evw_orthotropic__sf   => Evw_orthotropic, &
         Evw_orthotropic_discrete__sf => Evw_orthotropic_discrete, &
-        frame__sf => frame, eigframe__sf => eigframe, eig3__sf => eig3, &
-        E_EIE__sf => E_EIE, E_CAFFE__sf => E_CAFFE, E_ESTAR__sf => E_ESTAR, &
+        E_EIE__sf => E_EIE, &
+        E_CAFFE__sf => E_CAFFE, &
+        E_ESTAR__sf => E_ESTAR, &
         
         ! nlm and rnlm representations
         lm__sf => lm, &
         nlm_len__sf => nlm_len, rnlm_len__sf => rnlm_len, &
+        nlm_lenvec__sf => nlm_lenvec, &
+        L2len__sf => L2len, L4len__sf => L4len, L6len__sf => L6len, L8len__sf => L8len, &
         nlm_to_rnlm__sf => nlm_to_rnlm, rnlm_to_nlm__sf => rnlm_to_nlm, &
         reduce_M__sf => reduce_M, &
         rotate_nlm__sf => rotate_nlm, &
         rotate_nlm_xz2xy__sf => rotate_nlm_xz2xy, &
         rotate_vector__sf => rotate_vector, &
         Sl__sf => Sl, & ! power spectrum
+        
+        ! nlm states
+        nlm_ideal__sf     => nlm_ideal, &        
+        nlm_isvalid__sf   => nlm_isvalid, &
+        nlm_isotropic__sf => nlm_isotropic, &
+        nlm_singlemax__sf => nlm_singlemax, &
+        nlm_girdle__sf    => nlm_girdle, &
         
         ! Numerics
         Ldiag__sf => Ldiag, &
@@ -101,11 +117,7 @@ module specfabpy
         ! AUX
         vec_to_mat_voigt__sf => vec_to_mat_voigt, &
         nhat40_empcorr_ice__sf => nhat40_empcorr_ice, &
-        nlm_ideal__sf => nlm_ideal, &        
-        nlm_isvalid__sf => nlm_isvalid, &
-        Lame_olivine_A2X__sf => Lame_olivine_A2X, &
-        L2len__sf => L2len, L4len__sf => L4len, L6len__sf => L6len, L8len__sf => L8len, &
-        nlm_lenvec__sf => nlm_lenvec
+        Lame_olivine_A2X__sf => Lame_olivine_A2X
         
     implicit none
     
@@ -273,15 +285,14 @@ contains
     ! FABRIC FRAME
     !---------------------------------
     
-    subroutine frame(nlm, ftype, e1,e2,e3, eigvals)
-        ! legacy interface, use eigframe() instead
+    subroutine eig(nlm, ei,lami)
         use specfabpy_const
         implicit none
+        integer, parameter           :: n = 3
         complex(kind=dp), intent(in) :: nlm(:) 
-        character*1, intent(in)      :: ftype 
-        real(kind=dp), intent(out)   :: e1(3),e2(3),e3(3), eigvals(3)
+        real(kind=dp), intent(out)   :: ei(n,n), lami(n) ! (i,xyz), (i) for eigenpair i=1,2,3
         
-        call frame__sf(nlm, ftype, e1,e2,e3, eigvals)
+        call eig__sf(nlm, ei,lami)
     end
     
     subroutine eigframe(M,plane, ei,lami)
@@ -290,7 +301,7 @@ contains
         integer, parameter         :: n = 3
         real(kind=dp), intent(in)  :: M(n,n)
         character*2, intent(in)    :: plane ! ['ij'|'xy'|'xz']
-        real(kind=dp), intent(out) :: ei(n,n), lami(n) ! (i,xyz), (i) for eigenpair i
+        real(kind=dp), intent(out) :: ei(n,n), lami(n) ! (i,xyz), (i) for eigenpair i=1,2,3
         
         call eigframe__sf(M,plane, ei,lami)
     end
@@ -316,6 +327,15 @@ contains
         real(kind=dp), intent(out)   :: e1(3),e2(3),e3(3), lami(3)
 
         call eig3__sf(M, e1,e2,e3,lami)
+    end
+    
+    function pqframe(ei)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in)  :: ei(3,3)
+        real(kind=dp)              :: pqframe(3,3)
+        
+        pqframe = pqframe__sf(ei)
     end
     
     subroutine a4_eigentensors(nlm, Q1,Q2,Q3,Q4,Q5,Q6, eigvals)
@@ -629,14 +649,14 @@ contains
         a4 = a4_orth__sf(blm,nlm)
     end
        
-    function ri_to_nlm(ri, L) result(nlm)
+    function ri_to_nlm(ri, wi, L) result(nlm)
         use specfabpy_const
         implicit none
-        real(kind=dp), intent(in) :: ri(:,:) ! axis no, xyz
-        integer, intent(in)       :: L ! truncation of resulting series
+        real(kind=dp), intent(in) :: ri(:,:), wi(:) ! (grain no, xyz), (grain no)
+        integer, intent(in)       :: L
         complex(kind=dp)          :: nlm((L+1)*(L+2)/2) 
         
-        nlm = ri_to_nlm__sf(ri, L)
+        nlm = ri_to_nlm__sf(ri, wi, L)
     end
     
     function a2_irpart(a2_)
@@ -1036,6 +1056,32 @@ contains
         nlm(:) = nlm_ideal__sf(m, colat, L)
     end
     
+    function nlm_isotropic(L) result(nlm)
+        use specfabpy_const
+        implicit none
+        integer, intent(in) :: L
+        complex(kind=dp)    :: nlm((L+1)*(L+2)/2)
+        nlm(:) = nlm_isotropic__sf(L)
+    end
+    
+    function nlm_singlemax(m, L) result(nlm)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: m(3)
+        integer, intent(in)       :: L
+        complex(kind=dp)          :: nlm((L+1)*(L+2)/2)
+        nlm(:) = nlm_singlemax__sf(m, L)
+    end
+    
+    function nlm_girdle(m, L) result(nlm)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: m(3)
+        integer, intent(in)       :: L
+        complex(kind=dp)          :: nlm((L+1)*(L+2)/2)
+        nlm(:) = nlm_girdle__sf(m, L)
+    end
+    
     function nlm_isvalid(nhat20, nhat40) result(isvalid)
         use specfabpy_const
         implicit none
@@ -1073,9 +1119,6 @@ contains
     ! Elmer ice flow model 
     include "elmer/specfabpy_elmer.f90"
 
-    ! JOSEF ice flow model 
-    include "josef/specfabpy_josef.f90"
-        
     ! Deformation modes module
     include "include/specfabpy_deformationmodes.f90"
         

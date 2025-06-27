@@ -48,7 +48,7 @@ PATHM77=include/math77
 OBJM77=$(PATHM77)/amach.o $(PATHM77)/derv1.o $(PATHM77)/dnqsol.o $(PATHM77)/dnrm2.o $(PATHM77)/erfin.o $(PATHM77)/ermsg.o $(PATHM77)/ierm1.o $(PATHM77)/ierv1.o
 SRCM77=$(OBJM77:.o=.f)
 
-### Elmer, JOSEF, ...
+### Elmer, ...
 
 ELMERSRCS=$(wildcard elmer/specfab*.f90)
 ELMERS=$(ELMERSRCS:.f90=)
@@ -117,7 +117,7 @@ aux-tests: $(SPECFAB).o
 lib$(SPECFAB).so: $(SRCALL) $(OBJALL)
 	$(COMPILER) $(OPTS) -shared $(SRCALL) -o $@
 
-$(SPECFAB).o: $(SPECFAB).f90 $(OBJCORE) elmer/specfab_elmer.f90 josef/specfab_josef.f90
+$(SPECFAB).o: $(SPECFAB).f90 $(OBJCORE) elmer/specfab_elmer.f90
 	$(COMPILER) $(OPTS) -c $<
 
 $(DEPLESS): %.o: %.f90
@@ -166,7 +166,7 @@ $(LAMBDASOLVER).o:
 
 #---------------------------
 
-### Elmer, JOSEF, ...
+### Elmer, ...
 
 #elmer: $(ELMERS)
 

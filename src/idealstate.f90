@@ -35,6 +35,30 @@ contains
         nlm_rot = rotate_nlm(rotate_nlm(nlm, theta,0.0d0), 0.0d0,phi)
     end
     
+    function nlm_isotropic(L) result(nlm)
+        implicit none
+        integer, intent(in) :: L
+        complex(kind=dp)    :: nlm(nlm_lenvec(L)), nlm_rot(nlm_lenvec(L))
+        nlm = 0.0d0
+        nlm(1) = 1/sqrt(4*Pi)
+    end
+    
+    function nlm_singlemax(m, L) result(nlm)
+        implicit none
+        real(kind=dp), intent(in) :: m(3)
+        integer, intent(in)       :: L
+        complex(kind=dp)          :: nlm(nlm_lenvec(L)), nlm_rot(nlm_lenvec(L))
+        nlm = nlm_ideal(m, 0.0d0, L)
+    end
+    
+    function nlm_girdle(m, L) result(nlm)
+        implicit none
+        real(kind=dp), intent(in) :: m(3)
+        integer, intent(in)       :: L
+        complex(kind=dp)          :: nlm(nlm_lenvec(L)), nlm_rot(nlm_lenvec(L))
+        nlm = nlm_ideal(m, Pi/2, L)
+    end
+    
     function nlm_isvalid(nhat20, nhat40) result(isvalid)
         
         ! Test whether normalized, low-order nlm components are within eigenvalue bounds
@@ -46,7 +70,7 @@ contains
         logical                      :: isvalid(size(nhat20)), isvalid_a2, idvalid_a4
         
         complex(kind=dp)             :: nlm(nlm_lenvec(4))
-        real(kind=dp)                :: e1(3),e2(3),e3(3), a2_eigvals(3)
+        real(kind=dp)                :: ei(3,3), a2_eigvals(3)
         real(kind=dp)                :: Q1(3,3),Q2(3,3),Q3(3,3),Q4(3,3),Q5(3,3),Q6(3,3), a4_eigvals(6)
 
         do ii=1,size(nhat20)
@@ -55,7 +79,7 @@ contains
             nlm(ILm(2)) = nhat20(ii)
             nlm(ILm(4)) = nhat40(ii)
             
-            call frame(nlm, 'e', e1,e2,e3, a2_eigvals)
+            call eig(nlm, ei, a2_eigvals)
             isvalid_a2 = (maxval(a2_eigvals) < 1.0d0) .and. (minval(a2_eigvals) > 0.0d0) ! a2 eigenvalues are within bounds
             
             call a4_eigentensors(nlm, Q1,Q2,Q3,Q4,Q5,Q6, a4_eigvals)  

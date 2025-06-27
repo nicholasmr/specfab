@@ -78,16 +78,19 @@ for tt in np.arange(0,Nt+1):
 
     c = nlm[tt,:]
     
-    m1[tt,:],m2[tt,:],m3[tt,:], eigvals[tt,:] = sf.frame(c, 'e')
-    p1[tt,:],p2[tt,:],p3[tt,:], _             = sf.frame(c, 'p')
+    mi, eigvals[tt,:] = sf.eig(c)
+    m1[tt,:],m2[tt,:],m3[tt,:] = mi
+    p1[tt,:],p2[tt,:],p3[tt,:] = sf.pqframe(mi)
 
     # Linear (n'=1) mixed Taylor--Sachs enhancements            
-    Eij_lin[tt,:]  = sf.Eij_tranisotropic(c, m1[tt,:],m2[tt,:],m3[tt,:], Eij_grain_lin, alpha_lin, n_grain_lin)
-    Epij_lin[tt,:] = sf.Eij_tranisotropic(c, p1[tt,:],p2[tt,:],p3[tt,:], Eij_grain_lin, alpha_lin, n_grain_lin)
+    args = (Eij_grain_lin, alpha_lin, n_grain_lin)
+    Eij_lin[tt,:]  = sf.Eij_tranisotropic(c, m1[tt,:],m2[tt,:],m3[tt,:], *args)
+    Epij_lin[tt,:] = sf.Eij_tranisotropic(c, p1[tt,:],p2[tt,:],p3[tt,:], *args)
     
     # Nonlinear (n'=3) Sachs enhancements
-    Eij_nlin[tt,:]  = sf.Eij_tranisotropic(c, m1[tt,:],m2[tt,:],m3[tt,:], Eij_grain_nlin, alpha_nlin, n_grain_nlin)
-    Epij_nlin[tt,:] = sf.Eij_tranisotropic(c, p1[tt,:],p2[tt,:],p3[tt,:], Eij_grain_nlin, alpha_nlin, n_grain_nlin)
+    args = (Eij_grain_nlin, alpha_nlin, n_grain_nlin)
+    Eij_nlin[tt,:]  = sf.Eij_tranisotropic(c, m1[tt,:],m2[tt,:],m3[tt,:], *args)
+    Epij_nlin[tt,:] = sf.Eij_tranisotropic(c, p1[tt,:],p2[tt,:],p3[tt,:], *args)
     
 #----------------------
 # Save
