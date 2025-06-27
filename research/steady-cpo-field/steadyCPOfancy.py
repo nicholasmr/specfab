@@ -139,26 +139,15 @@ class steadyCPOfancy(steadyCPO):
             ax.legend(legh, legl, loc='upper left', ncol=3, fancybox=False, frameon=False, **self.kw_leg)
 
     def xyboundaries(self):
-        # Not guaranteed to give the correct connectivity between nodes on the boundary (use with caution)
         (coords, bmeshes) = self.bmesh()
         x, y = [], []
         for c in coords:
             xynew = self.reorder_coordinates(c.T)
             x.append(xynew[:,0])
             y.append(xynew[:,1])
-#            code.interact(local=locals())
-#            xy = c.T
-#            tour, total_distance = self.tsp(xy)
-#            xi = np.array([xy[i][0]  for i in tour])
-#            yi = np.array([xy[i][1]  for i in tour])
-#            xi = c[0,:]
-#            yi = c[1,:]
-#            x.append(xi)
-#            y.append(yi)
         return (x,y)
         
     def reorder_coordinates(self, coords):
-    
         coords = np.array(coords)
         n = len(coords)
         visited = np.zeros(n, dtype=bool)
@@ -174,66 +163,10 @@ class steadyCPOfancy(steadyCPO):
             visited[next_point] = True
 
         return self.roll_to_max_distance_endpoints(coords[path])
-        
+
     def roll_to_max_distance_endpoints(self, coords):
-    
-        coords = np.array(coords)
-        n = len(coords)
-        
-        # Find the index pair with maximum distance
-        max_dist = -1
-        start_idx, end_idx = 0, 1
-        for i in range(n):
-            for j in range(i + 1, n):
-                dist = np.linalg.norm(coords[i] - coords[j])
-                if dist > max_dist:
-                    max_dist = dist
-                    start_idx, end_idx = i, j
+        c = np.vstack((coords, coords[0])).T
+        ds = np.sqrt(np.diff(c[0])**2 + np.diff(c[1])**2) # segment lengths
+        I = np.argmax(ds)
+        return np.roll(coords, -(I+1), axis=0) if I>0 else coords
 
-        # Try both rotations: start_idx → end_idx, or end_idx → start_idx (reversed)
-        rolled1 = np.roll(coords, -start_idx, axis=0)
-        rolled2 = np.roll(coords[::-1], -(n - 1 - start_idx), axis=0)
-
-        dist1 = np.linalg.norm(rolled1[0] - rolled1[-1])
-        dist2 = np.linalg.norm(rolled2[0] - rolled2[-1])
-
-        return rolled1 if dist1 >= dist2 else rolled2
-        
-#    """
-#    TSP for determining ordered list of boundary coordinates 
-#    Code from https://www.askpython.com/python/examples/travelling-salesman-problem-python
-#    """
-#        
-#    def distance(self, city1, city2):
-#      # Replace this with your distance calculation function (e.g., Euclidean distance)
-#      x1, y1 = city1
-#      x2, y2 = city2
-#      return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
-#     
-#    def tsp(self, cities):
-#      visited = [False] * len(cities)
-#      current_city = 0
-#     
-#      tour = []
-#      total_distance = 0
-#     
-#      for _ in range(len(cities)):
-#        visited[current_city] = True
-#        tour.append(current_city)
-#     
-#        next_city = None
-#        min_distance = float('inf')  # Represents positive infinity
-#     
-#        for i in range(len(cities)):
-#          if visited[i]:
-#            continue
-#     
-#          d = self.distance(cities[current_city], cities[i])
-#          if d < min_distance:
-#            min_distance = d
-#            next_city = i
-#     
-#        current_city = next_city
-#        total_distance += min_distance
-#     
-#      return tour, total_distance
