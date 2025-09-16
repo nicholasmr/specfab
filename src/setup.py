@@ -2,24 +2,30 @@
 # N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-
 
 import glob
-from  distutils.core import setup
+from setuptools import setup, find_packages
 
 if len(glob.glob('specfabpy/*.so')) == 0:
     print('No compiled specfabpy found. Run `make specfabpy`')
 else:
-    setup(name='specfabpy',
-          version='2025.6.27',
-          author="Nicholas M. Rathmann and David A. Lilien",
-          author_email="rathmann@nbi.ku.dk",
-          description="specfab Python module",
-          url="https://github.com/nicholasmr/specfab",
-          install_requires=["scipy","cmasher","cartopy"],
-          packages=['.'],
-          package_data={
-                '': [
-                    'specfabpy/specfabpy.cpython*.so', 
-                    'specfabpy/*.py', 
-                    'specfabpy/fenics/*.py',
-                    'specfabpy/firedrake/*.py',
-                ]},
+    setup(
+        name="specfabpy",
+        version="2025.9.15",
+        author="Nicholas M. Rathmann and David A. Lilien",
+        author_email="rathmann@nbi.ku.dk",
+        description="specfab Python module",
+        url="https://github.com/nicholasmr/specfab",
+        install_requires=[
+            "numpy>=1.24", #"scipy", "matplotlib", "cmasher", "cartopy",
+        ],
+        packages=find_packages(include=["specfabpy", "specfabpy.*"]),
+        include_package_data=True,
+        package_data={
+            "specfabpy": [
+                "*.so", "*.py",
+                "fenics/*.py",
+                "firedrake/*.py",
+            ],
+        },
+        python_requires=">=3.8",
     )
+

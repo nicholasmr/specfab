@@ -2,12 +2,16 @@ import numpy as np
 from specfabpy import specfab as sf
 lm, nlm_len = sf.init(8) 
 
-### Construct an arbitrary fabric to rotate
+"""
+Construct an arbitrary fabric to rotate
+"""
 a2 = np.diag([0, 0, 1]) # arbitrary second-order structure tensor
 nlm = np.zeros((nlm_len), dtype=np.complex64) # state vector (array of expansion coefficients)
 nlm[:sf.L2len] = sf.a2_to_nlm(a2) # l<=2 expansion coefficients
 
-### Rotate ODF
+"""
+Rotate ODF
+"""
 # Note: assumes L=<12 (rotation for larger L is not implemented)
 theta = np.deg2rad(-45) 
 phi   = np.deg2rad(45)

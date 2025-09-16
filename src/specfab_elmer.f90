@@ -26,7 +26,7 @@ function outerprod_to_Mandel(A,B) result (M)
     M(6,:) = [s*A(1,2)*B(1,1), s*A(1,2)*B(2,2), s*A(1,2)*B(3,3), 2*A(1,2)*B(2,3), 2*A(1,2)*B(1,3), 2*A(1,2)*B(1,2)]
 end
 
-include "elmer/include/IBOF.f90"
+include "include/IBOF.f90"
 
 !-------------------
 ! VECTORIZED RHEOLOGIES
@@ -217,7 +217,7 @@ function ae2_to_a2(ae2) result(a2)
     real(kind=dp)             :: a2(3,3)
     
     a2 = 0.0
-    include "elmer/include/ae2_to_a2__body.f90"
+    include "include/ae2_to_a2__body.f90"
 end
 
 function ae4_to_a4(ae2, ae4) result(a4)
@@ -229,6 +229,6 @@ function ae4_to_a4(ae2, ae4) result(a4)
 !    integer :: i,j,k,l
 
     a4 = 0.0 ! init
-    include "elmer/include/ae4_to_a4__body.f90"
+    include "include/ae4_to_a4__body.f90"
 end
 

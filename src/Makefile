@@ -7,7 +7,7 @@ COMPILER=gfortran -ffree-line-length-none -m64 -Wall -fPIC -Wno-integer-division
 OPTS=-O2 -mcmodel=small -lm -llapack -lblas
 OPTSNETCDF=-lnetcdff -I/usr/include -L/usr/lib 
 
-VERBOSE_F2PY=--quiet
+F2PY_VERBOSE=--quiet
 
 ### Core modules
 
@@ -50,7 +50,7 @@ SRCM77=$(OBJM77:.o=.f)
 
 ### Elmer, ...
 
-ELMERSRCS=$(wildcard elmer/specfab*.f90)
+ELMERSRCS=$(wildcard specfab*_elmer.f90)
 ELMERS=$(ELMERSRCS:.f90=)
 
 ### Collect all
@@ -61,7 +61,7 @@ SRCALL=$(SPECFAB).f90 $(SRCCORE) $(SRCM77)
 ### Python versions supported
 
 PYVERS=3
-#PYVERS=3.6 3.7 3.8 3.9 3.10 3.11
+#PYVERS=3.8 3.9 3.10 3.11 3.12 3.13
 
 #---------------------------
 
@@ -74,18 +74,22 @@ install: specfabpy
 
 # Firedrake/icepack docker enviroment
 icepack: specfabpy
-	pip3 install cartopy cmasher setuptools==61
+	@echo "*** Consider instead just using: pip3 install specfabpy ***"
+	pip3 intall numpy>=2.0.0 meson setuptools cython wheel ninja cartopy cmasher
 	#pip3 install . 
 	python3 setup.py install
 	
 specfabpy: $(SPECFAB).o
+	@echo "*** Archiving objects into $(PWD)/libspecfab.a";
+	rm -f $(PWD)/libspecfab.a;
+	ar rcs $(PWD)/libspecfab.a $(OBJALL);
 	for pyver in $(PYVERS); do \
 		echo "*** Making specfabpy for python$$pyver"; \
 		rm -f specfabpy.pyf; \
-		python$$pyver -m numpy.f2py --no-lower -m specfabpy -h specfabpy.pyf specfabpy.f90 $(VERBOSE_F2PY); \
-		python$$pyver -m numpy.f2py -lm -llapack -lblas -I. $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=small" $(VERBOSE_F2PY); \
+		python$$pyver -m numpy.f2py --no-lower -m specfabpy -h specfabpy.pyf specfabpy.f90 $(F2PY_VERBOSE); \
+		python$$pyver -m numpy.f2py -lm -llapack -lblas -lspecfab -I$(PWD) -I$(PWD)/include -L$(PWD) $(OBJALL) -c specfabpy.pyf specfabpy.f90 --f90flags="-ffree-line-length-none -mcmodel=small" $(F2PY_VERBOSE); \
 	done
-	@echo "\n*** Moving python *.so modules to src/$(PATHSPECFABPY)"
+	@echo "*** Moving python *.so modules to src/$(PATHSPECFABPY)"
 	@mv -f specfabpy.cpython* $(PATHSPECFABPY)/
 	
 clear:
@@ -117,7 +121,7 @@ aux-tests: $(SPECFAB).o
 lib$(SPECFAB).so: $(SRCALL) $(OBJALL)
 	$(COMPILER) $(OPTS) -shared $(SRCALL) -o $@
 
-$(SPECFAB).o: $(SPECFAB).f90 $(OBJCORE) elmer/specfab_elmer.f90
+$(SPECFAB).o: $(SPECFAB).f90 $(OBJCORE) specfab_elmer.f90
 	$(COMPILER) $(OPTS) -c $<
 
 $(DEPLESS): %.o: %.f90

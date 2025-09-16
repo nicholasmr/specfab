@@ -38,7 +38,7 @@ contains
     function nlm_isotropic(L) result(nlm)
         implicit none
         integer, intent(in) :: L
-        complex(kind=dp)    :: nlm(nlm_lenvec(L)), nlm_rot(nlm_lenvec(L))
+        complex(kind=dp)    :: nlm(nlm_lenvec(L)) !, nlm_rot(nlm_lenvec(L))
         nlm = 0.0d0
         nlm(1) = 1/sqrt(4*Pi)
     end
@@ -47,7 +47,7 @@ contains
         implicit none
         real(kind=dp), intent(in) :: m(3)
         integer, intent(in)       :: L
-        complex(kind=dp)          :: nlm(nlm_lenvec(L)), nlm_rot(nlm_lenvec(L))
+        complex(kind=dp)          :: nlm(nlm_lenvec(L)) !, nlm_rot(nlm_lenvec(L))
         nlm = nlm_ideal(m, 0.0d0, L)
     end
     
@@ -55,7 +55,7 @@ contains
         implicit none
         real(kind=dp), intent(in) :: m(3)
         integer, intent(in)       :: L
-        complex(kind=dp)          :: nlm(nlm_lenvec(L)), nlm_rot(nlm_lenvec(L))
+        complex(kind=dp)          :: nlm(nlm_lenvec(L)) !, nlm_rot(nlm_lenvec(L))
         nlm = nlm_ideal(m, Pi/2, L)
     end
     

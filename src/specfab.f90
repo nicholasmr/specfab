@@ -54,6 +54,6 @@ contains
     !---------------------------------
 
     ! Elmer/ice flow model (Lilien)
-    include "elmer/specfab_elmer.f90"
+    include "specfab_elmer.f90"
 
 end module specfab 

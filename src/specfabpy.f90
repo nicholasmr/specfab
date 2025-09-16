@@ -1117,7 +1117,7 @@ contains
     !---------------------------------
 
     ! Elmer ice flow model 
-    include "elmer/specfabpy_elmer.f90"
+    include "specfabpy_elmer.f90"
 
     ! Deformation modes module
     include "include/specfabpy_deformationmodes.f90"
