@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Nicholas Rathmann and Daniel Shapero, 2024
+# Nicholas Rathmann and Daniel Shapero, 2024-
 
 """
 Firedrake all-in-one interface for ice fabric dynamics, viscous anisotropy, etc.
@@ -7,22 +7,22 @@ Firedrake all-in-one interface for ice fabric dynamics, viscous anisotropy, etc.
 -----------
 NOTICE
 -----------
-The 2D ice-flow model plane is assumed to be xz. 
-This has the benifit of reducing the DOFs of the fabric evolution problem to involve only real numbers (real-valued state vector, s), considerably speeding up the solver.
-If your problem is in fact xy, nothing changes in the way this class is used; the (M)ODFs etc will simply reflect to assumption that flow is in xz rather than xy.
-When visualizing (M)ODFs/fabric quantities, you might therefore want to rotate the frame-of-reference from xz to xy.
+The 2D ice flow model plane is assumed to be xz. 
+This has the benefit of reducing the DOFs of the fabric evolution problem to involve only real numbers (real-valued state vector, s), considerably speeding up the solver.
+If your problem is in fact xy, nothing changes in the way this class is used; the fabric etc. will simply reflect to assumption that flow is in xz rather than xy.
+When visualizing fabric quantities, you might therefore want to rotate the frame-of-reference from xz to xy.
 
 -----------
 DEFINITIONS
 -----------
 s               : fabric state vector [n_0^0, n_2^0, n_2^1, n_2^2, ...], where n_l^m (nlm in code) are the harmonic expansion coefficients
 a2              : 2nd order orientation (structure) tensor 
-lami            : eigenvlues of a2
+lami            : eigenvalues of a2
 mi              : fabric principal directions {m1,m2,m3} (eigenvectors of a2)
-Eij             : diretional enhancement factors w.r.t. some frame {e1,e2,e3}, e.g. {m1,m2,m3}
+Eij             : directional enhancement factors w.r.t. some frame {e1,e2,e3}, e.g. {m1,m2,m3}
 nu_realspace    : real-space stabilization (multiplicative constant of real-space Laplacian)
 nu_multiplier   : multiplier of orientation-space regularization magnitude
-iota            : plastic spin free parameter; iota=1 => deck-of-cards behaviour
+iota            : plastic spin free parameter; iota=1 => deck-of-cards behavior
 Gamma0          : DDRX rate factor so that Gamma=Gamma0*(D-<D>), where D is the deformability
 Lambda0         : CDRX rate factor
 
@@ -35,13 +35,14 @@ TODO
 
 import numpy as np
 import matplotlib.tri as tri
-#import code # code.interact(local=locals())
+import code # code.interact(local=locals())
 
 from ..specfabpy import specfabpy as sf__
 from .. import constants as sfconst
 from .. import common as sfcom
 
 from firedrake import *
+from firedrake.adjoint import *
 
 class IceFabric:
     def __init__(
@@ -85,7 +86,7 @@ class IceFabric:
         self.Lame_grain   = self.sf.Cij_to_Lame_tranisotropic(Cij) 
         self.rho          = rho
 
-        ### Fabric state and dyamics
+        ### Fabric state and dynamics
         
         ele = ('CG',1)
         self.S = VectorFunctionSpace(self.mesh, *ele, dim=self.rnlm_len)
@@ -114,6 +115,7 @@ class IceFabric:
         self.Rd = FunctionSpace(self.mesh, *ele)
         self.Gd = TensorFunctionSpace(self.mesh, *ele, shape=(2,2))
         self.Vd = VectorFunctionSpace(self.mesh, *ele, dim=3) # for vectors
+        #self.Hd = TensorFunctionSpace(self.mesh, *ele, shape=(3,3)) # e.g. a2
         self.numdofs0 = self.Rd.dim()
 
         ### Idealized states
@@ -137,11 +139,11 @@ class IceFabric:
     def initialize(self, s0=None):
         s0 = self.rnlm_iso if s0 is None else s0
         self.set_state(project(Constant(s0), self.S))
-
-    def set_state(self, s):
+        
+    def set_state(self, s, u=None):
         self.s.assign(s)
         self.s0.assign(s)
-        self._setaux()
+        self._setaux(u=u)
         
     def set_BCs(self, si, domids):
         self.bcs = [DirichletBC(self.S, si[ii], did) for ii, did in enumerate(domids)]
@@ -154,7 +156,7 @@ class IceFabric:
         The fabric solver, called to step fabric field forward in time by amount dt
         """
         self.s0.assign(self.s)
-        F = self._weakform(self.p, u,S, dt, iota,Gamma0,Lambda0)
+        F = self.weakform(self.p, u,S, dt, iota,Gamma0,Lambda0)
         solve(lhs(F)==rhs(F), self.s, self.bcs, solver_parameters={'linear_solver':'gmres',}) # non-symmetric system (fastest tested are: gmres, bicgstab, tfqmr)
         self._setaux(u=u)
         
@@ -173,12 +175,12 @@ class IceFabric:
             if not isinstance(Gamma0, list): Gamma0 = [Gamma0,]
             for ii, gam0 in enumerate(Gamma0):
                 print('...approaching solution using DDRX rate factor %i of %i'%(ii, len(Gamma0)))
-                F = self._weakform(self.s, u, S, dt, iota,gam0,Lambda0, **kwargs)
+                F = self.weakform(self.s, u, S, dt, iota,gam0,Lambda0, **kwargs)
                 solve(F==0, self.s, self.bcs, solver_parameters={'newton_solver':{'linear_solver':'gmres', 'preconditioner':'none'}})
 
         self._setaux(u=u)
 
-    def _weakform(self, s, u,S, dt, iota=None, Gamma0=None, Lambda0=None, zeta=0):
+    def weakform(self, s, u,S, dt, iota=None, Gamma0=None, Lambda0=None, zeta=0):
 
         # Crystal processes to include
         ENABLE_LROT = iota is not None
@@ -236,7 +238,7 @@ class IceFabric:
                 # Steady state solver? Use nonlinear iteration for DDRX-activated problem
                 D = dot(self.Mrr_DDRX_src[0], s)/s_sub[0] # <D> (Rathmann et al., 2025)                    
             else: 
-                # Time-dependent probem? Linearized problem by linearizing <D>
+                # Time-dependent problem? Linearized problem by linearizing <D>
                 D = dot(self.Mrr_DDRX_src[0], self.s0)/self.s0.sub(0) # <D> estimated using previous solution (Rathmann and Lilien, 2021)
             F_snk = -sum([Gamma0*D*s_sub[ii]*self.ws[ii]*dx for ii in self.srrng])
             
@@ -291,6 +293,9 @@ class IceFabric:
             if u is not None: 
                 self.E_CAFFE = self.get_E_CAFFE(u)
                 self.E_EIE   = self.get_E_EIE(u)
+            else:
+                self.E_CAFFE = Function(self.Rd).interpolate(1)
+                self.E_EIE   = Function(self.Rd).interpolate(1)
         
     def get_pfJ(self, *args, **kwargs):
         """
@@ -319,7 +324,7 @@ class IceFabric:
 #        E_EIE.vector()[:] = self.sf.E_EIE_arr(...)
         return E_EIE
         
-    def get_Eij(self, ei=()):   
+    def get_Eij(self, ei=(), xyz_sort=False):   
         """
         Bulk enhancement factors wrt ei=(e1,e2,e3) axes for *transversely isotropic* grains.
         If ei=() then CPO eigenframe is used.
@@ -351,6 +356,29 @@ class IceFabric:
             Eij_fs[kk].vector()[:] = Eij[:,kk]
             
         return (ei_fs, Eij_fs, lami_fs)
+        
+    def get_lamxi(self, s=None):
+        """
+        Sort eigenpairs such they correspond to the pairs with the largest x,y,z component of mi
+        """
+        
+        if s is not None: self.set_state(s)
+        mi, lami = sfcom.eigenframe(self.nlm, symframe=self.symframe, modelplane=self.modelplane) # [node,i,xyz], [node,i]
+
+        Ix = np.argmax(np.abs(mi[:, :, 0]), axis=1)  # (n_nodes,) -> index of vector with max x
+        Iy = np.argmax(np.abs(mi[:, :, 1]), axis=1)  # (n_nodes,) -> index of vector with max y
+        Iz = np.argmax(np.abs(mi[:, :, 2]), axis=1)  # (n_nodes,) -> index of vector with max z
+
+        rows = np.arange(len(lami))
+        lami_fs = [Function(self.Rd) for _ in range(3)] # a2 eigenvalues (lami)
+        lami_fs[0].vector()[:] = lami[rows, Ix]
+        lami_fs[1].vector()[:] = lami[rows, Iy]
+        lami_fs[2].vector()[:] = lami[rows, Iz]
+
+        dlamxy = Function(self.Rd)
+        dlamxy.vector()[:] = lami[rows, Ix] - lami[rows, Iy]
+
+        return lami_fs, dlamxy
                 
     def Gamma0_Lilien23_EDC(self, u, T, A=4.3e7, Q=3.36e4):
         # DDRX rate factor from Dome C ice-core calibration experiment (Lilien et al., 2023, p. 7)

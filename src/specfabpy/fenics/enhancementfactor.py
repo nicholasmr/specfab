@@ -236,7 +236,7 @@ class EnhancementFactor():
 
     def chi(self, u2, s, verbose=False):
         """
-        Fabric compatibility measure \chi
+        Fabric compatibility measure chi
         """
 
         gam, u3, D3, n, Q = self.shearfrac_SSA(u2)

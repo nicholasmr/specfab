@@ -9,7 +9,7 @@ if len(glob.glob('specfabpy/*.so')) == 0:
 else:
     setup(
         name="specfabpy",
-        version="2025.9.15",
+        version="2025.10.2",
         author="Nicholas M. Rathmann and David A. Lilien",
         author_email="rathmann@nbi.ku.dk",
         description="specfab Python module",
@@ -24,6 +24,7 @@ else:
                 "*.so", "*.py",
                 "fenics/*.py",
                 "firedrake/*.py",
+                "tamm/*.py",
             ],
         },
         python_requires=">=3.8",

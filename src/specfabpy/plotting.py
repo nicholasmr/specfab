@@ -88,7 +88,7 @@ def plotS2field(ax, F, lon, lat, kwargs_cf={}, \
 
 def plotODF(nlm, lm, ax, \
         showcb=True, showgl=True, hidetruncerr=True, # options/flags \
-        norm=True, latres=50, lonres=2*50, nchunk=None, # general \
+        norm=True, normpctl=False, latres=50, lonres=2*50, nchunk=None, # general \
         cmap='Greys', lvlset='iso-up', # colormap and lvls \ 
         cbfraction=0.075, cbaspect=9, cborientation='horizontal', cbpad=0.1, cblabel='$n/N$ (ODF)', cblabelpad=None, cbtickintvl=4, extend=None, # colorbar \
         kwargs_gl=kwargs_gl_default, # grid lines \
@@ -108,6 +108,8 @@ def plotODF(nlm, lm, ax, \
     (F, lat, lon) = discretize(nlm, lm, latres, lonres)
     if hidetruncerr: F[F<0] = 1e-10 # ignore numerical/truncation errors    
 
+    if normpctl: F /= np.percentile(F, normpctl)
+
     ### Determine colormap
     if isinstance(cmap, str) and cmap == 'Greys' and \
        isinstance(lvlset, str) and lvlset == 'iso-up':
@@ -118,10 +120,10 @@ def plotODF(nlm, lm, ax, \
     if isinstance(lvlset, str):
         if lvlset == 'iso-up':   
             lvls  = isodist*np.arange(1,9+0.1)
-            lvlfmt = lambda x,pos:'$%i/(4\pi)$'%(x/isodist)
+            lvlfmt = lambda x,pos:r'$%i/(4\pi)$'%(x/isodist)
         elif lvlset == 'zero-up': 
             lvls  = isodist*np.arange(0,8+0.1)
-            lvlfmt = lambda x,pos:'0' if x<1e-10 else '$%i/(4\pi)$'%(x/isodist)
+            lvlfmt = lambda x,pos:'0' if x<1e-10 else r'$%i/(4\pi)$'%(x/isodist)
         else: 
             raise ValueError('sfplt.plotODF(): Note sure what to do with passed lvlset; should be "iso-up", "zero-up" or list [lvls0, lvlmul, lvlfmt]')
     elif isinstance(lvlset, (list, tuple)) and len(lvlset) == 2:
@@ -431,7 +433,7 @@ def _plotparcel_side(ax, pi, F, alpha, lw, ls, facecolor, edgecolor, zorder=5):
 def sph_harm_P(l,m, colat,lon, degree=False):
     
     """
-    Vector Spherical Harmonic (VSH) mode \Psi_l^m, here denoted "P"
+    Vector Spherical Harmonic (VSH) mode Psi_l^m, here denoted "P"
     """
     
     P = np.array([0*colat, 0*lon], dtype=np.complex128) # ({theta,phi} components, colat, lon)
@@ -448,7 +450,7 @@ def sph_harm_P(l,m, colat,lon, degree=False):
 def sph_harm_Q(l,m, colat,lon, degree=False):
     
     """
-    Vector Spherical Harmonic (VSH) mode \Phi_l^m, here denoted "Q"
+    Vector Spherical Harmonic (VSH) mode Phi_l^m, here denoted "Q"
     """
     
     P = np.array([0*colat, 0*lon], dtype=np.complex128) # ({theta,phi} components, colat, lon)

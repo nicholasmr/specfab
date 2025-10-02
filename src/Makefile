@@ -72,10 +72,13 @@ install: specfabpy
 	python3 setup.py install --user
 	# alternative on mac, run: pip3 install .
 
+devinstall: specfabpy
+	python3 setup-dev.py install --user
+
 # Firedrake/icepack docker enviroment
 icepack: specfabpy
-	@echo "*** Consider instead just using: pip3 install specfabpy ***"
-	pip3 intall numpy>=2.0.0 meson setuptools cython wheel ninja cartopy cmasher
+	@echo "*** You can also just run: pip3 install specfabpy ***"
+	#pip3 install setuptools==61 cartopy cmasher
 	#pip3 install . 
 	python3 setup.py install
 	
