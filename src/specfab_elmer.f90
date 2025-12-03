@@ -259,6 +259,15 @@ contains
       include "tabulated_vpsc/040010010.f90" ! beta = 0.04, gamma = 1
       CALL R2Ro(ae2,dim,ai,Angle)
       CALL OPILGGE_ai_nl(ai,Angle,FabricGrid,C)
+      
+      ! *** Currently ***
+      !     StressVec = eta0 * matmul(etaij, StrainRateVec), where StrainRateVec = [exx,eyy,ezz, 2exy,2eyz,2exz]
+      
+      !*** Change so that ***
+      !     StressVec = 2*eta0 * matmul(etaij, StrainRateVec), where StrainRateVec = [exx,eyy,ezz, exy,eyz,exz]
+      
+      C(1:3,1:3) = C(1:3,1:3)/2
+      
   end
 
 !!!  ORIGINAL VERSION FOR REFERENCE !!!
