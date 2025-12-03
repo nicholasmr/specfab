@@ -35,9 +35,11 @@ DEFORMMODES=deformationmodes
 IDEALSTATE=idealstate
 FRAMES=frames
 LAMBDASOLVER=lambdasolver
+GOLF=golf
+ELMER=specfab_elmer
 
-DEPLESS=$(HEADER).o $(TENPROD).o $(MANDEL).o $(REDUCED).o $(GAUNT).o 
-WITHDEPS=$(RHEOLOGIES).o $(ELASTICITIES).o $(MOMENTS).o $(LAMBDASOLVER).o $(DYNAMICS).o $(HOMOGEN).o $(ENHFAC).o $(ROTATION).o $(WAVEPROP).o $(DEFORMMODES).o $(IDEALSTATE).o $(FRAMES).o 
+DEPLESS=$(HEADER).o $(TENPROD).o $(MANDEL).o $(REDUCED).o $(GAUNT).o $(GOLF).o
+WITHDEPS=$(RHEOLOGIES).o $(ELASTICITIES).o $(MOMENTS).o $(LAMBDASOLVER).o $(DYNAMICS).o $(HOMOGEN).o $(ENHFAC).o $(ROTATION).o $(WAVEPROP).o $(DEFORMMODES).o $(IDEALSTATE).o $(FRAMES).o $(ELMER).o 
 
 OBJCORE=$(DEPLESS) $(WITHDEPS)
 SRCCORE=$(OBJCORE:.o=.f90)
@@ -124,7 +126,7 @@ aux-tests: $(SPECFAB).o
 lib$(SPECFAB).so: $(SRCALL) $(OBJALL)
 	$(COMPILER) $(OPTS) -shared $(SRCALL) -o $@
 
-$(SPECFAB).o: $(SPECFAB).f90 $(OBJCORE) specfab_elmer.f90
+$(SPECFAB).o: $(SPECFAB).f90 $(OBJCORE)
 	$(COMPILER) $(OPTS) -c $<
 
 $(DEPLESS): %.o: %.f90
@@ -170,6 +172,9 @@ $(LAMBDASOLVER).o:
 	cd $(PATHM77) && $(COMPILER) $(OPTS) -c *.f
 	$(COMPILER) $(OPTS) -c $(LAMBDASOLVER).f90
 	$(COMPILER) $(OPTS) $(PATHM77)/test.f90 $(LAMBDASOLVER).o $(OBJM77) -o $(PATHM77)/test
+
+$(ELMER).o: $(ELMER).f90
+	$(COMPILER) $(OPTS) -c $<
 
 #---------------------------
 

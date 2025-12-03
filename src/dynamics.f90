@@ -295,6 +295,86 @@ contains
             M_DDRX_src(ii,1:nlm_len) = matmul(GC(ii,:nlm_len,1:SHI_DDRX), g) ! len(g)=SHI_DDRX
         end do
     end
+
+    !------------------
+    
+!    function M2_DDRX(clm, tau)
+!        
+!        implicit none
+
+!        complex(kind=dp), intent(in) :: clm(nlm_len,nlm_len)
+!        real(kind=dp), intent(in)    :: tau(3,3) ! Stress tensor
+!        complex(kind=dp)             :: M2_DDRX(nlm_len,nlm_len,3,3)
+!        real(kind=dp)                :: Davg
+
+!        M2_DDRX = M2_DDRX_src(tau) ! Linear source term (D in matrix form)
+!        Davg   = 1.0d0 
+! !        do ii = 1, nlm_len    
+!!            M_DDRX(ii,ii) = M_DDRX(ii,ii) - Davg ! Add <D> to diagonal such that M = Gamma/Gamma0 = D - <D>*I
+!!        end do
+!    end
+    
+    function G_DDRX() result(G)
+    
+        implicit none
+
+        complex(kind=dp) :: G(nlm_len,nlm_len,3,3)
+        real(kind=dp)    :: k
+        complex(kind=dp), dimension(nlm_len,nlm_len) :: Y00, Y22m, Y21m, Y20, Y21p, Y22p
+
+        Y00  = GC(:nlm_len, :nlm_len, 1) * sqrt(4*Pi)/3.0d0
+        Y22m = GC(:nlm_len, :nlm_len, 2)
+        Y21m = GC(:nlm_len, :nlm_len, 3)
+        Y20  = GC(:nlm_len, :nlm_len, 4) * sqrt(2.0d0/3)
+        Y21p = GC(:nlm_len, :nlm_len, 5)
+        Y22p = GC(:nlm_len, :nlm_len, 6)
+        
+        k = sqrt(2.0d0*Pi/15)
+        
+        G(:,:,1,1) = Y00 + k*(+Y22m+Y22p-Y20)
+        G(:,:,2,2) = Y00 + k*(-Y22m-Y22p-Y20)
+        G(:,:,3,3) = Y00 + k*(2*Y20)
+        G(:,:,2,3) = k* i*(Y21m+Y21p)
+        G(:,:,1,3) = k*    Y21m-Y21p
+        G(:,:,1,2) = k* i*(Y22m-Y22p)
+
+        G(:,:,3,2) = G(:,:,2,3)
+        G(:,:,3,1) = G(:,:,1,3)
+        G(:,:,2,1) = G(:,:,1,2)
+    end
+    
+    function H_DDRX() result(G)
+    
+        implicit none
+
+        complex(kind=dp) :: G(nlm_len,3,3)
+        real(kind=dp)    :: k, a
+        complex(kind=dp), dimension(nlm_len) :: Y00, Y22m, Y21m, Y20, Y21p, Y22p
+
+        a = sqrt(4*Pi)
+        
+        Y00  = a*GC(1, :nlm_len, 1) * sqrt(4*Pi)/3.0d0
+        Y22m = a*GC(1, :nlm_len, 2)
+        Y21m = a*GC(1, :nlm_len, 3)
+        Y20  = a*GC(1, :nlm_len, 4) * sqrt(2.0d0/3)
+        Y21p = a*GC(1, :nlm_len, 5)
+        Y22p = a*GC(1, :nlm_len, 6)
+        
+        k = sqrt(2.0d0*Pi/15)
+        
+        G(:,1,1) = Y00 + k*(+Y22m+Y22p-Y20)
+        G(:,2,2) = Y00 + k*(-Y22m-Y22p-Y20)
+        G(:,3,3) = Y00 + k*(2*Y20)
+        G(:,2,3) = k* i*(Y21m+Y21p)
+        G(:,1,3) = k*    Y21m-Y21p
+        G(:,1,2) = k* i*(Y22m-Y22p)
+
+        G(:,3,2) = G(:,2,3)
+        G(:,3,1) = G(:,1,3)
+        G(:,2,1) = G(:,1,2)
+    end
+    
+    !-------------------------
     
     function ev_D(nlm, tau, pow) result(D)
     

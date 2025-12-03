@@ -127,24 +127,25 @@ class EnhancementFactor():
             
         return self._np2func(ei, Eij, lami)
         
-    # @TODO func inp args to use self.homoparams
-    def Eij_orthotropic(self, sb, sn, Eij_grain, alpha, n_grain, ei=()):
+    def Eij_orthotropic(self, sb, sn, ei=()):
         """
         Same as Eij_tranisotropic() but for *orthotropic* grains
         """
     
-        if n_grain != 1: raise ValueError('only n_grain = 1 (linear viscous) is supported')
-        if not(0 <= alpha <= 1): raise ValueError('alpha should be between 0 and 1')
-       
         blm = self._nlm_nodal(sb) # [node, component]
         nlm = self._nlm_nodal(sn)
         vlm = 0*nlm # calculate from (blm,nlm) using joint ODF
         mi, lami = sfcom.eigenframe(nlm, symframe=self.symframe, modelplane=self.modelplane) # [node,i,xyz], [node,i]
         if   len(ei) == 0:           ei = (mi[:,0], mi[:,1], mi[:,2])
         elif len(ei[0].shape) == 1:  ei = sfcom.ei_tile(ei, self.numdofs) # ei[i][node,xyz] = (e1[node,xyz], e2, e3)
-        Eij = self.sf.Eij_orthotropic_arr(blm, nlm, vlm, *ei, Eij_grain, alpha, n_grain) # [node, Voigt index 1--6]
-
-        Eij[Eij < 0] = 1e-2 # Set negative E_ij to a very small value (flow inhibiting)
+        
+        if self.enhancementmodel == 'LTS':
+        
+            Eij_grain, alpha, n_grain = self.homoparams
+            if n_grain != 1: raise ValueError('only n_grain = 1 (linear viscous) is supported')
+            if not(0 <= alpha <= 1): raise ValueError('alpha should be between 0 and 1')
+            Eij = self.sf.Eij_orthotropic_arr(blm, nlm, vlm, *ei, Eij_grain, alpha, n_grain) # [node, Voigt index 1--6]
+            Eij[Eij < 0] = 1e-2 # Set negative E_ij to a very small value (flow inhibiting)
         
         return self._np2func(ei, Eij, lami)
         

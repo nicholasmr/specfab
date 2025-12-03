@@ -1,9 +1,10 @@
 #!/usr/bin/python3
-# Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2022-2024
+# Nicholas M. Rathmann <rathmann@nbi.ku.dk>, 2022-
 
-import copy, sys, time, code # code.interact(local=locals())
+import copy, code # code.interact(local=locals())
  
 import numpy as np
+import matplotlib.tri as tri
 from dolfin import *
 
 from ..specfabpy import specfabpy as sf__
@@ -22,15 +23,24 @@ class OlivineFabric():
     cij_Abramson1997 = sfconst.olivine['elastic']['Abramson1997']
     cij_Jacobsen2008 = sfconst.olivine['elastic']['Jacobsen2008']
 
-    def __init__(self, mesh, boundaries, L=8, nu_realspace=1e-3, nu_multiplier=1, modelplane='xz', ds=None, nvec=None, fabrictype='A', enable_SDM=True, enable_FSE=False, \
-                    Eij_grain=(1,1,1, 1,1,1), alpha=0, n_grain=1, \
-                    Cij=None, rho=None): 
+    def __init__(
+        self, mesh, boundaries, L, *args, \
+        nu_realspace=5e-1, nu_multiplier=1, modelplane='xz', \
+        fabrictype='A', enable_SDM=True, enable_FSE=False, \
+        enhancementmodel='LTS', Eij_grain=(1,1,1, 1,1,1), alpha=0, n_grain=1, CAFFE_params=(0.1, 10), \
+        ds=None, nvec=None, setextra=True, \
+        Cij=sfconst.olivine['elastic']['Abramson1997'], rho=sfconst.olivine['density'], **kwargs
+    ): 
                     
         self.mesh, self.boundaries = mesh, boundaries
         self.L = L
         self.enable_SDM = enable_SDM
         self.enable_FSE = enable_FSE
         self.fabrictype = fabrictype # only spatio-temporal constant type allowed for now
+        self.iota_n, self.iota_b = +1, -1
+        self.enhancementmodel = enhancementmodel # 'LTS', 'APEX', ...
+        self.CAFFE_params = CAFFE_params # (Emin, Emax)
+        self.setextra = setextra # set Eij, E_CAFFE, pfJ, etc. on every state update?
         
         if self.fabrictype not in ['A', 'B', 'C']:
             raise ValueError('Fabric type "%s" not among supported types "A", "B", "C"'%(fabrictype))
@@ -53,10 +63,9 @@ class OlivineFabric():
         # Grain enhancement factors w.r.t. {q1,q2,q3} = {b,n,v} axes.
         # Set Enb >> 1 to make n--b slip system comparatively soft.
         # E.g.: self.Eij_grain = (1,1,1, 1,1,Enb) # Voigt order: (Ebb, Enn, Evv, Env, Ebv, Enb)
-        self.grain_params = (Eij_grain, alpha, n_grain)
-        self.enhancementfactor = EnhancementFactor(self.mesh, self.L, modelplane=modelplane)
-        self.update_Eij()
-                
+        homoparams = (Eij_grain, alpha, n_grain)
+        self.enhancementfactor = EnhancementFactor(self.mesh, self.L, modelplane=modelplane, enhancementmodel=self.enhancementmodel, homoparams=homoparams)
+
 
     def set_state(self, sb, sn, interp=True):
         if interp:
@@ -70,25 +79,46 @@ class OlivineFabric():
     def get_state(self, x, y):
         return (self.SDM_n.get_nlm(x,y), self.SDM_b.get_nlm(x,y))
 
+    def initialize(self):
+        self.SDM_n.initialize() # isotropic
+        self.SDM_b.initialize() # isotropic
+        self._setaux()
+        
     def get_FSE(self, x, y):
         return self.FSE.eigenframe(x,y)
         
-    def evolve(self, u, S, dt, iota_n=+1, iota_b=-1, Gamma0=None, Lambda0=None):
+    def get_pfJ(self, *args, **kwargs):
+        return self.enhancementfactor.pfJ(self.SDM_n.s, *args, **kwargs)
+        
+    def set_isotropic_BCs(self, *args, **kwargs):
+        self.SDM_n.set_isotropic_BCs(*args, **kwargs)
+        self.SDM_b.set_isotropic_BCs(*args, **kwargs)
+        
+    def evolve(self, u, S, dt, Gamma0=None, Lambda0=None):
         if self.enable_SDM:
-            self.SDM_n.evolve(u, S, dt, iota=iota_n, Gamma0=Gamma0, Lambda0=Lambda0)
-            self.SDM_b.evolve(u, S, dt, iota=iota_b, Gamma0=Gamma0, Lambda0=Lambda0)
-            self.update_Eij()
+            self.SDM_n.evolve(u, S, dt, iota=self.iota_n, Gamma0=Gamma0, Lambda0=Lambda0)
+            self.SDM_b.evolve(u, S, dt, iota=self.iota_b, Gamma0=Gamma0, Lambda0=Lambda0)
+            self._setaux()
         if self.enable_FSE: 
             self.FSE.evolve(u, dt)
             
-    def update_Eij(self):
-        self.mi, self.Eij, self.ai = self.enhancementfactor.Eij_orthotropic(self.SDM_b.s, self.SDM_n.s, *self.grain_params, ei=())
-        self.xi, self.Exij, _      = self.enhancementfactor.Eij_orthotropic(self.SDM_b.s, self.SDM_n.s, *self.grain_params, ei=np.eye(3)) 
-        # ... unpack
-        self.m1, self.m2, self.m3 = self.mi # eigenvectors (presumed fabric and rheological symmetry directions)
-        self.E11, self.E22, self.E33, self.E23, self.E31, self.E12 = self.Eij  # eigenenhancements
-        self.Exx, self.Eyy, self.Ezz, self.Eyz, self.Exz, self.Exy = self.Exij # Cartesian enhancements
-        self.a1, self.a2, self.a3 = self.ai # CPO eigenvalues
+    def solvesteady(self, u, S, **kwargs):
+        self.SDM_n.solvesteady(u, S, iota=self.iota_n, **kwargs)
+        self.SDM_b.solvesteady(u, S, iota=self.iota_b, **kwargs)
+        self._setaux(u=u)
+            
+    def _setaux(self, u=None):
+        if self.setextra:
+            statevecs = (self.SDM_b.s, self.SDM_n.s)
+            self.mi, self.Eij, self.lami = self.enhancementfactor.Eij_orthotropic(*statevecs, ei=())
+            self.xi, self.Exij, _        = self.enhancementfactor.Eij_orthotropic(*statevecs, ei=np.eye(3)) 
+            # unpack above eigenframe fields for convenience
+            self.m1, self.m2, self.m3 = self.mi # rheological symmetry directions
+            self.E11, self.E22, self.E33, self.E23, self.E31, self.E12 = self.Eij  # eigenenhancements
+            self.Exx, self.Eyy, self.Ezz, self.Eyz, self.Exz, self.Exy = self.Exij # Cartesian enhancements
+            self.lam1, self.lam2, self.lam3 = self.lami # fabric eigenvalues \lambda_i (not a2 eigenvalues unless symframe=-1)
+            # additional fields...
+            self.pfJ = self.get_pfJ()
             
     def set_elastic_params(self, Cij=None, rho=None):
         if Cij is not None: 
@@ -116,5 +146,11 @@ class OlivineFabric():
         nlm = blm = vlm = [1/np.sqrt(4*np.pi)] + [0]*(self.nlm_len-1)
         vS1, vS2, vP = self.sf.Vi_elastic_orthotropic(blm, nlm, vlm, alpha,self.Lame_grain,self.rho, theta,phi)
         return (vP, vS1, vS2)
-    
+        
+    def df2np(self, F, ele=('CG',2), withcoords=False):
+        coords = copy.deepcopy(self.mesh.coordinates().reshape((-1, 2)).T)
+        triang = tri.Triangulation(*coords, triangles=self.mesh.cells())    
+        Q = FunctionSpace(self.mesh, *ele)
+        F_np = project(F,Q).compute_vertex_values(self.mesh)
+        return (triang, F_np, coords) if withcoords else (triang, F_np)
 

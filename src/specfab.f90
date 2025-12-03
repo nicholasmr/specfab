@@ -18,6 +18,7 @@ module specfab
     use deformationmodes
     use idealstate
     use frames
+    use specfab_elmer
 
     implicit none 
 
@@ -48,12 +49,5 @@ contains
         call inithomogenizations(Lcap) ! Set isotropic structure tensors
         
     end
-
-    !---------------------------------
-    ! EXTERNAL ADD-ONS
-    !---------------------------------
-
-    ! Elmer/ice flow model (Lilien)
-    include "specfab_elmer.f90"
 
 end module specfab 

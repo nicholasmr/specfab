@@ -21,6 +21,7 @@ module specfabpy
         M_LROT__sf => M_LROT, nlm_LROT__sf => nlm_LROT, ri_LROT__sf => ri_LROT, &
         M_LROT_new__sf => M_LROT_new, plm_LROT__sf => plm_LROT, qlm_LROT__sf => qlm_LROT, &
         M_DDRX__sf => M_DDRX, M_DDRX_src__sf => M_DDRX_src, & 
+        G_DDRX__sf => G_DDRX, H_DDRX__sf => H_DDRX, &
         M_DDRX_C23__sf => M_DDRX_C23, &
         M_CDRX__sf => M_CDRX, &
         M_REG__sf  => M_REG, &
@@ -28,7 +29,6 @@ module specfabpy
         ! Structure tensors 
         a2__sf => a2, a4__sf => a4, a6__sf => a6, & 
         a2_to_nlm__sf => a2_to_nlm, a4_to_nlm__sf => a4_to_nlm, a6_to_nlm__sf => a6_to_nlm, & ! canonical representations
-        ae2_to_a2__sf => ae2_to_a2, ae4_to_a4__sf => ae4_to_a4, & ! Elmer representations
         a4_to_mat__sf => a4_to_mat, & ! a4 in Mandel notation
         a4_eigentensors__sf => a4_eigentensors, & ! 3x3 eigentensors of a4
         a4_IBOF__sf => a4_IBOF, & ! from Elmer
@@ -113,6 +113,10 @@ module specfabpy
         pureshear_F__sf => pureshear_F, pureshear_ugrad__sf => pureshear_ugrad, &
         simpleshear_gamma__sf => simpleshear_gamma, simpleshear_gamma_to_t__sf => simpleshear_gamma_to_t, &
         simpleshear_F__sf => simpleshear_F, simpleshear_ugrad__sf => simpleshear_ugrad, &
+        
+        ! Elmer
+        ae2_to_a2__sf => ae2_to_a2, ae4_to_a4__sf => ae4_to_a4, & ! Elmer representations
+        Cmat_GOLF_dimless__sf => Cmat_GOLF_dimless, & 
 
         ! AUX
         vec_to_mat_voigt__sf => vec_to_mat_voigt, &
@@ -189,6 +193,22 @@ contains
         complex(kind=dp)          :: M_DDRX_src(size(nlm),size(nlm))
         
         M_DDRX_src = M_DDRX_src__sf(tau)
+    end
+    
+    function G_DDRX(nlm_len) result(G)
+        use specfabpy_const
+        implicit none
+        integer, intent(in) :: nlm_len
+        complex(kind=dp)    :: G(nlm_len,nlm_len,3,3)
+        G = G_DDRX__sf()
+    end
+    
+    function H_DDRX(nlm_len) result(H)
+        use specfabpy_const
+        implicit none
+        integer, intent(in) :: nlm_len
+        complex(kind=dp)    :: H(nlm_len,3,3)
+        H = H_DDRX__sf()
     end
     
     function M_DDRX_C23(nlm, c0) result(M_DDRX)
@@ -1000,6 +1020,15 @@ contains
         DDRX_decayrate = g 
     end
     
+    function evD(nlm, tau)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: tau(3,3)
+        real(kind=dp) :: evD
+        evD = ev_D2(nlm, tau) ! <D>
+    end
+    
     function Gamma0(eps, T, A, Q)
         use specfabpy_const
         implicit none
@@ -1111,13 +1140,47 @@ contains
 !        call aiv_orthotropic(nlm_1,nlm_2,nlm_3, a2v_nlm,a4v_nlm, a4v_jk_sym2,a4v_jk_sym4)
 !        call aiv_orthotropic_discrete(mi, a2v_mi,a4v_mi, a4v_jk_sym2,a4v_jk_sym4)
 !    end
-    
+
     !---------------------------------
-    ! EXTERNAL, NON-CORE FEATURES
+    ! Elmer/Ice routines
     !---------------------------------
 
-    ! Elmer ice flow model 
-    include "specfabpy_elmer.f90"
+    function ae2_to_a2(ae2)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: ae2(5)
+        real(kind=dp)             :: ae2_to_a2(3,3)
+        ae2_to_a2 = ae2_to_a2__sf(ae2)
+    end
+
+    function ae4_to_a4(ae2, ae4)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: ae2(5), ae4(9)
+        real(kind=dp)             :: ae4_to_a4(3,3,3,3)
+        ae4_to_a4 = ae4_to_a4__sf(ae2, ae4)
+    end
+
+    function a4_IBOF(a2)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: a2(3,3)
+        real(kind=dp)             :: a4_IBOF(3,3,3,3)
+        
+        a4_IBOF = a4_IBOF__sf(a2)
+    end
+
+    function etaij_GOLF(a2)
+        use specfabpy_const
+        real(kind=dp), intent(in)           :: a2(3,3)
+        real(kind=dp)                       :: etaij_GOLF(6,6)
+
+        etaij_GOLF = Cmat_GOLF_dimless__sf(a2)
+    end
+
+    !---------------------------------
+    ! OTHER
+    !---------------------------------
 
     ! Deformation modes module
     include "include/specfabpy_deformationmodes.f90"
