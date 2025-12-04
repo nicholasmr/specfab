@@ -3,60 +3,57 @@
 import numpy as np
 from specfabpy import specfab as sf
 sf.init(4)
-ex,ey,ez = np.eye(3)
 
 """
 Test the *relative* viscosity matrix model of Elmer/Ice GOLF 
 
-The 6x6 etaij matrix is defined so that
+The 6x6 matrix "etaij" is defined so that
     
-    StressVec = 2*eta0 * matmul(etaij, StrainRateVec)
+    Svec = 2*eta0 * matmul(etaij, Dvec)
     
-where 
+where Svec and Dvec are the vectorized deviatoric stress and strain rate tensors:
     
-    StressVec     = [Sxx, Syy, Szz, Sxy, Syz, Sxz]
-    StrainRateVec = [Dxx, Dyy, Dzz, Dxy, Dyz, Dxz]
+    Svec = [Sxx, Syy, Szz, Sxy, Syz, Sxz]
+    Dvec = [Dxx, Dyy, Dzz, Dxy, Dyz, Dxz]
     
-Notice that for isotropic ice, Glen's law must be recovered, implying: matmul(etaij, StrainRateVec) = StrainRateVec
+Notice that for isotropic ice, Glen's law must be recovered, implying:  matmul(etaij, Dvec) = Dvec
 """
 
-### isotropic
-a2 = np.eye(3)/3 
+ex,ey,ez = np.eye(3) # Cartesian basis vectors
+vectorize = lambda M: np.array([M[0,0],M[1,1],M[2,2], M[0,1],M[1,2],M[0,2]]) # vectorize matrix
 
-### single max
-#a2     = np.diag([1,0,0]) # z single max
-#a2     = np.diag([0,1,0]) # z single max
-#a2     = np.diag([0,0,1]) # z single max
+# Ideal fabric states
 
-### girdle
-#a2     = np.diag([0.5,0.5,0]) 
-#a2     = np.diag([0.5,0,0.5]) 
-#a2     = np.diag([0,0.5,0.5]) 
+a2_iso  = np.eye(3)/3 
+a2_smax = lambda mi: np.einsum('i,j',mi,mi) # single max with rot. symmetry axis mi
+a2_gdl  = lambda mi: (np.eye(3)-a2_smax(mi))/2 # girdle with rot. symmetry axis mi
 
-etaij = sf.etaij_GOLF(a2)
-print(etaij)
+# Print etaij for some test case
 
+a2_test = a2_smax(ez)
+
+etaij = sf.etaij_GOLF(a2_test)
 etaij_diag = np.diag(etaij)
-#print(etaij_diag)
 eta_xxxx, eta_yyyy, eta_zzzz, eta_xyxy, eta_yzyz, eta_xzxz = etaij_diag # unpack components
+print(etaij)
+#print(etaij_diag)
 
 """
-Verify that for an isotropic fabric: matmul(etaij, StrainRateVec) = StrainRateVec
+Verify that for an isotropic fabric: matmul(etaij, Dvec) = Dvec
 """
 
 print('\n*** Testing a2 = isotropic...')
 
 a2_iso = np.eye(3)/3
 etaij_iso = sf.etaij_GOLF(a2_iso)
-tovec = lambda M: np.array([M[0,0],M[1,1],M[2,2], M[0,1],M[1,2],M[0,2]]) # vectorize matrix
 
 epsxz = np.einsum('i,j',ex,ez) + np.einsum('i,j',ez,ex)
-epsxz_vec = tovec(epsxz)
+epsxz_vec = vectorize(epsxz)
 print(epsxz_vec)
 print(np.matmul(etaij_iso,epsxz_vec))
 
 epszz = np.eye(3)/3 - np.einsum('i,j',ez,ez)
-epszz_vec = tovec(epszz)
+epszz_vec = vectorize(epszz)
 print(epszz_vec)
 print(np.matmul(etaij_iso,epszz_vec))
 
