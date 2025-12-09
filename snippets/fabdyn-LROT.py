@@ -1,5 +1,6 @@
 import numpy as np
 from specfabpy import specfab as sf
+
 # L=8 truncation is sufficient in this case, but larger L allows a very strong fabric to  
 #  develop and minimizes the effect that regularization has on low wavenumber modes (l=2,4)
 lm, nlm_len = sf.init(8) 
@@ -21,7 +22,6 @@ nlm = np.zeros((Nt,nlm_len), dtype=np.complex64) # state vector
 nlm[0,0] = 1/np.sqrt(4*np.pi) # normalized isotropic state at t=0
 
 ### Euler integration
-# See Lagrangian parcel demo for more advanced (RK4) integration
 
 for tt in np.arange(1,Nt):
 
@@ -30,5 +30,4 @@ for tt in np.arange(1,Nt):
     M_LROT = sf.M_LROT(nlm_prev, D, W, iota, zeta) # lattice rotation operator
     M_REG  = sf.M_REG(nlm_prev, D)                 # regularization operator
     M      = M_LROT + M_REG
-    nlm[tt,:] = nlm_prev + dt*np.matmul(M, nlm_prev) # euler step
-    nlm[tt,:] = sf.apply_bounds(nlm[tt,:]) # apply spectral bounds if needed
+    nlm[tt,:] = nlm_prev + dt*np.matmul(M, nlm_prev) # Euler step
