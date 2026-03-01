@@ -18,6 +18,6 @@ else:
                     'specfabpy/*.py', 
                     'specfabpy/fenics/*.py',
                     'specfabpy/firedrake/*.py',
-                    'tamm/*.py',
+                    'specfabpy/tamm/*.py',
                 ]},
     )

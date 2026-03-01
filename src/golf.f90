@@ -40,7 +40,7 @@
 !     INTEGER, PARAMETER :: dp = SELECTED_REAL_KIND(12)  ! If not using
                                                          ! with Elmer   
       
-      Real, Parameter :: kmin=0.002_dp ! valeur de ki mimum
+      Real(8), Parameter :: kmin=0.002_dp ! valeur de ki mimum
       Integer, Parameter :: Ndiv=30    ! Ndiv+2 Number of points along ik1
       Integer, Parameter :: Ntot=813   ! Total number of points
       Integer, Parameter :: NetaI=4878 ! 6*4884 length of EtaI
@@ -89,7 +89,7 @@
        Integer, Dimension(6), Parameter :: ik=(/1,2,3,1,2,3/)
        Integer, Dimension(6), Parameter :: jk=(/1,2,3,2,3,1/)
        Integer :: k,m,n
-       Integer :: i,j 
+!       Integer :: i,j 
        
 
 !  Angle = Phi, Theta, Omega
@@ -269,7 +269,7 @@
       Real(kind=dp), Dimension(9) ::  Q
       Real(kind=dp) ::  InterQ9
       Real(kind=dp) ::  Ip,x,y
-      Integer  i
+!      Integer  i
 
 !
          a(1)=InterP(x,xi,Q(1))
@@ -358,7 +358,8 @@
        Real(kind=dp) ::  a1,a2
        Real(kind=dp), parameter ::  UnTier = 0.3333333333333333333333333333333333333333_dp  
        Integer, Dimension(3) :: ordre
-       Integer :: i,j,n
+!       Integer :: i,j,n
+       Integer :: i,n
        Integer :: ik1,ik2
        Integer :: N4,N5,N6
               

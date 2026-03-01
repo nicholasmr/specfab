@@ -30,9 +30,10 @@ a2_gdl  = lambda mi: (np.eye(3)-a2_smax(mi))/2 # girdle with rot. symmetry axis 
 
 # Print etaij for some test case
 
-a2_test = a2_smax(ez)
+a2 = a2_smax(ez)
+a2 = a2_gdl(ez)
 
-etaij = sf.etaij_GOLF(a2_test)
+etaij = sf.etaij_GOLF(a2)
 etaij_diag = np.diag(etaij)
 eta_xxxx, eta_yyyy, eta_zzzz, eta_xyxy, eta_yzyz, eta_xzxz = etaij_diag # unpack components
 print(etaij)

@@ -48,6 +48,9 @@ class steadyCPO():
         self.dxy_u  = domain['subsample_u']
         self.dxy_h  = domain['subsample_h']
         
+        if 'GRE' in self.fvel:
+            self.uxname, self.uyname = 'vx', 'vy' # different names for Greenland file
+        
         ### Determine bounding box of domain for interpolation
 
         content = open(domain['fgeo']).readlines()

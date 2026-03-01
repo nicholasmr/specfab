@@ -64,16 +64,16 @@ class steadyCPOfancy(steadyCPO):
         print('*** Saving %s'%(fout))
         plt.savefig(fout, **self.kw_savefig)
 
-    def plot_inputs(self):
+    def plot_inputs(self, mesh=False, boundaries=False):
         self.set_inputs()
-        ax1, ax2 = self.newfig(mesh=False, boundaries=False, floating=False)
+        ax1, ax2 = self.newfig(mesh=mesh, boundaries=boundaries, floating=False)
         self.plot_boundaries(ax1)
         self.plot_boundaries(ax2, hidelegend=True)
         self.plot_velocities(ax1, kw_cb=self.kw_vel['kw_cb'], kw_tcf=self.kw_vel['kw_tcf'], kw_cax=self.kw_cax)
         self.plot_strainratemag(ax2, kw_cb=self.kw_epsE['kw_cb'], kw_tcf=self.kw_epsE['kw_tcf'], kw_cax=self.kw_cax)
         self.savefig(0)
-      
-    def plot_results(self, problem, numerics): 
+
+    def plot_results(self, problem, numerics, savefig=True): 
         self.set_inputs()
         self.set_solution(problem['name'])
         ax1, ax2 = self.newfig(mesh=False, boundaries=False, floating=False)
@@ -90,7 +90,8 @@ class steadyCPOfancy(steadyCPO):
         if problem['name'] == 'LROT':       num = 1
         if problem['name'] == 'LROT+DDRX':  num = 2
         if problem['name'] == 'altbc':      num = 3
-        self.savefig(num)
+        if savefig: self.savefig(num)
+        return (ax1,ax2)
         
     def plot_biases(self, problem): 
         self.set_inputs()
@@ -125,7 +126,7 @@ class steadyCPOfancy(steadyCPO):
 
     ###########
 
-    def plot_boundaries(self, ax, lw=2, zorder=20, hidelegend=False):
+    def plot_boundaries(self, ax, lw=2, zorder=20, ncol=3, hidelegend=False):
         xb, yb = self.xyboundaries()
         legh, legl = [], []
         for ii in range(2):
@@ -136,7 +137,7 @@ class steadyCPOfancy(steadyCPO):
         legh.append(Line2D([0], [0], color=self.c_floating, lw=lw))
         legl.append('Floating')
         if not hidelegend:
-            ax.legend(legh, legl, loc='upper left', ncol=3, fancybox=False, frameon=False, **self.kw_leg)
+            ax.legend(legh, legl, loc='upper left', ncol=ncol, fancybox=False, frameon=False, **self.kw_leg)
 
     def xyboundaries(self):
         (coords, bmeshes) = self.bmesh()

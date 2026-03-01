@@ -49,6 +49,7 @@ SRCCORE=$(OBJCORE:.o=.f90)
 PATHM77=include/math77
 OBJM77=$(PATHM77)/amach.o $(PATHM77)/derv1.o $(PATHM77)/dnqsol.o $(PATHM77)/dnrm2.o $(PATHM77)/erfin.o $(PATHM77)/ermsg.o $(PATHM77)/ierm1.o $(PATHM77)/ierv1.o
 SRCM77=$(OBJM77:.o=.f)
+OBJM77NODIR=$(notdir $(OBJM77))
 
 ### Elmer, ...
 
@@ -57,13 +58,13 @@ ELMERS=$(ELMERSRCS:.f90=)
 
 ### Collect all
 
-OBJALL=$(SPECFAB).o $(OBJCORE) $(OBJM77)
+OBJALL=$(SPECFAB).o $(OBJCORE) $(OBJM77NODIR)
 SRCALL=$(SPECFAB).f90 $(SRCCORE) $(SRCM77)
 
 ### Python versions supported
 
 PYVERS=3
-#PYVERS=3.8 3.9 3.10 3.11 3.12 3.13
+#PYVERS=3.8 3.9 3.10 3.11 3.12 3.13 3.14
 
 #---------------------------
 
@@ -101,14 +102,11 @@ clear:
 	rm -f $(PATHRHEOTEST)/rheology-test-orthotropic $(PATHRHEOTEST)/rheology-test-transverselyisotropic
 	rm -f $(PATHFABEVO)/run-fabric-evolution-latrot $(PATHFABEVO)/run-fabric-evolution-ddrx 
 	rm -f $(SPECFAB).o $(SPECFAB).mod *.so $(PATHSPECFABPY)/*.so
-	rm -f $(LAMBDASOLVER).o $(LAMBDASOLVER).mod $(OBJM77) $(PATHM77)/test $(FRAMES).o
+	rm -f $(LAMBDASOLVER).o $(LAMBDASOLVER).mod $(OBJM77) $(OBJM77NODIR) $(PATHM77)/test $(FRAMES).o
 
 clean: clear
-	rm -f *.o *.mod *.so
+	rm -f *.o *.mod *.so libspecfab.a
 
-# old, not used
-#all: $(SPECFAB).o lib$(SPECFAB).so
-	
 #---------------------------
 
 constitutive-tests: $(SPECFAB).o
@@ -168,8 +166,9 @@ $(IDEALSTATE).o: $(IDEALSTATE).f90 $(HEADER).o $(ROTATION).o $(FRAMES).o
 	$(COMPILER) $(OPTS) -c $<
 
 $(LAMBDASOLVER).o:
-	rm -f $(OBJM77) $(LAMBDASOLVER).o $(LAMBDASOLVER).mod $(PATHM77)/test
+	rm -f $(OBJM77) $(OBJM77NODIR) $(LAMBDASOLVER).o $(LAMBDASOLVER).mod $(PATHM77)/test
 	cd $(PATHM77) && $(COMPILER) $(OPTS) -c *.f
+	cp $(OBJM77) ./
 	$(COMPILER) $(OPTS) -c $(LAMBDASOLVER).f90
 	$(COMPILER) $(OPTS) $(PATHM77)/test.f90 $(LAMBDASOLVER).o $(OBJM77) -o $(PATHM77)/test
 
