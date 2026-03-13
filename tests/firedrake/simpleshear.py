@@ -41,7 +41,7 @@ DEBUG__STEADYSTATE = False # Do not solve time-dependent problem but show steady
 iota = +1  # deck-of-cards behaviour for lattice rotation
 Tice = -15 # Ice temperature (deg. C) for DDRX rate factor
 
-ENABLE_DDRX = True
+ENABLE_DDRX = False
 
 ### Viscous anisotropy homogenization parameters
 
@@ -74,7 +74,7 @@ u = fd.Function(V).interpolate(expr)
 tau = fd.project(fd.sym(fd.grad(u)), T) # assume driving stress is coaxial to strain-rate (in two-way coupling this should be modelled tau) 
 
 h_min = 1/nx
-v_max = abs(u.vector()[:]).max()
+v_max = abs(u.dat.data_ro).max()
 dt_CFL = 0.5*h_min/v_max
 dt = 2*dt_CFL # more aggresive time-stepping than CFL
 
@@ -83,7 +83,7 @@ dt = 2*dt_CFL # more aggresive time-stepping than CFL
 fabric = IceFabric(mesh, boundaries, L, **kw_num, **kw_VA) # initializes as isotropic fabric field
 fabric.set_isotropic_BCs((1,)) # isotropic ice incoming from left-hand boundary, remaining boundaries are free (no fabric fluxes)
 
-Gamma0 = None
+Gamma0 = Gamma0_list = None
 if ENABLE_DDRX:
     Gamma0      = fabric.Gamma0_Lilien23_EDC(u,Tice+273.15)
     Gamma0_list = [fabric.Gamma0_Lilien23_EDC(u,_+273.15) for _ in np.linspace(-40,Tice,3)] # list of DDRX rate factors used to gradually approach solution 

@@ -80,10 +80,10 @@ devinstall: specfabpy
 
 # Firedrake/icepack docker enviroment
 icepack: specfabpy
-	@echo "*** You can also just run: pip3 install specfabpy ***"
-	#pip3 install setuptools==61 cartopy cmasher
-	#pip3 install . 
+	@echo "*** Alternatively: pip3 install specfabpy ***"
+	pip3 install cmasher tabulate termcolor cartopy scipy
 	python3 setup.py install
+	#pip3 install . 
 	
 specfabpy: $(SPECFAB).o
 	@echo "*** Archiving objects into $(PWD)/libspecfab.a";

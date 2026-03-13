@@ -7,6 +7,7 @@ Steady SSA CPO solver for ice
 
 import os, sys, copy, code # code.interact(local=locals())
 import numpy as np
+from scipy.spatial.transform import Rotation as R
 import xarray, pickle, pyproj # pyproj needed!
 from tabulate import tabulate
 
@@ -195,7 +196,7 @@ class steadyCPO():
         cells = mesh.cells()
         return (mesh, boundaries, Q,Q2,V, coords,cells)
         
-    def triang(self, coords, cells, mapscale=1):
+    def get_triang(self, coords, cells, mapscale=1):
     
         return tri.Triangulation(mapscale*coords[0], mapscale*coords[1], triangles=cells)
         
@@ -316,7 +317,28 @@ class steadyCPO():
     def set_inputs(self):
     
         self.coords,self.cells, self.ux,self.uy,self.umag,self.epsE, self.S,self.B,self.H,self.mask = self.npinputs()
-        self.triang = self.triang(self.coords, self.cells, mapscale=self.mapscale)
+        self.triang = self.get_triang(self.coords, self.cells, mapscale=self.mapscale)
+
+    def set_adjustedcoords(self, xoffset=0, yoffset=0, rotang=0):
+    
+        ### Translate points so that (x0,y0) is new origin
+        
+        xt, yt = self.coords[0]-xoffset, self.coords[1]-yoffset # translated coords
+        x0t, y0t = self.x0-xoffset, self.y0-yoffset # mesh corners
+        x1t, y1t = self.x1-xoffset, self.y1-yoffset # mesh corners
+
+        # rotate points around new origin
+        if rotang:
+            Q = R.from_euler('z', rotang, degrees=True).as_matrix()[0:2,0:2]
+            xf, yf = np.array([ np.matmul(Q,[xt[ii],yt[ii]]) for ii in range(len(xt[:])) ]).T
+            self.ux, self.uy = np.array([ np.matmul(Q,[self.ux[ii],self.uy[ii]]) for ii in range(len(self.ux[:])) ]).T
+        else:
+            xf, yf = xt, yt
+    
+        self.coords[0,:], self.coords[1,:] = xf, yf
+        self.triang = self.get_triang(self.coords, self.cells, mapscale=self.mapscale)
+
+        return Q
 
     def bmesh(self, mapscale=1):
     
@@ -386,6 +408,7 @@ class steadyCPO():
             kw_tcf.pop('vcenter')
         cs = ax.tricontourf(self.triang, F, **kw_tcf)
         hcb = plt.colorbar(cs, cax=self.newcax(ax, **kw_cax), **kw_cb)
+        hcb.ax.yaxis.label.set_multialignment('center')
         return (cs, hcb)
         
     def plot_velocities(self, ax, kw_cb=dict(label=r'$u$ (m/yr)'), kw_cax=dict(), \
@@ -461,8 +484,8 @@ class steadyCPO():
     
         fig.savefig(fname, dpi=dpi, pad_inches=pad_inches, bbox_inches=bbox_inches)
         
-    def setupaxis(self, ax, boundaries=False, floating=True, mesh=False, bgcolor='0.85', showyaxis=True, \
-             xlims=None, ylims=None, xticks_major=None, xticks_minor=None, yticks_major=None, yticks_minor=None):
+    def setupaxis(self, ax, boundaries=False, floating=True, mesh=False, bgcolor='0.85', showxaxis=True, showyaxis=True, axform='square', \
+             xlims=None, ylims=None, xticks_major=None, xticks_minor=None, yticks_major=None, yticks_minor=None, ylabelpad=None):
 
         legh, legt = [], []
         
@@ -488,16 +511,19 @@ class steadyCPO():
             legh.append(Line2D([0], [0], color=self.c_floating, lw=2))
             legt.append('Floating')
             
-        ax.axis('square')
-        ax.set_xlabel(r'$x$ (km)')
+        if axform is not None: ax.axis(axform)
 
-        if xticks_major is not None: ax.set_xticks(xticks_major)
-        if xticks_minor is not None: ax.set_xticks(xticks_minor, minor=True)
-            
+        if showxaxis:
+            if xticks_major is not None: ax.set_xticks(xticks_major)
+            if xticks_minor is not None: ax.set_xticks(xticks_minor, minor=True)
+            ax.set_xlabel(r'$x$ (km)')
+        else:
+            ax.tick_params('x', labelbottom=False)
+                        
         if showyaxis:
             if yticks_major is not None: ax.set_yticks(yticks_major)
             if yticks_minor is not None: ax.set_yticks(yticks_minor, minor=True)
-            ax.set_ylabel(r'$y$ (km)')
+            ax.set_ylabel(r'$y$ (km)', labelpad=ylabelpad)
         else:
             ax.tick_params('y', labelleft=False)
 

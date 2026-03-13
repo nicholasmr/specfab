@@ -164,6 +164,7 @@ def plotcoordaxes(ax, geo, axislabels='xi', color=c_dred, fontsize=None, negaxes
         elif axislabels == 'vuxi':    lbls = [r'$\vu{x}$',r'$\vu{y}$',r'$\vu{z}$']
         elif axislabels == 'vuei':    lbls = [r'$\vu{e}_1$',r'$\vu{e}_2$',r'$\vu{e}_3$']
         elif axislabels == 'vmi':     lbls = [r'$\vb{m}_1$',r'$\vb{m}_2$',r'$\vb{m}_3$']
+        elif axislabels == 'vunt':    lbls = [r'$\vu{t}$',r'$\vu{n}$',r'$\vu{z}$']
         else: raise ValueError('sfplt.plotcoordinateaxes(): Note sure what to do with passed axislabels.')
     elif isinstance(axislabels, list) and len(axislabels) == 3:
         lbls = axislabels

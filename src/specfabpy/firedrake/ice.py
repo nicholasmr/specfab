@@ -189,9 +189,9 @@ class IceFabric:
         ENABLE_REG  = True
         
         # Flattened strain-rate and spin tensors for accessing them per node
-        Df = project( sym(grad(u)), self.G).vector()[:] # strain rate
-        Wf = project(skew(grad(u)), self.G).vector()[:] # spin
-        Sf = project(S, self.G).vector()[:] # deviatoric stress
+        Df = project( sym(grad(u)), self.G).dat.data_ro # strain rate
+        Wf = project(skew(grad(u)), self.G).dat.data_ro # spin
+        Sf = project(S, self.G).dat.data_ro # deviatoric stress
 
         # Same but in 3D for fabric problem
         D3 = self.mat3d(Df) # [node,3,3]
@@ -205,16 +205,16 @@ class IceFabric:
 
         # Populate entries of dynamical matrices *row-wise* (row index is ii)
         for ii in self.srrng:
-            if ENABLE_LROT: self.Mrr_LROT[ii].vector()[:]     = M_LROT[:,ii,:] # all nodes, row=ii, all columns
-            if ENABLE_DDRX: self.Mrr_DDRX_src[ii].vector()[:] = M_DDRX_src[:,ii,:]
-            if ENABLE_REG:  self.Mrr_REG[ii].vector()[:]      = M_REG[:,ii,:]
+            if ENABLE_LROT: self.Mrr_LROT[ii].dat.data[:]     = M_LROT[:,ii,:] # all nodes, row=ii, all columns
+            if ENABLE_DDRX: self.Mrr_DDRX_src[ii].dat.data[:] = M_DDRX_src[:,ii,:]
+            if ENABLE_REG:  self.Mrr_REG[ii].dat.data[:]      = M_REG[:,ii,:]
 
         ### Construct weak form
 
         # dummy zero term to make rhs(F) work when solving steady-state problem 
         # this can probably be removed once the SSA source/sink terms are added
         s_null = Function(self.S)
-        s_null.vector()[:] = 0.0
+        s_null.dat.data[:] = 0.0
         F = dot(s_null, self.w)*dx
 
         # Time derivative
@@ -277,7 +277,7 @@ class IceFabric:
         Set auxiliary fields
         """
         sp = project(self.s, self.Sd)
-        self.rnlm = np.array([sp.sub(ii).vector()[:] + 0j for ii in self.srrng]) # reduced form (rnlm) per node
+        self.rnlm = np.array([sp.sub(ii).dat.data_ro + 0j for ii in self.srrng]) # reduced form (rnlm) per node
         self.nlm  = np.array([self.sf.rnlm_to_nlm(self.rnlm[:,nn], self.nlm_len) for nn in self.dofs0]) # full form (nlm) per node (nlm[node,coef])
         
         if self.setextra:
@@ -302,16 +302,16 @@ class IceFabric:
         Pole figure J (pfJ) index
         """
         pfJ = Function(self.Rd)
-        pfJ.vector()[:] = sfcom.pfJ(self.nlm, *args, **kwargs)[:]
+        pfJ.dat.data[:] = sfcom.pfJ(self.nlm, *args, **kwargs)[:]
         return pfJ
  
     def get_E_CAFFE(self, u):
         """
         CAFFE model (Placidi et al., 2010)
         """
-        Df = project(sym(grad(u)), self.Gd).vector()[:]
+        Df = project(sym(grad(u)), self.Gd).dat.data_ro
         E_CAFFE = Function(self.Rd)
-        E_CAFFE.vector()[:] = self.sf.E_CAFFE_arr(self.nlm, self.mat3d(Df), *self.CAFFE_params)
+        E_CAFFE.dat.data[:] = self.sf.E_CAFFE_arr(self.nlm, self.mat3d(Df), *self.CAFFE_params)
         return E_CAFFE
         
     def get_E_EIE(self, u):
@@ -319,9 +319,9 @@ class IceFabric:
         EIE model (Rathmann et al., in prep)
         *** Not yet implemented ***
         """
-#        Df = project(sym(grad(u)), self.Gd).vector()[:]
+#        Df = project(sym(grad(u)), self.Gd).dat.data_ro
         E_EIE = Function(self.Rd)
-#        E_EIE.vector()[:] = self.sf.E_EIE_arr(...)
+#        E_EIE.dat.data[:] = self.sf.E_EIE_arr(...)
         return E_EIE
         
     def get_Eij(self, ei=(), xyz_sort=False):   
@@ -348,12 +348,12 @@ class IceFabric:
         Eij_fs  = [Function(self.Rd) for _ in range(6)] # Eij enhancement tensor
         
         for ii in range(3): # mi=m1,m2,m3
-            lami_fs[ii].vector()[:] = lami[:,ii]
+            lami_fs[ii].dat.data[:] = lami[:,ii]
             for jj in range(3): # j=x,y,z
-                ei_fs[ii].sub(jj).vector()[:] = ei[ii][:,jj]
+                ei_fs[ii].sub(jj).dat.data[:] = ei[ii][:,jj]
                 
         for kk in range(6): 
-            Eij_fs[kk].vector()[:] = Eij[:,kk]
+            Eij_fs[kk].dat.data[:] = Eij[:,kk]
             
         return (ei_fs, Eij_fs, lami_fs)
         
@@ -371,12 +371,12 @@ class IceFabric:
 
         rows = np.arange(len(lami))
         lami_fs = [Function(self.Rd) for _ in range(3)] # a2 eigenvalues (lami)
-        lami_fs[0].vector()[:] = lami[rows, Ix]
-        lami_fs[1].vector()[:] = lami[rows, Iy]
-        lami_fs[2].vector()[:] = lami[rows, Iz]
+        lami_fs[0].dat.data[:] = lami[rows, Ix]
+        lami_fs[1].dat.data[:] = lami[rows, Iy]
+        lami_fs[2].dat.data[:] = lami[rows, Iz]
 
         dlamxy = Function(self.Rd)
-        dlamxy.vector()[:] = lami[rows, Ix] - lami[rows, Iy]
+        dlamxy.dat.data[:] = lami[rows, Ix] - lami[rows, Iy]
 
         return lami_fs, dlamxy
                 

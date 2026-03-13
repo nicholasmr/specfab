@@ -66,7 +66,7 @@ class PeriodicBumpyMesh():
 
     def dt_CFL(self, u):
         
-        ux_max = abs(u.sub(0).vector()[:]).max()
+        ux_max = abs(u.sub(0).dat.data_ro).max()
         dt_CFL = 0.5*self.hx_min/ux_max
         return dt_CFL # CFL timestep size
                 
@@ -195,7 +195,7 @@ class HalfDivideMesh():
 
     def dt_CFL(self, u):
         
-        ux_max = abs(u.sub(0).vector()[:]).max()
+        ux_max = abs(u.sub(0).dat.data_ro).max()
         dt_CFL = 0.5*self.hx_min/ux_max
         return dt_CFL # CFL timestep size
                 
