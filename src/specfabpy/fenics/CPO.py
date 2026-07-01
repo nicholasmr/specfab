@@ -111,10 +111,10 @@ class CPO():
             sr, si = self.nlm_iso, self.nlm_zero
         s = Function(self.S)
         if self.modelplane=='xy':
-            assign(s.sub(0), project(Constant(sr), self.V)) # real part
-            assign(s.sub(1), project(Constant(si), self.V)) # imag part
+            assign(s.sub(0), project(Constant(sr), self.V, solver_type="cg", preconditioner_type="amg")) # real part
+            assign(s.sub(1), project(Constant(si), self.V, solver_type="cg", preconditioner_type="amg")) # imag part
         elif self.modelplane=='xz':
-            assign(s, project(Constant(sr), self.V)) # real part
+            assign(s, project(Constant(sr), self.V, solver_type="cg", preconditioner_type="amg")) # real part
         self.set_state(s)
 
     def set_state(self, s, interp=False):
@@ -173,7 +173,7 @@ class CPO():
                 print('...approaching solution w/ nu_realmul=%.1f (step %i of %i)'%(nu_realspacemul[ii], ii+1, len(Gamma0)))
                 s = (self.s, None) if self.modelplane=='xz' else (self.s.sub(0), self.s.sub(1)) # (sr, si)
                 F = self._weakform(*s, u,S, dt, iota,gam0,Lambda0, **kwargs)
-                solve(F==0, self.s, self.bcs, solver_parameters={'newton_solver':{'linear_solver':'gmres', 'preconditioner':'none'}})
+                solve(F==0, self.s, self.bcs, solver_parameters={'newton_solver':{'linear_solver':'gmres', 'preconditioner':'petsc_am'}})
 
     def _weakform(self, sr,si, u,S, dt, iota, Gamma0, Lambda0, zeta=0, disable_advection=False):
         
@@ -183,8 +183,8 @@ class CPO():
         ENABLE_REG  = True
         
         # Flattened strain-rate and spin tensors for accessing them per node
-        Df = project( sym(grad(u)), self.G).vector()[:] # strain rate 
-        Wf = project(skew(grad(u)), self.G).vector()[:] # spin
+        Df = project( sym(grad(u)), self.G, solver_type="cg", preconditioner_type="amg").vector()[:] # strain rate 
+        Wf = project(skew(grad(u)), self.G, solver_type="cg", preconditioner_type="amg").vector()[:] # spin
         Sf = project(S, self.G).vector()[:] # deviatoric stress
         
         # Same but in 3D for fabric problem
