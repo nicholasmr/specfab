@@ -18,7 +18,7 @@ class CPO():
     Class representing a single crystallographic axis
     """
 
-    def __init__(self, mesh, boundaries, L, nu_multiplier=1, nu_realspace=1e-3, modelplane='xz', symframe=-1, ds=None, nvec=None):
+    def __init__(self, mesh, boundaries, L, nu_multiplier=1, nu_realspace=1e-3, modelplane='xz', symframe=-1, ds=None, nvec=None, kw_project=None):
 
         ### Check args
         
@@ -104,6 +104,8 @@ class CPO():
         self.nlm_zero  = [0]*(self.nlm_len)
         self.M_zero    = np.zeros((self.numdofs, self.nlm_len, self.nlm_len))
         
+        # Solver optimization by Athene & Roman
+        self.kw_project = dict(solver_type="cg", preconditioner_type="amg") if kw_project==1 else dict()
 
     def initialize(self, sr=None, si=None):
         """
@@ -113,10 +115,10 @@ class CPO():
             sr, si = self.nlm_iso, self.nlm_zero
         s = Function(self.S)
         if self.modelplane=='xy':
-            assign(s.sub(0), project(Constant(sr), self.V, solver_type="cg", preconditioner_type="amg")) # real part
-            assign(s.sub(1), project(Constant(si), self.V, solver_type="cg", preconditioner_type="amg")) # imag part
+            assign(s.sub(0), project(Constant(sr), self.V, **self.kw_project)) # real part
+            assign(s.sub(1), project(Constant(si), self.V, **self.kw_project)) # imag part
         elif self.modelplane=='xz':
-            assign(s, project(Constant(sr), self.V, solver_type="cg", preconditioner_type="amg")) # real part
+            assign(s, project(Constant(sr), self.V, **self.kw_project)) # real part
         self.set_state(s)
 
     def set_state(self, s, interp=False):
@@ -185,8 +187,8 @@ class CPO():
         ENABLE_REG  = True
         
         # Flattened strain-rate and spin tensors for accessing them per node
-        Df = project( sym(grad(u)), self.G, solver_type="cg", preconditioner_type="amg").vector()[:] # strain rate 
-        Wf = project(skew(grad(u)), self.G, solver_type="cg", preconditioner_type="amg").vector()[:] # spin
+        Df = project( sym(grad(u)), self.G, **self.kw_project).vector()[:] # strain rate 
+        Wf = project(skew(grad(u)), self.G, **self.kw_project).vector()[:] # spin
         Sf = project(S, self.G).vector()[:] # deviatoric stress
         
         # Same but in 3D for fabric problem
