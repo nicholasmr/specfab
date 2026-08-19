@@ -23,8 +23,8 @@ class steadyCPOfancy(steadyCPO):
 
     kw_vel  = dict(kw_tcf=dict(cmap=cmc.lipari, extend='both', levels=np.logspace(0.5, 3.5, 13), norm='log'), kw_cb=dict(label=r'$u$ (\SI{}{\metre\per\year})'))
     kw_epsE = dict(kw_tcf=dict(cmap=cmc.turku_r, extend='max', levels=np.arange(0, 50+.01, 5)), kw_cb=dict(label=r'$\dot{\epsilon}_{\mathrm{e,iso}}$ (\SI{e-3}{\per\year})'))
-    kw_dlam = dict(kw_tcf=dict(cmap=cmc.lapaz_r, extend='max', levels=np.arange(0, 0.8+.01, 0.1)), kw_cb=dict(label=r'$\Delta\lambda$', ticks=np.arange(0, 0.8+.01, 0.2)))
-    kw_E    = dict(kw_tcf=dict(cmap='PuOr_r', extend='max', levels=np.arange(0, 4+.01, 0.25), norm='center', vcenter=1), kw_cb=dict(label=r'$E$', ticks=np.arange(0, 4+.01, 1)))
+    kw_dlam = dict(kw_tcf=dict(cmap=cmc.lapaz_r, extend='max', levels=np.arange(0, 0.8+.01, 0.1)), kw_cb=dict(label=r'$\Delta\lambda$', ticks=np.arange(0, 1+.01, 0.2)))
+    kw_E    = dict(kw_tcf=dict(cmap='RdGy_r', extend='max', levels=np.arange(0, 4+.01, 0.25), norm='center', vcenter=1), kw_cb=dict(label=r'$E$', ticks=np.arange(0, 4+.01, 1)))
 
     figsize     = (4,4)
     kw_gs       = dict()
@@ -73,9 +73,11 @@ class steadyCPOfancy(steadyCPO):
         self.plot_strainratemag(ax2, kw_cb=self.kw_epsE['kw_cb'], kw_tcf=self.kw_epsE['kw_tcf'], kw_cax=self.kw_cax)
         self.savefig(0)
 
+    #def plot_results(self, problem, numerics, savefig=True, kw_adjustcoords=dict()): 
     def plot_results(self, problem, numerics, savefig=True): 
         self.set_inputs()
         self.set_solution(problem['name'])
+#        if len(kw_adjustcoords)==3: self.set_adjustedcoords(**kw_adjustcoords)
         ax1, ax2 = self.newfig(mesh=False, boundaries=False, floating=False)
         if problem['name'] == 'altbc':
             self.color_bcs[0] = self.color_smax

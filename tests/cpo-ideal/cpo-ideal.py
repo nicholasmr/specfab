@@ -2,26 +2,28 @@
 # Nicholas Rathmann
 
 """
-Verify fortran routines for ideal nlm states
+Verify routines for ideal nlm states
 """
 
 import numpy as np
 from specfabpy import specfab as sf
+from specfabpy import common as sfcom
 from specfabpy import discrete as sfdsc
 from specfabpy import plotting as sfplt
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-lm, nlm_len = sf.init(20)
+L = 20
+lm, nlm_len = sf.init(L)
 FS = sfplt.setfont_tex(fontsize=11)
 geo, prj = sfplt.getprojection(rotation=-45, inclination=50)
 
 def plot(m, L, fname):
 
-    nlm_iso    = sf.nlm_isotropic(L)
-    nlm_smax   = sf.nlm_singlemax(m,L)
-    nlm_girdle = sf.nlm_girdle(m,L)
+    nlm_iso    = sfcom.nlm_isotropic(L)
+    nlm_pole   = sfcom.nlm_pole(L,m=m)
+    nlm_girdle = sfcom.nlm_girdle(L,m=m)
 
     fig = plt.figure(figsize=(4,2))
     gs = gridspec.GridSpec(1,3)
@@ -32,7 +34,7 @@ def plot(m, L, fname):
         
     kwargs = dict(lvlset=(np.linspace(0.0, 0.3, 8), lambda x,p:'%.1f'%x), showcb=False)
     sfplt.plotODF(nlm_iso,    lm, ax1, **kwargs)
-    sfplt.plotODF(nlm_smax,   lm, ax2, **kwargs)
+    sfplt.plotODF(nlm_pole,   lm, ax2, **kwargs)
     sfplt.plotODF(nlm_girdle, lm, ax3, **kwargs)
 
     for ax in (ax1,ax2,ax3): 

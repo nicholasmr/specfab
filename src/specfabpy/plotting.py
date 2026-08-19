@@ -431,42 +431,36 @@ def _plotparcel_side(ax, pi, F, alpha, lw, ls, facecolor, edgecolor, zorder=5):
     ax.add_collection3d(coll)
     
     
-def sph_harm_P(l,m, colat,lon, degree=False):
-    
-    """
-    Vector Spherical Harmonic (VSH) mode Psi_l^m, here denoted "P"
-    """
-    
-    P = np.array([0*colat, 0*lon], dtype=np.complex128) # ({theta,phi} components, colat, lon)
-    mabs = np.abs(m)
+def sph_harm_P(l,m, colat,lon, dtype=np.complex128):
+    ### Vector spherical harmonic P_l^m = grad(Y_l^m)
+    c, c2, s, zero = np.cos(colat), np.cos(2*colat), np.sin(colat), 0*colat
     if l==2:
-        c, s = np.cos(colat), np.sin(colat)
-        if mabs==0: P = -3/2*np.sqrt(5/np.pi)  * np.exp(0j*lon) * np.array([s*c, 0*lon],            dtype=np.complex128)
-        if mabs==1: P = -np.sqrt(15/(8*np.pi)) * np.exp(1j*lon) * np.array([np.cos(2*colat), 1j*c], dtype=np.complex128)
-        if mabs==2: P = +np.sqrt(15/(8*np.pi)) * np.exp(2j*lon) * np.array([s*c, 1j*s],             dtype=np.complex128)
-    if m<0: P = (-1)**(mabs) * np.conjugate(P)
-    return P
+        a0 = -3/2*np.sqrt(5/np.pi)
+        a1 = -np.sqrt(15/(8*np.pi))
+        if abs(m)==0: P =  a0 * np.exp(0j*lon) * np.array([s*c, zero], dtype=dtype)
+        if abs(m)==1: P =  a1 * np.exp(1j*lon) * np.array([c2,  1j*c], dtype=dtype)
+        if abs(m)==2: P = -a1 * np.exp(2j*lon) * np.array([s*c, 1j*s], dtype=dtype)
+    else:
+        P = np.array([zero, zero], dtype=dtype) # l not supported, set P to zero
+    return P if m>=0 else (-1)**(abs(m))*np.conjugate(P)
     
-    
-def sph_harm_Q(l,m, colat,lon, degree=False):
-    
-    """
-    Vector Spherical Harmonic (VSH) mode Phi_l^m, here denoted "Q"
-    """
-    
-    P = np.array([0*colat, 0*lon], dtype=np.complex128) # ({theta,phi} components, colat, lon)
-    mabs = np.abs(m)
+
+def sph_harm_Q(l,m, colat,lon, dtype=np.complex128):
+    ### Vector spherical harmonic Q_l^m = r \cross grad(Y_l^m) 
+    c, s, zero = np.cos(colat), np.sin(colat), 0*colat
     if l==1:
-        c, s = np.cos(colat), np.sin(colat)
-        if mabs==0: P = -np.sqrt(3/(4*np.pi)) * np.exp(0j*lon) * np.array([0*colat, s],     dtype=np.complex128)
-        if mabs==1: P = +np.sqrt(3/(8*np.pi)) * np.exp(1j*lon) * np.array([0*colat+1j, -c], dtype=np.complex128)
-    if m<0: P = (-1)**(mabs) * np.conjugate(P)
-    return P
+        a0 = -np.sqrt(3/(4*np.pi))
+        a1 = +np.sqrt(3/(8*np.pi))
+        if abs(m)==0: Q = a0 * np.exp(0j*lon) * np.array([zero, s], dtype=dtype)
+        if abs(m)==1: Q = a1 * np.exp(1j*lon) * np.array([zero+1j, -c], dtype=dtype)
+    else:
+        Q = np.array([zero, zero], dtype=dtype) # l not supported, set Q to zero
+    return Q if m>=0 else (-1)**(abs(m))*np.conjugate(Q)
     
    
 def plot_VSH(plm, qlm, ax, \
         showcb=True, showgl=True, hidetruncerr=True, # options/flags \
-        norm=None, hresmul=10, lresmul=1, nchunk=None, # general \
+        norm=None, resmul=10, lresmul=1, nchunk=None, # general \
         cmap='YlOrBr', lvls=np.arange(0, 0.8+0.01, 0.2), # colormap and lvls \ 
         cbfraction=0.075, cbaspect=9, cborientation='horizontal', cbpad=0.1, cblabel=r'$\norm{\vb{\dot{c}}}/\norm{\grad\vb{u}}$', cblabelpad=None, cbtickintvl=2, extend=None, # colorbar \
         title=None, titlepad=10, \
@@ -487,31 +481,31 @@ def plot_VSH(plm, qlm, ax, \
     ### Setup grid 
     
     # High-res
-    colat = np.linspace(0,   np.pi, 10*hresmul)   
-    lon   = np.linspace(0, 2*np.pi, 20*hresmul)
-    LON, COLAT = np.meshgrid(lon, colat)
-    LAT = np.pi/2-COLAT
+    vcolat = np.linspace(0,   np.pi, 10*resmul) # vector
+    vlon   = np.linspace(0, 2*np.pi, 20*resmul) # vector
+    lon, colat = np.meshgrid(vlon, vcolat) # gridded
+    lat = np.pi/2-colat # gridded
         
     # Low-res
     dlat0 = np.deg2rad(30)
-    colat2 = np.linspace(dlat0, np.pi-dlat0, 6*lresmul)
-    LON2, COLAT2 = [], []
-    for cl in colat2:
+    vcolat2 = np.linspace(dlat0, np.pi-dlat0, 6*lresmul)
+    lon2, colat2 = [], []
+    for cl in vcolat2:
         N_lon = int(20*lresmul*np.sin(cl))
-        LON2_new = [2*np.pi*ii/N_lon for ii in range(N_lon)]
-        LON2 += LON2_new
-        COLAT2 = COLAT2 + [cl,]*len(LON2_new)
-    LON2, COLAT2 = np.array(LON2), np.array(COLAT2)
-    LAT2 = np.pi/2-COLAT2
+        lon2_new = [2*np.pi*ii/N_lon for ii in range(N_lon)]
+        lon2 += lon2_new
+        colat2 = colat2 + [cl,]*len(lon2_new)
+    lon2, colat2 = np.array(lon2), np.array(colat2)
+    lat2 = np.pi/2-colat2
 
     ### Sample field
     
-    F_P = np.array([plm[2+m]*sph_harm_P(2, m, COLAT, LON) for m in np.arange(-2,2+1) ])
-    F_Q = np.array([qlm[1+m]*sph_harm_Q(1, m, COLAT, LON) for m in np.arange(-1,1+1) ])
+    F_P = np.array([plm[2+m]*sph_harm_P(2, m, colat, lon) for m in np.arange(-2,2+1) ])
+    F_Q = np.array([qlm[1+m]*sph_harm_Q(1, m, colat, lon) for m in np.arange(-1,1+1) ])
     F_high = np.real(np.sum(F_P, axis=0) + np.sum(F_Q, axis=0))
 
-    F_P = np.array([plm[2+m]*sph_harm_P(2, m, COLAT2, LON2) for m in np.arange(-2,2+1) ])
-    F_Q = np.array([qlm[1+m]*sph_harm_Q(1, m, COLAT2, LON2) for m in np.arange(-1,1+1) ])
+    F_P = np.array([plm[2+m]*sph_harm_P(2, m, colat2, lon2) for m in np.arange(-2,2+1) ])
+    F_Q = np.array([qlm[1+m]*sph_harm_Q(1, m, colat2, lon2) for m in np.arange(-1,1+1) ])
     F_low = np.real(np.sum(F_P, axis=0) + np.sum(F_Q, axis=0))
 
     ### Plot magnitude 
@@ -524,12 +518,12 @@ def plot_VSH(plm, qlm, ax, \
 
     kwargs_cf = dict(levels=lvls, cmap=cmap, nchunk=nchunk, extend=extend if (extend is not None) else ('max' if lvls[0]<1e-10 else 'both'))
     kwargs_cb = dict(ticks=lvls[::cbtickintvl], fraction=cbfraction, aspect=cbaspect, orientation=cborientation, pad=cbpad)
-    hvsh, hcb = plotS2field(ax, mag, LON, LAT, \
+    hvsh, hcb = plotS2field(ax, mag, lon, lat, \
         kwargs_cf=kwargs_cf, showcb=showcb, kwargs_cb=kwargs_cb, showgl=showgl, kwargs_gl=kwargs_gl)
 
     ### Plot vector arrows
 
-    x, y = np.rad2deg(LON2), np.rad2deg(LAT2)
+    x, y = np.rad2deg(lon2), np.rad2deg(lat2)
     F_low = np.real(F_low)
     vx, vy = F_low[1], -F_low[0]
     QV1 = ax.quiver(x,y , vx,vy, transform=transform, scale=arrscale, color=arrcolor, width=arrwidth)

@@ -11,9 +11,9 @@ MAKE_ANI = 1
 
 #-----------------------
 
-density = 150 
-framerate = 15
-scale = 650
+density = 125 
+framerate = 13
+scale = 550
 numfmt = '%03d'
 
 fallframes = 'allframes.pdf'

@@ -13,6 +13,7 @@ ice = {
         'CAFFE':       (0.1,  10, 1), # Emin, Emax, n_grain
         'CAFFEdagger': (0.2, 3.2, 1), 
         'ESTAR':       (3, 8), # Emin, Emax
+        'APEX':        (0.05, 15, 1), # Ec, Es, n_grain (determined from fitting in Emm-misaligned-3.py)
     },
     'elastic': {
         # (C11,C33,C55,C12,C13)

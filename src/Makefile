@@ -26,6 +26,7 @@ HOMOGEN=homogenizations
 ENHFAC=enhancementfactors
 MANDEL=mandel
 DYNAMICS=dynamics
+DAMAGE=damage
 RHEOLOGIES=rheologies
 ELASTICITIES=elasticities
 WAVEPROP=wavepropagation
@@ -39,7 +40,7 @@ GOLF=golf
 ELMER=specfab_elmer
 
 DEPLESS=$(HEADER).o $(TENPROD).o $(MANDEL).o $(REDUCED).o $(GAUNT).o $(GOLF).o
-WITHDEPS=$(RHEOLOGIES).o $(ELASTICITIES).o $(MOMENTS).o $(LAMBDASOLVER).o $(DYNAMICS).o $(HOMOGEN).o $(ENHFAC).o $(ROTATION).o $(WAVEPROP).o $(DEFORMMODES).o $(IDEALSTATE).o $(FRAMES).o $(ELMER).o 
+WITHDEPS=$(RHEOLOGIES).o $(ELASTICITIES).o $(MOMENTS).o $(LAMBDASOLVER).o $(DYNAMICS).o $(DAMAGE).o $(HOMOGEN).o $(ENHFAC).o $(ROTATION).o $(WAVEPROP).o $(DEFORMMODES).o $(IDEALSTATE).o $(FRAMES).o $(ELMER).o 
 
 OBJCORE=$(DEPLESS) $(WITHDEPS)
 SRCCORE=$(OBJCORE:.o=.f90)
@@ -138,7 +139,10 @@ $(RHEOLOGIES).o: $(RHEOLOGIES).f90 $(HEADER).o $(TENPROD).o $(LAMBDASOLVER).o
 $(ELASTICITIES).o: $(ELASTICITIES).f90 $(HEADER).o $(TENPROD).o
 	$(COMPILER) $(OPTS) -c $<
 
-$(DYNAMICS).o: $(DYNAMICS).f90 $(HEADER).o tensorialdynamics.f90 $(TENPROD).o $(MOMENTS).o $(GAUNT).o
+$(DYNAMICS).o: $(DYNAMICS).f90 $(HEADER).o tensorialdynamics.f90 $(TENPROD).o $(IDEALSTATE).o $(MOMENTS).o $(GAUNT).o
+	$(COMPILER) $(OPTS) -c $<
+
+$(DAMAGE).o: $(DAMAGE).f90 $(HEADER).o tensorialdynamics.f90 $(TENPROD).o $(MOMENTS).o $(GAUNT).o
 	$(COMPILER) $(OPTS) -c $<
 
 $(HOMOGEN).o: $(HOMOGEN).f90 $(HEADER).o $(MOMENTS).o $(RHEOLOGIES).o $(ELASTICITIES).o

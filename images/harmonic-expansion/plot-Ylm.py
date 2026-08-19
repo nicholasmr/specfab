@@ -62,22 +62,26 @@ for (l,m) in lm_list:
     ax = newfig()
     if m == 0:
         (F,lon,lat) = discretize([nlm_mag], np.array([[l,],[m,]]))
-        title = '$n_{%i}^{%i} Y_{%i}^{%i}$'%(l,m, l,m)
+#        title = '$n_{%i}^{%i} Y_{%i}^{%i}$'%(l,m, l,m)
+        title = '$\psi_{%i}^{%i} Y_{%i}^{%i}$'%(l,m, l,m)
         plot_Ylm(F, lon, lat, ax=ax, title=title, nchunk=49 if l==0 else None)
     else:
         nlm = nlm_mag*np.exp(m*1j*phi)
         sign = (-1)**(m)
         (F,lon,lat) = discretize([sign*np.conj(nlm),nlm], np.array([[l,l],[m,-m]]))
-        title = r'$n_{%i}^{%i}Y_{%i}^{%i} + \mathrm{c.c.}$' % (l,m, l,m)
+#        title = r'$n_{%i}^{%i}Y_{%i}^{%i} + \mathrm{c.c.}$' % (l,m, l,m)
+        title = r'$\psi_{%i}^{%i}Y_{%i}^{%i} + \mathrm{c.c.}$' % (l,m, l,m)
         plot_Ylm(F, lon, lat, ax=ax, title=title)
     plt.savefig('Ylm/Y%i%i.pdf'%(l,m), **kw_save)        
        
 ### n(theta,phi) example
 
-ax = newfig()
-ax.set_title(r'$n(\theta,\phi)$', pad=10, fontsize=FS)
-lm, nlm_len = sf.init(2) 
-a2 = np.diag([0.1, 0.3, 0.6])
-nlm = sf.a2_to_nlm(a2)
-sfplt.plotODF(nlm, lm, ax, lvlset=(np.linspace(0,0.30,9), lambda x,p:'%.1f'%x) , showcb=False, nchunk=None)
-plt.savefig('Ylm/nlm.pdf', **kw_save)
+if 1:
+    ax = newfig()
+    #ax.set_title(r'$n(\theta,\phi)$', pad=10, fontsize=FS)
+    ax.set_title(r'$\psi(\theta,\phi)$', pad=10, fontsize=FS)
+    lm, nlm_len = sf.init(2) 
+    a2 = np.diag([0.1, 0.3, 0.6])
+    nlm = sf.a2_to_nlm(a2)
+    sfplt.plotODF(nlm, lm, ax, lvlset=(np.linspace(0,0.30,9), lambda x,p:'%.1f'%x) , showcb=False, nchunk=None)
+    plt.savefig('Ylm/nlm.pdf', **kw_save)

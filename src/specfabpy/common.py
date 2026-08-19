@@ -40,17 +40,33 @@ def eigenframe(Z, modelplane=None, symframe=-1):
 def xi_tile(N):     return ei_tile(np.eye(3), N)
 def ei_tile(ei, N): return (np.tile(ei[0],(N,1)), np.tile(ei[1],(N,1)), np.tile(ei[2],(N,1)))
     
-    
+
 def pfJ(nlm): 
 
     """
-    Pole figure J (pfJ) index
+    Pole figure J index, able to take arrays of state vectors
     """
 
-    k = np.sqrt(4*np.pi)**2
-    if len(nlm.shape) == 2: J_i = [ k*np.sum(np.square(np.absolute(nlm[ii]))) for ii in range(nlm.shape[0]) ]
-    else:                   J_i =   k*np.sum(np.square(np.absolute(nlm)))
-    return J_i
+    if len(nlm.shape) == 2: J = [ 4*np.pi * np.sum(np.square(np.absolute(nlm[ii]))) for ii in range(nlm.shape[0]) ]
+    else:                   J =   4*np.pi * np.sum(np.square(np.absolute(nlm)))
+    return J
+
+
+def nlm_isotropic(L):         return np.array([1/np.sqrt(4*np.pi)] + [0]*int((L+1)*(L+2)/2 - 1)) # fill with zeros in l>0 slots
+def nlm_pole(  L, m=[0,0,1]): return sf__.nlm_ideal(m, 0, L)
+def nlm_girdle(L, m=[0,0,1]): return sf__.nlm_ideal(m, np.pi/2, L)
+    
+    
+def nlm_ideal_cases(norm=1/np.sqrt(4*np.pi)):
+
+    m = [0,0,1]
+    Il24 = [sf__.I20, sf__.I40] # l=2,4, m=0 coefs
+    L = 8
+    n20_unidir, n40_unidir = np.real(sf__.nlm_ideal(m, 0, L))[Il24]/norm       # delta distributed
+    n20_planar, n40_planar = np.real(sf__.nlm_ideal(m, np.pi/2, L))[Il24]/norm # x--y planar distributed
+    n20_circle, n40_circle = np.real(sf__.nlm_ideal(m, np.pi/4, L))[Il24]/norm # 45 deg circle distributed
+
+    return ((n20_unidir,n40_unidir), (n20_planar,n40_planar), (n20_circle,n40_circle))
     
    
 def F2C(F):

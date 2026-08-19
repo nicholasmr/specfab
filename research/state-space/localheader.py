@@ -152,7 +152,8 @@ def load_sample(fname, expr, Ilam1=None):
     mew = (sfdsc.colat2lat(mnew_colat), mnew_colat, mnew_lon)
     return (q, qr, m, mnew, caxes, nlm, nlmr, lm)
     
-def statespace_shading(nlm_uc, nlm_ue, x, y, isvalid, shade_circle=True):
+def statespace_shading(nlm_uc, nlm_ue, x, y, isvalid, shade_circle=True, c_bad=sfplt.c_lgray,
+        cshade_planar=sfsp.cvl_planar, cshade_unidir=sfsp.cvl_unidir, cshade_circle=sfsp.cvl_circle):
 
     ### CPOs resulting from UC and UE under lattice rotation 
     if len(np.shape(nlm_uc)) == 2:
@@ -195,14 +196,14 @@ def statespace_shading(nlm_uc, nlm_ue, x, y, isvalid, shade_circle=True):
                 C[ii,jj,-1] = np.exp(-d**expo/var) # set alpha depending on distance to state curves
                 
                 if y_ > y_cutoff[jj]: # assume single max or girdle fabric
-                    if x_<0: C[ii,jj,0:-1] = matplotlib.colors.to_rgb(sfsp.cvl_planar)
-                    else:    C[ii,jj,0:-1] = matplotlib.colors.to_rgb(sfsp.cvl_unidir)
+                    if x_<0: C[ii,jj,0:-1] = matplotlib.colors.to_rgb(cshade_planar)
+                    else:    C[ii,jj,0:-1] = matplotlib.colors.to_rgb(cshade_unidir)
                 else: # circle fabric
-                   C[ii,jj,0:-1] = matplotlib.colors.to_rgb(sfsp.cvl_circle)
+                   C[ii,jj,0:-1] = matplotlib.colors.to_rgb(cshade_circle)
                    C[ii,jj,-1] = np.exp(-d**expo/(1.75*var))
                    
             else: 
-                C[ii,jj,0:-1] = matplotlib.colors.to_rgb(sfplt.c_lgray) # bad 
+                C[ii,jj,0:-1] = matplotlib.colors.to_rgb(c_bad) # bad 
                 C[ii,jj,-1] = 1
 
     return C

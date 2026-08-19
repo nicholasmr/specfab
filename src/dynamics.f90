@@ -1,4 +1,4 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-2024
+! N. M. Rathmann <rathmann@nbi.ku.dk> and D. A. Lilien, 2019-
 
 ! CPO dynamics in spectral space.
 
@@ -6,6 +6,7 @@ module dynamics
 
     use header
     use tensorproducts
+    use idealstate
     use moments ! used by tensorial dynamics routines
     use gaunt
 
@@ -523,7 +524,7 @@ contains
     include "tensorialdynamics.f90"
 
     !---------------------------------
-    ! BOUNDS AND POWER SPECTRUM
+    ! BOUNDS
     !---------------------------------
 
     function apply_bounds(nlm) result (nlm_bounded)
@@ -553,21 +554,6 @@ contains
             ! if S(4) > S_delta(4), then scale n4m such that S(4) = S_delta(4)
             nlm_bounded(L4rng) = nlm(L4rng) / sqrt(S4_rel)
         end if
-    end
-
-    function Sl(nlm, l)
-    
-        ! Angular power spectrum at degree l
-        
-        implicit none
-
-        complex(kind=dp), intent(in) :: nlm(nlm_len)
-        integer, intent(in)          :: l
-        real(kind=dp)                :: Sl
-        complex(kind=dp)             :: nlm_sub(2*l+1)
-        
-        nlm_sub(:) = nlm(IL(l):(IL(l+2)-1)) ! [n_l^-l, ... n_l^l]
-        Sl = 1.0d0/(2*l+1) * sum(abs(nlm_sub)**2) 
     end
 
     !---------------------------------

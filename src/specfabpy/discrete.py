@@ -122,34 +122,7 @@ Deprecated, use fortran version sf.ri_to_nlm(ri, wi, L)
 
 #    return nlm
     
-    
-def Sl_delta(L):
 
-    nlm_len = L2nlmlen(L)
-    nlm = np.zeros((nlm_len), dtype=np.complex128)
-    Lrange = np.arange(0,L+1,2) # 0, 2, 4, ...
-        
-    for ii, (l,m) in enumerate(lm__[:,:nlm_len].T): 
-        nlm[ii] = sp.sph_harm(m,l, 0,0) # delta function values
-        
-    Sl = np.array([sf__.Sl(nlm, l) for l in Lrange])
-    Sl /= Sl[0] # normalize
-    
-    return Sl, Lrange, nlm
-    
-    
-def nlm_ideal_cases(norm=1/np.sqrt(4*np.pi)):
-
-    m = [0,0,1]
-    Il24 = [sf__.I20, sf__.I40] # l=2,4, m=0 coefs
-    L = 8
-    n20_unidir, n40_unidir = np.real(sf__.nlm_ideal(m, 0, L))[Il24]/norm       # delta distributed
-    n20_planar, n40_planar = np.real(sf__.nlm_ideal(m, np.pi/2, L))[Il24]/norm # x--y planar distributed
-    n20_circle, n40_circle = np.real(sf__.nlm_ideal(m, np.pi/4, L))[Il24]/norm # 45 deg circle distributed
-
-    return ((n20_unidir,n40_unidir), (n20_planar,n40_planar), (n20_circle,n40_circle))
-    
-    
 class DFSE():
     
     """

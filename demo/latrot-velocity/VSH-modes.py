@@ -34,11 +34,11 @@ ccij = np.conjugate(cij)
 
 cbaspect = 9
 kwargs = dict(lvls=np.arange(0, 0.5+0.01, 0.1), cbtickintvl=2, cmap='RdPu', arrscale=4, cbaspect=cbaspect)
-sfplt.plot_VSH(plm0, np.array([0,np.sqrt(2)*cij,0]), ax1, cblabel=r'$\norm*{\vb{Q}_0^0}$', **kwargs)
-sfplt.plot_VSH(plm0, np.array([-ccij,0,cij]),        ax2, cblabel=r'$\norm*{\frac{1}{\sqrt{2}}\vb{Q}_0^0 + \text{c.c.}}$', **kwargs)
+sfplt.plot_VSH(plm0, np.array([0,np.sqrt(2)*cij,0]), ax1, cblabel=r'$\norm*{\vb{Q}_1^0}$', **kwargs)
+sfplt.plot_VSH(plm0, np.array([-ccij,0,cij]),        ax2, cblabel=r'$\norm*{\frac{1}{\sqrt{2}}\vb{Q}_1^1 + \text{c.c.}}$', **kwargs)
 
 kwargs = dict(lvls=np.arange(0, 1.0+0.01, 0.25), cbtickintvl=2, cmap='GnBu', arrscale=7.5, cbaspect=cbaspect)
-sfplt.plot_VSH(np.array([0,0,np.sqrt(2)*cij,0,0]), qlm0, ax3, cblabel=r'$\norm*{\vb{P}_0^0}$', **kwargs)
+sfplt.plot_VSH(np.array([0,0,np.sqrt(2)*cij,0,0]), qlm0, ax3, cblabel=r'$\norm*{\vb{P}_2^0}$', **kwargs)
 sfplt.plot_VSH(np.array([0,-ccij,0,cij,0]), qlm0,        ax4, cblabel=r'$\norm*{\frac{1}{\sqrt{2}}\vb{P}_2^1 + \text{c.c.}}$', **kwargs)
 sfplt.plot_VSH(np.array([ccij,0,0,0,cij]), qlm0,         ax5, cblabel=r'$\norm*{\frac{1}{\sqrt{2}}\vb{P}_2^2 + \text{c.c.}}$', **kwargs)
 

@@ -37,7 +37,7 @@ kwargs = dict(Nt=Nt, iota=+1)
 
 L = 16
 lm1, nlm_len = sf.init(L)
-nlm1, F, *_       = sfint.lagrangianparcel(*args, **kwargs, nu=1) 
+nlm1, F, *_    = sfint.lagrangianparcel(*args, **kwargs, nu=1) 
 nlm1_noreg, *_ = sfint.lagrangianparcel(*args, **kwargs, nu=None) 
 
 Ll = 8
@@ -45,8 +45,8 @@ lm2, nlm_len = sf.init(Ll)
 nlm2, *_       = sfint.lagrangianparcel(*args, **kwargs, nu=1) 
 nlm2_noreg, *_ = sfint.lagrangianparcel(*args, **kwargs, nu=None) 
 
-Sl1_dirac, Lrange1, nlm1_dirac = sfdsc.Sl_delta(lm1[0,-1])
-Sl2_dirac, Lrange2, nlm2_dirac = sfdsc.Sl_delta(lm2[0,-1])
+nlm_pole = sf.nlm_idealz(0, L) # z delta function
+Sl_pole, Lrng = sf.powerspectrum(nlm_pole, L)
 
 for kk, tt in enumerate((20,60)):
 #for kk, tt in enumerate((20,)):
@@ -66,23 +66,18 @@ for kk, tt in enumerate((20,60)):
 
     ### Plot power spectra
 
-    Sl1       = np.array([sf.Sl(nlm1[tt,:], l)       for l in Lrange1]) 
-    Sl1_noreg = np.array([sf.Sl(nlm1_noreg[tt,:], l) for l in Lrange1])
-    Sl2       = np.array([sf.Sl(nlm2[tt,:], l)       for l in Lrange2]) 
-    Sl2_noreg = np.array([sf.Sl(nlm2_noreg[tt,:], l) for l in Lrange2]) 
-     
-    Sl1       /= Sl1[0]       # normalize
-    Sl1_noreg /= Sl1_noreg[0] 
-    Sl2       /= Sl2[0]       
-    Sl2_noreg /= Sl2_noreg[0]
+    Sl1, Lrng1 = sf.powerspectrum(nlm1[tt], L)
+    Sl2, Lrng2 = sf.powerspectrum(nlm2[tt], Ll)
+    Sl1_noreg, Lrng_noreg1 = sf.powerspectrum(nlm1_noreg[tt], L)
+    Sl2_noreg, Lrng_noreg2 = sf.powerspectrum(nlm2_noreg[tt], Ll)
 
-    h = ax.semilogy(Lrange1, Sl1,       ls='-', c=sfplt.c_dpurple, label=r'$L=%i$ + reg.'%(L))
-    h = ax.semilogy(Lrange2, Sl2,       ls='-', c=sfplt.c_dgreen, label=r'$L=%i$ + reg.'%(Ll))
+    h = ax.semilogy(Lrng1, Sl1, ls='-', c=sfplt.c_dpurple, label=r'$L=%i$ + reg.'%(L))
+    h = ax.semilogy(Lrng2, Sl2, ls='-', c=sfplt.c_dgreen, label=r'$L=%i$ + reg.'%(Ll))
 
-    ax.semilogy(Lrange1, Sl1_dirac, '--', c='k', lw=1.5, label=r'$n(\vu{r})=\delta(\vu{r}-\vu{z})$')
+    ax.semilogy(Lrng, Sl_pole, '--', c='k', lw=1.5, label=r'$n(\vu{r})=\delta(\vu{r}-\vu{z})$')
 
-    h = ax.semilogy(Lrange1, Sl1_noreg, ls=':', c=sfplt.c_purple, label=r'$L=%i$'%(L))
-    h = ax.semilogy(Lrange2, Sl2_noreg, ls=':', c=sfplt.c_green, label=r'$L=%i$'%(Ll))
+    h = ax.semilogy(Lrng_noreg1, Sl1_noreg, ls=':', c=sfplt.c_purple, label=r'$L=%i$'%(L))
+    h = ax.semilogy(Lrng_noreg2, Sl2_noreg, ls=':', c=sfplt.c_green, label=r'$L=%i$'%(Ll))
 
     # Set figure axes etc.
     ax.set_xlabel('$l$')

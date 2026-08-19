@@ -32,7 +32,7 @@ Variable definitions
     mask[:]        : domain mask, values 1-5: ocean (1), ice_free_land (2) grounded_ice (3) floating_ice (4)
     mi[:,i]        : i-th a^(2) eigenvector, sorted so that i=0,1 correspond to the largest and second-largest eigenvalue **in the model plane**, respectively, and i=2 is the out-of-plane eigenvector
     lami[:,i]      : i-th a^(2) eigenvalue, sorted similarly to mi
-    E[:]           : equivelent isotropic enhancement factor, estimated using CAFFE
+    E[:]           : equivalent flow enhancement factor, estimated using CAFFE
 """
 
 ### Load solution

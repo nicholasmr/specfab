@@ -91,14 +91,13 @@ module specfabpy
         rotate_nlm__sf => rotate_nlm, &
         rotate_nlm_xz2xy__sf => rotate_nlm_xz2xy, &
         rotate_vector__sf => rotate_vector, &
-        Sl__sf => Sl, & ! power spectrum
+        powerspectrum__sf => powerspectrum, Sl__sf => Sl, & ! power spectrum
         
         ! nlm states
-        nlm_ideal__sf     => nlm_ideal, &        
+        nlm_ideal__sf     => nlm_ideal, & 
+        nlm_idealz__sf    => nlm_idealz, & 
+        pfJ__sf           => pfJ, & 
         nlm_isvalid__sf   => nlm_isvalid, &
-        nlm_isotropic__sf => nlm_isotropic, &
-        nlm_singlemax__sf => nlm_singlemax, &
-        nlm_girdle__sf    => nlm_girdle, &
         
         ! Numerics
         Ldiag__sf => Ldiag, &
@@ -114,6 +113,11 @@ module specfabpy
         simpleshear_gamma__sf => simpleshear_gamma, simpleshear_gamma_to_t__sf => simpleshear_gamma_to_t, &
         simpleshear_F__sf => simpleshear_F, simpleshear_ugrad__sf => simpleshear_ugrad, &
         
+        ! Damage
+        g_SI__sf => g_SI, g_SII__sf => g_SII, &
+        M_FRSU_I__sf => M_FRSU_I, &
+        damagetensor__sf => damagetensor, &
+
         ! Elmer
         ae2_to_a2__sf => ae2_to_a2, ae4_to_a4__sf => ae4_to_a4, & ! Elmer representations
         Cmat_GOLF_dimless__sf => Cmat_GOLF_dimless, & 
@@ -696,6 +700,112 @@ contains
         
         a4_irpart = a4_irpart__sf(a2_, a4_)
     end
+
+    !---------------------------------
+    ! Fabric state
+    !---------------------------------
+
+    subroutine powerspectrum(nlm, Lmax, S, l)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        integer, intent(in)          :: Lmax
+        real(kind=dp), intent(out)   :: S(Lmax/2+1)
+        integer, intent(out)         :: l(Lmax/2+1)
+       
+        call powerspectrum__sf(nlm,Lmax, S,l)
+    end
+    
+    function Sl(nlm, l)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        integer, intent(in)          :: l
+        real(kind=dp)                :: Sl
+       
+        Sl = Sl__sf(nlm, l) 
+    end
+    
+    function pfJ(nlm, Lmax) 
+        use specfabpy_const
+        implicit none
+        complex(kind=dp) :: nlm(:)
+        integer          :: Lmax
+        real(kind=dp)    :: pfJ
+        pfJ = pfJ__sf(nlm, Lmax)
+    end
+    
+    function nlm_ideal(m, colat, L) result(nlm)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: m(3), colat 
+        integer, intent(in)       :: L
+        complex(kind=dp)          :: nlm((L+1)*(L+2)/2)
+        nlm(:) = nlm_ideal__sf(m, colat, L) ! colat=0 is a perfect pole (single max), colat=pi/2 is a perfect girdle
+    end
+    
+    function nlm_idealz(colat, L) result(nlm)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: colat 
+        integer, intent(in)       :: L
+        complex(kind=dp)          :: nlm((L+1)*(L+2)/2)
+        nlm(:) = nlm_idealz__sf(colat, L) ! colat=0 is a perfect pole (single max), colat=pi/2 is a perfect girdle
+    end
+    
+    function nlm_isvalid(nhat20, nhat40) result(isvalid)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nhat20(:), nhat40(:) 
+        logical                      :: isvalid(size(nhat20))
+        isvalid = nlm_isvalid__sf(nhat20, nhat40)
+    end     
+        
+    function apply_bounds(nlm) result (nlm_bounded)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        complex(kind=dp)             :: nlm_bounded(size(nlm))
+    
+        nlm_bounded = apply_bounds__sf(nlm)
+    end
+    
+    function rotate_vector(v, theta, phi) result(w)
+        use specfabpy_const    
+        implicit none
+        real(kind=dp), intent(in) :: v(3), theta, phi
+        real(kind=dp) :: w(3)
+        
+        w = rotate_vector__sf(v, theta, phi)
+    end
+    
+    function rotate_nlm(nlm, theta,phi) result (nlm_rot)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:) 
+        real(kind=dp), intent(in)    :: theta, phi 
+        complex(kind=dp)             :: nlm_rot(size(nlm))
+        
+        nlm_rot = rotate_nlm__sf(nlm, theta,phi)
+    end
+    
+    function rotate_nlm_xz2xy(nlm) result (nlm_rot)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:) 
+        complex(kind=dp)             :: nlm_rot(size(nlm))
+        
+        nlm_rot = rotate_nlm_xz2xy__sf(nlm)
+    end
+
+    function nhat40_empcorr_ice(nhat20) result(nhat40)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: nhat20(:)
+        real(kind=dp)             :: nhat40(size(nhat20))
+
+        nhat40 = nhat40_empcorr_ice__sf(nhat20)
+    end
         
     !---------------------------------
     ! ISOTROPIC RHEOLOGY 
@@ -967,34 +1077,6 @@ contains
     ! AUX
     !---------------------------------
     
-    function rotate_vector(v, theta, phi) result(w)
-        use specfabpy_const    
-        implicit none
-        real(kind=dp), intent(in) :: v(3), theta, phi
-        real(kind=dp) :: w(3)
-        
-        w = rotate_vector__sf(v, theta, phi)
-    end
-    
-    function rotate_nlm(nlm, theta,phi) result (nlm_rot)
-        use specfabpy_const
-        implicit none
-        complex(kind=dp), intent(in) :: nlm(:) 
-        real(kind=dp), intent(in)    :: theta, phi 
-        complex(kind=dp)             :: nlm_rot(size(nlm))
-        
-        nlm_rot = rotate_nlm__sf(nlm, theta,phi)
-    end
-    
-    function rotate_nlm_xz2xy(nlm) result (nlm_rot)
-        use specfabpy_const
-        implicit none
-        complex(kind=dp), intent(in) :: nlm(:) 
-        complex(kind=dp)             :: nlm_rot(size(nlm))
-        
-        nlm_rot = rotate_nlm_xz2xy__sf(nlm)
-    end
-  
     function DDRX_decayrate(nlm, tau)
     
         use specfabpy_const
@@ -1038,26 +1120,7 @@ contains
         
         Gamma0 = Gamma0__sf(eps, T, A, Q)
     end
-    
-    function apply_bounds(nlm) result (nlm_bounded)
-        use specfabpy_const
-        implicit none
-        complex(kind=dp), intent(in) :: nlm(:)
-        complex(kind=dp)             :: nlm_bounded(size(nlm))
-    
-        nlm_bounded = apply_bounds__sf(nlm)
-    end
-    
-    function Sl(nlm, l)
-        use specfabpy_const
-        implicit none
-        complex(kind=dp), intent(in) :: nlm(:)
-        integer, intent(in)          :: l
-        real(kind=dp)                :: Sl
-       
-        Sl = Sl__sf(nlm, l) 
-    end
-    
+
     function vec_to_mat_voigt(v) result (M)
         use specfabpy_const
         implicit none
@@ -1066,58 +1129,6 @@ contains
         
         M = vec_to_mat_voigt__sf(v)
     end
-    
-    function nhat40_empcorr_ice(nhat20) result(nhat40)
-        use specfabpy_const
-        implicit none
-        real(kind=dp), intent(in) :: nhat20(:)
-        real(kind=dp)             :: nhat40(size(nhat20))
-
-        nhat40 = nhat40_empcorr_ice__sf(nhat20)
-    end
-    
-    function nlm_ideal(m, colat, L) result(nlm)
-        use specfabpy_const
-        implicit none
-        real(kind=dp), intent(in) :: m(3), colat 
-        integer, intent(in)       :: L
-        complex(kind=dp)          :: nlm((L+1)*(L+2)/2)
-        nlm(:) = nlm_ideal__sf(m, colat, L)
-    end
-    
-    function nlm_isotropic(L) result(nlm)
-        use specfabpy_const
-        implicit none
-        integer, intent(in) :: L
-        complex(kind=dp)    :: nlm((L+1)*(L+2)/2)
-        nlm(:) = nlm_isotropic__sf(L)
-    end
-    
-    function nlm_singlemax(m, L) result(nlm)
-        use specfabpy_const
-        implicit none
-        real(kind=dp), intent(in) :: m(3)
-        integer, intent(in)       :: L
-        complex(kind=dp)          :: nlm((L+1)*(L+2)/2)
-        nlm(:) = nlm_singlemax__sf(m, L)
-    end
-    
-    function nlm_girdle(m, L) result(nlm)
-        use specfabpy_const
-        implicit none
-        real(kind=dp), intent(in) :: m(3)
-        integer, intent(in)       :: L
-        complex(kind=dp)          :: nlm((L+1)*(L+2)/2)
-        nlm(:) = nlm_girdle__sf(m, L)
-    end
-    
-    function nlm_isvalid(nhat20, nhat40) result(isvalid)
-        use specfabpy_const
-        implicit none
-        complex(kind=dp), intent(in) :: nhat20(:), nhat40(:) 
-        logical                      :: isvalid(size(nhat20))
-        isvalid = nlm_isvalid__sf(nhat20, nhat40)
-    end 
     
     subroutine Lame_olivine_A2X(LameA, Xtype, LameX)
         use specfabpy_const
@@ -1140,6 +1151,46 @@ contains
 !        call aiv_orthotropic(nlm_1,nlm_2,nlm_3, a2v_nlm,a4v_nlm, a4v_jk_sym2,a4v_jk_sym4)
 !        call aiv_orthotropic_discrete(mi, a2v_mi,a4v_mi, a4v_jk_sym2,a4v_jk_sym4)
 !    end
+
+
+    !---------------------------------
+    ! Damage - **in development**
+    !---------------------------------
+
+    function g_SI(stress, n2) result(g)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: stress(3,3), n2(3,3)
+        complex(kind=dp)          :: g(1+5+9)
+        g = g_SI__sf(stress,n2)
+    end
+    
+    function g_SII(stress, n2) result(g)
+        use specfabpy_const
+        implicit none
+        real(kind=dp), intent(in) :: stress(3,3), n2(3,3)
+        complex(kind=dp)          :: g(1+5+9)
+        g = g_SII__sf(stress,n2)
+    end
+    
+    function damagetensor(nlm) result(D)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp)                :: D(3,3)
+
+        D = damagetensor__sf(nlm)
+    end
+    
+    function M_FRSU_I(nlm, stress)
+        use specfabpy_const
+        implicit none
+        complex(kind=dp), intent(in) :: nlm(:)
+        real(kind=dp), intent(in)    :: stress(3,3)
+        complex(kind=dp)             :: M_FRSU_I(size(nlm),size(nlm))
+        
+        M_FRSU_I = M_FRSU_I__sf(nlm, stress)
+    end
 
     !---------------------------------
     ! Elmer/Ice routines

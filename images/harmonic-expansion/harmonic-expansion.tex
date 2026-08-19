@@ -58,4 +58,17 @@
 	\node[cdots] at ({(9 -0.2)*\dx+\jj},-0.6-0*\dy) {$\bf\cdots$};
 \end{tikzpicture}
 
+\begin{tikzpicture}[scale=1]
+	\node[]     at ({-1*\dx},0*\dy)  {\myimg{nlm}};
+	\node[plus] at ({-0.5*\dx},-0.5) {$\bf =$};
+	\node[] at ({0*\dx},0) {\myimg{Y00}};	
+	\node[] at ({1*\dx},0) {\myimg{Y20}};
+	\node[] at ({2*\dx},0) {\myimg{Y21}};
+	\node[] at ({3*\dx},0) {\myimg{Y22}};
+	\foreach \i in {0,...,3} {
+		\node[plus] at ({(\i+0.5)*\dx},-0.5) {$\bf +$};
+	}
+	\node[cdots] at ({(4 -0.2)*\dx+\jj},-0.6-0*\dy) {$\bf\cdots$};
+\end{tikzpicture}
+
 \end{document}

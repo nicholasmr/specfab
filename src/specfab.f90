@@ -11,6 +11,7 @@ module specfab
     use homogenizations
     use enhancementfactors
     use dynamics
+    use damage
     use rheologies
     use wavepropagation 
     use rotation
@@ -46,6 +47,7 @@ contains
         call initreduced(Lcap) ! Initialize reduced nlm (rnlm) module for 2D x-z problems
         call initmoments(Lcap)
         call initdynamics(Lcap)
+        call initdamage(Lcap)
         call inithomogenizations(Lcap) ! Set isotropic structure tensors
         
     end

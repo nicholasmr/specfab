@@ -36,7 +36,9 @@ class CPO():
         self.modelplane = modelplane
         self.nu_realspace  = nu_realspace  # Real-space stabilization (multiplicative constant of real-space Laplacian)
         self.nu_multiplier = nu_multiplier # Multiplier of orientation-space regularization magnitude
-                
+
+        self.REALSPACE_REG_EXPO = 1/3-1 # velocity sensitivity exponent for new version of regularization
+
         ### Initialize fortran module
         
         self.sf = sf__
@@ -257,7 +259,17 @@ class CPO():
                 F += dot(dot(u, nabla_grad(sr)), self.wr)*dx # real part
                 
             # Real space stabilization (Laplacian diffusion)
-            F += Constant(self.nu_realspace) * inner(grad(sr), grad(self.wr))*dx # real part
+            if self.nu_realspace < 1e-2: # use magnitude to switch between types of regularization (1e-2 would always be unfeasible in old version, so use that value as discriminant)
+                # Old regularization where regularization magnitude is uniform in space 
+                F += Constant(self.nu_realspace) * inner(grad(sr), grad(self.wr))*dx # real part
+            else:
+                # New regularization where regularization magnitude is sensitive to local cell size and the local speed
+                h = CellDiameter(self.mesh)
+                unorm = sqrt(dot(u, u) + DOLFIN_EPS)
+                nu_reg = Constant(self.nu_realspace) * h * unorm 
+                U0 =  1 * 3.17098e-8 # m/yr -> m/s reference velocity
+                nu_reg *= (unorm/Constant(U0))**(self.REALSPACE_REG_EXPO) # tuned scaling
+                F += nu_reg * inner(grad(sr), grad(self.wr))*dx # real part
     
             # Lattice rotation
             if ENABLE_LROT:

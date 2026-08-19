@@ -1,4 +1,4 @@
-! N. M. Rathmann <rathmann@nbi.ku.dk>, 2023
+! N. M. Rathmann <rathmann@nbi.ku.dk>, 2023-
 
 ! Idealized CPO states
 
@@ -12,51 +12,39 @@ module idealstate
     
 contains
 
-    function nlm_ideal(m, colat, L) result(nlm_rot)
+    function nlm_idealz(colat, Lmax) 
+    
+        ! delta function (if colat=0) or ring delta function (if colat>0) aligned with the vertical direction z (and antipodally symmetric)
+    
+        implicit none
+        
+        real(kind=dp), intent(in) :: colat ! colat of delta
+        integer, intent(in)       :: Lmax
+        complex(kind=dp)          :: nlm_idealz( nlm_lenvec(Lmax) )
+        integer, parameter        :: N = 10
+        real(kind=dp)             :: Yl0_list(0:N)
+        
+        nlm_idealz(:) = 0.0d0
+        Yl0_list = [Y00(colat), Y20(colat), Y40(colat), Y60(colat), Y80(colat), Y100(colat), Y120(colat), Y140(colat), Y160(colat), Y180(colat), Y200(colat)]
+        do ii=0,min(N,int(Lmax/2))
+            nlm_idealz(ILm(ii*2)) = Yl0_list(ii)
+        end do
+    end
+
+    function nlm_ideal(m, colat, Lmax) result(nlm_rot)
     
         implicit none
         
         real(kind=dp), intent(in) :: m(3), colat ! symmetry axis, circle colat w.r.t. m
-        integer, intent(in)       :: L
-        complex(kind=dp)          :: nlm(nlm_lenvec(L)), nlm_rot(nlm_lenvec(L))
-        integer, parameter        :: N = 6
-        real(kind=dp)             :: Yl0_list(0:N), theta, phi
+        integer, intent(in)       :: Lmax
+        complex(kind=dp)          :: nlm(nlm_lenvec(Lmax)), nlm_rot(nlm_lenvec(Lmax))
+        integer, parameter        :: N = 10
+        real(kind=dp)             :: theta, phi
         
-        nlm(:) = 0.0d0
-        Yl0_list = [Y00(colat), Y20(colat), Y40(colat), Y60(colat), Y80(colat), Y100(colat), Y120(colat)]
-        
-        do ii=0,min(N,int(L/2))
-!            print *, ii, ILm(ii*2)
-            nlm(ILm(ii*2)) = Yl0_list(ii)
-        end do
-
+        nlm(:) = nlm_idealz(colat, Lmax)
         theta = acos(m(3))
         phi = atan2(m(2),m(1))
         nlm_rot = rotate_nlm(rotate_nlm(nlm, theta,0.0d0), 0.0d0,phi)
-    end
-    
-    function nlm_isotropic(L) result(nlm)
-        implicit none
-        integer, intent(in) :: L
-        complex(kind=dp)    :: nlm(nlm_lenvec(L)) !, nlm_rot(nlm_lenvec(L))
-        nlm = 0.0d0
-        nlm(1) = 1/sqrt(4*Pi)
-    end
-    
-    function nlm_singlemax(m, L) result(nlm)
-        implicit none
-        real(kind=dp), intent(in) :: m(3)
-        integer, intent(in)       :: L
-        complex(kind=dp)          :: nlm(nlm_lenvec(L)) !, nlm_rot(nlm_lenvec(L))
-        nlm = nlm_ideal(m, 0.0d0, L)
-    end
-    
-    function nlm_girdle(m, L) result(nlm)
-        implicit none
-        real(kind=dp), intent(in) :: m(3)
-        integer, intent(in)       :: L
-        complex(kind=dp)          :: nlm(nlm_lenvec(L)) !, nlm_rot(nlm_lenvec(L))
-        nlm = nlm_ideal(m, Pi/2, L)
     end
     
     function nlm_isvalid(nhat20, nhat40) result(isvalid)
@@ -88,63 +76,54 @@ contains
             isvalid(ii) = isvalid_a2 .and. idvalid_a4
         end do                
     end 
+
+    function Sl(nlm, l)
+    
+        ! Angular power spectrum S(l) at single degree l
+        
+        implicit none
+
+        complex(kind=dp), intent(in) :: nlm(:)
+        integer, intent(in)          :: l
+        real(kind=dp)                :: Sl
+        complex(kind=dp)             :: nlm_sub(2*l+1)
+        
+        nlm_sub(:) = nlm(IL(l):(IL(l+2)-1)) ! [n_l^-l, ... n_l^l]
+        Sl = 1.0d0/(2*l+1) * sum(abs(nlm_sub)**2) 
+    end
+    
+    subroutine powerspectrum(nlm,Lmax, S,l)
+    
+        ! Normalized angular power spectrum S(l)/S(0) for all degrees l <= Lmax
+        
+        implicit none
+
+        complex(kind=dp), intent(in) :: nlm(:)
+        integer, intent(in)          :: Lmax
+        real(kind=dp), intent(out)   :: S(Lmax/2+1) ! S(l)
+        integer, intent(out)         :: l(Lmax/2+1) ! list of l values (e.g. 0,2,4 for L=4)
+        
+        l(:) = [(ll, ll=0, Lmax, 2)] ! (0, 2, 4, ..., L)
+        S(:) = [(Sl(nlm,l(ii)), ii=1, size(l))]
+        S(:) = S(:)/S(1) ! normalize
+    end
+
+    function pfJ(nlm, Lmax) 
+    
+        ! Pole figure J index, truncated at Lmax
+        
+        implicit none
+
+        real(kind=dp)                :: pfJ
+        complex(kind=dp), intent(in) :: nlm(:)
+        integer, intent(in)          :: Lmax
+        integer                      :: l(Lmax/2+1) ! list of l values (e.g. 0,2,4 for L=4)
+        
+        l(:) = [(ll, ll=0, Lmax, 2)] ! (0, 2, 4, ..., L)
+        pfJ  = 4*Pi * sum( [( (2*l(ii)+1) * Sl(nlm,l(ii)), ii=1, size(l))] )
+    end
     
     ! SH functions for m=0
+    include "include/Yl0-functions.f90"
     
-    function Y00(theta) result (Y)
-        implicit none
-        real(kind=dp), intent(in) :: theta ! latitude
-        real(kind=dp)             :: Y
-        Y = 1/2.0d0 * sqrt(1/Pi)
-    end
-    
-    function Y20(theta) result (Y)
-        implicit none
-        real(kind=dp), intent(in) :: theta ! latitude
-        real(kind=dp)             :: Y
-        Y = 1/4.0d0 * sqrt(5/Pi) * (3*cos(theta)**2 - 1)
-    end
-    
-    function Y40(theta) result (Y)
-        implicit none
-        real(kind=dp), intent(in) :: theta ! latitude
-        real(kind=dp)             :: Y
-        Y = 3/16.0d0 * sqrt(1/Pi) * (35*cos(theta)**4 - 30*cos(theta)**2 + 3)
-    end
-    
-    function Y60(theta) result (Y)
-        implicit none
-        real(kind=dp), intent(in) :: theta ! latitude
-        real(kind=dp)             :: Y
-        Y = 1/32.0d0 * sqrt(13/Pi) * (231*cos(theta)**6 - 315*cos(theta)**4 + 105*cos(theta)**2 - 5)
-    end
-
-    function Y80(theta) result (Y)
-        implicit none
-        real(kind=dp), intent(in) :: theta ! latitude
-        real(kind=dp)             :: Y
-        Y = 1/256.0d0 * sqrt(17/Pi) * (6435*cos(theta)**8 - 12012*cos(theta)**6 + 6930*cos(theta)**4 - 1260*cos(theta)**2 + 35)
-    end
-    
-    function Y100(theta) result (Y)
-        implicit none
-        real(kind=dp), intent(in) :: theta ! latitude
-        real(kind=dp)             :: Y
-        Y = 1/512.0d0 * sqrt(21/Pi) * (46189*cos(theta)**10 - 109395*cos(theta)**8 + 90090*cos(theta)**6 - 30030*cos(theta)**4 + 3465*cos(theta)**2 - 63)
-    end
-       
-    function Y120(theta) result (Y)
-        implicit none
-        real(kind=dp), intent(in) :: theta ! latitude
-        real(kind=dp)             :: Y
-        Y = 1/2048.0d0 * sqrt(25/Pi) * (676039*cos(theta)**12 - 1939938*cos(theta)**10 + 2078505*cos(theta)**8 - 1021020*cos(theta)**6 + 225225*cos(theta)**4 - 18018*cos(theta)**2 + 231)
-    end
-
-!    function Y140(theta) result (Y)
-!        implicit none
-!        real(kind=dp), intent(in) :: theta ! latitude
-!        real(kind=dp)             :: Y
-!        Y = 1/4096.0d0 * sqrt(29/Pi) * (5014575*cos(theta)**14 - 16900975*cos(theta)**12 + 22309287*cos(theta)**10 - 14549535*cos(theta)**8 + 4849845*cos(theta)**6 - 765765*cos(theta)**4 + 45045*cos(theta)**2 - 429)
-!    end
-        
 end module idealstate

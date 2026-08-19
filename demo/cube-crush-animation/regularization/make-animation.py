@@ -56,17 +56,15 @@ if PLOT_FRAMES:
         
         ### Plot power spectra
 
-        Sl_dirac, Lrange, nlm_dirac = sfdsc.Sl_delta(lm[0,-1])
-
         ax = fig.add_subplot(gs[0,0])
-        Sl_model_reg   = np.array([sf.Sl(nlm_reg[tt,:], l)   for l in Lrange]) 
-        Sl_model_noreg = np.array([sf.Sl(nlm_noreg[tt,:], l) for l in Lrange]) 
-        Sl_model_reg   /= Sl_model_reg[0] # normalize
-        Sl_model_noreg /= Sl_model_noreg[0] # normalize
+        Sl_model_reg, Lrange   = sf.powerspectrum(nlm_reg[tt,:], L)
+        Sl_model_noreg, Lrange = sf.powerspectrum(nlm_noreg[tt,:], L)
         h = ax.semilogy(Lrange, Sl_model_noreg, ls='-', c='#a50f15', label=r'$\bf{M}=\bf{M}_\mathrm{LROT}$')
         h = ax.semilogy(Lrange, Sl_model_reg,   ls='-', c='#006d2c', label=r'$\bf{M}=\bf{M}_\mathrm{LROT} + \bf{M}_\mathrm{REG}$')
             
         # Delta spectrum
+        nlm_dirac = sf.nlm_idealz(0, L) # z delta function
+        Sl_dirac, Lrange = sf.powerspectrum(nlm_dirac, L)
         ax.semilogy(Lrange, Sl_dirac, '--', c='k', lw=1.5, label=r'$n(\bf{r})=\delta(\bf{r}-\bf{z})$')  
         
         # Set figure axes etc.
