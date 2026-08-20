@@ -27,7 +27,7 @@ class IceFabric(CPO):
 
         # CPO class
         self.setextra = setextra # set Eij, E_CAFFE, pfJ, etc. on every state update?
-        super().__init__(mesh, boundaries, L, nu_multiplier=nu_multiplier, nu_realspace=nu_realspace, modelplane=modelplane, ds=ds, nvec=nvec)
+        super().__init__(mesh, boundaries, L, nu_multiplier=nu_multiplier, nu_realspace=nu_realspace, modelplane=modelplane, ds=ds, nvec=nvec, **kwargs)
 
         # specfab
         self.enhancementmodel = enhancementmodel # 'LTS', 'APEX', ...

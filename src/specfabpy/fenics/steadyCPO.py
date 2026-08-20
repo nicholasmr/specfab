@@ -226,7 +226,7 @@ class steadyCPO():
     Solver
     """
 
-    def solve(self, problem, numerics):
+    def solve(self, problem, numerics, **kwargs):
     
         isDDRX = len(np.shape(problem['T']))>0
         print(tabulate([['PROBLEM', 'LROT+ADVEC' if not isDDRX else 'LROT+DDRX+ADVEC'], 
@@ -249,7 +249,7 @@ class steadyCPO():
         ### Initialize solver class
         
         fab = IceFabric(mesh, boundaries, numerics['L'], nu_realspace=numerics['nu_real'], nu_multiplier=numerics['nu_orimul'], \
-                            modelplane=self.modelplane, CAFFE_params=self.CAFFE_params)
+                            modelplane=self.modelplane, CAFFE_params=self.CAFFE_params, **kwargs)
         
         ### Boundary conditions  
         
