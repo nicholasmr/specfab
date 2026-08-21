@@ -324,7 +324,7 @@ contains
         Dmaxpow = Dmax(n_RSS)**(4.0d0/n_RSS) ! e.g. (5/2)**2 for n_RSS=2 (regular CAFFE model)
     
         if (D .lt. 1) then
-            gam = (4.0d0/n_RSS)/(Dmaxpow) * (Emax-1)/(1-Emin) ! <D> exponent for range 0 <= <D> <= 1  
+            gam = (4.0d0/n_RSS)/(Dmaxpow-1) * (Emax-1)/(1-Emin) ! <D> exponent for range 0 <= <D> <= 1  
             E = Emin + (1-Emin)*D**gam
         else
             E = ((Emax-1)*D**(4.0d0/n_RSS) + Dmaxpow - Emax)/(Dmaxpow-1)
