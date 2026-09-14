@@ -30,7 +30,7 @@ class IceFabric(CPO):
         super().__init__(mesh, boundaries, L, nu_multiplier=nu_multiplier, nu_realspace=nu_realspace, modelplane=modelplane, ds=ds, nvec=nvec, **kwargs)
 
         # specfab
-        self.enhancementmodel = enhancementmodel # 'LTS', 'APEX', ...
+        self.enhancementmodel = enhancementmodel # 'LTS', 'DECAF', ...
         self.CAFFE_params = CAFFE_params # (Emin, Emax)
         self.n_EIE = n_EIE
         self.Lame_grain = self.sf.Cij_to_Lame_tranisotropic(Cij) 
@@ -38,8 +38,8 @@ class IceFabric(CPO):
 
         # EnhancementFactor class
         self.symframe = symframe
-        if   self.enhancementmodel == 'LTS':  homoparams = (Eij_grain, alpha, n_grain)
-        elif self.enhancementmodel == 'APEX': homoparams = CAFFE_params
+        if   self.enhancementmodel == 'LTS':   homoparams = (Eij_grain, alpha, n_grain)
+        elif self.enhancementmodel == 'DECAF': homoparams = CAFFE_params
         else: homoparams = ()
         self.enhancementfactor = EnhancementFactor(mesh, L, enhancementmodel=enhancementmodel, homoparams=homoparams, modelplane=modelplane, symframe=symframe)
 
@@ -84,7 +84,7 @@ class IceFabric(CPO):
         return self.enhancementfactor.pfJ(self.s, *args, **kwargs)
             
     def get_E_CAFFE(self, u, *args, **kwargs):
-        return self.enhancementfactor.E_CAFFE(self.s, u, Emin=self.CAFFE_params[0], Emax=self.CAFFE_params[1])
+        return self.enhancementfactor.E_CAFFE(self.s, u, Emin=self.CAFFE_params[0], Emax=self.CAFFE_params[1], **kwargs)
 
     def get_E_EIE(self, u, Eij, mi, *args, **kwargs):
         return self.enhancementfactor.E_EIE(u, Eij, mi, self.n_EIE)

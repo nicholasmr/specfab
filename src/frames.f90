@@ -26,7 +26,7 @@ contains
         implicit none
         integer, parameter         :: n = 3
         real(kind=dp), intent(in)  :: M(n,n)
-        character*2, intent(in)    :: plane ! ['ij'|'xy'|'xz']
+        character*2, intent(in)    :: plane ! ['ij'|'xy'|'xz'|'yz'|'dl']
         real(kind=dp), intent(out) :: ei(n,n), lami(n) ! (i,xyz), (i) for eigenpair i=1,2,3
         
         real(kind=dp)              :: e1(n),e2(n),e3(n)
@@ -44,14 +44,26 @@ contains
                 k = 3 ! z is the out-of-plane direction 
             else if (plane == 'xz') then
                 k = 2 ! y is the out-of-plane direction
+            else if (plane == 'yz') then
+                k = 1 ! x is the out-of-plane direction
+            else if (plane == 'dl') then
+                k = 3 ! z is the out-of-plane direction        
             else
-                stop 'specfab error: eigframe(M, plane) argument "plane" was not any of ij,xy,xz'
+                stop 'specfab error: eigframe(M, plane) argument "plane" was not any of ij,xy,xz,yz,dl'
             end if
 
             Imax = maxloc(abs(ei(:,k)), 1)
             if (Imax==1) sort = [2,3,1] ! e1 is out-of-plane
             if (Imax==2) sort = [1,3,2] ! e2 is out-of-plane
             if (Imax==3) sort = [1,2,3] ! e3 is out-of-plane
+            
+            if (plane == 'dl') then
+                ! First entry should be eigenvector with largest x-component, then largest y-component, then z-component.
+                if (abs(ei(sort(1),1)) < abs(ei(sort(2),1))) then
+                    ! is e1,x < e2,x ? then swap entries 1 and 2
+                    sort = [sort(2), sort(1), sort(3)]
+                end if
+            end if
         end if
         
         ! Apply sorting

@@ -38,7 +38,7 @@ class OlivineFabric():
         self.enable_FSE = enable_FSE
         self.fabrictype = fabrictype # only spatio-temporal constant type allowed for now
         self.iota_n, self.iota_b = +1, -1
-        self.enhancementmodel = enhancementmodel # 'LTS', 'APEX', ...
+        self.enhancementmodel = enhancementmodel # 'LTS', 'DECAF', ...
         self.CAFFE_params = CAFFE_params # (Emin, Emax)
         self.setextra = setextra # set Eij, E_CAFFE, pfJ, etc. on every state update?
         

@@ -22,8 +22,8 @@ class CPO():
 
         ### Check args
         
-        if modelplane not in ['xz', 'xy']:
-            raise ValueError('modelplane "%s" not supported, must be "xz"'%(modelplane))
+        if modelplane not in ['xz', 'xy', 'yz']:
+            raise ValueError('modelplane "%s" not supported'%(modelplane))
 
         ### Setup
         
@@ -60,7 +60,7 @@ class CPO():
         self.dofs  = range(self.numdofs)
         self.srng  = range(self.nlm_len)
 
-        if self.modelplane=='xy':
+        if self.modelplane in ('xy','yz'):
     
             self.Sele = MixedElement([self.Vele, self.Vele]) # real, imag components
             self.S = FunctionSpace(self.mesh, self.Sele)
@@ -114,7 +114,7 @@ class CPO():
         if sr is None: 
             sr, si = self.nlm_iso, self.nlm_zero
         s = Function(self.S)
-        if self.modelplane=='xy':
+        if self.modelplane in ('xy','yz'):
             assign(s.sub(0), project(Constant(sr), self.V, **self.kw_project)) # real part
             assign(s.sub(1), project(Constant(si), self.V, **self.kw_project)) # imag part
         elif self.modelplane=='xz':
@@ -135,7 +135,7 @@ class CPO():
         self.bcs = []
         if domain is None: domain = self.boundaries 
         for ii, did in enumerate(domids):
-            if self.modelplane=='xy':
+            if self.modelplane in ('xy','yz'):
                 self.bcs += [DirichletBC(self.S.sub(0), sr[ii], domain, did)] # real part
                 self.bcs += [DirichletBC(self.S.sub(1), si[ii], domain, did)] # imag part
             elif self.modelplane=='xz':
@@ -149,13 +149,13 @@ class CPO():
         si = [Constant(self.nlm_zero)] * len(domids)
         self.set_BCs(sr, si, domids, domain=domain)
 
-    def evolve(self, u, S, dt, iota=+1, Gamma0=None, Lambda0=None, disable_advection=False):
+    def evolve(self, u, S, dt, iota=+1, Gamma0=None, Lambda0=None, disable_advection=False, **kwargs):
         """
         The fabric solver, called to step fabric field forward in time by amount dt
         """    
         self.s0.assign(self.s) # current state self.s must be set
         s = (self.sr,None) if self.modelplane=='xz' else (self.sr,self.si) # (sr, si)
-        F = self._weakform(*s, u,S, dt, iota,Gamma0,Lambda0, disable_advection=disable_advection)
+        F = self._weakform(*s, u,S, dt, iota,Gamma0,Lambda0, disable_advection=disable_advection, **kwargs)
         solve(lhs(F)==rhs(F), self.s, self.bcs, solver_parameters={'linear_solver':'gmres'}) # fastest tested are: gmres, bicgstab, tfqmr --- note this is a non-symmetric system!
 
     def solvesteady(self, u, S, iota=+1, Gamma0=None, Lambda0=None, LROT_guess=False, nu_realspacemul=None, **kwargs):
@@ -179,22 +179,28 @@ class CPO():
                 F = self._weakform(*s, u,S, dt, iota,gam0,Lambda0, **kwargs)
                 solve(F==0, self.s, self.bcs, solver_parameters={'newton_solver':{'linear_solver':'gmres', 'preconditioner':'petsc_am'}})
 
-    def _weakform(self, sr,si, u,S, dt, iota, Gamma0, Lambda0, zeta=0, disable_advection=False):
+    def _weakform(self, sr,si, u,S, dt, iota, Gamma0, Lambda0, zeta=0, disable_advection=False, D=None, W=None):
         
         ENABLE_LROT = iota is not None
         ENABLE_DDRX = (Gamma0 is not None) and (S is not None)
         ENABLE_CDRX = Lambda0 is not None
         ENABLE_REG  = True
         
-        # Flattened strain-rate and spin tensors for accessing them per node
-        Df = project( sym(grad(u)), self.G, **self.kw_project).vector()[:] # strain rate 
-        Wf = project(skew(grad(u)), self.G, **self.kw_project).vector()[:] # spin
-        Sf = project(S, self.G).vector()[:] # deviatoric stress
-        
-        # Same but in 3D for fabric problem
-        D3 = self.mat3d(Df) # [node,3,3]
-        W3 = self.mat3d(Wf)
-        S3 = self.mat3d(Sf)
+        if D is not None:
+            D3 = D.vector().get_local().reshape((-1, 3, 3))
+            W3 = W.vector().get_local().reshape((-1, 3, 3))
+            S3 = S.vector().get_local().reshape((-1, 3, 3))
+                        
+        else:
+            # Flattened strain-rate and spin tensors for accessing them per node
+            Df = project( sym(grad(u)), self.G, **self.kw_project).vector()[:] # strain rate 
+            Wf = project(skew(grad(u)), self.G, **self.kw_project).vector()[:] # spin
+            Sf = project(S, self.G).vector()[:] # deviatoric stress
+            
+            # Same but in 3D for fabric problem
+            D3 = self.mat3d(Df) # [node,3,3]
+            W3 = self.mat3d(Wf)
+            S3 = self.mat3d(Sf)
         
         # Dynamical matrices M_* at each node as np arrays (indexing is M[node,kk,row,column])
         M_LROT     = np.array([self._M_reduced(self.sf.M_LROT,     self.nlm_dummy, D3[nn], W3[nn], iota, zeta) for nn in self.dofs] ) if ENABLE_LROT else self.M_zero
@@ -202,8 +208,8 @@ class CPO():
         M_REG      = np.array([self._M_reduced(self.sf.M_REG,      self.nlm_dummy, D3[nn])                     for nn in self.dofs] ) if ENABLE_REG  else self.M_zero
         
         # Populate entries of dynamical matrices 
-        if   self.modelplane=='xy': krng = range(4) # rr, ri, ir, ii
-        elif self.modelplane=='xz': krng = range(1) # rr
+        if self.modelplane=='xz': krng = range(1) # rr
+        else:                     krng = range(4) # rr, ri, ir, ii
         for ii in self.srng:
             for kk in krng: 
                 if ENABLE_LROT: self.Mk_LROT[kk][ii].vector()[:]     = M_LROT[:,kk,ii,:].flatten()
@@ -212,7 +218,7 @@ class CPO():
 
         ### Construct weak form
         
-        if self.modelplane=='xy':
+        if self.modelplane in ('xy','yz'):
             
             # Real space stabilization (Laplacian diffusion)
             F  = Constant(self.nu_realspace) * inner(grad(sr), grad(self.wr))*dx # real part
@@ -236,7 +242,7 @@ class CPO():
             
             # DDRX 
             if ENABLE_DDRX:
-                raise ValueError('CPO(): DDRX evolution is not yet supported for modelplane="xy"')
+                raise ValueError('CPO(): DDRX evolution is not yet supported for modelplane=xy or yz')
             
             # Orientation space stabilization (hyper diffusion)
             if ENABLE_REG:
@@ -288,7 +294,7 @@ class CPO():
                     # Steady state solver? Use nonlinear iteration for DDRX-activated problem
                     D = dot(Mrr_DDRX_src[0], sr)/sr_sub[0] # <D> (Rathmann et al., 2025)
                 else: 
-                    # Time-dependent probem? Linearized problem by linearizing <D>
+                    # Time-dependent problem? Linearized problem by linearizing <D>
                     D = dot(Mrr_DDRX_src[0], self.s0)/self.s0[0] # <D> estimated using previous solution (Rathmann and Lilien, 2021)
                 F_snk = -sum([Gamma0*D*sr_sub[ii]*self.wr_sub[ii]*dx for ii in self.srng])
                 
@@ -308,22 +314,27 @@ class CPO():
         D2 = np.array([ D2[nn*dn:(nn+1)*dn] for nn in self.dofs ]) # to [node, D2 flat index 0 to 3]
         return sfcom.mat3d_arr(D2, self.modelplane, reshape=True) # [node,3,3]
         
-    def eigenframe(self, *p, reduce2D=False, **kwargs):
+    def eigenframe(self, *p, reduce2D=False, modelplane=None, **kwargs):
         """
         Extract a2 eigenvectors (mi) and eigenvalues (lami) at specified list of points p=([x1,x2,...], [y1,y2,...])
         Note that you can back-construct a2 = lam1*np.outer(m1,m1) + lam2*np.outer(m2,m2) + lam3*np.outer(m3,m3) 
         """
         xf, yf = np.array(p[0], ndmin=1), np.array(p[1], ndmin=1) # (point num, x/y value)
         nlm = np.array([self.get_nlm(xf[pp],yf[pp], **kwargs) for pp in range(len(xf))]) # (point num, nlm coefs)
-        mi, lami = sfcom.eigenframe(nlm, symframe=self.symframe, modelplane=self.modelplane)
+        if modelplane is None: modelplane = self.modelplane
+        mi, lami = sfcom.eigenframe(nlm, symframe=self.symframe, modelplane=modelplane)
         
         if reduce2D:
             if nlm.shape[0] > 1:
-                if self.modelplane == 'xz': mi, lami = mi[:,:,[0,2]], lami[:,[0,2]]
-                if self.modelplane == 'xy': mi, lami = mi[:,:,[0,1]], lami[:,[0,1]]
+                if self.modelplane == 'xz':        mi, lami = mi[:,:,[0,2]], lami[:,[0,2]]
+                if self.modelplane == 'xy':        mi, lami = mi[:,:,[0,1]], lami[:,[0,1]]
+                if self.modelplane == 'yz':        mi, lami = mi[:,:,[1,2]], lami[:,[1,2]]
+#                if self.modelplane in ('xy','yz'): mi, lami = mi[:,:,[0,1]], lami[:,[0,1]]
             else:
                 if self.modelplane == 'xz': mi, lami = mi[:,[0,2]], lami[[0,2]]
                 if self.modelplane == 'xy': mi, lami = mi[:,[0,1]], lami[[0,1]]
+                if self.modelplane == 'yz': mi, lami = mi[:,[1,2]], lami[[1,2]]
+#                if self.modelplane in ('xy','yz'): mi, lami = mi[:,[0,1]], lami[[0,1]]
                 
         return (mi, lami)
 
@@ -331,8 +342,8 @@ class CPO():
         """
         Extract CPO state gridpoint-wise (full form of nlm)
         """
-        if   self.modelplane=='xy': nlm_ = self.s.sub(0)(*p) + 1j * self.s.sub(1)(*p)
-        elif self.modelplane=='xz': nlm_ = self.s(*p) + 0j
+        if   self.modelplane in ('xy','yz'): nlm_ = self.s.sub(0)(*p) + 1j * self.s.sub(1)(*p)
+        elif self.modelplane=='xz':          nlm_ = self.s(*p) + 0j
         nlm = self.sf.rnlm_to_nlm(nlm_, self.nlm_len_full) if self.USE_REDUCED else nlm_
         return self.sf.rotate_nlm_xz2xy(nlm) if xz2xy else nlm 
                 
@@ -346,8 +357,8 @@ class CPO():
         
         for nn in self.dofs: 
 
-            if   self.modelplane=='xy': nlm = s[self.dofs_re[:,nn]] + 1j*s[self.dofs_im[:,nn]]
-            elif self.modelplane=='xz': nlm = s[self.dofs_re[:,nn]] + 0j
+            if   self.modelplane in ('xy','yz'): nlm = s[self.dofs_re[:,nn]] + 1j*s[self.dofs_im[:,nn]]
+            elif self.modelplane=='xz':          nlm = s[self.dofs_re[:,nn]] + 0j
                 
             if self.USE_REDUCED:
                 nlm_full = self.sf.rnlm_to_nlm(nlm, self.nlm_len_full)
@@ -356,7 +367,7 @@ class CPO():
             else:
                 nlm_bnd = self.sf.apply_bounds(nlm)
                 
-            if self.modelplane=='xy': 
+            if self.modelplane in ('xy','yz'): 
                 sb[self.dofs_re[:,nn]] = np.real(nlm_bnd)
                 sb[self.dofs_im[:,nn]] = np.imag(nlm_bnd)  
             elif self.modelplane=='xz': 

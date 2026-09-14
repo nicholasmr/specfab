@@ -99,6 +99,12 @@ def mat2d(D3, modelplane):
             [D3[2,0], D3[2,2]] \
         ])
         
+    elif modelplane=='yz':
+        D2 = np.array([ \
+            [D3[1,1], D3[1,2]], \
+            [D3[2,1], D3[2,2]] \
+        ])
+        
     else:
         raise ValueError('invalid modelplane "%s"'%(modelplane))
         
@@ -135,6 +141,11 @@ def mat3d(D2, modelplane, reshape=False):
         D3 = np.array([ [D2[0,0],      0,    D2[0,1]],\
                         [0,       -trace,    0      ],\
                         [D2[1,0],      0,    D2[1,1]] ] )  
+                        
+    elif modelplane=='yz':  
+        D3 = np.array([ [-trace,        0,          0],\
+                        [0,       D2[0,0],    D2[0,1]],\
+                        [0,       D2[1,0],    D2[1,1]] ] )  
                         
     else:
         raise ValueError('invalid modelplane "%s"'%(modelplane))

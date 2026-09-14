@@ -71,7 +71,7 @@ module specfabpy
         
         ! Fluid enhancement factors
         Eij_tranisotropic__sf => Eij_tranisotropic, &
-        Eij_tranisotropic_APEX__sf => Eij_tranisotropic_APEX, &
+        Eij_tranisotropic_DECAF__sf => Eij_tranisotropic_DECAF, &
         Eij_tranisotropic_Schmid__sf => Eij_tranisotropic_Schmid, &
         Eij_orthotropic__sf   => Eij_orthotropic, &
         Evw_tranisotropic__sf => Evw_tranisotropic, &
@@ -324,7 +324,7 @@ contains
         implicit none
         integer, parameter         :: n = 3
         real(kind=dp), intent(in)  :: M(n,n)
-        character*2, intent(in)    :: plane ! ['ij'|'xy'|'xz']
+        character*2, intent(in)    :: plane ! ['ij'|'xy'|'xz'|'yz']
         real(kind=dp), intent(out) :: ei(n,n), lami(n) ! (i,xyz), (i) for eigenpair i=1,2,3
         
         call eigframe__sf(M,plane, ei,lami)
@@ -335,7 +335,7 @@ contains
         implicit none
         integer, parameter         :: n = 3
         real(kind=dp), intent(in)  :: M(:,:,:) ! (node,3,3)
-        character*2, intent(in)    :: plane ! ['ij'|'xy'|'xz']
+        character*2, intent(in)    :: plane ! ['ij'|'xy'|'xz'|'yz']
         real(kind=dp), intent(out) :: ei(size(M,1),n,n), lami(size(M,1),n) ! (node,i,xyz), (node,i) for eigenpair i
         
         do nn = 1,size(M,1)
@@ -399,7 +399,7 @@ contains
         Eij = Eij_tranisotropic__sf(nlm, e1,e2,e3, Eij_grain,alpha,n_grain)
     end
 
-    function Eij_tranisotropic_APEX(nlm, e1,e2,e3, Emin, Emax, n_grain) result(Eij)
+    function Eij_tranisotropic_DECAF(nlm, e1,e2,e3, Emin, Emax, n_grain) result(Eij)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
@@ -408,7 +408,7 @@ contains
         integer, intent(in)          :: n_grain
         real(kind=dp)                :: Eij(6)
         
-        Eij = Eij_tranisotropic_APEX__sf(nlm, e1,e2,e3, Emin, Emax, n_grain)
+        Eij = Eij_tranisotropic_DECAF__sf(nlm, e1,e2,e3, Emin, Emax, n_grain)
     end
     
     function Eij_tranisotropic_Schmid(nlm, e1,e2,e3, n_grain) result(Eij)
@@ -513,7 +513,7 @@ contains
         end do
     end
     
-    function Eij_tranisotropic_APEX_arr(nlm, e1,e2,e3, Emin, Emax, n_grain) result(Eij)
+    function Eij_tranisotropic_DECAF_arr(nlm, e1,e2,e3, Emin, Emax, n_grain) result(Eij)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:,:)
@@ -523,7 +523,7 @@ contains
         real(kind=dp)                :: Eij(size(nlm,1),6)
         
         do nn = 1,size(nlm,1)
-            Eij(nn,:) = Eij_tranisotropic_APEX__sf(nlm(nn,:), e1(nn,:),e2(nn,:),e3(nn,:), Emin, Emax, n_grain)
+            Eij(nn,:) = Eij_tranisotropic_DECAF__sf(nlm(nn,:), e1(nn,:),e2(nn,:),e3(nn,:), Emin, Emax, n_grain)
         end do
     end
     

@@ -20,15 +20,15 @@ class EnhancementFactor():
 
         self.mesh = mesh
         self.L = L
-        self.enhancementmodel = enhancementmodel # 'LTS', 'APEX', ...
+        self.enhancementmodel = enhancementmodel # 'LTS', 'DECAF', ...
         self.homoparams = homoparams
         self.modelplane = modelplane
         self.symframe = symframe # rheological symmetry frame: -1 is a2, 0-5 are the a4 eigentensors
         self.USE_REDUCED = True # use reduced representation of fabric state vector 
         
-        if self.enhancementmodel not in ['LTS', 'APEX']:           raise ValueError('Invalid enhancementmodel "%s"'%(self.enhancementmodel))
-        if self.enhancementmodel=='LTS'  and len(homoparams) != 3: raise ValueError('LTS model requires homoparams = (Eij_grain, alpha, n_grain)')
-        if self.enhancementmodel=='APEX' and len(homoparams) != 2: raise ValueError('APEX model requires homoparams = (Emin, Emax)')
+        if self.enhancementmodel not in ['LTS', 'DECAF']:           raise ValueError('Invalid enhancementmodel "%s"'%(self.enhancementmodel))
+        if self.enhancementmodel=='LTS'   and len(homoparams) != 3: raise ValueError('LTS model requires homoparams = (Eij_grain, alpha, n_grain)')
+        if self.enhancementmodel=='DECAF' and len(homoparams) != 2: raise ValueError('DECAF model requires homoparams = (Emin, Emax)')
         
         self.sf = sf__
         self.lm, self.nlm_len_full = self.sf.init(self.L)
@@ -66,8 +66,8 @@ class EnhancementFactor():
         return nlm # nlm[node,component]
 
     def _sR(self, s):
-        if   self.modelplane=='xy': return self._V2R(s.sub(0)), self._V2R(s.sub(1)) # sr_R, si_R
-        elif self.modelplane=='xz': return self._V2R(s), [project(Constant(0), self.R)]*self.nlm_len # sr_R, 0
+        if   self.modelplane in ('xy','yz'): return self._V2R(s.sub(0)), self._V2R(s.sub(1)) # sr_R, si_R
+        elif self.modelplane=='xz':          return self._V2R(s), [project(Constant(0), self.R)]*self.nlm_len # sr_R, 0
                 
     def _V2R(self, sV):
         sV_sub = sV.split()
@@ -75,7 +75,9 @@ class EnhancementFactor():
         return sR_sub
 
     def _np2func(self, ei, Eij, ai):
-    
+        
+        # @TODO move eigenvalue pair construction to CPO()
+        
         mi_df   = [Function(self.V) for _ in range(3)] # (m1,m2,m3) fabric principal directions
         Eij_df  = [Function(self.R) for _ in range(6)] # Eij enhancement tensor
         lami_df = [Function(self.R) for _ in range(3)] # a2 eigenvalues (lami)
@@ -86,11 +88,12 @@ class EnhancementFactor():
                 eij_df[jj].vector()[:] = ei[ii][:,jj] # [i,node,xyz]
             self.V_assigner.assign(mi_df[ii], eij_df) # set vector field components
             
-        for kk in range(6): 
-            Eij_df[kk].vector()[:] = Eij[:,kk]
-        
         for ii in range(3): 
             lami_df[ii].vector()[:] = ai[:,ii] 
+
+        if Eij is not None:
+            for kk in range(6): 
+                Eij_df[kk].vector()[:] = Eij[:,kk]
         
         return (mi_df, Eij_df, lami_df)
         
@@ -120,10 +123,10 @@ class EnhancementFactor():
             # For CPOs far from the calibration states, negative values *may* occur where Eij should tend to zero if truncation L is not large enough.
             Eij[Eij < 0] = 1e-2 # Set negative E_ij to a very small value (flow inhibiting)
         
-        elif self.enhancementmodel == 'APEX':
+        elif self.enhancementmodel == 'DECAF':
 
             Emin, Emax = self.homoparams
-            Eij = self.sf.Eij_tranisotropic_APEX_arr(nlm, *ei, Emin, Emax) # [node, Voigt index 1--6]
+            Eij = self.sf.Eij_tranisotropic_DECAF_arr(nlm, *ei, Emin, Emax) # [node, Voigt index 1--6]
             
         return self._np2func(ei, Eij, lami)
         
@@ -150,13 +153,18 @@ class EnhancementFactor():
         return self._np2func(ei, Eij, lami)
         
 
-    def E_CAFFE(self, sn, u, n_grain=1, Emin=0.1, Emax=10):
+    def E_CAFFE(self, sn, u, n_grain=1, Emin=0.1, Emax=10, D=None):
         """
         CAFFE model (Placidi et al., 2010)
         """
-        Df = project( sym(grad(u)), self.G).vector()[:] # flattened strain-rate tensor
+        if D is None: 
+            D3 = self.mat3d( project( sym(grad(u)), self.G).vector()[:] ) 
+        else:
+            D_ = project(D, self.T)
+            D3 = D_.vector().get_local().reshape((-1, 3, 3))
+
         E_CAFFE = Function(self.R)
-        E_CAFFE.vector()[:] = self.sf.E_CAFFE_arr(self._nlm_nodal(sn), self.mat3d(Df), Emin, Emax, n_grain)[:]
+        E_CAFFE.vector()[:] = self.sf.E_CAFFE_arr(self._nlm_nodal(sn), D3, Emin, Emax, n_grain)[:]
         return E_CAFFE
         
             
@@ -199,7 +207,7 @@ class EnhancementFactor():
 
         Q = FunctionSpace(self.mesh, 'DG', 0)
 
-        if self.modelplane == 'xy':
+        if self.modelplane in ('xy','yz'):
             z = as_vector([0,0,1])
             u3 = as_vector([u2[0],u2[1],0])
             

@@ -85,7 +85,7 @@ contains
               doubleinner22(rheo_fwd_tranisotropic_schmid_sachshomo(tau, nlm_iso, n_grain), vw)
     end
 
-    function Eij_tranisotropic_APEX(nlm, e1,e2,e3, Emin,Emax, n_grain) result (Eij)
+    function Eij_tranisotropic_DECAF(nlm, e1,e2,e3, Emin,Emax, n_grain) result (Eij)
 
         ! Enhancement factors w.r.t. (e1,e2,e3) axes.
         ! Note: if (e1,e2,e3) coincide with fabric symmetry axes, then these are the fabric eigenenhancements.
