@@ -9,7 +9,7 @@ if len(glob.glob('specfabpy/*.so')) == 0:
 else:
     setup(
         name="specfabpy",
-        version="2026.10.14",
+        version="2026.10.15",
         author="Nicholas M. Rathmann and David A. Lilien",
         author_email="rathmann@nbi.ku.dk",
         description="specfab Python module",

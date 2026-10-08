@@ -18,7 +18,7 @@ class CPO():
     Class representing a single crystallographic axis
     """
 
-    def __init__(self, mesh, boundaries, L, nu_multiplier=1, nu_realspace=1e-3, modelplane='xz', symframe=-1, ds=None, nvec=None, kw_project=None):
+    def __init__(self, mesh, boundaries, L, nu_multiplier=1, nu_realspace=1e-3, regexpo=0, modelplane='xz', symframe=-1, ds=None, nvec=None, kw_project=None):
 
         ### Check args
         
@@ -36,6 +36,7 @@ class CPO():
         self.modelplane = modelplane
         self.nu_realspace  = nu_realspace  # Real-space stabilization (multiplicative constant of real-space Laplacian)
         self.nu_multiplier = nu_multiplier # Multiplier of orientation-space regularization magnitude
+        self.regexpo       = regexpo       # Exponent of orientation-space regularization (if <= 1, then default calibrated value is used)
 
         self.REALSPACE_REG_EXPO = 1/3-1 # velocity sensitivity exponent for new version of regularization
 
@@ -205,7 +206,7 @@ class CPO():
         # Dynamical matrices M_* at each node as np arrays (indexing is M[node,kk,row,column])
         M_LROT     = np.array([self._M_reduced(self.sf.M_LROT,     self.nlm_dummy, D3[nn], W3[nn], iota, zeta) for nn in self.dofs] ) if ENABLE_LROT else self.M_zero
         M_DDRX_src = np.array([self._M_reduced(self.sf.M_DDRX_src, self.nlm_dummy, S3[nn])                     for nn in self.dofs] ) if ENABLE_DDRX else self.M_zero
-        M_REG      = np.array([self._M_reduced(self.sf.M_REG,      self.nlm_dummy, D3[nn])                     for nn in self.dofs] ) if ENABLE_REG  else self.M_zero
+        M_REG      = np.array([self._M_reduced(self.sf.M_REG,      self.nlm_dummy, D3[nn], self.regexpo)       for nn in self.dofs] ) if ENABLE_REG  else self.M_zero
         
         # Populate entries of dynamical matrices 
         if self.modelplane=='xz': krng = range(1) # rr

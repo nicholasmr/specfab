@@ -14,7 +14,7 @@ class IceFabric(CPO):
 
     def __init__(
         self, mesh, boundaries, L, *args, 
-        nu_multiplier=1, nu_realspace=1e-3, modelplane='xz', symframe=-1, 
+        nu_multiplier=1, nu_realspace=1e-3, regexpo=0, modelplane='xz', symframe=-1, 
         enhancementmodel='LTS', Eij_grain=(1,1), alpha=0, n_grain=1, CAFFE_params=(0.1, 10), n_EIE=3, 
         ds=None, nvec=None, setextra=True, 
         Cij=sfconst.ice['elastic']['Bennett1968'], rho=sfconst.ice['density'], **kwargs
@@ -27,7 +27,7 @@ class IceFabric(CPO):
 
         # CPO class
         self.setextra = setextra # set Eij, E_CAFFE, pfJ, etc. on every state update?
-        super().__init__(mesh, boundaries, L, nu_multiplier=nu_multiplier, nu_realspace=nu_realspace, modelplane=modelplane, ds=ds, nvec=nvec, **kwargs)
+        super().__init__(mesh, boundaries, L, nu_multiplier=nu_multiplier, nu_realspace=nu_realspace, regexpo=regexpo, modelplane=modelplane, ds=ds, nvec=nvec, **kwargs)
 
         # specfab
         self.enhancementmodel = enhancementmodel # 'LTS', 'DECAF', ...

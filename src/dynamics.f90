@@ -491,7 +491,7 @@ contains
         end do  
     end
 
-    function M_REG(D) 
+    function M_REG(D, regexpo) 
 
         !----------------
         ! Regularization 
@@ -502,10 +502,12 @@ contains
         
         implicit none
         real(kind=dp), intent(in) :: D(3,3)
+        real(kind=dp), intent(in), optional :: regexpo ! override exponent
         real(kind=dp)             :: M_REG(nlm_len,nlm_len), M0_REG(nlm_len,nlm_len)
         real(kind=dp)             :: nu, expo, ratemag
         
         include "include/regcalib.f90"
+        if (present(regexpo) .and. regexpo >= 1.0d0) expo = regexpo ! override expo if optional argument is passed
 
         ! M0_REG is the matrix diag(~0, less small value, ..., 1) 
         M0_REG = 0.0

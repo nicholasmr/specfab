@@ -228,11 +228,14 @@ class steadyCPO():
 
     def solve(self, problem, numerics, **kwargs):
     
+        numerics.setdefault("regexpo", 0) # if not passed, use default calibrated regularization exponent (selected if regexpo<1)
+    
         isDDRX = len(np.shape(problem['T']))>0
         print(tabulate([['PROBLEM', 'LROT+ADVEC' if not isDDRX else 'LROT+DDRX+ADVEC'], 
                         ['T',          ','.join(['%.1f'%(_) for _ in problem['T']]) if isDDRX else 'None'], 
                         ['A,Q (DDRX)', ','.join(['%.2e'%(_) for _ in problem['AQ_DDRX']]) if 'AQ_DDRX' in problem.keys() else 'None'], 
                         ['L',          numerics['L']], 
+                        ['regexpo',    '%.2f'%(numerics['regexpo']) if numerics['regexpo']>1 else 'default'], 
                         ['nu_orimul',  '%.2e'%(numerics['nu_orimul'])], 
                         ['nu_real',    '%.2e'%(numerics['nu_real'])], 
                         ['nu_realmul', '1' if not isDDRX else ','.join(['%.1f'%(_) for _ in numerics['nu_realmul']])], 
@@ -248,8 +251,9 @@ class steadyCPO():
         
         ### Initialize solver class
         
-        fab = IceFabric(mesh, boundaries, numerics['L'], nu_realspace=numerics['nu_real'], nu_multiplier=numerics['nu_orimul'], \
-                            modelplane=self.modelplane, CAFFE_params=self.CAFFE_params, **kwargs)
+        fab = IceFabric(mesh, boundaries, numerics['L'], \
+                    nu_realspace=numerics['nu_real'], nu_multiplier=numerics['nu_orimul'], regexpo=numerics['regexpo'], \
+                    modelplane=self.modelplane, CAFFE_params=self.CAFFE_params, **kwargs)
         
         ### Boundary conditions  
         

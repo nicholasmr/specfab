@@ -234,14 +234,15 @@ contains
         M_CDRX = M_CDRX__sf()
     end
     
-    function M_REG(nlm, eps)
+    function M_REG(nlm, eps, regexpo)
         use specfabpy_const
         implicit none
         complex(kind=dp), intent(in) :: nlm(:)
         real(kind=dp), intent(in)    :: eps(3,3)
+        real(kind=dp), intent(in), optional :: regexpo ! defaults by f2py to 0 if not passed
         real(kind=dp)                :: M_REG(size(nlm),size(nlm))
         
-        M_REG = M_REG__sf(eps) 
+        M_REG = M_REG__sf(eps, regexpo) 
     end    
     
     function Lmat(nlm)
